@@ -25,6 +25,7 @@
 		c = wcvj.webcam('c', {canvas: true, glfx: true});
 		// c.setFilter[['ink',[0.4]]]);
 		var t=0;
+
 		var perspective=[0,0,0,h,w,0,w,h];
 
 		c.canvas.addEventListener('click',function(e){
@@ -36,16 +37,18 @@
 			perspective[i*2+1]=y;			
 		});
 
+		s=.5;
+
 		var animation=function(){
 			t+=.001;
-			var power=Math.sin(t)*2;
-			c.setFilter([['swirl',[300, 246.5, 250, power]],['perspective',[[0,0,0,h,w,0,w,h],perspective]]]);
+			var power=Math.sin(t)*.5;
+			c.setFilter([['swirl',[300, 246.5, 250, power]],['vibrance',[1.]],['matrixWarp',[[s,0,0,s],false,true]],['perspective',[[0,0,0,h,w,0,w,h],perspective]]]);
 			// ,['unsharpMask',[2,10]]
 			requestAnimationFrame(animation);
 		};
 		animation();
 		document.body.appendChild(c.canvas);		
-
+// ['hexagonalPixelate',[0,0,6]],
 	</script>
 </body>
 </html>
