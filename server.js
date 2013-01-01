@@ -103,10 +103,10 @@ wss.on('connection', function connection(ws) {
         for(var i in pending[key])
         {
           var target_ws=pending[key][i];
-          if(target_ws.readyState==1) // still open
-            target_ws.send(message);
-          else
+          if(target_ws.readyState!=1) // still open?
             delete pending[key][i]; // socket is gone, remove listener
+          else if(target_ws!=ws) // still open and not the sender itself (no echo!)
+            target_ws.send(message);
         }
         //delete pending[key];
       }

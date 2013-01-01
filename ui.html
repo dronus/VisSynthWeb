@@ -968,7 +968,13 @@
         chain_token.data('chain',chain);
       });
             
-      $('#chains>*:first-child').click();
+      // TODO refresh active chain view
+      //$('#chains .chain_token').removeClass('active');
+      //$(this).addClass('active');
+      // load chain to editor
+      var list=$('#chain');
+      var chain=$('#chains .chain_token').first().addClass('active').data('chain'); 
+      listEffects(chain,list);
     }
 
     /* pop last undo state */    
@@ -1174,7 +1180,8 @@
       websocket.onopen=function(){
         // opt in for preview and screenshot feeds
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'preview',data:''}));
-        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'screenshot',data:''}));        
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'screenshot',data:''}));       
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''})); 
       };
       websocket.onmessage=function(event)
       {
@@ -1200,6 +1207,10 @@
           $(document.body).append(link);
           link[0].click();
           // link.remove();
+        }
+        else if(path=='/feeds'+session_url+'update'){
+          console.log('Update by external data');
+          load(message);
         }
       }     
       websocket.onclose=function()
