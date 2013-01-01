@@ -166,10 +166,10 @@ void setup() {
     delay(1000);
     if(!redFlyCommandRequired("AT+RSI_JOIN=VisSynthBox II,0,0")) continue;
     delay(1000);
-    if(!redFlyCommandRequired("AT+RSI_IPCONF=0,168.254.20.10,255.255.0.0,168.254.10.10")) continue;
+    if(!redFlyCommandRequired("AT+RSI_IPCONF=0,169.254.20.10,255.255.0.0,169.254.10.10")) continue;
     delay(100);
     if(!redFlyCommandRequired("AT+RSI_LUDP=8083")) continue;
-    if(!redFlyCommandRequired("AT+RSI_UDP=168.254.10.10,8083,9083")) continue;
+    if(!redFlyCommandRequired("AT+RSI_UDP=169.254.10.10,8083,9083")) continue;
 
     success=true;
   }
