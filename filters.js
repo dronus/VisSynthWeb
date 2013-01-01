@@ -678,32 +678,34 @@ canvas.video=function(url,play_sound)
     return this;
 }
 
-var image_loaded=false;
+var image_loaded=[];
 canvas.image=function(url)
 {
 
-    var v=this._.imageFilterElement;
+    if(!this._.imageFilterElement) this._.imageFilterElement=[];
+    var v=this._.imageFilterElement[url];
 
     if(!v)
     {
       var v = document.createElement('img');
       v.crossOrigin = "anonymous";
       v.src=url;
-      this._.imageFilterElement=v;
+      this._.imageFilterElement[url]=v;
       v.onload=function(){
-          image_loaded=true;
+          image_loaded[url]=true;
       }
     }  
       
     // make sure the image has adapted to the image source
-    if(!this._.imageTexture && image_loaded)
+    if(!this._.imageTexture) this._.imageTexture=[];
+    if(!this._.imageTexture[url] && image_loaded[url])
     {
-      this._.imageTexture=this.texture(v);    
-      this._.imageTexture.loadContentsOf(v);
+      this._.imageTexture[url]=this.texture(v);    
+      this._.imageTexture[url].loadContentsOf(v);
     }
     
-    if(this._.imageTexture)
-      this._.imageTexture.copyTo(this._.texture);
+    if(this._.imageTexture[url])
+      this._.imageTexture[url].copyTo(this._.texture);
         
     return this;
 }
