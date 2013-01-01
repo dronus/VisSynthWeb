@@ -29,11 +29,23 @@
   }
  ],
  [
-  "",
+  "spherical disgust",
+  {
+   "effect": "gauze",
+   "width": 300,
+   "length": 200,
+   "angle": 0,
+   "strength": 0.5,
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   }
+  },
   {
    "effect": "spherical",
-   "radius": 0.5,
-   "scale": 8
+   "radius": 0.469,
+   "scale": 13.276
   }
  ],
  [
