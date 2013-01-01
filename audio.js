@@ -131,8 +131,9 @@ function initAudioAnalysers(stream)
             audio_canvas_ctx.fillStyle='#fff';
             audio_canvas_ctx.fillRect(i*5,255-spectrogram[i],3,2);
           }
-          
-          pulse+=Math.max(0,value);
+          var attenuation=(spectrogram.length-i)/spectrogram.length;
+          attenuation*=attenuation;
+          pulse+=Math.max(0,value*attenuation);
         }
         pulse/=spectrogram.length;
         pulse/=256.;
