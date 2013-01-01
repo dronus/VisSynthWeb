@@ -208,7 +208,9 @@
 
       // enforce resolution, if asked to
       if(width && height)
-          constraints.video={ width: width, height: height };
+      {
+          constraints.video.width=width;  constraints.video.height=height;
+      }
       
       // TODO handle audio again, in a more flexible fashion than one device only...
       // for now, we just take the first device queried
