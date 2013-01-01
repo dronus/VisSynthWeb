@@ -11,8 +11,8 @@
   },
   {
    "effect": "resolution",
-   "x": 1920,
-   "y": 1080
+   "x": 1024,
+   "y": 768
   },
   {
    "effect": "type_byte"
@@ -24,28 +24,27 @@
   {
    "effect": "image",
    "url": "test.jpg"
-  },
-  {
-   "effect": "transform",
-   "x": 0.018,
-   "y": -0.012,
-   "scale": 1,
-   "angle": 0,
-   "sx": 1,
-   "sy": 1
   }
  ],
  [
-  "POST",
+  "POST"
+ ],
+ [
+  "",
+  "",
   {
-   "effect": "mirror_x"
-  },
-  {
-   "effect": "mirror_y"
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    " r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   }
   }
  ],
  [
-  "matte grid",
+  "matte grid 2",
   {
    "effect": "grid",
    "size": 1,
@@ -64,6 +63,37 @@
  ],
  [
   "passthru"
+ ],
+ [
+  "rupture blue",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "fastBlur",
+   "size": 2.948
+  },
+  {
+   "effect": "mesh_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": {
+    "type": "beat",
+    "pulse": -19.109,
+    "f": 2,
+    "a": 0,
+    "p": 0,
+    "o": 0.1565
+   },
+   "anglex": 0,
+   "angley": 0,
+   "anglez": 0
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": -0.952,
+   "saturation": 0
+  }
  ],
  [
   "shimmerbow mult",
@@ -263,7 +293,7 @@
   "staffblast",
   {
    "effect": "osciloscope",
-   "amplitude": 1
+   "amplitude": 13.72
   },
   {
    "effect": "absolute"
@@ -492,11 +522,11 @@
    "effect": "brightnessContrast",
    "brightness": {
     "type": "beat",
-    "pulse": 17.741,
+    "pulse": 9.106,
     "f": 2,
     "a": 0.018,
     "p": 0,
-    "o": -0.67
+    "o": -0.626
    },
    "contrast": 0.544
   }
@@ -653,7 +683,7 @@
    "sides": 5,
    "angle": {
     "type": "osc",
-    "f": 1.523,
+    "f": 0.868,
     "a": 3.14159,
     "p": 0,
     "o": 0,
@@ -662,7 +692,7 @@
    },
    "angle2": {
     "type": "osc",
-    "f": 0.91,
+    "f": 0.253,
     "a": -3.14159,
     "p": 0,
     "o": 0,
@@ -2886,30 +2916,6 @@
    "gamma": 1.765,
    "glow": 1.059,
    "glow_radius": 24.934
-  }
- ],
- [
-  "rupture blue",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "fastBlur",
-   "size": 2.948
-  },
-  {
-   "effect": "mesh_displacement",
-   "sx": 0,
-   "sy": 0,
-   "sz": 0.313,
-   "anglex": 0,
-   "angley": 0,
-   "anglez": 0
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": -0.952,
-   "saturation": 0
   }
  ],
  [
