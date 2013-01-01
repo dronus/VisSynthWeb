@@ -14,7 +14,7 @@ var WebSocket = require('ws');
 var base_host='localhost';
 var base_port='8082';
 
-var remote_host='168.254.20.10',remote_port='8083';
+var remote_host='192.168.0.102',remote_port='8083';
 
 var websocket;
 onopen=onupdate=onclose=null;
