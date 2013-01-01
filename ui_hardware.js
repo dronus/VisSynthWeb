@@ -1,5 +1,4 @@
 
-
     // send command to remote server
     var send=function(command)
     {
@@ -69,8 +68,8 @@
     // onopen, onclose,  onupdate are called by client to notify external changes
     onopen=function(url)
     {
-      if(!chains.length) 
-      {
+        effects=[];
+        chains=[];
         load_chains();
         get('/effects.json',function(data){
           effects=JSON.parse(data);
@@ -88,13 +87,17 @@
           }
           effects=new_effects;
           console.log('effects.js loaded.');
+          ui_fn();
         });
-      }
-      if(chains.length>=1) ui_fn();
+
+      ui_fn=system_ui;
+      ui_fn();
     }
     onclose=function(url)
     {
-      set_display('ERROR: remote client offline \n');
+      chains=[]; effects=[];
+      ui_fn=system_ui;
+      ui_fn();
     }
     onupdate=function(data)
     {
@@ -350,29 +353,44 @@
               +'NEW      |COPY     |CUT      |PASTE   ';
       set_display(text);
     }
-   
+  
+    var system_command_id=0;
+    var system_host_id=0;
+    var system_hosts=['nf-vissynthbox-2.local','nf-vissynthbox-3.local','nf-kiosk.local'];
     var system_ui=function(id,type,delta)
     {
+
+      var system_commands=[
+        {name:'CANCEL',fn:function(){}},
+        {name:'SHUTDOWN',fn:function(){  put('/shutdown','true'); }},
+        {name:'RESTART',fn:function(){  put('/restart','true'); }},
+        {name:'SOFT RESTART',fn:function(){  send('document.location.reload()'); setTimeout(updateChain,500); }},
+        {name:'SHUTDOWN ME',fn:function(){ require('child_process').spawn('sh',['shutdown.sh'], {stdio:'inherit'});}},
+      ];
+      if(type=='change')
+      {
+        if(id=='param' || id=='value') system_command_id=clamp(system_command_id+delta,0,system_commands.length);
+        if(id=='patch' || id=='layer') 
+        {
+          system_host_id   =clamp(system_host_id   +delta,0,system_hosts.length);
+          set_host(system_hosts[system_host_id]);
+          effects=[];chains=[];
+        }
+      }
       if(type=='press')
       {
-        if(id=='patch') put('/shutdown','true');
-        if(id=='layer') put('/restart','true');
         if(id=='value')
-        {
-          // soft restart index.html 
-          send('document.location.reload()');
-          setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
-        }
-        ui_fn=main_ui;
+          system_commands[system_command_id].fn();
+        if(chains.length && effects.length) 
+            ui_fn=main_ui;
         ui_fn();
         return;
       }
-      var text='SYSTEM MENU                           \n'
-              +'SHUTDOWN |RESTART H|CANCEL   |RESTART S ';
-      set_display(text);
+      var text='SYSTEM MENU '+(chains.length && effects.length ?'online ':'offline ')+'                  \n'
+              +pad(system_hosts[system_host_id],19)+'|CMD: '+pad(system_commands[system_command_id].name,15);
+              set_display(text);
     }
  
-    var ui_fn=main_ui;
     var knob_handler=function(id,value){
       console.log('B '+id+':'+value);
       ui_fn(id,value==0 ? 'press' : 'change',value);
@@ -381,3 +399,6 @@
     add_knob('layer',knob_handler);
     add_knob('param',knob_handler);
     add_knob('value',knob_handler);
+
+    var ui_fn=system_ui;
+    ui_fn();

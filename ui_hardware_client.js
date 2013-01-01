@@ -4,8 +4,8 @@ var Encoder = require('./encoder.js');
 var WebSocket = require('ws');
 
 
-base_host='nf-vissynthbox-ii.local';
-base_port='8082';
+var base_host='nf-vissynthbox-ii.local';
+var base_port='8082';
 
 
 var websocket;
@@ -13,11 +13,19 @@ onopen=onupdate=onclose=null;
 var open_socket=function()
 {
   websocket=new WebSocket('ws://'+base_host+':'+base_port);
-  
+ 
+  console.log('WebSocket open: '+base_host);
+ 
   websocket.on('open',function(){
     // opt in for update feed
-    websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
-    console.log('WebSocket connected.');
+try{
+    this.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+   }
+catch(e)
+{
+console.log(e);
+}
+    console.log('WebSocket open.');
     if(onopen) onopen();
   });
   websocket.on('message', function(data)
@@ -31,15 +39,18 @@ var open_socket=function()
   });
   websocket.on('close',function()
   {
-    console.log('WebSocket closed.');  
-    setTimeout(open_socket,1000);
-    if(onclose) onclose();
+    console.log('WebSocket closed remotely.');  
+    if(this==websocket) 
+    {
+      setTimeout(open_socket,1000);
+      if(onclose) onclose();
+    }
   });
-  websocket.on('error',function()
+  websocket.on('error',function(err)
   {
+    console.log('WebSocket error: '+err);
   });
 }
-
 
 
 
@@ -47,11 +58,23 @@ var open_socket=function()
 
 session_url='/';
 
+set_host=function(host)
+{
+  websocket.close();
+  base_host=host;
+  open_socket();
+}
 
 put=function(url,data)
 {
   console.log('PUT: '+url);
+  try{
   websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));  
+   }
+catch(e)
+{
+console.log(e);
+}
 }
 
 get=function(url,callback,error_callback)
