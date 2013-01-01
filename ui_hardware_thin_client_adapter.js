@@ -1,23 +1,20 @@
 /**
- * "Thick" client for nodejs based hardware UI
- *  
+ * Adapter for connecting a thin (low-power) remote client to the VisSynth server 
+ *  -Runs besides server.js on the server machine to provide a stateless simple low-level interface
  *  -Uses hardware_ui.js as UI-defining layer, that is shared by all hardware UI's and the HTML-based emulator hardware_ui.html
- *  -Interfaces endocers and LCD display by GPIOs via nodejs libraries
+ *  -Interfaces remote by low level encoder and LCD message packets over UDP
  *  -Connects the VisSynth Server by Websockets like the browser UI would do
  *  -Holds state of loaded chains
  */
 
 
-
 var http = require('http');
-var Lcd  = require('lcd');
-var Encoder = require('./encoder.js');
 var WebSocket = require('ws');
 
-
-var base_host='nf-vissynthbox-ii.local';
+var base_host='localhost';
 var base_port='8082';
 
+var remote_host='169.254.20.10',remote_port='8083';
 
 var websocket;
 onopen=onupdate=onclose=null;
@@ -113,13 +110,34 @@ get=function(url,callback,error_callback)
   req.end();
 }
 
-try{
-  lcd = new Lcd({rs: 174, e: 192, data: [190,191,18,21], cols: 40, rows: 2});
-}catch(e)
-{
-  lcd=false;
-  console.log(e);
-};
+// provide UDP sockets or WebSockets???
+const dgram = require('dgram');
+const server = dgram.createSocket('udp4');
+
+server.on('error', function(err) {
+  console.log("server error: "+err.stack);
+  server.close();
+});
+
+server.on('message', function(msg, rinfo) {
+  console.log("server got: "+msg+" from "+rinfo.address+":"+rinfo.port);
+
+  var data=JSON.parse(''+msg);
+  var knob_nr=data['k'];
+  var delta=data['d'];
+
+  var knob=knobs[knob_nr];
+  if(!knob) return;
+  knob.callback(knob.id, delta);
+});
+
+server.on('listening', function() {
+  var address = server.address();
+  console.log("server listening"+address.address+":"+address.port);
+});
+
+server.bind(8083);
+
 
 function pad(text,length)
 {
@@ -135,17 +153,16 @@ set_display=function(text)
   console.log(text);
   console.log('');
   
-  if(!lcd) return;
   lcd_text=text;
 
  if(!lcd_update)
    lcd_update=setTimeout(function(){
      lcd_update=false;
      var lines=lcd_text.split('\n');
-     lcd.setCursor(0, 0);
-     lcd.print(pad(lines[0],40)+lines[1]);
-   },100);
-  
+     var message=pad(lines[0],20)+pad(lines[1],20)+pad(lines[2],20)+pad(lines[3],20);
+     var buffer=new Buffer('{'+message+'}');
+     server.send(buffer,0,buffer.length,remote_port,remote_host,function(err){if(err) console.log("err: "+err)});
+   },100);  
 }
 
 knobs=[];
@@ -155,16 +172,6 @@ add_knob=function(id,callback)
   
   // for stdin test feed
   knobs.push({id:id,callback:callback});
-
-  var encoders={
-    patch:function(id,callback){Encoder.add(id,22,30,29,callback); },
-    layer:function(id,callback){Encoder.add(id,24,25,31,callback); },
-    param:function(id,callback){Encoder.add(id,28,19,209,callback); },
-    value:function(id,callback){Encoder.add(id,172,171,173,callback); },
-  };
-
-  if(encoders[id]) 
-    encoders[id](id,callback);
 };
 
 
@@ -186,11 +193,8 @@ process.stdin.on('readable', function(){
 });*/
 
 
-lcd.on('ready', function () {
-  console.log('LCD ready.');
-  require('./ui_hardware.js');
-  open_socket();
-});
+require('./ui_hardware_v2.js');
+open_socket();
 
 
 
