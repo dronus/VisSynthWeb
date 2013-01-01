@@ -1,0 +1,1278 @@
+<!DOCTYPE  html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>NF VisSynth MCP</title>
+  <script src="jquery-2.1.4.js"></script>
+  <script src="jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.js"></script>  
+</head>
+<body style="font-size: 20px;">
+
+  <div class="header container">
+    <h1 style="font-size:100%">VIS SYNTH MCP</h1>
+    <button id=restart onclick="restart()">RESTART</button>
+    <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
+    <button id=undo onclick="undo()">UNDO</button>
+    <button id=recorder_button onclick="toggle_recorder()">START RECORDING</button>
+    <span id=stats>offline</span>
+  </div>
+
+  <div class="effects container">
+    <h2>Effects</h2>
+    <div id=effects>
+    </div>
+  </div>
+
+  <div class="chains container">
+    <h2>Chains <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button></h2>
+    <div id="chains">
+      <div class="chain_token">
+        <input placeholder="enter name" value="">
+      </div>
+    </div>
+  </div>
+  
+  <div class="chain container">
+    <h2></h2>
+    <div id="chain"></div>
+    <button id=chain_code_button onclick="toggle_code()" style="position: absolute; bottom: 2px; right: 2px;">CODE</button>
+  </div>
+
+  <div class="pre_chain container">
+    <h2>Setup Before</h2>
+    <div id="pre_chain"></div>
+  </div>
+
+  <div class="post_chain container">
+    <h2>Setup After</h2>
+    <div id="post_chain"></div>
+  </div>
+
+  <div class="preview container" onclick="toggle_preview()">
+    <button id=preview_button>PREVIEW</button>
+    <img id=preview></img>
+  </div>
+  
+  <div id=help></div>
+
+  <style>
+  
+   /* general element styles */
+
+   body,html{   
+      background-color: #000;
+      color: #aaa;
+      font-family: sans-serif;    
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+      width: 100%;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none; 
+  }
+
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    outline: 2px solid #000;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: #222;
+  }
+  ::-webkit-scrollbar-thumb {
+    width: 5px;
+    background-color: #888;
+  }
+ 
+   h1{
+    display: inline;
+   }
+   h2, .chain_token input{
+    display: block;
+    color: #fff;
+    background-color: transparent;
+    margin: 2px;
+    font-size: 110%;
+   }
+   h3{
+    display: block;
+    color: #fff;
+    margin: 2px;
+    font-size: 80%;
+   }
+
+   button{
+      border-radius: 5px;
+      background-color: #733;
+      color: #fff;
+      padding: 4px;
+   }
+   button.active{
+      background-color: #c00;
+   }
+   input{
+    border:none;
+   }   
+   textarea{
+    color: #999;
+   }
+
+   /* recursive containers */
+   .container{
+    padding: 5px;
+    margin: 2px;
+    border-radius: 5px;
+    background-color: #000;
+   }
+   
+   .header{
+     position: fixed;
+     top: 0px;
+     left: 0px;
+     right: 0px;
+     height: 40px;
+   }
+
+   /* help tooltip */
+   #help{
+     position: fixed;     
+     background-color: rgba(0,0,0,.9);
+     color: #aaa;
+     font-size: 12px;
+     padding: 2px;
+     max-width: 400px;
+     border-radius: 5px;
+     z-index: 100;
+     /* allow click-trough to not disturb work flow on touch screens */
+     pointer-events:none;
+   }
+   #help:empty{
+     display: none;
+   }
+
+    /* outline top level containers */
+    body>.container{
+      border: 1px solid #555;
+      border-radius: 10px;
+      padding: 2px;
+      margin: 2px;
+    }
+    
+    /* chain selector pane */
+    .chains{
+      position: fixed;
+      top: 50px;
+      bottom: 0px;
+      left: 0px;
+      width: 260px;      
+    }
+    #chains{
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: absolute;
+      top:50px;
+      bottom: 0px;
+    }
+    #chains>*{
+      background-color: #111;
+      margin: 2px;
+      border-radius: 5px;
+      display:inline-block;
+      vertical-align: top;
+      width:200px;
+      height: 40px;      
+    }    
+    #chains .active{
+      background-color: #030;
+    }
+    #chains>* input{
+      /* block chain name input on first click  */
+      width: 99%;
+      pointer-events: none;
+    }
+    #chains>*.active input{
+      /* allow another click after activation to focus chain name input */
+      pointer-events: auto;
+    }
+    
+    /* effects template pane */
+    .effects{
+      position: fixed;
+      top: 50px;
+      left:560px;
+      bottom: 0px;
+      right: 330px;
+    }
+    #effects{
+      position: absolute;
+      top: 50px;
+      bottom: 0px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      list-style: none;
+      margin: 0px;
+      padding: 0px;
+    }
+    #effects .effect{
+      width: 150px;
+      height: 25px;
+    }
+
+    /* current chain effect list */
+    .chain{
+      position: fixed;
+      top: 50px;
+      bottom: 0px;
+      left:270px;
+      width:280px;
+      padding: 2px;
+      margin: 0px;
+    }
+    #chain, #pre_chain, #post_chain
+    {
+      position: absolute;
+      top: 50px;
+      bottom: 0px;
+      left: 10px;
+      /*padding-bottom: 50px;*/
+      overflow-x: hidden;
+      overflow-y: auto;
+      min-height: 50px;
+    }
+    #chain:empty::before,#pre_chain:empty::before,#post_chain:empty::before{
+      content: "drag effects here";
+      color: #777;
+    }
+    
+    .chain_code{
+      width: 500px;
+      height: 500px;
+    }
+    
+    .pre_chain{
+      position: absolute;    
+      top: 50px;
+      right: 0px;
+      width: 320px;
+      height: 200px;      
+    }
+
+    .post_chain{
+      position: absolute;    
+      right: 0px;
+      width: 320px;
+      top: 260px;
+      bottom:250px;
+    }
+
+    /* effect in effect template pane or current chain pane */
+    .effect{
+      cursor: pointer;
+      display: inline-block;
+      vertical-align: top;
+      list-style: none;    
+      background-color: #222;
+      color: #fff;
+      margin: 2px;
+      padding: 3px;
+      border-radius: 5px;
+      border: 2px solid transparent;
+      width: 220px;
+      font-size: 10px;
+    }
+    .effect *{
+      vertical-align: top;
+    }
+    .effect div, .effect span{
+      display: inline-block;
+    }
+    .effect .ui_object{
+      display: block;
+    }
+    .effects .key>*, .effects .value>*{
+      display: none;
+    }
+    .effect>.ui_object>.value{
+      margin-left: 0px;
+    }
+    .effect>.ui_object>.key
+    {
+      display: none;
+    }
+    .effect>.ui_object>.value>:first-child{
+      display: block;
+    }    
+    .effect>.ui_object>.value>:first-child>.key
+    {
+      display: none;
+    }
+    .effect>.ui_object>.value>:first-child>.value
+    {
+      font-size: 15px;
+    }
+    /* OSC / BEAT remove buttons slip in sleekly to preserve screen */
+    .ui_object>.value>button
+     {
+      float:right;
+      margin-top: -10px;
+     }
+
+    /* detail display of effects placed in current chain */    
+
+    /* show chain flow arrows */
+    .chain .effect{
+      position:relative;
+    }
+    /* every effect shows an input arrow be default*/
+    .chain .effect::before{
+      display: block;
+      position:absolute;
+      top: -10px;
+      left: 50%;
+      content: '▾';
+    }
+    /* effects with more inputs show additional stack input arrows.*/
+    .chain .effect[ui_inputs="2"]>.ui_object::before{
+      display: block;
+      position:absolute;
+      top: -3px;
+      right: 10px;
+      content: '◂▤';
+      color: #f00;
+    }
+    .chain .effect[ui_inputs="3"]>.ui_object::before{
+      display: block;
+      position:absolute;
+      top: -3px;
+      right: 10px;
+      content: '◂◂▤';
+      color: #f00;
+    }    
+    /* effects with no inputs show no arrows*/
+    .chain .effect[ui_inputs="0"]::before{
+      display: none;
+    }
+    /* effects with additional outputs show stack output arrows*/
+    .chain .effect[ui_outputs]>.ui_object::before{
+      display: block;
+      position:absolute;
+      bottom: -3px;
+      right: 10px;
+      content: '▸▤';
+      color: #f00;
+    }
+    /* an effect with no input (source)*/
+    .effect[ui_inputs="0"]
+    {
+      background-color: #242;
+    }
+    .chain .effect[ui_inputs="0"]
+    {
+      margin-top: 10px;
+    }
+    /* an effect sporting additional inputs, pops stack */
+    .effect[ui_inputs="2"]
+    {
+      background: linear-gradient(#522,#222);
+    }
+    .effect[ui_inputs="3"]
+    {
+      background: linear-gradient(#622,#222);
+    }
+    .effect[ui_outputs]
+    {
+      background: linear-gradient(#222,#522);
+    }
+    /* an effect manipulating the topmost stack elements */
+    .effect[ui_inputs="2"][ui_outputs]
+    {
+      background: linear-gradient(#522,#222,#522);
+    }
+    .effect[ui_effect^="feedbackOut"]
+    {
+      background: linear-gradient(#552,#222);
+    }
+    .effect[ui_effect^="feedbackIn"]
+    {
+      background: linear-gradient(#222,#552);
+    }
+    .effect[ui_effect="preview"]
+    {
+      background: #531;
+    }
+    /* an effect without in and outputs (setup) */
+    .effect[ui_inputs="0"][ui_outputs="0"]
+    {
+      background: #112;
+    }
+
+    /* effect key and value details */
+    .key{
+      display: inline-block;
+      background-color:#333;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      margin-right: 5px;
+      margin-left: 5px;
+    }
+    .key::after{
+      content: ': '
+    }
+    .value{
+      vertical-align: top;
+      color: #fff;
+      font-size: 10px;
+    }
+    
+    /* effect parameter adjust UI popup */
+    .popup{
+      position: fixed;
+      width: 750px;
+    }
+    .adjust_ui .effect{
+      width: calc(100% - 20px);
+      border-radius: 10px;
+      padding: 10px;
+      border: 2px solid #999;
+      max-height: 90vh;
+      overflow: auto;
+    }
+    .adjust_ui .effect, .effect.ui_target, .chain_code{
+      border: 2px solid #f94 !important;
+      -webkit-box-shadow: 0px 0px 32px 0px #000;
+      -moz-box-shadow: 0px 0px 32px 0px #000;
+      box-shadow: 0px 0px 32px 0px #000;
+    }    
+    /* nestet UI blocks, like multiple slider BEAT or OSC UIs */
+    .adjust_ui .ui_object .ui_object{      
+      border-radius: 5px;
+      margin: 5px;
+      padding-left: 15px;
+      background-color: #333;
+    }
+    
+    .adjust_ui .ui_object .ui_object .ui_object{
+      background-color: #555;
+    }    
+    .adjust_ui .ui_number{
+      display: block !important;
+    }
+    .adjust_ui .key{
+      color: #fff;
+      background-color:transparent;
+      width: 60px;
+    }
+    /* text inputs */
+    .adjust_ui input[type="text"]{
+      width: 570px;
+      padding: 10px;
+      overflow:hidden;
+      font-size: 140%;
+      background-color: #111;
+      color: #fff;
+      border-radius: 5px;
+    }
+    /* sliders */
+    .adjust_ui input[type="range"]{
+      width: 550px;
+      height: 40px;
+    }
+    /* slider numerical value display */
+    .adjust_ui .slider_value{
+      padding-top: 14px;
+      padding-bottom: 14px;
+      width: 40px;
+      overflow:hidden;
+      font-size: 120%;
+      background-color: transparent;
+      color: #fff;
+    }    
+    .adjust_ui .slider_value:focus{
+      background-color: #000;
+    }
+    .adjust_ui button{
+      margin: 2px;
+    }
+
+   /* video preview pane */
+   .preview{
+      position: fixed;
+      bottom: 0px;
+      right: 0px;
+      width: 320px;
+      height: 240px;
+   }
+   .preview img{
+      width: 100%;
+   }
+   .preview .stats{
+      position: absolute; 
+      bottom: 10px; left: 10px;
+   }
+  </style>
+<style>
+/* simple UI */
+.chain, .effects, .pre_chain, .post_chain
+{
+  display: none;
+}
+.chains{
+  width: auto;
+ right: 360px;
+}
+.chains button
+{
+  display:none;
+}
+.chains input{
+  pointer-events:none;
+  cursor: normal;
+}
+.header button:not(#restart)
+{
+  display:none;
+}
+</style>
+
+  <script>
+  
+    // get session url, if any
+    var session_url='/';
+    if(document.location.hash)
+      session_url+=document.location.hash.substring(1)+'_';
+
+    // establish WebSocket connection
+    var websocket;
+
+    var put=function(url,data)
+    {
+      websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));
+    }
+    
+    var get=function(url,callback)
+    {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.responseType='text';
+      xmlHttp.open('GET',url,true);
+      if(callback) xmlHttp.onreadystatechange=function()
+      {
+        if(xmlHttp.readyState!=4) return;
+        callback(xmlHttp.responseText);      
+      }
+      xmlHttp.send(null);      
+    }
+    
+    // send command to remote server
+    function send(command)
+    {
+      put('/feeds'+session_url+'command',command+';\n');
+    }
+
+    function restart()
+    {
+      send('document.location.reload()');
+      setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
+    }
+
+    var recording=false;
+    function toggle_recorder()
+    {
+      recording=!recording;
+
+      put(recording ? '/recorder/start' : '/recorder/stop' , '');
+
+      $('#recorder_button').html(recording ? 'STOP RECORDING' : 'START RECORDING');
+      if(recording) $('#recorder_button').addClass   ('active');
+      else          $('#recorder_button').removeClass('active');
+    }
+
+    /* the undo history. updated by frequent save() calls */
+    var undo_history=[];
+    
+    /* save all chains to server and undo_history */
+    var save=function()
+    {
+      // simple UI
+      return;
+
+      var chains=[];
+      chains.push($('#pre_chain').data('chain'));
+      chains.push($('#post_chain').data('chain'));      
+      $('#chains .chain_token').each(function(){
+        chains.push($(this).data('chain'));
+      });      
+      var json=JSON.stringify(chains,null,' ');
+      put('/saves'+session_url+'chains.json',json);
+
+      // notify other UI clients
+      put('/feeds'+session_url+'update',json);
+
+      undo_history.push(json);
+      
+      console.log('Saved.');
+      
+      savetimeout=false;
+    }
+          
+    /*  recursively create UI for an effect, callback provides the UI for a signle value */
+    var get_ui=function(key,node,callback)
+    {
+      var ui=$('<div>');
+      var key_element=$('<span class=key>');
+      key_element.html(key);
+      ui.append(key_element);
+      
+      var type=typeof(node);
+      ui.addClass('ui_'+type);
+      
+      var value_element=$('<span class=value>');
+      ui.append(value_element);
+      if(type=='object')
+      {
+        if(node.type) ui.attr("ui_type",node.type);
+        for(var key2 in node)
+        {
+          value_element.append(get_ui(key2,node[key2],callback));
+        }
+      }
+      else
+      {
+        callback(value_element,node);
+      }
+      
+      return ui;
+    }
+
+    /* create JS object from UI DOM  */    
+    var get_data=function(ui)
+    {
+      var divs=ui.find('>div');
+      var data={};
+      divs.each(function(){
+        var key=$(this).find('>.key').text();
+        var value_element=$(this).find('>.value');
+        var value;
+        if(value_element.children().length)
+          value=get_data(value_element);
+        else
+        {
+          value=value_element.text();
+          if($.isNumeric(value)) value=parseFloat(value);
+        }
+        data[key]=value;
+      });
+      
+      return data;
+    }
+  
+    /* create a effect DOM, value_renderer provides the UI for a single value */
+    var create_effect_element=function(effect,value_renderer)
+    {
+        var li=$('<div class=effect>');
+        var effect_template=effects[effect.effect];
+        li.attr('ui_effect',effect.effect);
+        for(key in effect_template)
+          if(key!='args')
+            li.attr('ui_'+key, effect_template[key]);
+        li.append(get_ui('',effect,value_renderer));
+        return li;    
+    }
+    
+    /* create UI DOM for an array of effects into container  */
+    var listEffects=function(effects,container)
+    {
+      $(container).empty();          
+      effects.forEach(function(effect){
+        if(typeof effect == "string") // display name
+        {
+          $(container).parent().find('h2').text(effect);
+          return;
+        }
+        var li=create_effect_element(effect,function(element,value){
+          element.html(document.createTextNode(''+value));
+        });
+        $(container).append(li);
+      });
+    }
+      
+    // callback for creating a slider manipulating a single value
+    var add_slider=function(container,value_element)
+    {  
+      var slider=$('<input class=value_ui type=range min="-0.999" max="0.999" step="0.0002">');
+      var slider_value_element=$('<input type=number class=slider_value>');
+
+      // initalize slider knob with current value 
+      var value=value_element.text();
+      // also initalize numerical display element
+      slider_value_element.val(value);
+      value=logify(value);
+      slider.attr('value',value);
+            
+      // adjust the value_element if slider is moved 
+      var handler=function(){
+        var value=expify(parseFloat(this.value));
+        console.log(this.value+" "+value);
+        value_element.text(value);
+        slider_value_element.val(value);
+        updateChain();
+      };
+      slider.on('input',handler);      
+
+      // adjust the slider if value_element is changed
+      slider_value_element.on('input',function(){
+        var value=parseFloat(this.value);
+        value_element.text(value);
+        slider.val(logify(value));
+        updateChain();
+      });
+      slider_value_element.on('click',function(){$(this).select()});
+      
+      // reset to 0 on double click
+      slider.on('dblclick',function(){
+        slider[0].value="0";
+        handler.call(slider[0]);
+      });
+
+      $(container).append(slider_value_element);
+      $(container).append(slider);
+    }
+
+    var add_input=function(container,value_element)
+    {  
+      var input=$('<input class=value_ui type=text>');
+
+      // initalize slider knob with current value 
+      input.attr('value',value_element.text());
+            
+      // adjust the value_element if text is changed
+      input.on('input',function(){
+        value_element.text(this.value);
+        updateChain();
+      });
+      
+      $(container).append(input);
+    }
+
+    // create value adjust UI for a single effect
+    var get_adjust_ui=function(effect_element){
+    
+      // visibly mark effect as the currently adjusted
+      effect_element.addClass('ui_target');
+
+      // link value elements to theirself to know the original one to adjust after cloning
+      effect_element.find('.value').each(function(){
+        // store this element to itself
+        $(this).data('original_value_element',this);
+      });
+      
+      // copy the UI with data but without event handlers
+      var slider_ui=effect_element.clone(true).off();
+ 
+      // add slider to each numerical value     
+      slider_ui.find('.ui_number>.value').each(function(){
+        var element=$(this);
+        var key=element.parent().find('.key').text();
+        // get value field of original value_element to manipulate by this UI
+        var value_element=$(element.data('original_value_element'));
+  
+        // if we may adjust a number, add a slider        
+        element.empty();
+        add_slider(element,value_element);          
+      });
+
+      // add input to each string value except first (the effect name)
+      slider_ui.find('.ui_string>.value').slice(1).each(function(){
+        var element=$(this);
+        var key=element.parent().find('.key').text();
+        // get value field of original value_element to manipulate by this UI
+        var value_element=$(element.data('original_value_element'));
+  
+        // if we may adjust a number, add a slider        
+        element.empty();
+        add_input(element,value_element);
+      });
+
+      var popup;
+      
+      // OSC toggle button handler
+      var toggle_osc=function(){
+        var value_element=$($(this).parent().data('original_value_element'));
+        var key=value_element.parent().find('>.key').text();
+        
+        var new_value;
+        if(value_element.parent().attr('ui_type')=='osc')
+        {
+          // replace OSC by it's pure offset or amplitude value, whats larger.
+          var osc=get_data(value_element);
+          new_value=Math.abs(osc.a)>Math.abs(osc.o) ? osc.a : osc.o;
+        }
+        else
+        { 
+          var offset=parseFloat(value_element.text());
+          new_value={type:'osc',f:5.0,a:offset/2,p:0.0,o:offset,waveform:'sine',duty:0.5};
+        }
+        var new_ui=get_ui(key,new_value,function(element,value){
+         element.html(document.createTextNode(''+value));
+        });
+        value_element.parent().replaceWith(new_ui);
+
+        // update and store effect chain
+        updateChain();
+
+        // refresh UI
+        popup.remove();
+        effect_element.click();
+      }
+      // BEAT toggle button handler
+      var toggle_beat=function(){
+        var value_element=$($(this).parent().data('original_value_element'));
+        var key=value_element.parent().find('>.key').text();
+        
+        var new_value;
+        if(value_element.parent().attr('ui_type')=='beat')
+        {
+          // replace BEAT by it's pure offset or amplitude value, whats larger.
+          var beat=get_data(value_element);
+          new_value=Math.abs(beat.a)>Math.abs(beat.o) ? beat.a : beat.o;
+        }
+        else
+        { 
+          var offset=parseFloat(value_element.text());
+          new_value={type:'beat',pulse:0.0,f:2.0,a:offset/2,p:0.0,o:offset/2};
+        }
+        var new_ui=get_ui(key,new_value,function(element,value){
+         element.html(document.createTextNode(''+value));
+        });
+        value_element.parent().replaceWith(new_ui);
+
+        // update and store effect chain
+        updateChain();
+
+        // refresh UI
+        popup.remove();
+        effect_element.click();
+      }
+
+      // add OSC and BEAT button to each value
+      slider_ui.find('.ui_object:not([ui_type])>.value>.ui_number>.value').each(function(){
+        var element=$(this);
+        // get value field of original value_element to manipulate by this UI
+        var value_element=$(element.data('original_value_element'));
+                  
+        element.append($('<button>OSC</button>').click(toggle_osc));
+        element.append($('<button>BEAT</button>').click(toggle_beat));
+      });
+      // add REMOVE OSC button to each value OSC UI
+      slider_ui.find('.ui_object[ui_type="osc"]>.value').each(function(){
+        var element=$(this);
+        element.prepend($('<button>REMOVE OSC</button>').click(toggle_osc));
+      });
+      // add REMOVE BEAT button to each value BEAT UI
+      slider_ui.find('.ui_object[ui_type="beat"]>.value').each(function(){
+        var element=$(this);
+        element.prepend($('<button>REMOVE BEAT</button>').click(toggle_beat));
+      });
+      
+      // the first element in a nested UI block shows it's type, so disable it.
+      slider_ui.find('.ui_object .ui_object input').first().attr('disabled',true);
+
+      // add popup container to body
+      popup=create_popup('adjust_ui',effect_element,slider_ui);
+    };
+    
+    var create_popup=function(classname,anchor,content_element)
+    {
+      var container=$('<div>');
+      container.addClass(classname);
+      container.addClass('popup');
+      container.append(content_element);
+      $(document.body).append(container);
+      container.position({my:'top',at:'bottom',of:$(anchor),collision:'fit'});
+      var close=function(){
+        if(document.activeElement) 
+          document.activeElement.blur(); // trigger change events if pending
+        container.remove();
+        anchor.removeClass('ui_target');
+      };
+      container.on('mouseleave',close);      
+      
+      // hide popup on outside click too
+      $(document).one('mouseclick',function(ev){
+        if(!$.contains($(classname)[0],ev.target))
+          $(classname).trigger('mouseleave');
+      });
+      
+      container.draggable();
+      
+      return container;
+    }
+    
+    var savetimeout=false;
+    var updateChain=function(event,ui)
+    {
+      if(savetimeout) clearTimeout(savetimeout);
+      savetimeout=setTimeout(save,1000);
+            
+      var full_chain=[];
+            
+      // for all three chains pre, current and post collect the effect data
+      ['#pre_chain','#chain','#post_chain'].forEach(function(selector){
+        var chain=[];
+        // add name to pre- or post chain. For other chains, it is done by chain token.
+        if(selector=='#pre_chain' || selector=='#post_chain')
+	  chain.push($(selector).parent().find('h2').html());
+        $(selector).find('.effect>.ui_object>.value').each(function(){
+          var effect=get_data($(this));
+          chain.push(effect);
+          full_chain.push(effect);
+        });
+        // store data to chain
+        $(selector).data('chain',chain);
+      });
+      
+      // update active token data (will be used on switching and saving)
+      var chain=$('#chain').data('chain');      
+      chain.unshift($('#chains .active input').val()); // prepend name
+      $('#chains .active').data('chain',chain);
+
+      // send out to control server
+      send('setChain('+JSON.stringify(full_chain)+')');
+    }
+
+    $('#chain,#pre_chain,#post_chain').sortable({
+      distance:10,
+      delay:300,
+      tolerance: 'pointer',
+      stop: updateChain,
+      receive: function(event,ui){
+        var new_element=$(this).data()['ui-sortable'].currentItem;
+        new_element.removeAttr('style'); // remove obsolete jQuery d&d styles
+        updateChain(event,ui);
+      },
+      // allow removal of items by dragging them out        
+      over: function(){this.is_outside=false},
+      out: function(){this.is_outside=true},
+      beforeStop: function(ev,ui){
+        $(this).data('prevent_click',true); // store to prevent mouseup click handlers (FF fix)
+        if(this.is_outside) 
+        {
+          $(ui.item).remove();
+          updateChain();
+        }          
+      }
+    });
+        
+    var token=$('#chains .chain_token').clone();
+    $('#chains .chain_token').addClass('active');
+    
+    var load=function(json)
+    {
+      if(!json) return;
+      var chains=JSON.parse(json);
+
+      var pre_chain=chains.shift();
+      var post_chain=chains.shift();
+      listEffects(pre_chain,'#pre_chain');
+      listEffects(post_chain,'#post_chain');
+
+      // delete old lists before loading new ones
+      $('#chains').empty();      
+      chains.forEach(function(chain)
+      {
+        if(!chain) chain=[""];
+        
+        var chain_token=token.clone();
+        $('#chains').append(chain_token);
+        if(!chain[0] || typeof(chain[0])!='string')
+          chain.unshift("");
+        chain_token.find('input').val(chain[0]);
+        chain_token.data('chain',chain);
+      });
+            
+      // TODO refresh active chain view
+      //$('#chains .chain_token').removeClass('active');
+      //$(this).addClass('active');
+      // load chain to editor
+      var list=$('#chain');
+      var chain=$('#chains .chain_token').first().addClass('active').data('chain'); 
+      listEffects(chain,list);
+    }
+
+    /* pop last undo state */    
+    function undo(){
+      undo_history.pop(); // pop last "same" state
+      // pop last state
+      var last_state=undo_history.pop();
+      if(last_state)
+      {
+        load(last_state);
+        updateChain();
+      }
+    }
+     
+             
+    /* compress and expand values for sliders to enable large adjustments */
+    var logify=function(x){
+      return (-2+Math.sqrt(x*x+4))/x;
+    }    
+    var expify=function(x){    
+      return  Math.round((-2/(x+1)-2/(x-1))*1000)/1000;
+    }
+      
+    get('/effects.json',function(data){
+      effects=JSON.parse(data); 
+      var new_effects=[];
+      for(key in effects)
+      {
+        // create flat object with the effect name in 'effect'
+        // like the ones send to the server
+        var new_effect={effect:key};
+        if(effects[key].args)
+          for(i in effects[key].args)
+            new_effect[i]=effects[key].args[i];
+        new_effects.push(new_effect);
+      }
+      listEffects(new_effects,'#effects');
+      // the effects may be dragged to the chain list
+      $('#effects>*').draggable({
+        connectToSortable: "#chain,#pre_chain,#post_chain",
+        appendTo:'body',
+        helper: "clone",
+        revert: "invalid",
+        scroll: false,
+        distance: 10,
+        delay: 300,
+        stop: function(){        
+          updateChain();
+        }
+      });  
+    });
+        
+        
+    // the effects in the current chain may be clicked to display adjust UI
+    $('#chain,#pre_chain,#post_chain').on('click','.effect',function(){
+      if($(this).parent().data('prevent_click'))
+      {
+        $(this).parent().data('prevent_click',false);
+        return;
+      }
+      
+      get_adjust_ui($(this));
+    });
+
+    // the chains are sortable...
+// simple UI
+/*
+    $("#chains").sortable({
+        distance:10,
+        delay: 300,
+        appendTo: 'body',
+        // allow removal of items by dragging them out
+        over: function(){this.is_outside=false},
+        out: function(){this.is_outside=true},
+        beforeStop: function(ev,ui){
+          if(this.is_outside) 
+          {
+            $(ui.item).remove();
+            updateChain();
+          }
+        },
+        remove: function(e,ui) {
+         ui.item.clone('true').insertAfter(ui.item);
+         $(this).sortable('cancel');
+         updateTimeline();
+         return ui;
+        },
+        connectWith:'#timeline'
+    });
+*/ 
+    // a chain is displayed and activated on click on its token
+    $('#chains').on('click','.chain_token',function()
+    {
+      // mark only current token active
+      $('#chains .chain_token').removeClass('active');
+      $(this).addClass('active');
+
+      // load chain to editor
+      var list=$('#chain');
+      var chain=$(this).data('chain');      
+      listEffects(chain,list);
+      
+      // send chain to output
+      updateChain();
+    });
+
+    // pressing a number key is like clicking the 0-9 th chain
+    $(document).keypress(function(e){
+      if ($(e.target).closest("input")[0]) return; // ignore keys if in input field
+      if ($(e.target).closest("textarea")[0]) return; // ignore keys if in textarea field
+      var number=parseInt(String.fromCharCode(e.which));
+      if(number)
+        $('#chains .chain_token:nth-child('+number+')').click();
+    });
+    
+    // chains can be renamed
+    $('#chains').on('change','.chain_token>input',updateChain);
+
+    // clone current chain 
+    function clone_chain()
+    {
+      var chain=$('#chains .active');
+      var new_chain=chain.clone(true); // clone with data appended
+      chain.siblings().first().after(new_chain); // insert new chain after the empty list following the current chain position
+      new_chain.click(); // mark new chain active
+    }
+
+    // create new chain buttom
+    function new_chain(){
+        var chain_token=token.clone();
+        $('#chains').prepend(chain_token);
+        chain_token.data('chain',[""]);
+        chain_token.click();
+    }
+
+    var code_to_chain=function(code){
+      var chain_token=$('#chains .active');
+      var data=JSON.parse(code);
+      chain_token.data('chain',data);
+      chain_token.find('input').val(data[0]); // set name input
+      chain_token.click(); // trigger UI refresh
+    }
+
+    function toggle_code(e){
+      var textarea=$('<textarea class="chain_code container" spellcheck=false></textarea>');
+      var data=$('#chain').data('chain');
+      var json=JSON.stringify(data,' ',2);
+      textarea.val(json);
+      textarea.on('change',function(){
+        code_to_chain(this.value);
+      });
+      
+      var anchor=$('#chain_code_button');
+      create_popup('.code_ui',anchor,textarea);
+      textarea.focus();
+      textarea.select();
+    }
+
+    // load chains
+    get('/saves'+session_url+'chains.json',function(data){
+      if(!data) // no saved chains in this session 
+        get('/saves/chains.json',load); // load default chain instead
+      else
+        load(data);
+    });
+
+    // add help...
+
+    // a tooltip is shown for any item matching certain selector 
+    // the help content is taken from the list in help.html, using
+    // the selector set in their help_for attributes to assign it.
+    get('/help.html',function(html){
+      var help=$(html);
+      var helper_timeout=false;
+      // each help block is shown for all elements matching it's selector
+      help.filter('div').each(function(){
+        // read selector from this help block
+        var selector=$(this).attr('help_for');
+        var text=this;
+        // defered event handlers (on body) to assign all future elements as well.
+        $(document).on('mouseenter',selector,function(){
+          clearTimeout(helper_timeout);
+          // add a little delay before showing the tooltip to avoid clutter and permanent CPU stress on mouse motion
+          helper_timeout=setTimeout(function(){
+            $('#help').html(text);
+            $('#help').show();
+          },400);
+        });
+        $(document).on('mouseleave',selector,function(){
+          clearTimeout(helper_timeout);
+          $('#help').hide();
+        });
+      });
+    });
+    // keep help at the mouse        
+    $(document).on('mousemove',function(e){
+      $('#help').css({left: e.pageX+20, top: e.pageY+20});
+    });
+
+    // preview pane
+    var preview=false;
+    var preview_offline_timeout=false;
+
+    var open_socket=function()
+    {
+      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+      websocket.onopen=function(){
+        // opt in for preview and screenshot feeds
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'preview',data:''}));
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'screenshot',data:''}));       
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''})); 
+      };
+      websocket.onmessage=function(event)
+      {
+        var packet=JSON.parse(event.data);
+        var path=packet.path, message=packet.data;
+        
+        if(path=='/feeds'+session_url+'preview')
+        {
+          var json=message;
+          var data=JSON.parse(json);
+          document.getElementById('preview').src=data.jpeg ? data.jpeg : "";
+          document.getElementById('stats').innerHTML='online, running '+(Math.round(1000./data.frame_time))+' fps';
+          if(preview_offline_timeout) clearTimeout(preview_offline_timeout);
+          preview_offline_timeout=setTimeout(function(){
+            document.getElementById('stats').innerHTML='offline';
+            preview_offline_timeout=false;
+          },1000);
+        }
+        else if(path=='/feeds'+session_url+'screenshot'){
+          var link=$('<a>');
+          link.attr('href',message);
+          link.attr('download','screenshot.jpg');
+          $(document.body).append(link);
+          link[0].click();
+          // link.remove();
+        }
+        else if(path=='/feeds'+session_url+'update'){
+          console.log('Update by external data');
+          load(message);
+        }
+      }     
+      websocket.onclose=function()
+      {
+        setTimeout(open_socket,1000);
+      }
+    }
+    open_socket();
+
+
+    
+    function toggle_preview(){
+      preview=!preview;
+      if(preview) $('#preview_button').addClass   ('active');
+      else        $('#preview_button').removeClass('active');
+      send('preview('+preview+')');
+    }
+      
+    // screenshot button      
+    function screenshot(){
+      send('screenshot()');
+    }
+    
+    // double tap quirk for touch screens
+    var last_tap;
+    $(document.body).on('touchend','*',function(e){
+      var timestamp=Date.now();
+      if(timestamp<last_tap+300)
+        $(this).trigger('dblclick');
+      last_tap=timestamp;
+    });
+    
+    </script>
+
+</body>
+</html>
