@@ -31,11 +31,11 @@
   },
   {
    "effect": "transform",
-   "x": -0.003,
-   "y": 0.006,
+   "x": 0.03,
+   "y": 0.02,
    "scale": 1,
    "angle": 0,
-   "sx": 1,
+   "sx": 0.971,
    "sy": 1
   }
  ],
@@ -48,6 +48,11 @@
    "effect": "invert"
   },
   {
+   "effect": "grid",
+   "size": 1,
+   "angle": 0
+  },
+  {
    "effect": "matte",
    "rgb": {
     "type": "rgba",
@@ -56,18 +61,13 @@
     "b": 1,
     "a": 1
    }
-  },
-  {
-   "effect": "grid",
-   "size": 1,
-   "angle": 0
   }
  ],
  [
-  "passthru",
-  {
-   "effect": "none"
-  },
+  "passthru"
+ ],
+ [
+  "rainbow run",
   {
    "effect": "rainbow"
   },
@@ -75,12 +75,10 @@
    "effect": "hueSaturation",
    "hue": {
     "type": "osc",
-    "f": 1.34,
-    "a": 1,
+    "f": 0.402,
+    "a": -0.768,
     "p": 0,
-    "o": 0,
-    "waveform": "saw",
-    "duty": 0.5
+    "o": 0
    },
    "saturation": 0
   }
@@ -210,15 +208,93 @@
     "p": 0,
     "o": 0
    }
+  }
+ ],
+ [
+  "double fever",
+  {
+   "effect": "image",
+   "url": "files/smiley.png"
   },
   {
    "effect": "transform",
-   "x": 0.098,
-   "y": -0.008,
-   "scale": 1,
-   "angle": 0,
-   "sx": 1,
+   "x": {
+    "type": "osc",
+    "f": 2.164,
+    "a": 0.719,
+    "p": 2.986,
+    "o": -0.575,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1.883,
+    "a": 0.223,
+    "p": 0.497,
+    "o": -0.148,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "scale": 0.21,
+   "angle": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.735,
+    "p": 0,
+    "o": -0.074,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "sx": 0.559,
    "sy": 1
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgb",
+    "r": 1,
+    "g": 1,
+    "b": 1
+   }
+  },
+  {
+   "effect": "polygon",
+   "sides": 1998.999,
+   "x": 0,
+   "y": 0,
+   "size": 0.5,
+   "angle": 0
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "osc",
+    "f": 2.058,
+    "a": 0.719,
+    "p": 0,
+    "o": -0.3,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1.565,
+    "a": 0.148,
+    "p": 0,
+    "o": -0.238,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "scale": 0.223,
+   "angle": 0
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
   }
  ],
  [
@@ -331,15 +407,6 @@
     "g": 1,
     "b": 1
    }
-  },
-  {
-   "effect": "transform",
-   "x": 0.098,
-   "y": -0.008,
-   "scale": 1,
-   "angle": 0,
-   "sx": 1,
-   "sy": 1
   }
  ],
  [
@@ -412,7 +479,7 @@
   },
   {
    "effect": "vibrance",
-   "strength": 1
+   "strength": 0.654
   },
   {
    "effect": "contrast_s",
@@ -477,6 +544,56 @@
     "duty": 0.5
    },
    "sx": 0.6
+  }
+ ],
+ [
+  "zebra bea",
+  {
+   "effect": "invert"
+  },
+  {
+   "effect": "sobel",
+   "secondary": 1.4245,
+   "coeff": {
+    "type": "beat",
+    "pulse": 1998.999,
+    "f": 0,
+    "a": 1.94,
+    "p": 0,
+    "o": 1.94
+   },
+   "alpha": 0.891,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.298
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.056,
+   "birth_max": 0.237,
+   "death_min": 0.69
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.609
+  },
+  {
+   "effect": "feedbackIn"
   }
  ],
  [
@@ -919,93 +1036,6 @@
   },
   {
    "effect": "feedbackIn"
-  }
- ],
- [
-  "double fever",
-  {
-   "effect": "image",
-   "url": "files/smiley.png"
-  },
-  {
-   "effect": "transform",
-   "x": {
-    "type": "osc",
-    "f": 2.164,
-    "a": 0.719,
-    "p": 2.986,
-    "o": -0.3,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 1.883,
-    "a": 0.223,
-    "p": 0.497,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "scale": 0.21,
-   "angle": {
-    "type": "osc",
-    "f": 5,
-    "a": 0.735,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "sx": 0.559,
-   "sy": 1
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgb",
-    "r": 1,
-    "g": 1,
-    "b": 1
-   }
-  },
-  {
-   "effect": "polygon",
-   "sides": 1998.999,
-   "x": 0,
-   "y": 0,
-   "size": 0.5,
-   "angle": 0
-  },
-  {
-   "effect": "transform",
-   "x": {
-    "type": "osc",
-    "f": 2.058,
-    "a": 0.719,
-    "p": 0,
-    "o": -0.3,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 1.565,
-    "a": 0.148,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "scale": 0.223,
-   "angle": 0
-  },
-  {
-   "effect": "blend_alpha",
-   "alpha": 1
   }
  ],
  [
@@ -1961,56 +1991,6 @@
    "gamma": 4.743,
    "glow": 0.937,
    "glow_radius": 60.333
-  }
- ],
- [
-  "zebra bea",
-  {
-   "effect": "invert"
-  },
-  {
-   "effect": "sobel",
-   "secondary": 1.4245,
-   "coeff": {
-    "type": "beat",
-    "pulse": 1998.999,
-    "f": 0,
-    "a": 1.94,
-    "p": 0,
-    "o": 1.94
-   },
-   "alpha": 0.891,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.298
-  },
-  {
-   "effect": "smoothlife",
-   "birth_min": 0.056,
-   "birth_max": 0.237,
-   "death_min": 0.69
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.609
-  },
-  {
-   "effect": "feedbackIn"
   }
  ],
  [
