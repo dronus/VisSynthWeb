@@ -25,6 +25,16 @@ var path=require('path');
 var child_process = require('child_process');
 
 
+
+var mime_types={
+	'.html' : 'text/html',
+	'.js'   : 'application/javascript',
+	'.json' : 'application/json',
+	'.svg'  : 'image/svg+xml',
+	'.css'  : 'text/css',
+	'.png'  : 'image/png',
+	'.jpg'  : 'image/jpg'
+};
 var data={};
 var pending={};
 
@@ -46,7 +56,9 @@ var server=http.createServer(function (req, res) {
 
   if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
-    res.setHeader("Content-Type", "text/html");
+    var n = key.lastIndexOf('.');
+    var suffix = key.substring(n);
+    res.setHeader("Content-Type", mime_types[suffix]);
     var instream=fs.createReadStream(key);
     instream.pipe(res);
   }

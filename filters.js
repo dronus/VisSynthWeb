@@ -647,8 +647,8 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 // src/filters/video/video.js
 canvas.video=function(url,play_sound)
 {
-
-    var v=this._.videoFilterElement;
+    if(!this._.videoFilterElement) this._.videoFilterElement={};
+    var v=this._.videoFilterElement[url];
     if(!v)
     {
       var v = document.createElement('video');
@@ -665,7 +665,7 @@ canvas.video=function(url,play_sound)
 
       v.crossOrigin = "anonymous";
       v.src=url;
-      this._.videoFilterElement=v;
+      this._.videoFilterElement[url]=v;
     }  
       
     // make sure the video has adapted to the video source
@@ -2719,6 +2719,42 @@ canvas.blur=function(radius) {
 }
 
 canvas.fastBlur=canvas.blur; // legacy name for old filter chains
+
+canvas.blur_alpha=function(radius) {
+    gl.blur_alpha = gl.blur_alpha || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 delta;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            float b=1./4.;\
+            float alpha=0.0;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) ).a;\
+            gl_FragColor = vec4(color.rgb, alpha); \
+        }\
+    ');
+
+    gl.blur_alpha_post = gl.blur_alpha_post || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            gl_FragColor = vec4(color.rgb, 2.*color.a-1.); \
+        }\
+    ');
+
+    for(var d=1.; d<=radius; d*=Math.sqrt(2.))
+    {
+      this.simpleShader( gl.blur_alpha, { delta: [d/this.width, d/this.height]});
+    }
+    this.simpleShader(gl.blur_alpha_post);
+    return this;
+}
+
+
 
 canvas.blur2=function(radius,exponent) {
     gl.blur2 = gl.blur2 || new Shader(null, '\
