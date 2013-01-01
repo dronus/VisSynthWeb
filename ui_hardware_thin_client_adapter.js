@@ -193,7 +193,7 @@ process.stdin.on('readable', function(){
 });*/
 
 
-require('./ui_hardware.js');
+require('./ui_hardware_v2.js');
 open_socket();
 
 
