@@ -24,11 +24,14 @@ canvas.type_float=function(){
   });
 };
 
-canvas.resolution=function(w,h){
+canvas.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
+  this.proposed_fps=fps_limit;
+  var type=(precision=="float" ? gl.FLOAT : gl.UNSIGNED_BYTE);
   this.for_all_textures(function(texture){
-    texture.ensureFormat(w,h,texture.format,texture.type);
+    texture.ensureFormat(w,h,texture.format,type);
   });
+  this.filtering(filtering=="linear" ? 1 : 0);
 };
 
 canvas.filtering=function(linear)
@@ -790,6 +793,7 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 
     if(!gl.mesh_displacement) gl.mesh_displacement={};
     if(!gl.mesh_displacement[mesh_type])
+    {
     gl.mesh_displacement[mesh_type] = new Shader('\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -804,31 +808,27 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
         pos=matrix * pos;\
         gl_Position = pos/pos.w;\
     }');
-
-    var mesh_shader=gl.mesh_displacement[mesh_type];
-
     // generate grid mesh
-    if(!this._.gridMeshUvs)
-    {
-      this._.gridMeshUvs=[];
-      //var dx=1./640.;
-      //var dy=1./480.;    
-      var dx=4./this.width;
-      var dy=4./this.height;
-      for (var y=0.0;y<=1.0;y+=dy) {
-          for (var x=0.0;x<=1.0;x+=dx) {        
-              this._.gridMeshUvs.push(x,y);
-              this._.gridMeshUvs.push(x,y-dy);
-          }
-          // add zero area 'carriage return' triangles to prevent glitches
-          this._.gridMeshUvs.push(1.0,y-dy);
-          this._.gridMeshUvs.push(1.0,y-dy);
-          this._.gridMeshUvs.push(0.0,y-dy);
-          this._.gridMeshUvs.push(0.0,y-dy);
-      }
-
+    // TODO resolve cache rot, the resolution of the mesh is baked on first use and doesn't adapt the screen
+    var gridMeshUvs=[];
+    //var dx=1./640.;
+    //var dy=1./480.;    
+    var dx=4./this.width;
+    var dy=4./this.height;
+    for (var y=0.0;y<=1.0;y+=dy) {
+        for (var x=0.0;x<=1.0;x+=dx) {        
+            gridMeshUvs.push(x,y);
+            gridMeshUvs.push(x,y-dy);
+        }
+        // add zero area 'carriage return' triangles to prevent glitches
+        gridMeshUvs.push(1.0,y-dy);
+        gridMeshUvs.push(1.0,y-dy);
+        gridMeshUvs.push(0.0,y-dy);
+        gridMeshUvs.push(0.0,y-dy);
     }
-    mesh_shader.attributes({_texCoord:this._.gridMeshUvs},{_texCoord:2});
+    gl.mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
+    }
+    var mesh_shader=gl.mesh_displacement[mesh_type];
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -1837,17 +1837,21 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 // src/filters/video/timeshift.js
 canvas.timeshift=function(time,clear_on_switch)
 {
-    // Store a stream of the last second in a ring buffer
+    // Store a stream of the last seconds in a ring buffer
 
-    var max_frames=25;
-    
+    // calculate a sane frame limit by estimating it's memory needs.
+    //
+    var t=this._.texture;
+    var frame_bytes = t.width * t.height * 4 * (t.type==gl.FLOAT ? 2 : 1);
+    var max_buffer_bytes=256000000;
+    var max_frames=Math.floor(max_buffer_bytes / frame_bytes);
+
     if(!this._.pastTextures) this._.pastTextures=[];
   
     if(clear_on_switch && this.switched)
       for(key in this._.pastTextures)
         this._.pastTextures[key].clear();
 
-    var t=this._.texture;
     if(this._.pastTextures.length<max_frames)
       this._.pastTextures.push(new Texture(t.width,t.height,t.format,t.type));
     
