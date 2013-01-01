@@ -29,6 +29,94 @@
   }
  ],
  [
+  "",
+  {
+   "effect": "spherical",
+   "radius": 0.5,
+   "scale": 8
+  }
+ ],
+ [
+  "toon",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "sobel",
+   "secondary": 1.262,
+   "coeff": 1.262,
+   "alpha": 1,
+   "areas": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 0
+   }
+  },
+  {
+   "effect": "threshold",
+   "threshold": 1.481,
+   "feather": 0,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "blur",
+   "radius": 10
+  },
+  {
+   "effect": "posterize",
+   "steps": 3
+  },
+  {
+   "effect": "multiply"
+  }
+ ],
+ [
+  "localthresh",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "blur",
+   "radius": 12.489
+  },
+  {
+   "effect": "invert"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 1
+  },
+  {
+   "effect": "threshold",
+   "threshold": 0.866,
+   "feather": 0.05,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  }
+ ],
+ [
   "feed in",
   {
    "effect": "feedbackIn"
