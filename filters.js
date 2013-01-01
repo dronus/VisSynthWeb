@@ -1915,28 +1915,28 @@ canvas.rainbow=function(size, angle) {
  * @filter         Grid
  * @description    Adds a grid to the image
  */
-canvas.grid=function(size, angle, x, y) {
+canvas.grid=function(size, angle, x, y, width) {
+    if(!width) width=0.05;
     gl.grid = gl.grid || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float angle;\
         uniform vec2 offset;\
+        uniform float width;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color = texture2D(texture, texCoord);\
             vec2 uv=(texCoord-vec2(0.5,0.5))*size;\
             uv=vec2(cos(angle)*uv.x+sin(angle)*uv.y,-sin(angle)*uv.x+cos(angle)*uv.y)+offset;\
             \
-            if     (fract(uv.x+.02)<.04 || fract(uv.y+.02)<.04)\
+            if(fract(uv.x+width/2.)<width || fract(uv.y+width/2.)<width)\
                     gl_FragColor = vec4(0.0,0.0,0.0,1.0);\
-            else if(fract(uv.x+.05)<.1 || fract(uv.y+.05)<.1)\
-                    gl_FragColor = vec4(1.0,1.0,1.0,1.0);\
             else\
                     gl_FragColor = color;\
         }\
     ');
 
-    this.simpleShader( gl.grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, offset:[x,y]
+    this.simpleShader( gl.grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
     });
 
     return this;
