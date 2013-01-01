@@ -34,6 +34,18 @@
   "POST"
  ],
  [
+  "",
+  "",
+  "",
+  {
+   "effect": "grid",
+   "size": 1,
+   "angle": 0,
+   "x": 0,
+   "y": 0
+  }
+ ],
+ [
   "matte grid 2",
   {
    "effect": "matte",
@@ -48,7 +60,9 @@
   {
    "effect": "grid",
    "size": 1,
-   "angle": 0
+   "angle": 0,
+   "x": 0,
+   "y": 0
   },
   {
    "effect": "invert"
@@ -67,33 +81,7 @@
   },
   {
    "effect": "grid",
-   "size": 2.48,
-   "angle": 0
-  },
-  {
-   "effect": "invert"
-  },
-  {
-   "effect": "transform",
-   "x": {
-    "type": "osc",
-    "f": 1.718,
-    "a": 0.5,
-    "p": 0,
-    "o": -0.3,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 0.97,
-    "a": 0.1115,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "scale": {
+   "size": {
     "type": "osc",
     "f": 1.696,
     "a": 0,
@@ -104,14 +92,34 @@
    },
    "angle": {
     "type": "osc",
-    "f": 2.032,
+    "f": 0.751,
     "a": 1.243,
     "p": 0,
     "o": 0.71,
     "waveform": "random",
     "duty": 0.5
    },
-   "sx": 0.6
+   "x": {
+    "type": "osc",
+    "f": 0.97,
+    "a": 6.697,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 0.97,
+    "a": 6.697,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   }
+  },
+  {
+   "effect": "invert"
   }
  ],
  [
@@ -1198,7 +1206,7 @@
     "waveform": "random",
     "duty": 0.5
    },
-   "sx": 0.6
+   "sx": 1
   }
  ],
  [
