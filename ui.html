@@ -6,7 +6,6 @@
   <script src="jquery-2.1.4.js"></script>
   <script src="jquery-ui.js"></script>
   <script src="jquery.ui.touch-punch.js"></script>  
-  <script src="effects.js"></script>
 </head>
 <body style="font-size: 20px;">
 
@@ -997,35 +996,37 @@
     var expify=function(x){    
       return  Math.round((-2/(x+1)-2/(x-1))*1000)/1000;
     }
-       
-    var new_effects=[];
-    for(key in effects)
-    {
-      // create flat object with the effect name in 'effect'
-      // like the ones send to the server
-      var new_effect={effect:key};
-      if(effects[key].args)
-        for(i in effects[key].args)
-          new_effect[i]=effects[key].args[i];
-      new_effects.push(new_effect);
-    }
-    listEffects(new_effects,'#effects');
-        
-        
-    // the effects may be dragged to the chain list
-    $('#effects>*').draggable({
-      connectToSortable: "#chain,#pre_chain,#post_chain",
-      appendTo:'body',
-      helper: "clone",
-      revert: "invalid",
-      scroll: false,
-      distance: 10,
-      delay: 300,
-      stop: function(){        
-        updateChain();
+      
+    get('/effects.json',function(data){
+      effects=JSON.parse(data); 
+      var new_effects=[];
+      for(key in effects)
+      {
+        // create flat object with the effect name in 'effect'
+        // like the ones send to the server
+        var new_effect={effect:key};
+        if(effects[key].args)
+          for(i in effects[key].args)
+            new_effect[i]=effects[key].args[i];
+        new_effects.push(new_effect);
       }
+      listEffects(new_effects,'#effects');
+      // the effects may be dragged to the chain list
+      $('#effects>*').draggable({
+        connectToSortable: "#chain,#pre_chain,#post_chain",
+        appendTo:'body',
+        helper: "clone",
+        revert: "invalid",
+        scroll: false,
+        distance: 10,
+        delay: 300,
+        stop: function(){        
+          updateChain();
+        }
+      });  
     });
-    
+        
+        
     // the effects in the current chain may be clicked to display adjust UI
     $('#chain,#pre_chain,#post_chain').on('click','.effect',function(){
       if($(this).parent().data('prevent_click'))

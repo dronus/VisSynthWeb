@@ -1,0 +1,22 @@
+[connection]
+id=VisSynthBox II
+uuid=73d1cced-d1f7-474e-89b9-29a13d2ff80f
+type=wifi
+permissions=
+secondaries=
+autoconnect=true
+
+[wifi]
+mac-address=7C:DD:90:5B:E8:2F
+mac-address-blacklist=
+mode=adhoc
+seen-bssids=
+ssid=VisSynthBox II
+
+[ipv4]
+dns-search=
+method=auto
+
+[ipv6]
+dns-search=
+method=auto

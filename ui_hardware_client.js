@@ -1,28 +1,65 @@
 var http = require('http');
 var Lcd  = require('lcd');
 var Encoder = require('./encoder.js');
+var WebSocket = require('ws');
+
+
+base_host='nf-vissynthbox-ii.local';
+base_port='8082';
+
+
+var websocket;
+onopen=onupdate=onclose=null;
+var open_socket=function()
+{
+  websocket=new WebSocket('ws://'+base_host+':'+base_port);
+  
+  websocket.on('open',function(){
+    // opt in for update feed
+    websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+    console.log('WebSocket connected.');
+    if(onopen) onopen();
+  });
+  websocket.on('message', function(data)
+  {
+    var packet=JSON.parse(data);
+    var path=packet.path, message=packet.data;        
+    if(path=='/feeds'+session_url+'update')
+    {
+      if(onupdate) onupdate(message);
+    }
+  });
+  websocket.on('close',function()
+  {
+    console.log('WebSocket closed.');  
+    setTimeout(open_socket,1000);
+    if(onclose) onclose();
+  });
+  websocket.on('error',function()
+  {
+  });
+}
+
+
+
+
 // provide functions needed by hardware UI
 
 session_url='/';
 
+
 put=function(url,data)
 {
   console.log('PUT: '+url);
-  var req=http.request({
-    port:8082,
-    method:'PUT',
-    path:url
-  });
-  
-  req.write(data);
-  req.end();
+  websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));  
 }
 
-get=function(url,callback)
+get=function(url,callback,error_callback)
 {
   console.log('GET: '+url);
   var req=http.request({
-    port:8082,
+    host:base_host,
+    port:base_port,
     path:url
   },function(res){
     if(!callback) return;
@@ -35,8 +72,9 @@ get=function(url,callback)
       callback(body);
     })    
   }).on('error',function(err){
-    console.log('Request failed: '+url+' '+err);
-    callback();
+    console.log('GET error: '+url+' '+err);
+    // delay callback for 1s as we would otherwise do repeated roundtrips without delay for long polling calls
+    error_callback(url);
   });
   req.end();
 }
@@ -95,6 +133,7 @@ add_knob=function(id,callback)
     encoders[id](id,callback);
 };
 
+
 process.stdin.on('readable', function(){
   process.stdin.setEncoding('utf8');
   var chunk = process.stdin.read();
@@ -113,11 +152,12 @@ process.stdin.on('readable', function(){
 });*/
 
 
-  lcd.on('ready', function () {
-    console.log('LCD ready.');
-    require('./effects.js');
-    require('./ui_hardware.js');
-  });
+lcd.on('ready', function () {
+  console.log('LCD ready.');
+  require('./ui_hardware.js');
+  open_socket();
+});
+
 
 
 

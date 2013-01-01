@@ -1,0 +1,59 @@
+
+VisSynthBox Mark I
+
+
+Installation
+
+Connect the display device to the HDMI port on the left side. Optional converter adapters can be used to connect to VGA inputs. Connect the power supply to the socket on the left side. Connect the power supply to mains. Do not unplug power without proper shutdown, otherwise data may be lost! The LCD lights up und shows a black bar. After some while, the main menu is shown and the attached device should show the default effect.
+
+
+Operation
+
+The visual effect can be controlled by means of four turn and push buttons. In main menu, the four buttons select patch, layer and parameter and allow value adjustment.
+
+-Turn the PATCH knob to browse through the preset patch list. The display device switches to the selected patch. The first two patches named SETUP and POST have special meanings: All layers of the SETUP patch are always applied before the effects of any other patch. It can be used to set resolution, frame rate and provide a default image source. The POST patch is always applied after the currently selected patch, and can be used to adjust the image to the display device and location. 
+
+-If the patch consist of multiple effect layers, the LAYER knob can be turned to select the currently editable layer, with LAYER 1 the first one applied. Selecting an layer does not change the visual output. Pressing the LAYER knob enters the layer menu, where effect layers may be cut, copied and new ones inserted.
+
+-The effect of the current may have several parameters. The PARAM knob can be turned to select a parameter for editing. The is always at least one parameter 'effect' to select the base effect of the current layer.
+
+-The VALUE knob can be turned to modify the currently selected parameter. Changing the 'effect' parameter resets all other parameters of the effect, as every effect has other parameters. By pressing the VALUE knob on numeric parameters, two special modes OSC and BEAT can be toggled. OSC adds an time-based oscilation to the value which can be controlled by additional parameters. BEAT adds an audio-dependent variation to the value.
+
+-The OSC oscilator adds additional parameters which can be selected by the PARAM knob: Set it's frequency f in Hz, it's amplitude a, it's phase offset p and it's offset value o. 
+
+-The BEAT audio analyzer can be adjusted by adjusting the addtional parameters pulse p to add a VU-meter like audio amplitude value. It also sports an oscilator adjusted like the OSC one that will lock frequency and phase to any repeating beat of the audio signal if the preset frequency f is close enough.
+
+-Pressing the PARAM knob enters the SYSTEM MENU where the device can be reset and shutdown initiated.
+
+
+Effects
+
+-Every patch needs one or more source images where other filters can act on. The first source image is usually supplied by using a source effect in the SETUP chain. Source effects may be:
+-capture provides the image of a USB connected video device like a webcam or a video grabber.
+-matte provides a full screen of single color.
+-noise provides a screen of animatable pixel noise.
+-grating provides a soft mesh like texture.
+-superellipse provides a variety of shapes according to some parameters.
+-rectangle provides an adjustable rectangle.
+-polygon_matte provides an adjustable regular polygon.
+-waveform provides an b/w rendition of incoming audio data.
+-vectorscope provides a curve rendition of incoming audio data. Two samples taken at different delays are plotted against each other.
+-image provides an image read from a given URL. Requires internet connection.
+-video provides a video stream from a given URL. Requires internet connection.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
