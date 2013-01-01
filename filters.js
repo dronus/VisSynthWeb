@@ -647,8 +647,8 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 // src/filters/video/video.js
 canvas.video=function(url,play_sound)
 {
-
-    var v=this._.videoFilterElement;
+    if(!this._.videoFilterElement) this._.videoFilterElement={};
+    var v=this._.videoFilterElement[url];
     if(!v)
     {
       var v = document.createElement('video');
@@ -665,7 +665,7 @@ canvas.video=function(url,play_sound)
 
       v.crossOrigin = "anonymous";
       v.src=url;
-      this._.videoFilterElement=v;
+      this._.videoFilterElement[url]=v;
     }  
       
     // make sure the video has adapted to the video source
