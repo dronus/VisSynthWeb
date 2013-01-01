@@ -141,14 +141,14 @@
     }
     
     /* effects template pane */
-    .effects{
+    .effects, .files{
       position: fixed;
       top: 50px;
       left:560px;
       bottom: 0px;
       right: 330px;
     }
-    #effects{
+    #effects, #files{
       position: absolute;
       top: 50px;
       bottom: 0px;
@@ -161,6 +161,10 @@
     #effects .effect{
       width: 150px;
       height: 25px;
+    }
+    #files .effect{
+      width: 90%;
+/*      height: 25px;*/
     }
 
     /* current chain effect list */
@@ -463,3 +467,7 @@
       position: absolute; 
       bottom: 10px; left: 10px;
    }
+  .screens
+  {
+    width: 400px;
+  }

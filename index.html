@@ -67,7 +67,8 @@
     open_socket();
 
     var put=function(path,data){
-      websocket.send(JSON.stringify({'method':'put', path:'/feeds'+session_url+path,data:data}));
+      if(websocket.readyState)
+        websocket.send(JSON.stringify({'method':'put', path:'/feeds'+session_url+path,data:data}));
     }
 
     var time=0,frame_time=0; // running time
@@ -111,7 +112,7 @@
       //
       // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
       //
-      if(preview_enabled && preview_cycle==0)
+      if(preview_enabled && preview_cycle==1)
       {      
         if(!preview_canvas)
         {
@@ -121,14 +122,18 @@
         var ctx=preview_canvas.getContext('2d');
         ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
       }
-      else if(preview_cycle==1)
+      else if(preview_cycle==0)
       {          
         var jpeg=preview_enabled ? preview_canvas.toDataURL('image/jpeg') : null;
         var data={frame_time:frame_time, jpeg:jpeg};
         var json=JSON.stringify(data);
         put('preview',json);
+
+        // only provide data every other frame if a preview image is send.
+        // if only frame rate data is send, we keep the network calm.
+        preview_cycle=preview_enabled ? 2 : 15; 
       }
-      preview_cycle=(preview_cycle+1)%2;
+      preview_cycle--;
 
       // redraw visible canvas
       canvas.update();
@@ -343,7 +348,7 @@
     {
       // engage preview process
       preview_enabled=enabled;
-      preview_cycle=0;
+      preview_cycle=2;
     }
     
     // receive screenshot request from remote

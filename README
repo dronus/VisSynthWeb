@@ -75,14 +75,8 @@ Best practices
 
 Issues / TODO
 
--The image and video source effects are hardwired to play one file named test.png or test.mp4 respectively, 
- that has to be uploaded to the server by other means (the UI doesn't include a tool for this).
-
 -The START and STOP RECORDING buttons act on server-side vide capturing dependend on the avconv utility. 
  This is not applicable to the online version, as it would record the server-side desktop screen.
-
--The TIMELINE tool is under development and doesn't work reliable. The timeline is currently selected as the default
- program for a newly started video screen, so this sucks even more.
 
 -Exceptions due to missing WebGL capabilities of the current machine are not caught reliable, so some effects or settings
  (like type_float color precision and high resolutions) may crash the video screen and require a click on RESTART after fixing.
@@ -94,9 +88,6 @@ Issues / TODO
 -Video and audio sources are mapped by abitraty enumeration (0, 1, ...) and do not reflect their device names. 
  It may take some effort to find out which audio source number identifies the built-in microphone of certain camera, 
  especially if there are several more audio-only devices like internal microphones or inputs on the machine.
- 
--There is no way to export the current chains or settings to another instance, except manipulating the files in save/
- on the server side.
  
 -The UI doesn't synchronizes to the server after startup. Using two UIs connected to the same video screen results in 
  mutual override of the changes made by each other UI. If more then one UIs are used, after every change all other UIs
@@ -117,6 +108,4 @@ TO BE DONE
 
 Credits
 
-Uses glfx.js:  http://evanw.github.com/glfx.js/
-
-Originally used and now losely based on WebCamVidja: https://github.com/johanan/WebCamVidja.git
+Originally used and now losely based on WebCamVidja: https://github.com/johanan/WebCamVidja.git , glfx.js:  http://evanw.github.com/glfx.js/
