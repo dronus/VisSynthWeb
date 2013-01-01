@@ -2,8 +2,8 @@
  [
   "SETUP",
   {
-   "effect": "fps",
-   "fps": 60
+   "effect": "filtering",
+   "linear": 1
   },
   {
    "effect": "select_audio",
@@ -39,10 +39,6 @@
   "POST",
   {
    "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
   },
   {
    "effect": "video",
@@ -102,6 +98,13 @@
  ],
  [
   "",
+  "",
+  {
+   "effect": "none"
+  },
+  {
+   "effect": "none"
+  },
   {
    "effect": "none"
   }
@@ -109,8 +112,9 @@
  [
   "rainbowblast",
   {
-   "effect": "osciloscope",
-   "amplitude": 1
+   "effect": "video",
+   "url": "test.mp4",
+   "play_sound": 0
   },
   {
    "effect": "kaleidoscope",
@@ -230,7 +234,8 @@
  [
   "shimmering",
   {
-   "effect": "stack_push"
+   "effect": "osciloscope",
+   "amplitude": 1
   },
   {
    "effect": "displacement",
@@ -279,7 +284,7 @@
  [
   "shimmerbow",
   {
-   "effect": "stack_push"
+   "effect": "feedbackIn"
   },
   {
    "effect": "displacement",
@@ -344,24 +349,10 @@
  [
   "colorclash",
   {
-   "effect": "sobel",
-   "secondary": 1.292,
-   "coeff": 1.292,
-   "alpha": 0.686,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
+   "effect": "smoothlife",
+   "birth_min": 7,
+   "birth_max": 10,
+   "death_min": 15
   },
   {
    "effect": "feedbackOut",
@@ -401,8 +392,9 @@
  [
   "staffblast",
   {
-   "effect": "osciloscope",
-   "amplitude": 1
+   "effect": "feedbackOut",
+   "blend": 0.7,
+   "clear_on_switch": 0
   },
   {
    "effect": "absolute"
@@ -462,7 +454,7 @@
    "b0": 0,
    "r1": 1,
    "g1": 1,
-   "b1": 1
+   "b1": 0.764
   },
   {
    "effect": "levels",
@@ -513,8 +505,7 @@
  [
   "sparkblast",
   {
-   "effect": "osciloscope",
-   "amplitude": 1
+   "effect": "spectrogram"
   },
   {
    "effect": "absolute"
@@ -602,16 +593,8 @@
  [
   "zebra bea",
   {
-   "effect": "brightnessContrast",
-   "brightness": {
-    "type": "beat",
-    "pulse": 14.963,
-    "f": 2,
-    "a": 0.508,
-    "p": 0,
-    "o": -0.05
-   },
-   "contrast": 0
+   "effect": "displacement",
+   "strength": 0.056
   },
   {
    "effect": "sobel",
@@ -661,14 +644,9 @@
  [
   "waveblast",
   {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 0
-   }
+   "effect": "video",
+   "url": "test.mp4",
+   "play_sound": 0
   },
   {
    "effect": "stack_push"
@@ -685,7 +663,7 @@
    "x": 0,
    "y": 0,
    "width": 1,
-   "height": 0.049,
+   "height": 0.134,
    "angle": 0
   },
   {
@@ -728,8 +706,13 @@
  [
   "rainbowblast",
   {
-   "effect": "osciloscope",
-   "amplitude": 1
+   "effect": "grating",
+   "size": 100,
+   "angle": 0,
+   "ax": 1,
+   "fx": 1,
+   "ay": 1,
+   "fy": 1
   },
   {
    "effect": "kaleidoscope",
@@ -810,6 +793,26 @@
   },
   {
    "effect": "multiply"
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.5,
+   "coeff": 0.5,
+   "alpha": 0.253,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
   },
   {
    "effect": "sobel",
@@ -1173,7 +1176,7 @@
   },
   {
    "effect": "threshold",
-   "threshold": 0.851,
+   "threshold": 0.89,
    "feather": 0.05,
    "r0": 0,
    "g0": 0,
@@ -1192,7 +1195,7 @@
    "radius": 647.889,
    "strength": {
     "type": "beat",
-    "pulse": 6.481,
+    "pulse": 4.093,
     "f": 2,
     "a": 0,
     "p": 0,
@@ -1231,7 +1234,7 @@
   },
   {
    "effect": "threshold",
-   "threshold": 1.475,
+   "threshold": 1.275,
    "feather": 0,
    "r0": 0,
    "g0": 0,
