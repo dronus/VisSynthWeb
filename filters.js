@@ -824,22 +824,23 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
 }
 
 // src/filters/video/blend.js
-canvas.blend=function(alpha,factor) {
+canvas.blend=function(alpha,factor,offset) {
     gl.blend = gl.blend || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D texture1;\
         uniform float alpha;\
         uniform float factor;\
+        uniform float offset;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color  = texture2D(texture , texCoord);\
             vec4 color1 = texture2D(texture1, texCoord);\
-            gl_FragColor = mix(color, color1, alpha) * factor;\
+            gl_FragColor = mix(color, color1, alpha) * factor + vec4(offset,offset,offset,0.0);\
         }\
     ');
 
     gl.blend.textures({texture: this._.texture, texture1: this.stack_pop()});
-    this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 });
+    this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
 
     return this;
 }
