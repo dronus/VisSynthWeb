@@ -78,6 +78,7 @@
       'pixelate':{args:{sx:64.0,sy:32.0,coverage: 0.7, lens:0.0 }},
       'hexagonalPixelate':{args:{center:{type:'pos',x:0,y:0}, size: 10.0}},
       'ripple':{args:{width:0.3,length:0.3,angle:0.0,strength:2.0}},
+      'spherical':{args:{radius:0.5,scale:8.0}},
       'bulgePinch':{args:{center:{type:'pos',x:0,y:0},radius:600,strength:0.2}},
       'swirl':{args:{center:{type:'pos',x:0,y:0},radius:250.0,strength:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0}}},
       'colorDisplacement':{args:{angle:0.0,strength:3.0}},

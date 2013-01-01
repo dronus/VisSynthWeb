@@ -727,6 +727,28 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
     return this;
 }
 
+// src/filters/video/ripple.js
+canvas.spherical=function(radius,scale) {
+    gl.spherical = gl.spherical || warpShader('\
+        uniform float radius;\
+        uniform float scale;\
+    ', '\
+        coord=coord-0.5;\
+        float l=length(coord);\
+        /* float l2=l-radius; */ \
+        float l2=-1.0/(l/radius-1.0)-1.0;\
+        coord*=(l2/l/scale);\
+        coord=coord+0.5;\
+    ');
+
+    this.simpleShader( gl.spherical, {
+        radius: radius,
+        scale : scale,
+        texSize:[1.0,1.0]
+    });
+
+    return this;
+}
 
 // src/filters/video/mesh_displacement.js
 canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
