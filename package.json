@@ -8,6 +8,9 @@
   "bugs": {
   },
   "licenses": [
+  	{
+  		"type": "MIT"
+  	}
   ],
   "main": "lib/grunt",
   "scripts": {
