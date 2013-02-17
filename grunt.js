@@ -12,20 +12,14 @@ module.exports = function(grunt) {
         ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */'
     },
     lint: {
-      files: ['grunt.js', 'src/**/*.js', 'lib/**/*.js', 'test/**/*.js']
+      files: ['grunt.js', 'src/**/*.js', 'test/**/*.js']
     },
     qunit: {
       files: ['test/**/*.html']
     },
-    concat: {
-      dist: {
-        src: ['<banner:meta.banner>', 'src/<%= pkg.name %>.js>'],
-        dest: 'dist/<%= pkg.name %>.js'
-      }
-    },
     min: {
       dist: {
-        src: ['<banner:meta.banner>', '<config:concat.dist.dest>'],
+        src:['src/video.js'],
         dest: 'dist/<%= pkg.name %>.min.js'
       }
     },
@@ -47,12 +41,14 @@ module.exports = function(grunt) {
         eqnull: true,
         browser: true
       },
-      globals: {}
+      globals: {
+		fx: false
+      }
     },
     uglify: {}
   });
 
   // Default task.
-  grunt.registerTask('default', 'lint qunit concat min');
+  grunt.registerTask('default', 'lint qunit min');
 
 };
