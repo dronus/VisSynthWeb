@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="qunit.css">
   <script type="text/javascript" src="http://code.jquery.com/qunit/qunit-git.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="https://raw.github.com/johanan/WebCamVidja/master/dist/WebCamVidja.min.js"></script>
+  <script type="text/javascript" src="https://raw.github.com/johanan/WebCamVidja/master/src/video.js"></script>
   <script>
   	module('Video Element selection/creation', {
   		setup: function(){
@@ -14,7 +14,8 @@
   			this.video = wcvj.webcam('video');
   		}
  	});
- 	test('Select Element by ID', 3, function(){
+ 	test('Select Element by ID', 4, function(){
+ 		strictEqual(wcvj.videoIsSupported(), true, 'Does your browser support getUserMedia. If not all tests will fail.')
  		strictEqual(this.video.video, $('#video')[0], 'Elements should be the same');
  		strictEqual(this.video.canvas, undefined, 'Canvas should not be set');
  		notEqual(this.video.video.src, undefined, 'Video should have its source set');

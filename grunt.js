@@ -49,6 +49,6 @@ module.exports = function(grunt) {
   });
 
   // Default task.
-  grunt.registerTask('default', 'lint qunit min');
+  grunt.registerTask('default', 'lint min');
 
 };
