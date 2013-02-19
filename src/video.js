@@ -57,7 +57,7 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 		}else if(options.canvas){
 			canvas = document.createElement('canvas');
 			ctx = canvas.getContext('2d');
-			ctx3 = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+			ctx3 = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 			canvas.innerHTML = "Your browser does not support canvas";
 		}
 		
