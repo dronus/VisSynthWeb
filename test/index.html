@@ -3,22 +3,76 @@
 <head>
   <meta charset="utf-8">
   <title>WebCamVidja Qunit</title>
-  <link rel="stylesheet" href="qunit.css">
-  <script type="text/javascript" src="http://code.jquery.com/qunit/qunit-git.js"></script>
+  <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.11.0.css">
+  <script type="text/javascript" src="http://code.jquery.com/qunit/qunit-1.11.0.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="https://raw.github.com/johanan/WebCamVidja/master/src/video.js"></script>
+  <script type="text/javascript" src="../src/video.js"></script>
   <script>
-  	module('Video Element selection/creation', {
+  	module('Video Element selection', {
   		setup: function(){
   			//grab the video element by id
   			this.video = wcvj.webcam('video');
   		}
  	});
- 	test('Select Element by ID', 4, function(){
- 		strictEqual(wcvj.videoIsSupported(), true, 'Does your browser support getUserMedia. If not all tests will fail.')
+ 	test('Select Element by ID', 5, function(){
+ 		strictEqual(wcvj.videoIsSupported(), true, 'Does your browser support getUserMedia. If not all tests will fail.');
  		strictEqual(this.video.video, $('#video')[0], 'Elements should be the same');
+ 		strictEqual(this.video.video.id, 'video', 'ID should be video');
  		strictEqual(this.video.canvas, undefined, 'Canvas should not be set');
  		notEqual(this.video.video.src, undefined, 'Video should have its source set');
+ 	});
+ 	
+ 	module('Video Element creation', {
+ 		setup: function(){
+ 			this.wcvj = wcvj.webcam('a');
+ 		}
+ 	});
+ 	test('Create Video Element', 4, function(){
+ 		strictEqual($('#a').length, 0, 'Element should not be in DOM');
+ 		strictEqual(this.wcvj.video.id, 'a', 'ID should be a');
+ 		strictEqual(this.wcvj.canvas, undefined, 'Canvas should not be set');
+ 		notEqual(this.wcvj.video.src, undefined, 'Video should have its source set');
+ 	});
+ 	
+ 	module('Canvas Test', {
+ 		setup: function(){
+ 			this.wcvj = wcvj.webcam('video', {canvas: true});
+ 		}
+ 	});
+ 	test('Canvas', 2, function(){
+ 		notStrictEqual(this.wcvj.canvas, undefined, 'Canvas should be set');
+ 		strictEqual(this.wcvj.canvas.ink, undefined, 'Should be plain old canvas');
+ 	});
+ 	
+ 	module('GLFX Canvas Test', {
+ 		setup: function(){
+ 			this.wcvj = wcvj.webcam('video', {canvas: true, glfx: true});
+ 		}
+ 	});
+ 	test('GLFX Canvas', 3, function(){
+ 		strictEqual(window.fx, undefined, 'fx should not be present');
+ 		notStrictEqual(this.wcvj.canvas, undefined, 'Canvas should be set');
+ 		strictEqual(this.wcvj.canvas.ink, undefined, 'Should be plain old canvas, not glfx until we pull in the library');
+ 	});
+ 	
+ 	module('GLFX Canvas Test', {
+ 		setup: function(){
+ 			this.wcvj = wcvj.webcam('video', {canvas: true, glfx: true});
+ 		}
+ 	});
+ 	asyncTest('GLFX Loaded Canvas', 3, function(){
+ 		var that = this;
+ 		var s = document.createElement('script');
+ 		s.setAttribute('src', 'http://evanw.github.com/glfx.js/glfx.js');
+ 		document.body.appendChild(s);
+ 		
+ 		$(s).load(function(){
+ 			notStrictEqual(window.fx, undefined, 'fx should be present');
+ 			notStrictEqual(that.wcvj.canvas, undefined, 'Canvas should be set');
+ 			notStrictEqual(typeof that.wcvj.canvas.ink, 'function', 'Should be an fx canvas');
+ 			start();
+ 		});
+ 		
  	});
   </script>
 </head>

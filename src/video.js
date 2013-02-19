@@ -30,14 +30,14 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 			return !!(window.WebGLRenderingContext && (can.getContext('webgl') || can.getContext('experimental-webgl')));
 		};
 		
-		if(window.fx !== 'undefined' && webgl()){
-			options.glfx = typeof options.glfx !== 'undefined' ? options.glfx : false;
+		if(window.fx !== undefined && webgl()){
+			options.glfx = typeof options.glfx !== undefined ? options.glfx : false;
 		}else{
 			options.glfx = false;
 		}
 		
 		var video;
-		var canvas, ctx, texture, filter;
+		var canvas, ctx, ctx3, texture, filter;
 		
 		
 		filter = [];
@@ -57,6 +57,7 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 		}else if(options.canvas){
 			canvas = document.createElement('canvas');
 			ctx = canvas.getContext('2d');
+			ctx3 = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
 			canvas.innerHTML = "Your browser does not support canvas";
 		}
 		
@@ -77,7 +78,7 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 				}
 				canvas.update();
 			}else{
-				options.draw.apply(canvas, [video]);
+				options.draw.apply(canvas, [ctx, ctx3, video]);
 			}
 			requestAnimFrame(canvasDraw);
 		};

@@ -11,8 +11,8 @@
 		document.body.appendChild(a.canvas);
 		a.setFilter([['ink',[0.3]]]);
 		
-		var b = wcvj.webcam('b');
-		document.body.appendChild(b.video);
+		var b = wcvj.webcam('b', {canvas: true});
+		document.body.appendChild(b.canvas);
 	</script>
 </body>
 </html>
