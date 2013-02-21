@@ -50,6 +50,8 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 			video.id = el;
 			video.setAttribute('autoplay',  options.autoPlay);
 			video.innerHTML = "Your browser does not support video";
+		}else{
+			video.setAttribute('autoplay', options.autoPlay);
 		}
 		
 		if(options.glfx && webgl()){
