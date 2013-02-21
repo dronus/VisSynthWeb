@@ -23,7 +23,7 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 		options = typeof options !== 'undefined' ? options : {};
 		options.canvas = typeof options.canvas !== 'undefined' ? options.canvas : false;
 		options.draw = typeof options.draw !== 'undefined' ? options.draw : false;
-		options.autoPlay = typeof options.autoPlay !== 'undefined' ? options.autoPlay : true;
+		options.autoplay = typeof options.autoplay !== 'undefined' ? options.autoplay : true;
 		
 		var webgl = function(){
 			var can = document.createElement('canvas');
@@ -48,10 +48,10 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 			//id not there create element
 			video = document.createElement('video');
 			video.id = el;
-			video.setAttribute('autoplay',  options.autoPlay);
+			video.autoplay = options.autoplay;
 			video.innerHTML = "Your browser does not support video";
 		}else{
-			video.setAttribute('autoplay', options.autoPlay);
+			video.autoplay = options.autoplay;
 		}
 		
 		if(options.glfx && webgl()){
@@ -86,7 +86,13 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 		};
 		
 		var setDraw = function(newDraw){
-			options.draw = newDraw;
+			if(options.canvas){
+				options.draw = newDraw;
+				ctx.save();
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.restore();
+			}
 		};
 		
 		var setFilter = function(newFilter){
