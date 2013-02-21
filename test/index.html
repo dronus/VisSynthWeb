@@ -25,7 +25,7 @@
  			this.a = wcvj.webcam('a', {canvas: true, autoPlay: true, draw: this.black});
  		}
  	});
- 	asyncTest('AutoPlay for existing video element', function(){
+ 	asyncTest('AutoPlay for existing video element', 1, function(){
  		var that = this;
  		$(this.wcvj.video).on('play', function(){
  			strictEqual(true, true, 'When this runs the video is playing');
@@ -33,7 +33,7 @@
  		});
  	});
  	
- 	asyncTest('AutoPlay for created element and draw', function(){
+ 	asyncTest('AutoPlay for created element and draw', 7, function(){
  		var that = this;
  		$(this.a.video).on('play', function(){
  			var c2 = that.a.canvas.getContext('2d');
