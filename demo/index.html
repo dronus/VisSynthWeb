@@ -6,13 +6,86 @@
 	<script src="../src/video.js"></script>
 </head>
 <body>
+	<h1>WebCamVidja</h1>
+	<p>
+		This library allows you to easily add a web cam to your webpages. View the source or check it out on <a href="https://github.com/johanan/WebCamVidja">GitHub</a>
+		to see how easy it is.
+	</p>
+	<p>
+		Support is beta in most browsers (or zero for IE and Safari). Chrome works best, then Opera, and finally Firefox if change some default settings. 
+		If you have downloaded from github run the Qunit tests to see how if your browser will work. (Chrome 24+ and Opera 12+ should pass all the tests).
+	</p>
+	<h2>Use an existing Video element</h2>
+	<video id="video" autplay controls>You do not support the Video element</video>
+	<button id="existing">Do it!</button>
+	
+	<h2>Create a new element</h2>
+	<button id="create">Create that element</button>
+	
+	<h2>Use a canvas!</h2>
+	<p>
+		You can change the draw method and get access to both 2d and webgl contexts.
+	</p>
+	<button id="canvas">Paint that Canvas</button>
+	<button id="setDraw">Change Canvas draw method</button>
+	
+	<h2>WebGL using glfx.js</h2>
+	<p>
+		Even if you do not know how to use webgl you still can take advantage of it using <a href="http://evanw.github.com/glfx.js/">glfx</a>.
+		If your browser does not support webgl (I'm looking at you Opera) or you do not include glfx.js the library will step down to a 'normal' canvas.
+	</p>
+	<button id="threed">Create a 3d canvas using GLFX</button>
+	<button id="setFilter">Change 3d Filter</button>
 	<script>
-		var a = wcvj.webcam('a', {canvas: true, glfx: true});
-		document.body.appendChild(a.canvas);
-		a.setFilter([['ink',[0.3]]]);
+		var exist = document.getElementById('existing'), 
+		create = document.getElementById('create'), 
+		canvas = document.getElementById('canvas'),
+		setDraw = document.getElementById('setDraw'),
+		threed = document.getElementById('threed'),
+		setFilter = document.getElementById('setFilter');
 		
-		var b = wcvj.webcam('b', {canvas: true});
-		document.body.appendChild(b.canvas);
+		var b,c;
+		
+		var newDraw = function(c2,c3, v){
+			/*
+			 * this is mapped to the canvas object
+			 * c2 is the 2d canvas context
+			 * c3 is the webgl context
+			 * v is the video element
+			 */
+			c2.drawImage(v, 0,0, this.width / 2, this.height / 2);
+		};
+		
+		//you can chain filters together
+		var newFilter = [['sepia',[1]],['vignette',[0.5,0.7]]];
+		
+		exist.addEventListener('click', function(){
+			var e = wcvj.webcam('video');
+		});
+		
+		create.addEventListener('click', function(){
+			var a = wcvj.webcam('a');
+			create.parentNode.insertBefore(a.video, create.previousSibling);
+		});
+		
+		canvas.addEventListener('click', function(){
+			b = wcvj.webcam('b', {canvas: true});
+			canvas.parentNode.insertBefore(b.canvas, canvas.previousSibling);
+		});
+		
+		setDraw.addEventListener('click', function(){
+			b.setDraw(newDraw);
+		});
+		
+		threed.addEventListener('click', function(){
+			c = wcvj.webcam('c', {canvas: true, glfx: true});
+			c.setFilter([['ink',[0.4]]]);
+			threed.parentNode.insertBefore(c.canvas, threed.previousSibling);
+		});
+		
+		setFilter.addEventListener('click', function(){
+			c.setFilter(newFilter);
+		});
 	</script>
 </body>
 </html>
