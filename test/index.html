@@ -8,6 +8,53 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="../src/video.js"></script>
   <script>
+   module('Autoplay and Draw test', {
+ 		setup: function(){
+ 			this.black = function(c2, c3, v){
+ 				c2.fillStyle = '#000';
+ 				c2.fillRect(0,0,this.width,this.height);
+ 				c2.fill();
+ 			};
+ 			
+ 			this.white = function(c2, c3, v){
+ 				c2.fillStyle = '#fff';
+ 				c2.fillRect(0,0,this.width,this.height);
+ 				c2.fill();
+ 			};
+ 			this.wcvj = wcvj.webcam('video', {canvas: true, autoPlay: true});
+ 			this.a = wcvj.webcam('a', {canvas: true, autoPlay: true, draw: this.black});
+ 		}
+ 	});
+ 	asyncTest('AutoPlay for existing video element', function(){
+ 		var that = this;
+ 		$(this.wcvj.video).on('play', function(){
+ 			strictEqual(true, true, 'When this runs the video is playing');
+ 			start();
+ 		});
+ 	});
+ 	
+ 	asyncTest('AutoPlay for created element and draw', function(){
+ 		var that = this;
+ 		$(this.a.video).on('play', function(){
+ 			var c2 = that.a.canvas.getContext('2d');
+ 			var i = c2.getImageData(0,0,1,1);
+ 			strictEqual(true, true, 'When this runs the video is playing');
+ 			strictEqual(i.data[0], 0, 'RGB image data pixel data should be black');
+ 			strictEqual(i.data[1], 0, 'RGB image data pixel data should be black');
+ 			strictEqual(i.data[2], 0, 'RGB image data pixel data should be black');
+ 			that.a.setDraw(that.white);
+ 			stop();
+ 			setTimeout(function(){
+ 				i = c2.getImageData(0,0,1,1);
+	 			strictEqual(i.data[0], 255, 'RGB image data pixel data should be white');
+	 			strictEqual(i.data[1], 255, 'RGB image data pixel data should be white');
+	 			strictEqual(i.data[2], 255, 'RGB image data pixel data should be white');
+	 			start();
+	 		}, 500);
+ 			start();
+ 		});
+ 	});
+ 	
   	module('Video Element selection', {
   		setup: function(){
   			//grab the video element by id
