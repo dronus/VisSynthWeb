@@ -132,7 +132,12 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 				video.src = stream;
 			}
 			
-		}, function(){});
+		}, function(err){
+			var evt = document.createEvent('Event');
+			evt.initEvent("UserMediaError",true,true);
+			evt.UserMediaError = err;
+			video.dispatchEvent(evt);
+		});
 		
 		return {video: video, canvas: canvas, setDraw: setDraw, setFilter: setFilter, update: forceUpdate};
 	};
