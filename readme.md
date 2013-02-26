@@ -4,14 +4,16 @@ from the Web RTC specification. There is still a working group and things are st
 between browsers and give you a little more functionality.
 
 ##Basic Usage
-There are only two methods.
-* videoIsSupported - Boolean, tells you whether your browser supports getUserMedia or not
-````javascript
-wcvj.videoIsSupported();
-````
-* webcam - it returns an object with the video element, canvas, and some functions in it.
+WebCamVidja creates a global object wcvj. Here are the functions off of wcvj.
 
-The simplest use case is a one liner. This assumes you have a video element on the page with an 
-````javascript
+###wcvj.videoIsSupported()
+returns: Boolean
 
-````
+This is a test to see if your browser supports getUserMedia in any of the vendor specific ways.
+
+####Example
+''''
+if(wcvj.videoIsSupported){
+	var v = wcvj.webcam('video');
+}
+''''
