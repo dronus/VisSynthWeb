@@ -12,8 +12,10 @@ returns: Boolean
 This is a test to see if your browser supports getUserMedia in any of the vendor specific ways.
 
 ####Example
-''''
+Here is a simple check before use of the library.
+
+```javascript
 if(wcvj.videoIsSupported){
 	var v = wcvj.webcam('video');
 }
-''''
+```
