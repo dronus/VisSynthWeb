@@ -1,6 +1,10 @@
 var wcvj = window.wcvj || {};
 
 wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia); };
+wcvj.webglIsSupported = function(){
+			var can = document.createElement('canvas');
+			return !!(window.WebGLRenderingContext && (can.getContext('webgl') || can.getContext('experimental-webgl')));
+		};
 
 (function(wcvj){
 	"use strict";
@@ -30,7 +34,7 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 			return !!(window.WebGLRenderingContext && (can.getContext('webgl') || can.getContext('experimental-webgl')));
 		};
 		
-		if(window.fx !== undefined && webgl()){
+		if(window.fx !== undefined && wcvj.webglIsSupported()){
 			options.glfx = typeof options.glfx !== undefined ? options.glfx : false;
 		}else{
 			options.glfx = false;
@@ -54,7 +58,7 @@ wcvj.videoIsSupported = function(){ return !!(navigator.getUserMedia || navigato
 			video.autoplay = options.autoplay;
 		}
 		
-		if(options.glfx && webgl()){
+		if(options.glfx && wcvj.webglIsSupported()){
 			canvas = fx.canvas();
 		}else if(options.canvas){
 			canvas = document.createElement('canvas');
