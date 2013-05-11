@@ -16,7 +16,7 @@ This is a test to see if your browser supports getUserMedia in any of the vendor
 Here is a simple check before use of the library.
 
 ```javascript
-if(wcvj.videoIsSupported){
+if(wcvj.videoIsSupported()){
 	var v = wcvj.webcam('video');
 }
 ```
@@ -32,8 +32,8 @@ type: object
 
 This object has four properties you can set:
 
-* canvas: Boolean. Determines wether or not to create a canvas element.
-* glfx: Boolean. Use with the canvas property. Will use glfx.js version of canvas. Requires glfx to be loaded. If not it will fall back to a plain old canvas.
+* canvas: Boolean. Determines whether or not to create a canvas element.
+* glfx: Boolean. Use with the canvas property. Will use the glfx.js canvas. Requires glfx to be loaded. If not it will fall back to a plain old canvas.
 * draw: Function. You can specify the function that will be used to draw from the video to the canvas.
 * autoplay: Boolean. This determines if the video should autoplay or if you will need to start the video. 
 
