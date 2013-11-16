@@ -8,18 +8,6 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="../src/video.js"></script>
   <script>
-  module('Event Trigger Test', {
- 		setup: function(){
- 			this.wcvj = wcvj.webcam('video');
- 		}
- 	});
- 	asyncTest('Event Trigger', function(){
- 		$(this.wcvj.video).on('UserMediaError', 1, function(e){
- 			strictEqual(e.originalEvent.UserMediaError.code, 1, 'A denied webcam permission should pass code 1');
- 			start();
- 		});
- 	});
- 	
    module('Autoplay and Draw test', {
  		setup: function(){
  			this.black = function(c2, c3, v){
@@ -132,6 +120,18 @@
  			start();
  		});
  		
+ 	});
+	
+	module('Event Trigger Test', {
+ 		setup: function(){
+ 			this.wcvj = wcvj.webcam('video');
+ 		}
+ 	});
+ 	asyncTest('Event Trigger', function(){
+ 		$(this.wcvj.video).on('UserMediaError', 1, function(e){
+ 			strictEqual(e.originalEvent.UserMediaError.name, "PERMISSION_DENIED", 'A denied webcam permission should pass PERMISSION_DENIED');
+ 			start();
+ 		});
  	});
   </script>
 </head>
