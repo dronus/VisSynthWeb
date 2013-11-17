@@ -110,17 +110,22 @@ wcvj.webglIsSupported = function(){
 		};
 		
 		var playInit = function(e){
-			if(options.glfx){
-				setTimeout(function(){
-					texture = canvas.texture(video);
-					canvasDraw();
-				}, 500);
-			}
-			
 			if(options.canvas || options.glfx){
 				canvas.width = video.videoWidth;
 				canvas.height = video.videoHeight;
 			}
+			
+			setTimeout(function(){
+				if(options.glfx){
+					texture = canvas.texture(video);
+					canvasDraw();
+				}
+			}, 500);
+				
+			if(options.canvas){
+				canvasDraw();
+			}
+			
 		};
 		
 		//event setup
