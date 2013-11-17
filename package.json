@@ -1,7 +1,7 @@
 {
   "name": "WebCamVidja",
   "description": "A project to abstract out the differences in browsers webcam access.",
-  "version": "0.1",
+  "version": "0.5",
   "author": "Joshua Johanan",
   "repository": {
   },
@@ -11,18 +11,5 @@
   	{
   		"type": "MIT"
   	}
-  ],
-  "main": "lib/grunt",
-  "scripts": {
-    "test": "grunt test"
-  },
-  "engines": {
-    "node": ">= 0.8.0"
-  },
-  "keywords": [
-  ],
-  "dependencies": {
-  },
-  "devDependencies": {
-  }
+  ]
 }
