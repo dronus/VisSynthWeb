@@ -27,7 +27,8 @@ wcvj.webglIsSupported = function(){
 		options = typeof options !== 'undefined' ? options : {};
 		options.canvas = typeof options.canvas !== 'undefined' ? options.canvas : false;
 		options.draw = typeof options.draw !== 'undefined' ? options.draw : false;
-		options.autoplay = typeof options.autoplay !== 'undefined' ? options.autoplay : true;
+        options.autoplay = typeof options.autoplay !== 'undefined' ? options.autoplay : true;
+        options.resolution = typeof options.resolution !== 'undefined' ? options.resolution: 'default';
 		
 		var webgl = function(){
 			var can = document.createElement('canvas');
@@ -65,7 +66,49 @@ wcvj.webglIsSupported = function(){
 			ctx = canvas.getContext('2d');
 			ctx3 = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 			canvas.innerHTML = "Your browser does not support canvas";
-		}
+        }
+        
+        //determine resolution
+        
+        var quickRes = {
+            "1080p": {
+                "mandatory": {
+                    "minWidth": "1920",
+                    "minHeight": "1080"
+                }
+            },
+            "UXGA": {
+                "mandatory": {
+                    "minWidth": "1600",
+                    "minHeight": "1200"
+                }
+            },
+            "720p": {
+                "mandatory": {
+                    "minWidth": "1280",
+                    "minHeight": "720"
+                }
+            },
+            "SVGA": {
+                "mandatory": {
+                    "minWidth": "800",
+                    "minHeight": "600"
+                }
+            },
+            "VGA": {
+                "mandatory": {
+                    "minWidth": "640",
+                    "minHeight": "480"
+                }
+            },
+            'default': true
+        };
+        
+        var resolution = typeof options.resolution === 'string' ? quickRes[options.resolution] : options.resolution;
+        //one final check. If someone uses a string that does not exist just use default
+        if (resolution === undefined) {
+            resolution = quickRes['default'];
+        }
 		
 		var defaultDraw = function(){
 			ctx.drawImage(video, 0, 0);
@@ -126,13 +169,25 @@ wcvj.webglIsSupported = function(){
 				canvasDraw();
 			}
 			
-		};
+        };
+        
+        var killStream = function killStream() {
+            if (video.src !== null) {
+                video.pause();
+                //chrome should be empty string
+                video.src = '';
+                stream.stop();
+            }
+        };
 		
 		//event setup
 		video.addEventListener('canplay', playInit, false);
-		
-		userMedia.call(navigator, {video: true, audio: false}, function(stream){
-			if(video.mozSrcObject !== undefined) {
+        
+        var stream;
+
+		userMedia.call(navigator, {video: resolution, audio: false}, function(videoStream){
+            stream = videoStream;
+            if (video.mozSrcObject !== undefined) {
 				video.mozSrcObject = stream;
 			} else if(navigator.mozGetUserMedia){
 				video.src = stream;
@@ -150,6 +205,6 @@ wcvj.webglIsSupported = function(){
 			video.dispatchEvent(evt);
 		});
 		
-		return {video: video, canvas: canvas, setDraw: setDraw, setFilter: setFilter, update: forceUpdate};
+		return {video: video, canvas: canvas, setDraw: setDraw, setFilter: setFilter, update: forceUpdate, killStream: killStream};
 	};
 }(window.wcvj));

@@ -69,7 +69,9 @@
 		});
 		
 		canvas.addEventListener('click', function(){
-			b = wcvj.webcam('b', {canvas: true});
+		    b = wcvj.webcam('b', {
+		        canvas: true, resolution: "720p"
+		    });
 			canvas.parentNode.insertBefore(b.canvas, canvas.previousSibling);
 		});
 		

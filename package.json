@@ -1,7 +1,7 @@
 {
   "name": "WebCamVidja",
   "description": "A project to abstract out the differences in browsers webcam access.",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "author": "Joshua Johanan",
   "repository": {},
   "bugs": {},
