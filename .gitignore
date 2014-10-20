@@ -1,5 +1,5 @@
 .project
 node_modules
-.dat
-.njsproj
-.suo
+*.dat
+*.njsproj
+*.suo
