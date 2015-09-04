@@ -6,34 +6,13 @@
 	<script src="../src/video.js"></script>
 </head>
 <body>
-	<h1>WebCamVidja</h1>
-	<p>
-		This library allows you to easily add a web cam to your webpages. View the source or check it out on <a href="https://github.com/johanan/WebCamVidja">GitHub</a>
-		to see how easy it is.
-	</p>
-	<p>
-		Support is beta in most browsers (or zero for IE and Safari). Chrome works best, then Opera, and finally Firefox if change some default settings. 
-		If you have downloaded from github run the Qunit tests to see how if your browser will work. (Chrome 24+ and Opera 12+ should pass all the tests).
-	</p>
-	<h2>Use an existing Video element</h2>
 	<video id="video" autplay controls>You do not support the Video element</video>
 	<button id="existing">Do it!</button>
 	
-	<h2>Create a new element</h2>
 	<button id="create">Create that element</button>
 	
-	<h2>Use a canvas!</h2>
-	<p>
-		You can change the draw method and get access to both 2d and webgl contexts.
-	</p>
 	<button id="canvas">Paint that Canvas</button>
 	<button id="setDraw">Change Canvas draw method</button>
-	
-	<h2>WebGL using glfx.js</h2>
-	<p>
-		Even if you do not know how to use webgl you still can take advantage of it using <a href="http://evanw.github.com/glfx.js/">glfx</a>.
-		If your browser does not support webgl (I'm looking at you Opera) or you do not include glfx.js the library will step down to a 'normal' canvas.
-	</p>
 	<button id="threed">Create a 3d canvas using GLFX</button>
 	<button id="setFilter">Change 3d Filter</button>
 	<script>
@@ -81,13 +60,19 @@
 		
 		threed.addEventListener('click', function(){
 			c = wcvj.webcam('c', {canvas: true, glfx: true});
-			c.setFilter([['ink',[0.4]]]);
+			// c.setFilter([['ink',[0.4]]]);
+			c.setFilter([['swirl',[300, 246.5, 200, 3]]]);
 			threed.parentNode.insertBefore(c.canvas, threed.previousSibling);
 		});
 		
 		setFilter.addEventListener('click', function(){
 			c.setFilter(newFilter);
 		});
+
+                setTimeout(function(){
+                        document.getElementById('threed').click();
+                },3000);
+
 	</script>
 </body>
 </html>
