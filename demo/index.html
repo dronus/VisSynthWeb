@@ -6,72 +6,45 @@
 	<script src="../src/video.js"></script>
 </head>
 <body>
-	<video id="video" autplay controls>You do not support the Video element</video>
-	<button id="existing">Do it!</button>
-	
-	<button id="create">Create that element</button>
-	
-	<button id="canvas">Paint that Canvas</button>
-	<button id="setDraw">Change Canvas draw method</button>
-	<button id="threed">Create a 3d canvas using GLFX</button>
-	<button id="setFilter">Change 3d Filter</button>
+	<style>
+		html,body,canvas{
+			width: 100%;
+			height: 100%;
+			padding: 0px;
+			margin: 0px;
+			overflow: hidden;
+			background-color: #000;
+		}
+	</style>
 	<script>
-		var exist = document.getElementById('existing'), 
-		create = document.getElementById('create'), 
-		canvas = document.getElementById('canvas'),
-		setDraw = document.getElementById('setDraw'),
-		threed = document.getElementById('threed'),
-		setFilter = document.getElementById('setFilter');
 		
 		var b,c;
 		
-		var newDraw = function(c2,c3, v){
-			/*
-			 * this is mapped to the canvas object
-			 * c2 is the 2d canvas context
-			 * c3 is the webgl context
-			 * v is the video element
-			 */
-			c2.drawImage(v, 0,0, this.width / 2, this.height / 2);
-		};
+		var w=640, h=480;
 		
-		//you can chain filters together
-		var newFilter = [['sepia',[1]],['vignette',[0.5,0.7]]];
-		
-		exist.addEventListener('click', function(){
-			var e = wcvj.webcam('video');
-		});
-		
-		create.addEventListener('click', function(){
-			var a = wcvj.webcam('a');
-			create.parentNode.insertBefore(a.video, create.previousSibling);
-		});
-		
-		canvas.addEventListener('click', function(){
-		    b = wcvj.webcam('b', {
-		        canvas: true, resolution: "720p"
-		    });
-			canvas.parentNode.insertBefore(b.canvas, canvas.previousSibling);
-		});
-		
-		setDraw.addEventListener('click', function(){
-			b.setDraw(newDraw);
-		});
-		
-		threed.addEventListener('click', function(){
-			c = wcvj.webcam('c', {canvas: true, glfx: true});
-			// c.setFilter([['ink',[0.4]]]);
-			c.setFilter([['swirl',[300, 246.5, 200, 3]]]);
-			threed.parentNode.insertBefore(c.canvas, threed.previousSibling);
-		});
-		
-		setFilter.addEventListener('click', function(){
-			c.setFilter(newFilter);
+		c = wcvj.webcam('c', {canvas: true, glfx: true});
+		// c.setFilter[['ink',[0.4]]]);
+		var t=0;
+		var perspective=[0,0,0,h,w,0,w,h];
+
+		c.canvas.addEventListener('click',function(e){
+			var x=e.offsetX/c.canvas.offsetWidth*w, y=e.offsetY/c.canvas.offsetHeight*h;
+			var i=0;
+			if(x>w/2) i+=2;
+			if(y>h/2) i+=1;
+			perspective[i*2]=x;
+			perspective[i*2+1]=y;			
 		});
 
-                setTimeout(function(){
-                        document.getElementById('threed').click();
-                },3000);
+		var animation=function(){
+			t+=.001;
+			var power=Math.sin(t)*2;
+			c.setFilter([['swirl',[300, 246.5, 250, power]],['perspective',[[0,0,0,h,w,0,w,h],perspective]]]);
+			// ,['unsharpMask',[2,10]]
+			requestAnimationFrame(animation);
+		};
+		animation();
+		document.body.appendChild(c.canvas);		
 
 	</script>
 </body>
