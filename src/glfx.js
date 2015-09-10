@@ -315,6 +315,9 @@ exports.canvas = function() {
     canvas.lensBlur = wrap(lensBlur);
     canvas.zoomBlur = wrap(zoomBlur);
     canvas.noise = wrap(noise);
+    canvas.grid = wrap(grid);
+    canvas.kaleidoscope = wrap(kaleidoscope);
+    canvas.tile = wrap(tile);
     canvas.denoise = wrap(denoise);
     canvas.curves = wrap(curves);
     canvas.swirl = wrap(swirl);
@@ -977,6 +980,76 @@ function noise(amount) {
 
     return this;
 }
+
+/**
+ * @filter         Grid
+ * @description    Adds a grid to the image
+ */
+function grid() {
+    gl.grid = gl.grid || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            \
+            if     (fract(texCoord.x*8.+.02)<.04 || fract(texCoord.y*8.+.02)<.04)\
+	            gl_FragColor = vec4(0.0,0.0,0.0,1.0);\
+            else if(fract(texCoord.x*8.+.05)<.1 || fract(texCoord.y*8.+.05)<.1)\
+	            gl_FragColor = vec4(1.0,1.0,1.0,1.0);\
+            else\
+	            gl_FragColor = color;\
+        }\
+    ');
+
+    simpleShader.call(this, gl.grid, {
+    });
+
+    return this;
+}
+
+
+function kaleidoscope() {
+    gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+	float angle=15.;\
+	float sides=6.;\
+	void main() {\
+		vec2 p = texCoord - 0.5;\
+		float r = length(p);\
+		float a = atan(p.y, p.x) + angle;\
+		float tau = 2. * 3.1416 ;\
+		a = mod(a, tau/sides);\
+		a = abs(a - tau/sides/2.) ;\
+		p = r * vec2(cos(a), sin(a));\
+		vec4 color = texture2D(texture, p + 0.5);\
+		gl_FragColor = color;\
+	}\
+    ');
+
+    simpleShader.call(this, gl.kaleidoscope, {
+    });
+
+    return this;
+}
+
+
+function tile() {
+    gl.tile = gl.tile || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+	void main() {\
+		vec4 color = texture2D(texture, fract(texCoord*2.));\
+		gl_FragColor = color;\
+	}\
+    ');
+
+    simpleShader.call(this, gl.tile, {
+    });
+
+    return this;
+}
+
 
 // src/filters\adjust\sepia.js
 /**

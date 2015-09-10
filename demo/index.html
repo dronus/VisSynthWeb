@@ -49,9 +49,19 @@
 		var t=0;
 
 		var pc=get_cookie('perspective');
-		var perspective=pc ? JSON.parse(pc) :   [0,0,0,h,w,0,w,h];
 
-		c.canvas.addEventListener('click',function(e){
+		var perspective=pc ? JSON.parse(pc) : [0,0,0,h,w,0,w,h];
+
+		var dragged=false;
+		c.canvas.addEventListener('mousedown',function(e){
+			if(e.button==1)
+				perspective=[0,0,0,h,w,0,w,h];
+			else		
+				dragged=true;
+		});
+		c.canvas.addEventListener('mouseup'  ,function(e){dragged=false;});
+		c.canvas.addEventListener('mousemove',function(e){
+			if(!dragged) return;
 			var x=e.offsetX/c.canvas.offsetWidth*w, y=e.offsetY/c.canvas.offsetHeight*h;
 			var i=0;
 			if(x>w/2) i+=2;
@@ -64,32 +74,65 @@
 		s=.5;
 
 		var effects=[
-			function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
+//			function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
+			false,
+			function(t){ return ['tile',[]];},
+			function(t){ return ['kaleidoscope',[]];},
 			function(t){ return ['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]];},
 			function(t){ return ['unsharpMask',[3,(Math.sin(t)+1)*2]];},
 			function(t){ return ['denoise',[3]];},
 			function(t){ return ['swirl',[300, 246.5, 250, Math.sin(t)*1.0]];},
 		];
 
-		var special=effects[3];		
+		var special=effects[0];
 
 		var animation=function(){
 			t+=.01;
 			if(t>2*Math.PI) t=0;
-			c.setFilter([['vibrance',[.5]],special(t),['matrixWarp',[[s,0,0,s],false,true]],['perspective',[[0,0,0,h,w,0,w,h],perspective]]]);
+			// var x1=w*.4, x2=w-x1, y1=h*.4, y2=h-y1;
+			var chain=[['vibrance',[.7]],['perspective',[perspective,[0,0,0,h,w,0,w,h]]]];
+			if(!dragged)
+			{
+				if(special) chain.push(special(t));
+			}
+			else         chain.unshift(['grid',[]]);
+			c.setFilter(chain);
+			// ['matrixWarp',[[s,0,0,s],false,true]],
 			requestAnimationFrame(animation);
 		};
 		animation();
 		document.body.appendChild(c.canvas);		
 
-		var special_index=0;
-		setInterval(function(){
+		function next()
+		{
 			special=effects[special_index];
 			special_index++;
 			if(special_index>=effects.length) special_index=0;
-		},30000);
-	
+		}
 
+		var special_index=0;
+		setInterval(function(){
+			next();
+		},30000);
+
+
+		function fetch_script()
+		{
+			xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('GET', 'http://127.0.0.1:8081/feed', true);
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState == 4) {
+					var js=xmlHttp.responseText;
+					if(js) window.eval(js);
+					setTimeout(function(){
+						fetch_script();
+					},100);
+				}
+			};
+			xmlHttp.send(null);
+		}
+		fetch_script();
 	</script>
+
 </body>
 </html>
