@@ -1,3 +1,3 @@
 #!/bin/sh
 
-python -m SimpleHTTPServer 8082
+nodejs central.js
