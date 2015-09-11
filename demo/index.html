@@ -103,9 +103,8 @@
 			if(feedback) chain.push(['feedbackIn',[]]);
 			c.setFilter(chain);
 			// ['matrixWarp',[[s,0,0,s],false,true]],
-			requestAnimationFrame(animation);
 		};
-		animation();
+		c.setCallback(animation);
 		document.body.appendChild(c.canvas);		
 
 		var special_index=0;

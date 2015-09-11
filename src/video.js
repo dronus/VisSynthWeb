@@ -46,6 +46,7 @@ wcvj.webglIsSupported = function(){
 		
 		
 		filter = [];
+		var draw_callback=false;
 		
 		video = document.getElementById(el);
 		
@@ -119,6 +120,7 @@ wcvj.webglIsSupported = function(){
 		}
 		
 		var canvasDraw = function(){
+			if(draw_callback) draw_callback.call(this);
 			if(options.glfx){
 				texture.loadContentsOf(video);
 				canvas.draw(texture);
@@ -144,6 +146,10 @@ wcvj.webglIsSupported = function(){
 		
 		var setFilter = function(newFilter){
 			filter = newFilter;
+		};
+
+		var setCallback = function(callback){
+			draw_callback=callback;
 		};
 		
 		var forceUpdate = function(){
@@ -205,6 +211,6 @@ wcvj.webglIsSupported = function(){
 			video.dispatchEvent(evt);
 		});
 		
-		return {video: video, canvas: canvas, setDraw: setDraw, setFilter: setFilter, update: forceUpdate, killStream: killStream};
+		return {video: video, canvas: canvas, setDraw: setDraw, setFilter: setFilter, setCallback: setCallback, update: forceUpdate, killStream: killStream};
 	};
 }(window.wcvj));
