@@ -77,7 +77,7 @@
 //			function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
 			false,
 			function(t){ return ['tile',[]];},
-			function(t){ return ['kaleidoscope',[]];},
+			function(t){ return ['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]];},
 			function(t){ return ['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]];},
 			function(t){ return ['unsharpMask',[3,(Math.sin(t)+1)*2]];},
 			function(t){ return ['denoise',[3]];},
@@ -86,16 +86,21 @@
 
 		var special=effects[0];
 
+		feedback=0.;
+
 		var animation=function(){
 			t+=.01;
-			if(t>2*Math.PI) t=0;
+			if(t>32*Math.PI) t-=32*Math.PI;
 			// var x1=w*.4, x2=w-x1, y1=h*.4, y2=h-y1;
-			var chain=[['vibrance',[.7]],['perspective',[perspective,[0,0,0,h,w,0,w,h]]]];
+			var chain=[['vibrance',[.8]]];
+			if(feedback) chain.push(['feedbackOut',[feedback]]);
+			chain.push(['perspective',[[0,0,0,h,w,0,w,h],perspective]]);
 			if(!dragged)
 			{
 				if(special) chain.push(special(t));
 			}
 			else         chain.unshift(['grid',[]]);
+			if(feedback) chain.push(['feedbackIn',[]]);
 			c.setFilter(chain);
 			// ['matrixWarp',[[s,0,0,s],false,true]],
 			requestAnimationFrame(animation);
@@ -103,18 +108,40 @@
 		animation();
 		document.body.appendChild(c.canvas);		
 
+		var special_index=0;
+		function prev()
+		{
+			special_index--;
+			if(special_index<0) special_index=effects.length-1;
+			special=effects[special_index];
+		}
 		function next()
 		{
-			special=effects[special_index];
 			special_index++;
 			if(special_index>=effects.length) special_index=0;
+			special=effects[special_index];
 		}
 
-		var special_index=0;
-		setInterval(function(){
-			next();
-		},30000);
 
+		var interval=false;
+		function stop()
+		{
+			if(interval) clearInterval(interval);
+			interval=false;
+		}
+		function start(delay)
+		{
+			stop();
+			interval=setInterval(function(){
+				next();
+			},delay);
+		}
+		function filter(name,params)
+		{
+			special=function(t){
+				return [name,params];
+			};
+		}
 
 		function fetch_script()
 		{
@@ -122,11 +149,11 @@
 			xmlHttp.open('GET', '/feed', true);
 			xmlHttp.onreadystatechange = function () {
 				if (xmlHttp.readyState == 4) {
-					var js=xmlHttp.responseText;
-					if(js) window.eval(js);
 					setTimeout(function(){
 						fetch_script();
 					},100);
+					var js=xmlHttp.responseText;
+					if(js) window.eval(js);
 				}
 			};
 			xmlHttp.send(null);

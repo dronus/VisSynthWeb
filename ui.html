@@ -1,0 +1,42 @@
+<!DOCTYPE  html>
+<html>
+<head>
+	<title>WebCamVidja Demo</title>
+	<script type="text/javascript" src="../src/glfx.js"></script>
+	<script src="../src/video.js"></script>
+</head>
+<body style="font-size: 30px;">
+	<h1 style="font-size:100%">MASTER CONTROL PROGRAM</h1>
+	<input type=text id=command style="margin: auto; width: 50em;"></input><br>
+	<button onclick="send('document.location.reload()')">RESTART</button>
+	|
+	<button onclick="send('prev()')">PREV</button>
+	<button onclick="send('next()')">NEXT</button>
+	|
+	<button onclick="send('start('+parseFloat(document.getElementById('delay').value)*1000+')')">START</button>
+	<input type=text id=delay style="width: 5em;" value=10>
+	<button onclick="send('stop()')">STOP</button>
+	<script>		
+		function get(url)
+		{
+			xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('GET',url,true);	
+			xmlHttp.send(null);
+		}
+
+		function send(command)
+		{
+			console.log(command);
+			var result=get('/feed?value='+encodeURIComponent(command));
+		}
+
+		var cmd_element=document.getElementById('command');
+		cmd_element.addEventListener('change',function(){
+			send(cmd_element.value);			
+			cmd_element.value='';
+		});
+
+	</script>
+
+</body>
+</html>

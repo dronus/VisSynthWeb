@@ -306,6 +306,8 @@ exports.canvas = function() {
     canvas.colorHalftone = wrap(colorHalftone);
     canvas.triangleBlur = wrap(triangleBlur);
     canvas.unsharpMask = wrap(unsharpMask);
+    canvas.feedbackIn = wrap(feedbackIn);
+    canvas.feedbackOut = wrap(feedbackOut);
     canvas.perspective = wrap(perspective);
     canvas.matrixWarp = wrap(matrixWarp);
     canvas.bulgePinch = wrap(bulgePinch);
@@ -1008,12 +1010,13 @@ function grid() {
 }
 
 
-function kaleidoscope() {
+function kaleidoscope(angle,angle2) {
     gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
         uniform sampler2D texture;\
+	uniform float angle;\
+	uniform float angle2;\
         varying vec2 texCoord;\
-	float angle=15.;\
-	float sides=6.;\
+	float sides=5.;\
 	void main() {\
 		vec2 p = texCoord - 0.5;\
 		float r = length(p);\
@@ -1021,14 +1024,13 @@ function kaleidoscope() {
 		float tau = 2. * 3.1416 ;\
 		a = mod(a, tau/sides);\
 		a = abs(a - tau/sides/2.) ;\
-		p = r * vec2(cos(a), sin(a));\
+		p = r * vec2(cos(a+angle2), sin(a+angle2));\
 		vec4 color = texture2D(texture, p + 0.5);\
 		gl_FragColor = color;\
 	}\
     ');
 
-    simpleShader.call(this, gl.kaleidoscope, {
-    });
+    simpleShader.call(this, gl.kaleidoscope, {angle:angle, angle2:angle2});
 
     return this;
 }
@@ -1125,6 +1127,46 @@ function unsharpMask(radius, strength) {
 
     return this;
 }
+
+
+function feedbackIn()
+{
+    // Store a copy of the current texture in the second texture unit
+    this._.extraTexture.ensureFormat(this._.texture);
+    this._.texture.use();
+    this._.extraTexture.drawTo(function() {
+        Shader.getDefaultShader().drawRect();
+    });
+
+    return this;
+}
+
+function feedbackOut(strength) {
+    gl.feedbackOut = gl.feedbackOut || new Shader(null, '\
+        uniform sampler2D feedbackTexture;\
+        uniform sampler2D originalTexture;\
+        uniform float strength;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 feedback = texture2D(feedbackTexture, texCoord);\
+            vec4 original = texture2D(originalTexture, texCoord);\
+            gl_FragColor = mix(feedback, original, strength);\
+        }\
+    ');
+
+    this._.extraTexture.ensureFormat(this._.texture);
+    this._.extraTexture.use(1);
+    gl.feedbackOut.textures({
+        originalTexture: 1
+    });
+    simpleShader.call(this, gl.feedbackOut, {
+        strength: strength
+    });
+    this._.extraTexture.unuse(1);
+
+    return this;
+}
+
 
 // src/filters\adjust\vibrance.js
 /**
