@@ -17,17 +17,17 @@
 	<input type=text id=delay style="width: 5em;" value=10>
 	<button onclick="send('stop()')">STOP</button>
 	<script>		
-		function get(url)
+		function put(url,data)
 		{
 			xmlHttp = new XMLHttpRequest();
-			xmlHttp.open('GET',url,true);	
-			xmlHttp.send(null);
+			xmlHttp.open('PUT',url,true);	
+			xmlHttp.send(data);
 		}
 
 		function send(command)
 		{
 			console.log(command);
-			var result=get('/feed?value='+encodeURIComponent(command));
+			var result=put('/feed',command);
 		}
 
 		var cmd_element=document.getElementById('command');
