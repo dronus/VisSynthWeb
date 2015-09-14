@@ -1023,9 +1023,9 @@ function kaleidoscope(angle,angle2) {
 		float a = atan(p.y, p.x) + angle;\
 		float tau = 2. * 3.1416 ;\
 		a = mod(a, tau/sides);\
-		a = abs(a - tau/sides/2.) ;\
-		p = r * vec2(cos(a+angle2), sin(a+angle2));\
-		vec4 color = texture2D(texture, p + 0.5);\
+		a = abs(a - tau/sides/2.) * 1.5 ;\
+		p = r * 2. * vec2(cos(a+angle2), sin(a+angle2));\
+		vec4 color = texture2D(texture, mod(p + 0.5,vec2(1.,1.)));\
 		gl_FragColor = color;\
 	}\
     ');

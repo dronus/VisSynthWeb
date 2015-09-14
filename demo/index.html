@@ -75,9 +75,9 @@
 
 		var effects=[
 //			function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
+			function(t){ return ['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]];},
 			false,
 			function(t){ return ['tile',[]];},
-			function(t){ return ['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]];},
 			function(t){ return ['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]];},
 			function(t){ return ['unsharpMask',[3,(Math.sin(t)+1)*2]];},
 			function(t){ return ['denoise',[3]];},
@@ -92,7 +92,7 @@
 			t+=.01;
 			if(t>32*Math.PI) t-=32*Math.PI;
 			// var x1=w*.4, x2=w-x1, y1=h*.4, y2=h-y1;
-			var chain=[['vibrance',[.8]]];
+			var chain=[['vibrance',[1.]],['hueSaturation',[0.,.3]]];
 			if(feedback) chain.push(['feedbackOut',[feedback]]);
 			chain.push(['perspective',[[0,0,0,h,w,0,w,h],perspective]]);
 			if(!dragged)
