@@ -105,13 +105,18 @@
 			// ['matrixWarp',[[s,0,0,s],false,true]],
 		};
 		
-		var preview=function()
+
+		var preview_enabled=false;
+		var get_preview=function()
 		{
-			var pixels=c.canvas.toDataURL('image/jpeg');  //_.previewTexture.getPixels();
+		  if(!preview_enabled) return;
+      var pixels=c.canvas.toDataURL('image/jpeg');  //_.previewTexture.getPixels();
 		  put('/preview',pixels);
+		  
+		  preview_enabled=false;
 		}
 		
-		c.setCallback(animation,preview);
+		c.setCallback(animation,get_preview);
 		document.body.appendChild(c.canvas);		
 
 		var special_index=0;
@@ -121,6 +126,7 @@
 			if(special_index<0) special_index=effects.length-1;
 			special=effects[special_index];
 		}
+
 		function next()
 		{
 			special_index++;
@@ -128,6 +134,10 @@
 			special=effects[special_index];
 		}
 
+		function preview()
+		{
+		  preview_enabled=true;
+		}
 
 		var interval=false;
 		function stop()
