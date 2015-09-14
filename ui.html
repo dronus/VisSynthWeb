@@ -1,42 +1,84 @@
 <!DOCTYPE  html>
 <html>
 <head>
-	<title>NF VisSynth MCP</title>
-	<script type="text/javascript" src="../src/glfx.js"></script>
-	<script src="../src/video.js"></script>
+  <title>NF VisSynth MCP</title>
+  <script type="text/javascript" src="../src/glfx.js"></script>
+  <script src="../src/video.js"></script>
 </head>
 <body style="font-size: 30px;">
-	<h1 style="font-size:100%">NF VIS SYNTH MASTER CONTROL PROGRAM</h1>
-	<input type=text id=command style="margin: auto; width: 50em;"></input><br>
-	<button onclick="send('document.location.reload()')">RESTART</button>
-	|
-	<button onclick="send('prev()')">PREV</button>
-	<button onclick="send('next()')">NEXT</button>
-	|
-	<button onclick="send('start('+parseFloat(document.getElementById('delay').value)*1000+')')">START</button>
-	<input type=text id=delay style="width: 5em;" value=10>
-	<button onclick="send('stop()')">STOP</button>
-	<script>		
-		function get(url)
-		{
-			xmlHttp = new XMLHttpRequest();
-			xmlHttp.open('GET',url,true);	
-			xmlHttp.send(null);
-		}
+  <h1 style="font-size:100%">NF VIS SYNTH MASTER CONTROL PROGRAM</h1>
+  <input type=text id=command style="margin: auto; width: 50em;"></input><br>
+  <button onclick="send('document.location.reload()')">RESTART</button>
+  |
+  <button onclick="send('prev()')">PREV</button>
+  <button onclick="send('next()')">NEXT</button>
+  |
+  <button onclick="send('start('+parseFloat(document.getElementById('delay').value)*1000+')')">START</button>
+  <input type=text id=delay style="width: 5em;" value=10>
+  <button onclick="send('stop()')">STOP</button>
+  
+  <br>
+  <img id=preview></img>
+  <br>
+  <button onclick="start_preview()">PLAY PREVIEW</button>
+  <button onclick="stop_preview()">PAUSE PREVIEW</button>
+  <script>    
+    function put(url,data)
+    {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('PUT',url,true);  
+      xmlHttp.send(data);
+    }
 
-		function send(command)
-		{
-			console.log(command);
-			var result=get('/feed?value='+encodeURIComponent(command));
-		}
+    function send(command)
+    {
+      command+=';\n';
+      console.log(command);
+      var result=put('/feed',command);
+    }
 
-		var cmd_element=document.getElementById('command');
-		cmd_element.addEventListener('change',function(){
-			send(cmd_element.value);			
-			cmd_element.value='';
-		});
+    var cmd_element=document.getElementById('command');
+    cmd_element.addEventListener('change',function(){
+      send(cmd_element.value);      
+      cmd_element.value='';
+    });
 
-	</script>
+
+    var preview=false;
+
+    var preview_handler=function(){
+    
+      if(!preview) return;
+    
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('GET','/preview',false);
+      xmlHttp.onreadystatechange=function()
+      {
+        if(xmlHttp.readyState!=4) return;
+        var dataUrl=xmlHttp.responseText;
+        if(dataUrl)
+        {
+          document.getElementById('preview').src=dataUrl;
+        }
+
+        send('preview()');
+      }
+      xmlHttp.send(null);
+      
+      requestAnimationFrame(preview_handler);
+    };
+        
+    function start_preview(){
+      preview=true;
+      send('preview()');
+      requestAnimationFrame(preview_handler);
+    }
+    
+    function stop_preview(){
+      preview=false;
+    }
+   
+  </script>
 
 </body>
 </html>
