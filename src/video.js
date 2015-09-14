@@ -46,7 +46,8 @@ wcvj.webglIsSupported = function(){
 		
 		
 		filter = [];
-		var draw_callback=false;
+		var pre_draw_callback=false;
+		var post_draw_callback=false;
 		
 		video = document.getElementById(el);
 		
@@ -120,7 +121,9 @@ wcvj.webglIsSupported = function(){
 		}
 		
 		var canvasDraw = function(){
-			if(draw_callback) draw_callback.call(this);
+		
+			if(pre_draw_callback) pre_draw_callback.call(this);
+		
 			if(options.glfx){
 				texture.loadContentsOf(video);
 				canvas.draw(texture);
@@ -131,6 +134,9 @@ wcvj.webglIsSupported = function(){
 			}else{
 				options.draw.apply(canvas, [ctx, ctx3, video]);
 			}
+
+			if(post_draw_callback) post_draw_callback.call(this);
+
 			requestAnimFrame(canvasDraw);
 		};
 		
@@ -148,8 +154,9 @@ wcvj.webglIsSupported = function(){
 			filter = newFilter;
 		};
 
-		var setCallback = function(callback){
-			draw_callback=callback;
+		var setCallback = function(pre_draw,post_draw){
+			pre_draw_callback=pre_draw;
+			post_draw_callback=post_draw;
 		};
 		
 		var forceUpdate = function(){

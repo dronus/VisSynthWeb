@@ -16,10 +16,11 @@
 	<button onclick="send('start('+parseFloat(document.getElementById('delay').value)*1000+')')">START</button>
 	<input type=text id=delay style="width: 5em;" value=10>
 	<button onclick="send('stop()')">STOP</button>
+	<img id=preview></img>
 	<script>		
 		function put(url,data)
 		{
-			xmlHttp = new XMLHttpRequest();
+			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open('PUT',url,true);	
 			xmlHttp.send(data);
 		}
@@ -36,6 +37,20 @@
 			cmd_element.value='';
 		});
 
+
+    var preview_handler=function(){
+      var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('GET','/preview',false);
+			xmlHttp.send(null);
+			var dataUrl=xmlHttp.responseText;
+			if(dataUrl)
+  			document.getElementById('preview').src=dataUrl;
+  			
+	    requestAnimationFrame(preview_handler);
+    };
+    
+    preview_handler();
+   
 	</script>
 
 </body>

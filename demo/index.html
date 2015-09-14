@@ -104,7 +104,14 @@
 			c.setFilter(chain);
 			// ['matrixWarp',[[s,0,0,s],false,true]],
 		};
-		c.setCallback(animation);
+		
+		var preview=function()
+		{
+			var pixels=c.canvas.toDataURL('image/jpeg');  //_.previewTexture.getPixels();
+		  put('/preview',pixels);
+		}
+		
+		c.setCallback(animation,preview);
 		document.body.appendChild(c.canvas);		
 
 		var special_index=0;
@@ -142,9 +149,17 @@
 			};
 		}
 
+
+		function put(url,data)
+		{
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('PUT',url,true);	
+			xmlHttp.send(data);
+		}
+		
 		function fetch_script()
 		{
-			xmlHttp = new XMLHttpRequest();
+			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open('GET', '/feed', true);
 			xmlHttp.onreadystatechange = function () {
 				if (xmlHttp.readyState == 4) {
@@ -152,6 +167,7 @@
 						fetch_script();
 					},100);
 					var js=xmlHttp.responseText;
+					console.log(js);
 					if(js) window.eval(js);
 				}
 			};

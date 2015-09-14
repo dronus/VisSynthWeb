@@ -222,6 +222,7 @@ function draw(texture, width, height) {
 
 function update() {
     this._.texture.use();
+    gl.viewport(0, 0, this.width, this.height);    
     this._.flippedShader.drawRect();
     return this;
 }
@@ -327,6 +328,7 @@ exports.canvas = function() {
     canvas.vignette = wrap(vignette);
     canvas.vibrance = wrap(vibrance);
     canvas.sepia = wrap(sepia);
+    canvas.preview=wrap(preview);
 
     return canvas;
 };
@@ -715,6 +717,33 @@ var Texture = (function() {
         c.putImageData(data, 0, 0);
         image.src = canvas.toDataURL();
     };
+    
+    Texture.prototype.getPixels = function() {
+        if(!this.fb)
+        {
+            this.fb = gl.createFramebuffer();
+            // make this the current frame buffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+            // attach the texture to the framebuffer.
+            gl.framebufferTexture2D(
+                gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+                gl.TEXTURE_2D, this.id, 0);
+            // check if you can read from this type of texture.
+            var canRead = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
+            if(!canRead) throw("cannot read");
+            // Unbind the framebuffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        }
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+        var size = this.width * this.height * 4;
+        this.pixels = this.pixels || new Uint8Array(size);
+        gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.pixels);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        
+        return this.pixels;
+    }
+    
 
     Texture.prototype.swapWith = function(other) {
         var temp;
@@ -1135,6 +1164,23 @@ function feedbackIn()
     this._.extraTexture.ensureFormat(this._.texture);
     this._.texture.use();
     this._.extraTexture.drawTo(function() {
+        Shader.getDefaultShader().drawRect();
+    });
+
+    return this;
+}
+
+function preview()
+{
+    // Store a downscaled copy of the current texture in the preview texture unit
+    var t=this._.texture;
+    
+    if(!this._.previewTexture) 
+      this._.previewTexture=new Texture(t.width/4,t.height/4,t.format,t.type);
+    this._.previewTexture.ensureFormat(t.width/4,t.height/4,t.format,t.type );
+
+    this._.texture.use();
+    this._.previewTexture.drawTo(function() {
         Shader.getDefaultShader().drawRect();
     });
 
