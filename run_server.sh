@@ -1,3 +1,3 @@
 #!/bin/sh
 
-nodejs central.js
+nodejs server.js
