@@ -79,17 +79,22 @@
       c.setFilter(chain);
     };
     
+    
+    var put=function(url,data){
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('PUT',url,true);  
+      xmlHttp.send(data);
+    }
+    
     // post-rendering-callback (preview setup)
     var preview_enabled=false;
     var get_preview=function()
     {
       if(!preview_enabled) return;
       var pixels=c.canvas.toDataURL('image/jpeg');
-
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('PUT','/preview',true);  
-      xmlHttp.send(pixels);
-
+    
+      put('/preview',pixels);
+      
       preview_enabled=false;
     }
     
@@ -110,14 +115,18 @@
           },100);
           var js=xmlHttp.responseText;
           console.log(js);
-          if(js) window.eval(js);
+          if(js) 
+          {
+            var result=window.eval(js);
+            if(result){
+              put('/result',JSON.stringify(result));
+            }
+          }
         }
       };
       xmlHttp.send(null);
     }
     poll_command();
-
-
 
 
 
