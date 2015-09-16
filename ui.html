@@ -37,6 +37,15 @@
       padding: 2px;
       border: 1px solid #000;
       list-style: none;
+      width: 480px;
+    }
+    .value{
+      color: blue;
+    }
+    input.value_ui{
+      position: absolute;
+      width: 500px;
+      background-color: #555;
     }
   </style>
 
@@ -46,11 +55,32 @@
     {
       var chain='[ ';
       $('#chain *').each(function(){
-        var src=$(this).html();
+        var src=$(this).text();
         chain+=src+',';
       });
       chain+=' ]';
       send('setChain("'+chain+'")');
+    }
+    
+    var add_slider=function(event)
+    {
+      var value_element=this;
+      var slider=$('<input class=value_ui type=range min="-10" max="10" step="0.1">');
+      slider.attr('value',$(this).html());
+      slider.on('mouseup',function(){slider.remove()});
+      slider.on('input',function(event){
+        $(value_element).html(this.value);
+        updateChain();
+      });
+      $(document.body).append(slider);
+      slider.position({my:'top',at:'bottom',of:$(this)});
+    }
+    
+    var markup=function(item){
+      var html=item.html();
+      var regex=/([0-9]+.[0-9]+)/g;
+      item.html(html.replace(regex,'<span class=value>$1</span>'));
+      item.find('span').on('click',add_slider);
     }
 
     $("ul, li").disableSelection();
@@ -85,7 +115,11 @@
     // the chain list items are sortable
     $( "#chain" ).sortable({
       //revert: true,
-      stop: updateChain
+      stop: updateChain,
+      receive: function(event,ui){
+        markup($(this).data()['ui-sortable'].currentItem);
+        updateChain(event,ui);
+      }
     }).droppable({greedy: true});
 
     // delete items that are dragged out of the chain
