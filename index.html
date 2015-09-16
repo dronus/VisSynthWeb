@@ -68,13 +68,7 @@
 
       // time repeats after 2 periods of PI
       time=(time+.01)%(2*Math.PI);
-
-      var chain=[['vibrance',[1.]],['hueSaturation',[0.,.3]]];
-      if(feedback) chain.push(['feedbackOut',[feedback]]);
-      // chain.push(['perspective',[[0,0,0,h,w,0,w,h],perspective]]);
-      if(effect) chain.push(effect(time));
-      if(feedback) chain.push(['feedbackIn',[]]);
-      c.setFilter(chain);
+      c.setFilter(chain(time));
     };
     
     
@@ -130,11 +124,15 @@
 
     // global functions for UI use
    
-    function setEffect(_effect)
+    function setEffect(effect_src)
     {
-      if(!_effect) return effect=false;
-      var src='var _=function(t){return '+_effect+';};_';
-      effect=eval(src);
+      var chain_src="[ ['vibrance',[1.]],['hueSaturation',[0.,.3]],['feedbackOut',[feedback]],";
+      if(effect_src) chain_src+=effect_src+',';
+      chain_src+="['feedbackIn',[]] ]";
+      
+      var src='var _=function(t){return '+chain_src+';};_';
+      
+      chain=eval(src);
     }
     setEffect(effects[0]);
 
