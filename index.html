@@ -1,121 +1,121 @@
 <!DOCTYPE  html>
 <html>
 <head>
-	<title>NF VisSynth</title>
-	<script src="glfx.js"></script>
-	<script src="video.js"></script>
+  <title>NF VisSynth</title>
+  <script src="glfx.js"></script>
+  <script src="video.js"></script>
 </head>
 <body>
-	<style>
-		html,body,canvas{
-			width: 100%;
-			height: 100%;
-			padding: 0px;
-			margin: 0px;
-			overflow: hidden;
-			background-color: #000;
-		}
-	</style>
+  <style>
+    html,body,canvas{
+      width: 100%;
+      height: 100%;
+      padding: 0px;
+      margin: 0px;
+      overflow: hidden;
+      background-color: #000;
+    }
+  </style>
 
-	<script>
-		function get_cookie(cookie_name)
-		{
-			var cookie = document.cookie;
-			var cookies = cookie.split(';');
-			for (var i=0; i<cookies.length; ++i)
-			{
-				parts = cookies[i].split('=');
-				if (parts[0].trim()==cookie_name)
-				{
-					return parts[1].trim();
-				}
-			}
+  <script>
+    function get_cookie(cookie_name)
+    {
+      var cookie = document.cookie;
+      var cookies = cookie.split(';');
+      for (var i=0; i<cookies.length; ++i)
+      {
+        parts = cookies[i].split('=');
+        if (parts[0].trim()==cookie_name)
+        {
+          return parts[1].trim();
+        }
+      }
 
-		}
+    }
 
-		function set_cookie(key,value)
-		{
-			document.cookie = key+'='+value+';path=/;expires=Thu, 1 Jan 2095 00:00:00 GMT;';
-		}
-	</script>
-	<script>
-		
-		
-		var w=640, h=480;		
+    function set_cookie(key,value)
+    {
+      document.cookie = key+'='+value+';path=/;expires=Thu, 1 Jan 2095 00:00:00 GMT;';
+    }
+  </script>
+  <script>
+    
+    
+    var w=640, h=480;    
 
     // WebcamVidja video and effects streaming engine
-		var c = wcvj.webcam('c', {canvas: true, glfx: true});
+    var c = wcvj.webcam('c', {canvas: true, glfx: true});
 
-		var effects=[
-			function(t){ return ['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]];},
-			false,
-			function(t){ return ['tile',[]];},
-			function(t){ return ['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]];},
-			function(t){ return ['unsharpMask',[3,(Math.sin(t)+1)*2]];},
-			function(t){ return ['denoise',[3]];},
-			function(t){ return ['swirl',[300, 246.5, 250, Math.sin(t)*1.0]];},
-			function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
-			function(t){ return ['grid',[]];},			
-		];
+    var effects=[
+      function(t){ return ['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]];},
+      false,
+      function(t){ return ['tile',[]];},
+      function(t){ return ['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]];},
+      function(t){ return ['unsharpMask',[3,(Math.sin(t)+1)*2]];},
+      function(t){ return ['denoise',[3]];},
+      function(t){ return ['swirl',[300, 246.5, 250, Math.sin(t)*1.0]];},
+      function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
+      function(t){ return ['grid',[]];},      
+    ];
 
-		var effect=effects[0];
+    var effect=effects[0];
 
     // global feedback, adjustable.  TODO make this clean
-		feedback=0.;
+    feedback=0.;
 
-		var time=0; // running time
-		
-		// pre-rendering callback (filter setup)
-		var animation=function(){
+    var time=0; // running time
+    
+    // pre-rendering callback (filter setup)
+    var animation=function(){
 
       // time repeats after 2 periods of PI
-			time=(time+.01)%(2*Math.PI);
+      time=(time+.01)%(2*Math.PI);
 
-			var chain=[['vibrance',[1.]],['hueSaturation',[0.,.3]]];
-			if(feedback) chain.push(['feedbackOut',[feedback]]);
-			// chain.push(['perspective',[[0,0,0,h,w,0,w,h],perspective]]);
-			if(effect) chain.push(effect(time));
-			if(feedback) chain.push(['feedbackIn',[]]);
-			c.setFilter(chain);
-		};
-		
+      var chain=[['vibrance',[1.]],['hueSaturation',[0.,.3]]];
+      if(feedback) chain.push(['feedbackOut',[feedback]]);
+      // chain.push(['perspective',[[0,0,0,h,w,0,w,h],perspective]]);
+      if(effect) chain.push(effect(time));
+      if(feedback) chain.push(['feedbackIn',[]]);
+      c.setFilter(chain);
+    };
+    
     // post-rendering-callback (preview setup)
-		var preview_enabled=false;
-		var get_preview=function()
-		{
-		  if(!preview_enabled) return;
+    var preview_enabled=false;
+    var get_preview=function()
+    {
+      if(!preview_enabled) return;
       var pixels=c.canvas.toDataURL('image/jpeg');
 
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open('PUT','/preview',true);	
-			xmlHttp.send(pixels);
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('PUT','/preview',true);  
+      xmlHttp.send(pixels);
 
-		  preview_enabled=false;
-		}
-		
-		c.setCallback(animation,get_preview);
+      preview_enabled=false;
+    }
+    
+    c.setCallback(animation,get_preview);
 
-		document.body.appendChild(c.canvas);
+    document.body.appendChild(c.canvas);
 
 
-		// command polling for UI server
-		var poll_command=function()
-		{
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open('GET', '/command', true);
-			xmlHttp.onreadystatechange = function () {
-				if (xmlHttp.readyState == 4) {
-					setTimeout(function(){
-						poll_command();
-					},100);
-					var js=xmlHttp.responseText;
-					console.log(js);
-					if(js) window.eval(js);
-				}
-			};
-			xmlHttp.send(null);
-		}
-		poll_command();
+    // command polling for UI server
+    var poll_command=function()
+    {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('GET', '/command', true);
+      xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+          setTimeout(function(){
+            poll_command();
+          },100);
+          var js=xmlHttp.responseText;
+          console.log(js);
+          if(js) window.eval(js);
+        }
+      };
+      xmlHttp.send(null);
+    }
+    poll_command();
 
 
 
@@ -123,47 +123,47 @@
 
     // global functions for UI use
     
-		var effect_index=0;
-		function prev()
-		{
-			effect_index--;
-			if(effect_index<0) effect_index=effects.length-1;
-			effect=effects[effect_index];
-		}
+    var effect_index=0;
+    function prev()
+    {
+      effect_index--;
+      if(effect_index<0) effect_index=effects.length-1;
+      effect=effects[effect_index];
+    }
 
-		function next()
-		{
-			effect_index++;
-			if(effect_index>=effects.length) effect_index=0;
-			effect=effects[effect_index];
-		}
+    function next()
+    {
+      effect_index++;
+      if(effect_index>=effects.length) effect_index=0;
+      effect=effects[effect_index];
+    }
 
-		function preview()
-		{
-		  preview_enabled=true;
-		}
+    function preview()
+    {
+      preview_enabled=true;
+    }
 
-		var interval=false;
-		function stop()
-		{
-			if(interval) clearInterval(interval);
-			interval=false;
-		}
-		function start(delay)
-		{
-			stop();
-			interval=setInterval(function(){
-				next();
-			},delay);
-		}
-		function filter(name,params)
-		{
-			effect=function(t){
-				return [name,params];
-			};
-		}
-		
-	</script>
+    var interval=false;
+    function stop()
+    {
+      if(interval) clearInterval(interval);
+      interval=false;
+    }
+    function start(delay)
+    {
+      stop();
+      interval=setInterval(function(){
+        next();
+      },delay);
+    }
+    function filter(name,params)
+    {
+      effect=function(t){
+        return [name,params];
+      };
+    }
+    
+  </script>
 
 </body>
 </html>

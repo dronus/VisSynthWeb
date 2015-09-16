@@ -74,30 +74,30 @@
    /*
     TODO
     perspective adjustment UI from index.html:
-    	var pc=get_cookie('perspective');
+      var pc=get_cookie('perspective');
 
-		var perspective=pc ? JSON.parse(pc) : [0,0,0,h,w,0,w,h];
+    var perspective=pc ? JSON.parse(pc) : [0,0,0,h,w,0,w,h];
 
-		var dragged=false;
-		c.canvas.addEventListener('mousedown',function(e){
-			if(e.button==1)
-				perspective=[0,0,0,h,w,0,w,h];
-			else		
-				dragged=true;
-		});
-		c.canvas.addEventListener('mouseup'  ,function(e){dragged=false;});
-		c.canvas.addEventListener('mousemove',function(e){
-			if(!dragged) return;
-			var x=e.offsetX/c.canvas.offsetWidth*w, y=e.offsetY/c.canvas.offsetHeight*h;
-			var i=0;
-			if(x>w/2) i+=2;
-			if(y>h/2) i+=1;
-			perspective[i*2]=x;
-			perspective[i*2+1]=y;	
-			set_cookie('perspective',JSON.stringify(perspective));		
-		});
-		
-		
+    var dragged=false;
+    c.canvas.addEventListener('mousedown',function(e){
+      if(e.button==1)
+        perspective=[0,0,0,h,w,0,w,h];
+      else    
+        dragged=true;
+    });
+    c.canvas.addEventListener('mouseup'  ,function(e){dragged=false;});
+    c.canvas.addEventListener('mousemove',function(e){
+      if(!dragged) return;
+      var x=e.offsetX/c.canvas.offsetWidth*w, y=e.offsetY/c.canvas.offsetHeight*h;
+      var i=0;
+      if(x>w/2) i+=2;
+      if(y>h/2) i+=1;
+      perspective[i*2]=x;
+      perspective[i*2+1]=y;  
+      set_cookie('perspective',JSON.stringify(perspective));    
+    });
+    
+    
    */
   </script>
 
