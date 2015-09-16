@@ -62,14 +62,23 @@
       send('setChain("'+chain+'")');
     }
     
+    var logify=function(x){
+      return(Math.log(Math.abs(x)+1)/Math.LN2*(x>0 ? 1 : -1));
+    }
+    
+    var expify=function(x){
+      return Math.round((x>0 ? 1 : -1)*(Math.pow(2.,Math.abs(x))-1)*100.)/100.;
+    }
+    
+    
     var add_slider=function(event)
     {
       var value_element=this;
-      var slider=$('<input class=value_ui type=range min="-10" max="10" step="0.1">');
-      slider.attr('value',$(this).html());
+      var slider=$('<input class=value_ui type=range min="-10" max="10" step="0.01">');
+      slider.attr('value',logify($(this).html()));
       slider.on('mouseup',function(){slider.remove()});
       slider.on('input',function(event){
-        $(value_element).html(this.value);
+        $(value_element).html(expify(this.value));
         updateChain();
       });
       $(document.body).append(slider);
