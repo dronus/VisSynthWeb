@@ -57,18 +57,18 @@
 
     // build list of effects  
     var effects=[    
-      "['vibrance',[1.]]",
-      "['hueSaturation',[0.,.3]]",
-      "['feedbackOut',[0.5]]",
-      "['feedbackIn']",    
-      "['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]]",
-      "['tile']",
-      "['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]]",
-      "['unsharpMask',[3,(Math.sin(t)+1)*2]]",
-      "['denoise',[3]]",
-      "['swirl',[300, 246.5, 250, Math.sin(t)*1.0]]",
-      "['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]]",
-      "['grid']"
+      "vibrance(1.)",
+      "hueSaturation(0.,.3)",
+      "feedbackOut(0.7)",
+      "feedbackIn()",
+      "kaleidoscope(Math.sin(t/2.),Math.cos(t/2.))",
+      "tile()",
+      "colorHalftone(w/2,h/2,30,2+Math.sin(t))",
+      "unsharpMask(3,(Math.sin(t)+1)*2)",
+      "denoise(3)",
+      "swirl(300, 246.5, 250, Math.sin(t)*1.0)",
+      "hexagonalPixelate(w/2,h/2,4+(Math.sin(t)+1)*2)",
+      "grid()"
     ];
     effects.forEach(function(effect){
       $('#effects').append('<li class=effect>'+effect+'</li>');

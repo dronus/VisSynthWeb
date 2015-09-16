@@ -53,7 +53,7 @@
 
       // time repeats after 2 periods of PI
       time=(time+.01)%(2*Math.PI);
-      c.setFilter(chain(time));
+      c.setFilter(function(canvas){chain(canvas,time);});
     };
     
     
@@ -111,10 +111,10 @@
    
     function setChain(_chain_src){
       chain_src=_chain_src;
-      var src='var _=function(t){return '+chain_src+';};_';
+      var src='var _=function(c,t){with(c){'+chain_src+'}};_';
       chain=eval(src);
     }
-    setChain("[]");
+    setChain("");
        
     function preview()
     {

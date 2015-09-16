@@ -45,7 +45,7 @@ wcvj.webglIsSupported = function(){
 		var canvas, ctx, ctx3, texture, filter;
 		
 		
-		filter = [];
+		filter = function(){};
 		var pre_draw_callback=false;
 		var post_draw_callback=false;
 		
@@ -127,9 +127,7 @@ wcvj.webglIsSupported = function(){
 			if(options.glfx){
 				texture.loadContentsOf(video);
 				canvas.draw(texture);
-				for(var f=0; f<filter.length; f++){
-					canvas[filter[f][0]].apply(canvas, filter[f][1]);
-				}
+				filter(canvas);
 				canvas.update();
 			}else{
 				options.draw.apply(canvas, [ctx, ctx3, video]);
