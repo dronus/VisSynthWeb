@@ -40,41 +40,13 @@
 	</script>
 	<script>
 		
-		var b,c;
 		
-		var w=640, h=480;
-		
-		c = wcvj.webcam('c', {canvas: true, glfx: true});
-		// c.setFilter[['ink',[0.4]]]);
-		var t=0;
+		var w=640, h=480;		
 
-		var pc=get_cookie('perspective');
-
-		var perspective=pc ? JSON.parse(pc) : [0,0,0,h,w,0,w,h];
-
-		var dragged=false;
-		c.canvas.addEventListener('mousedown',function(e){
-			if(e.button==1)
-				perspective=[0,0,0,h,w,0,w,h];
-			else		
-				dragged=true;
-		});
-		c.canvas.addEventListener('mouseup'  ,function(e){dragged=false;});
-		c.canvas.addEventListener('mousemove',function(e){
-			if(!dragged) return;
-			var x=e.offsetX/c.canvas.offsetWidth*w, y=e.offsetY/c.canvas.offsetHeight*h;
-			var i=0;
-			if(x>w/2) i+=2;
-			if(y>h/2) i+=1;
-			perspective[i*2]=x;
-			perspective[i*2+1]=y;	
-			set_cookie('perspective',JSON.stringify(perspective));		
-		});
-
-		s=.5;
+    // WebcamVidja video and effects streaming engine
+		var c = wcvj.webcam('c', {canvas: true, glfx: true});
 
 		var effects=[
-//			function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
 			function(t){ return ['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]];},
 			false,
 			function(t){ return ['tile',[]];},
@@ -82,56 +54,88 @@
 			function(t){ return ['unsharpMask',[3,(Math.sin(t)+1)*2]];},
 			function(t){ return ['denoise',[3]];},
 			function(t){ return ['swirl',[300, 246.5, 250, Math.sin(t)*1.0]];},
+			function(t){ return ['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]];},
+			function(t){ return ['grid',[]];},			
 		];
 
-		var special=effects[0];
+		var effect=effects[0];
 
+    // global feedback, adjustable.  TODO make this clean
 		feedback=0.;
 
+		var time=0; // running time
+		
+		// pre-rendering callback (filter setup)
 		var animation=function(){
-			t+=.01;
-			if(t>32*Math.PI) t-=32*Math.PI;
-			// var x1=w*.4, x2=w-x1, y1=h*.4, y2=h-y1;
+
+      // time repeats after 2 periods of PI
+			time=(time+.01)%(2*Math.PI);
+
 			var chain=[['vibrance',[1.]],['hueSaturation',[0.,.3]]];
 			if(feedback) chain.push(['feedbackOut',[feedback]]);
-			chain.push(['perspective',[[0,0,0,h,w,0,w,h],perspective]]);
-			if(!dragged)
-			{
-				if(special) chain.push(special(t));
-			}
-			else         chain.unshift(['grid',[]]);
+			// chain.push(['perspective',[[0,0,0,h,w,0,w,h],perspective]]);
+			if(effect) chain.push(effect(time));
 			if(feedback) chain.push(['feedbackIn',[]]);
 			c.setFilter(chain);
-			// ['matrixWarp',[[s,0,0,s],false,true]],
 		};
 		
-
+    // post-rendering-callback (preview setup)
 		var preview_enabled=false;
 		var get_preview=function()
 		{
 		  if(!preview_enabled) return;
-      var pixels=c.canvas.toDataURL('image/jpeg');  //_.previewTexture.getPixels();
-		  put('/preview',pixels);
-		  
+      var pixels=c.canvas.toDataURL('image/jpeg');
+
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('PUT','/preview',true);	
+			xmlHttp.send(pixels);
+
 		  preview_enabled=false;
 		}
 		
 		c.setCallback(animation,get_preview);
-		document.body.appendChild(c.canvas);		
 
-		var special_index=0;
+		document.body.appendChild(c.canvas);
+
+
+		// command polling for UI server
+		var poll_command=function()
+		{
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open('GET', '/command', true);
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState == 4) {
+					setTimeout(function(){
+						poll_command();
+					},100);
+					var js=xmlHttp.responseText;
+					console.log(js);
+					if(js) window.eval(js);
+				}
+			};
+			xmlHttp.send(null);
+		}
+		poll_command();
+
+
+
+
+
+    // global functions for UI use
+    
+		var effect_index=0;
 		function prev()
 		{
-			special_index--;
-			if(special_index<0) special_index=effects.length-1;
-			special=effects[special_index];
+			effect_index--;
+			if(effect_index<0) effect_index=effects.length-1;
+			effect=effects[effect_index];
 		}
 
 		function next()
 		{
-			special_index++;
-			if(special_index>=effects.length) special_index=0;
-			special=effects[special_index];
+			effect_index++;
+			if(effect_index>=effects.length) effect_index=0;
+			effect=effects[effect_index];
 		}
 
 		function preview()
@@ -154,36 +158,11 @@
 		}
 		function filter(name,params)
 		{
-			special=function(t){
+			effect=function(t){
 				return [name,params];
 			};
 		}
-
-
-		function put(url,data)
-		{
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open('PUT',url,true);	
-			xmlHttp.send(data);
-		}
 		
-		function fetch_script()
-		{
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open('GET', '/feed', true);
-			xmlHttp.onreadystatechange = function () {
-				if (xmlHttp.readyState == 4) {
-					setTimeout(function(){
-						fetch_script();
-					},100);
-					var js=xmlHttp.responseText;
-					console.log(js);
-					if(js) window.eval(js);
-				}
-			};
-			xmlHttp.send(null);
-		}
-		fetch_script();
 	</script>
 
 </body>

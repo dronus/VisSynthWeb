@@ -22,18 +22,13 @@
   <img id=preview></img>
 
   <script>    
-    function put(url,data)
-    {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('PUT',url,true);  
-      xmlHttp.send(data);
-    }
-
     function send(command)
     {
       command+=';\n';
       console.log(command);
-      var result=put('/feed',command);
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('PUT','/command',true);  
+      xmlHttp.send(command);
     }
 
     var cmd_element=document.getElementById('command');
@@ -56,9 +51,7 @@
         if(xmlHttp.readyState!=4) return;
         var dataUrl=xmlHttp.responseText;
         if(dataUrl)
-        {
           document.getElementById('preview').src=dataUrl;
-        }
 
         send('preview()');
       }
@@ -78,6 +71,34 @@
       document.getElementById('preview').src='';
     }
    
+   /*
+    TODO
+    perspective adjustment UI from index.html:
+    	var pc=get_cookie('perspective');
+
+		var perspective=pc ? JSON.parse(pc) : [0,0,0,h,w,0,w,h];
+
+		var dragged=false;
+		c.canvas.addEventListener('mousedown',function(e){
+			if(e.button==1)
+				perspective=[0,0,0,h,w,0,w,h];
+			else		
+				dragged=true;
+		});
+		c.canvas.addEventListener('mouseup'  ,function(e){dragged=false;});
+		c.canvas.addEventListener('mousemove',function(e){
+			if(!dragged) return;
+			var x=e.offsetX/c.canvas.offsetWidth*w, y=e.offsetY/c.canvas.offsetHeight*h;
+			var i=0;
+			if(x>w/2) i+=2;
+			if(y>h/2) i+=1;
+			perspective[i*2]=x;
+			perspective[i*2+1]=y;	
+			set_cookie('perspective',JSON.stringify(perspective));		
+		});
+		
+		
+   */
   </script>
 
 </body>
