@@ -1016,36 +1016,40 @@ function noise(amount) {
  * @filter         Grid
  * @description    Adds a grid to the image
  */
-function grid() {
+function grid(size, angle) {
     gl.grid = gl.grid || new Shader(null, '\
         uniform sampler2D texture;\
+      	uniform float size;\
+      	uniform float angle;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color = texture2D(texture, texCoord);\
+            vec2 uv=texCoord*vec2(size,size);\
+            uv=vec2(cos(angle)*uv.x+sin(angle)*uv.y,-sin(angle)*uv.x+cos(angle)*uv.y);\
             \
-            if     (fract(texCoord.x*8.+.02)<.04 || fract(texCoord.y*8.+.02)<.04)\
+            if     (fract(uv.x*8.+.02)<.04 || fract(uv.y*8.+.02)<.04)\
 	            gl_FragColor = vec4(0.0,0.0,0.0,1.0);\
-            else if(fract(texCoord.x*8.+.05)<.1 || fract(texCoord.y*8.+.05)<.1)\
+            else if(fract(uv.x*8.+.05)<.1 || fract(uv.y*8.+.05)<.1)\
 	            gl_FragColor = vec4(1.0,1.0,1.0,1.0);\
             else\
 	            gl_FragColor = color;\
         }\
     ');
 
-    simpleShader.call(this, gl.grid, {
+    simpleShader.call(this, gl.grid, {size: size, angle:angle
     });
 
     return this;
 }
 
 
-function kaleidoscope(angle,angle2) {
+function kaleidoscope(sides,angle,angle2) {
     gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
         uniform sampler2D texture;\
 	uniform float angle;\
 	uniform float angle2;\
+	uniform float sides;\
         varying vec2 texCoord;\
-	float sides=5.;\
 	void main() {\
 		vec2 p = texCoord - 0.5;\
 		float r = length(p);\
@@ -1059,24 +1063,24 @@ function kaleidoscope(angle,angle2) {
 	}\
     ');
 
-    simpleShader.call(this, gl.kaleidoscope, {angle:angle, angle2:angle2});
+    simpleShader.call(this, gl.kaleidoscope, {sides:Math.round(sides), angle:angle, angle2:angle2});
 
     return this;
 }
 
 
-function tile() {
+function tile(size) {
     gl.tile = gl.tile || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
-	void main() {\
-		vec4 color = texture2D(texture, fract(texCoord*2.));\
-		gl_FragColor = color;\
-	}\
+      	uniform float size;\
+        void main() {\
+          vec4 color = texture2D(texture, fract(texCoord*size));\
+          gl_FragColor = color;\
+        }\
     ');
 
-    simpleShader.call(this, gl.tile, {
-    });
+    simpleShader.call(this, gl.tile, {size:size});
 
     return this;
 }

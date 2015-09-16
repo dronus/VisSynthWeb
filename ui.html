@@ -100,14 +100,14 @@
       "hueSaturation(0.0,0.3)",
       "feedbackOut(0.7)",
       "feedbackIn()",
-      "kaleidoscope(Math.sin(t*5.0),Math.cos(t*2.0))",
-      "tile()",
+      "kaleidoscope(5.0,Math.sin(t*5.0),Math.cos(t*2.0))",
+      "tile(2.0)",
       "colorHalftone(w/2,h/2,30.0,2.0+Math.sin(t*5.0))",
       "unsharpMask(3.0,(Math.sin(t*5.0)+1.0)*2.0)",
       "denoise(3.0)",
       "swirl(w/2, h/2, 250.0, Math.sin(t*5.0)*1.0)",
       "hexagonalPixelate(w/2,h/2,4.0+(Math.sin(t*5.0)+1.0)*2.0)",
-      "grid()"
+      "grid(1.0,0.0)"
     ];
     effects.forEach(function(effect){
       $('#effects').append('<li class=effect>'+effect+'</li>');
