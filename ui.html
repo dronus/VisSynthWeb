@@ -18,10 +18,11 @@
   <button onclick="send('stop()')">STOP</button>
   
   <br>
-  <img id=preview></img>
-  <br>
   <button onclick="start_preview()">PLAY PREVIEW</button>
   <button onclick="stop_preview()">PAUSE PREVIEW</button>
+  <br>
+  <img id=preview></img>
+
   <script>    
     function put(url,data)
     {
@@ -76,6 +77,7 @@
     
     function stop_preview(){
       preview=false;
+      document.getElementById('preview').src='';
     }
    
   </script>
