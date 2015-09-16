@@ -52,7 +52,7 @@
     var animation=function(){
 
       // time repeats after 2 periods of PI
-      time=(time+.01)%(2*Math.PI);
+      time=(time+.001)%(2*Math.PI);
       c.setFilter(function(canvas){chain(canvas,time);});
     };
     

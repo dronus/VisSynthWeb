@@ -57,17 +57,17 @@
 
     // build list of effects  
     var effects=[    
-      "vibrance(1.)",
-      "hueSaturation(0.,.3)",
+      "vibrance(1.0)",
+      "hueSaturation(0.0,0.3)",
       "feedbackOut(0.7)",
       "feedbackIn()",
-      "kaleidoscope(Math.sin(t/2.),Math.cos(t/2.))",
+      "kaleidoscope(Math.sin(t*5.0),Math.cos(t*2.0))",
       "tile()",
-      "colorHalftone(w/2,h/2,30,2+Math.sin(t))",
-      "unsharpMask(3,(Math.sin(t)+1)*2)",
-      "denoise(3)",
-      "swirl(300, 246.5, 250, Math.sin(t)*1.0)",
-      "hexagonalPixelate(w/2,h/2,4+(Math.sin(t)+1)*2)",
+      "colorHalftone(w/2,h/2,30.0,2.0+Math.sin(t*5.0))",
+      "unsharpMask(3.0,(Math.sin(t*5.0)+1.0)*2.0)",
+      "denoise(3.0)",
+      "swirl(w/2, h/2, 250.0, Math.sin(t*5.0)*1.0)",
+      "hexagonalPixelate(w/2,h/2,4.0+(Math.sin(t*5.0)+1.0)*2.0)",
       "grid()"
     ];
     effects.forEach(function(effect){
