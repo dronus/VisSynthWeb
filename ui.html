@@ -2,19 +2,18 @@
 <html>
 <head>
   <title>NF VisSynth MCP</title>
+  <script src="jquery-2.1.4.js"></script>
+  <script src="jquery-ui.js"></script>
 </head>
-<body style="font-size: 30px;">
+<body style="font-size: 20px;">
   <h1 style="font-size:100%">NF VIS SYNTH MASTER CONTROL PROGRAM</h1>
   <div id=result style="margin: auto; width: 50em;"></div><br>
   <input type=text id=command style="margin: auto; width: 50em;"></input><br>
   <button onclick="send('document.location.reload()')">RESTART</button>
-  |
-  <button onclick="send('prev()')">PREV</button>
-  <button onclick="send('next()')">NEXT</button>
-  |
-  <button onclick="send('start('+parseFloat(document.getElementById('delay').value)*1000+')')">START</button>
-  <input type=text id=delay style="width: 5em;" value=10>
-  <button onclick="send('stop()')">STOP</button>
+
+
+  <ul id=effects></ul>
+  <ul id=chain></ul>
   
   <br>
   <button onclick="start_preview()">PLAY PREVIEW</button>
@@ -22,7 +21,81 @@
   <br>
   <img id=preview></img>
 
-  <script>    
+  <style>
+   #effects, #chain{
+      vertical-align: top;
+      display: inline-block;
+      width: 500px;
+      height: 50vh;
+      border: 1px solid black;
+      padding: 2px;
+      overflow: auto;
+    }
+    .effect{
+      background-color: #ddd;
+      margin: 2px;
+      padding: 2px;
+      border: 1px solid #000;
+      list-style: none;
+    }
+  </style>
+
+  <script>
+
+    var updateChain=function(event,ui)
+    {
+      var chain='[ ';
+      $('#chain *').each(function(){
+        var src=$(this).html();
+        chain+=src+',';
+      });
+      chain+=' ]';
+      send('setChain("'+chain+'")');
+    }
+
+    $("ul, li").disableSelection();
+
+    // build list of effects  
+    var effects=[    
+      "['vibrance',[1.]]",
+      "['hueSaturation',[0.,.3]]",
+      "['feedbackOut',[0.5]]",
+      "['feedbackIn']",    
+      "['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]]",
+      "['tile']",
+      "['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]]",
+      "['unsharpMask',[3,(Math.sin(t)+1)*2]]",
+      "['denoise',[3]]",
+      "['swirl',[300, 246.5, 250, Math.sin(t)*1.0]]",
+      "['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]]",
+      "['grid']"
+    ];
+    effects.forEach(function(effect){
+      $('#effects').append('<li class=effect>'+effect+'</li>');
+    });
+
+    // the effects may be dragged to the chain list
+    $('#effects *').draggable({
+      connectToSortable: "#chain",
+      helper: "clone",
+      revert: "invalid",
+      stop: updateChain
+    });
+
+    // the chain list items are sortable
+    $( "#chain" ).sortable({
+      //revert: true,
+      stop: updateChain
+    }).droppable({greedy: true});
+
+    // delete items that are dragged out of the chain
+    $('body').droppable({
+      drop: function ( event, ui ) {          
+        ui.draggable.remove();
+      },
+      accept: '#chain *'
+    });
+
   
     var put=function(url)
     {

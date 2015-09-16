@@ -46,21 +46,6 @@
     // WebcamVidja video and effects streaming engine
     var c = wcvj.webcam('c', {canvas: true, glfx: true});
 
-    var effects=[
-      "['kaleidoscope',[Math.sin(t/2.),Math.cos(t/2.)]]",
-      false,
-      "['tile',[]]",
-      "['colorHalftone',[w/2,h/2,30,2+Math.sin(t)]]",
-      "['unsharpMask',[3,(Math.sin(t)+1)*2]]",
-      "['denoise',[3]]",
-      "['swirl',[300, 246.5, 250, Math.sin(t)*1.0]]",
-      "['hexagonalPixelate',[w/2,h/2,4+(Math.sin(t)+1)*2]]",
-      "['grid',[]]"
-    ];
-   
-    // global feedback, adjustable.  TODO make this clean
-    feedback=0.;
-
     var time=0; // running time
     
     // pre-rendering callback (filter setup)
@@ -124,57 +109,16 @@
 
     // global functions for UI use
    
-    function setEffect(effect_src)
-    {
-      var chain_src="[ ['vibrance',[1.]],['hueSaturation',[0.,.3]],['feedbackOut',[feedback]],";
-      if(effect_src) chain_src+=effect_src+',';
-      chain_src+="['feedbackIn',[]] ]";
-      
+    function setChain(_chain_src){
+      chain_src=_chain_src;
       var src='var _=function(t){return '+chain_src+';};_';
-      
       chain=eval(src);
     }
-    setEffect(effects[0]);
-
-    
-    var effect_index=0;
-    function prev()
-    {
-      effect_index--;
-      if(effect_index<0) effect_index=effects.length-1;
-      setEffect(effects[effect_index]);
-    }
-
-    function next()
-    {
-      effect_index++;
-      if(effect_index>=effects.length) effect_index=0;
-      setEffect(effects[effect_index])
-    }
-
+    setChain("[]");
+       
     function preview()
     {
       preview_enabled=true;
-    }
-
-    var interval=false;
-    function stop()
-    {
-      if(interval) clearInterval(interval);
-      interval=false;
-    }
-    function start(delay)
-    {
-      stop();
-      interval=setInterval(function(){
-        next();
-      },delay);
-    }
-    function filter(name,params)
-    {
-      effect=function(t){
-        return [name,params];
-      };
     }
     
   </script>
