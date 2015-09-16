@@ -1,6 +1,7 @@
 var http = require('http');
 
 var data={};
+var pending={};
 
 var fs=require('fs');
 
@@ -17,7 +18,19 @@ var server=http.createServer(function (req, res) {
     // a new value is given, fetch body data and store it
     if(!data[key]) data[key]='';
     req.on('data',function(chunk){data[key]+=chunk;});
-    req.on('end' ,function(     ){res.end();});
+    req.on('end' ,function()
+    {    
+      res.end();
+     
+      // answer pending requests for this key
+      var waiter=pending[key];
+      if(pending[key])
+      {
+        pending[key].end(data[key]);        
+        delete pending[key];
+        delete data[key];
+      }
+    });
   }
   else if(fs.existsSync(parts[0]) && fs.statSync(parts[0]).isFile())
   {
@@ -26,9 +39,8 @@ var server=http.createServer(function (req, res) {
   }
   else
   {
-    // no value is giiven, so return the old one and delete it afterwards.
-    res.end(data[key]);
-    delete data[key];
+    if(pending[key]) pending[key].end();
+    pending[key]=res;
   }  
 });
 

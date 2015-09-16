@@ -45,24 +45,22 @@
       if(!preview) return;
     
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET','/preview',false);
+      xmlHttp.open('GET','/preview',true);
       xmlHttp.onreadystatechange=function()
       {
         if(xmlHttp.readyState!=4) return;
         var dataUrl=xmlHttp.responseText;
         if(dataUrl)
           document.getElementById('preview').src=dataUrl;
-
-        send('preview()');
+        requestAnimationFrame(preview_handler);
       }
-      xmlHttp.send(null);
-      
-      requestAnimationFrame(preview_handler);
+      xmlHttp.send(null);      
+
+      send('preview()');
     };
         
     function start_preview(){
       preview=true;
-      send('preview()');
       requestAnimationFrame(preview_handler);
     }
     
