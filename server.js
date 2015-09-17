@@ -22,6 +22,13 @@ var server=http.createServer(function (req, res) {
     {    
       res.end();
      
+      // if it denotes a file, store it.
+      if(fs.existsSync(key) && fs.statSync(key).isFile())
+      {
+        fs.writeFileSync(key,data[key]);
+        delete data[key];
+      }
+
       // answer pending requests for this key
       var waiter=pending[key];
       if(pending[key])
@@ -32,7 +39,7 @@ var server=http.createServer(function (req, res) {
       }
     });
   }
-  else if(fs.existsSync(parts[0]) && fs.statSync(parts[0]).isFile())
+  else if(fs.existsSync(key) && fs.statSync(key).isFile())
   {
     res.setHeader("Content-Type", "text/html");
     res.end(fs.readFileSync(parts[0]));

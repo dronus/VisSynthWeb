@@ -171,7 +171,26 @@
   </style>
 
   <script>
-
+  
+    var put=function(url,data)
+    {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('PUT',url,true);
+      xmlHttp.send(data);
+    }
+    
+    var get=function(url,callback)
+    {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('GET',url,true);
+      xmlHttp.onreadystatechange=function()
+      {
+        if(xmlHttp.readyState!=4) return;
+        callback(xmlHttp.responseText);      
+      }
+      xmlHttp.send(null);      
+    }
+    
     var save=function()
     {
       var chains=[];      
@@ -185,7 +204,7 @@
       });
                   
       var json=JSON.stringify(chains);
-      localStorage.setItem('chains',json);
+      put('chains.json',json);
       
       console.log('Saved.');
       
@@ -271,9 +290,8 @@
       });        
     }
     
-    var load=function()
+    var load=function(json)
     {
-      var json=localStorage.getItem('chains');
       if(!json) return;
       var chains=JSON.parse(json);
       
@@ -287,8 +305,8 @@
         // append another empty list
         ensure_empty_list();
       });
-    }
-    load();
+    }    
+    get('chains.json',load);
     
     var logify=function(x){
       return(Math.log(Math.abs(x)+1)/Math.LN2*(x>0 ? 1 : -1));
@@ -352,26 +370,6 @@
       },
       accept: '#chains .effect'
     });
-
-  
-    var put=function(url)
-    {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('PUT',url,true);
-      xmlHttp.send(null);      
-    }
-    
-    var get=function(url,callback)
-    {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET',url,true);
-      xmlHttp.onreadystatechange=function()
-      {
-        if(xmlHttp.readyState!=4) return;
-        callback(xmlHttp.responseText);      
-      }
-      xmlHttp.send(null);      
-    }
     
     function result(text)
     {
