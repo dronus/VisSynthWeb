@@ -17,9 +17,11 @@
     <h2>Effects</h2>
     <ul id=effects></ul>
   </div>
-  <div class="chain container">
-    <h2>Chain 1</h2>
-    <ul id=chain></ul>
+  <div id="chains">
+    <div class="container">
+      <h2>Chain 1</h2>
+      <ul class="chain"></ul>
+    </div>
   </div>
   
   <div class="preview container">
@@ -82,14 +84,27 @@
     width: 100%;
    }
       
-   .effects, .chain{
+   .effects, #chains{
       vertical-align: top;
       display: inline-block;
-      border: 1px solid #555;
-      border-radius: 5px;
-      padding: 2px;
     }
-    #effects, #chain{
+
+    #chains>*{
+      display:inline-block;
+      vertical-align: top;      
+    }
+    
+    #chains .active{
+      background-color: #030;
+      border-color: #0f0;
+    }
+    
+    #chains .active .effect{
+      background-color: #050;
+      border-color: #0f0;
+    }
+    
+    #effects, .chain{
       overflow: auto;
       margin: 0px;
       padding: 0px;
@@ -129,12 +144,17 @@
 
     var save=function()
     {
-      var chain=[];
-      $('#chain>*').each(function(){
-        var src=$(this).text();
-        chain.push(src);
+      var chains=[];      
+      $('#chains .chain').each(function(){
+        var chain=[];
+        $(this).find('>*').each(function(){
+          var src=$(this).text();
+          chain.push(src);
+        });
+        if(chain.length) chains.push(chain);
       });
-      var json=JSON.stringify(chain);
+                  
+      var json=JSON.stringify(chains);
       localStorage.setItem('chains',json);
       
       console.log('Saved.');
@@ -170,18 +190,6 @@
       item.find('span').on('click',add_slider);
     }
         
-    var load=function()
-    {
-      var json=localStorage.getItem('chains');
-      if(!json) return;
-      var chain=JSON.parse(json);
-      listEffects(chain,'#chain');
-      $('#chain>*').each(function(){
-        markup($(this));
-      });
-    }
-    load();
-
     savetimeout=false;
     var updateChain=function(event,ui)
     {
@@ -190,13 +198,67 @@
       savetimeout=setTimeout(save,1000);
       
       var chain='[ ';
-      $('#chain>*').each(function(){
+      $('#chains .active .effect').each(function(){
         var src=$(this).text();
         chain+=src+',';
       });
       chain+=' ]';
       send('setChain("'+chain+'")');
+      
+      // add empty list, if all are used
+      ensure_empty_list();      
     }
+
+    var init_chain_list=function(container)
+    {
+      // the chain list items are sortable
+      $(container).sortable({
+        //revert: true,
+        stop: updateChain,
+        receive: function(event,ui){
+          markup($(this).data()['ui-sortable'].currentItem);
+          updateChain(event,ui);
+        }
+      }).droppable({greedy: true});      
+    }
+    init_chain_list('.chain');
+        
+    var empty_list=$('#chains .container').clone();
+    
+    $('#chains .container').addClass('active');
+    
+    var ensure_empty_list=function(){
+      // delete surplus empty lists
+      $('#chains .container').has('.chain:empty').remove();
+      
+      // add another empty list
+      $('#chains').append(empty_list.clone());
+      init_chain_list('#chains .container:last-child .chain');
+      
+      // ensure names
+      $('#chains .container h2').each(function(i){
+        $(this).html('Chain '+(i+1));
+      });        
+    }
+    
+    var load=function()
+    {
+      var json=localStorage.getItem('chains');
+      if(!json) return;
+      var chains=JSON.parse(json);
+      
+      chains.forEach(function(chain){
+        var list=$('#chains .container:last-child .chain');
+        listEffects(chain,list);
+        list.find('.effect').each(function(){
+          markup($(this));
+        });
+        
+        // append another empty list
+        ensure_empty_list();
+      });
+    }
+    load();
     
     var logify=function(x){
       return(Math.log(Math.abs(x)+1)/Math.LN2*(x>0 ? 1 : -1));
@@ -230,33 +292,33 @@
       "life()",
       "wave()"
     ];
-
     listEffects(effects,'#effects');
         
     // the effects may be dragged to the chain list
     $('#effects>*').draggable({
-      connectToSortable: "#chain",
+      connectToSortable: ".chain",
       helper: "clone",
       revert: "invalid",
       stop: updateChain
     });
 
-    // the chain list items are sortable
-    $( "#chain" ).sortable({
-      //revert: true,
-      stop: updateChain,
-      receive: function(event,ui){
-        markup($(this).data()['ui-sortable'].currentItem);
-        updateChain(event,ui);
-      }
-    }).droppable({greedy: true});
+    // the chains are sortable...
+    $("#chains").sortable({
+//      stop: updateChains    
+    });
+    
+    $('#chains').on('click','.container',function(){
+      $('#chains .container').removeClass('active');
+      $(this).addClass('active');
+      updateChain();
+    });
 
     // delete items that are dragged out of the chain
     $('body').droppable({
       drop: function ( event, ui ) {          
         ui.draggable.remove();
       },
-      accept: '#chain *'
+      accept: '#chains .effect'
     });
 
   
