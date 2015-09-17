@@ -330,6 +330,9 @@ exports.canvas = function() {
     canvas.vibrance = wrap(vibrance);
     canvas.sepia = wrap(sepia);
     canvas.preview=wrap(preview);
+    canvas.life=wrap(life);
+    canvas.wave=wrap(wave);
+    
 
     return canvas;
 };
@@ -2045,6 +2048,102 @@ function swirl(centerX, centerY, radius, angle) {
 
     return this;
 }
+
+
+
+
+
+function life() {
+    gl.life = gl.life || new Shader(null, '\
+      uniform sampler2D texture;\
+      uniform vec2 texSize;\
+      varying vec2 texCoord;\
+\
+      float cell(float x, float y){\
+	      float f=dot(texture2D(texture,vec2(x,y)),vec4(.33,.33,.33,0.));\
+	      return floor(f+0.5);\
+      }\
+\
+      void main(void){\
+        float dx=1./texSize.x;\
+        float dy=1./texSize.y;\
+	      float x=texCoord.x;\
+	      float y=texCoord.y;\
+         float m=cell(x,y);\
+         float l=cell(x-dx,y);\
+         float r=cell(x+dx,y);\
+         float u=cell(x,y-dy);\
+         float d=cell(x,y+dy);\
+         float ld=cell(x-dx,y+dy);\
+         float ru=cell(x+dx,y-dy);\
+         float lu=cell(x-dx,y-dy);\
+         float rd=cell(x+dx,y+dy);\
+	\
+	      float num;\
+	      num=l+r+u+d+ld+ru+lu+rd;\
+	      float outp=m;\
+	      if (m>0.){                \
+		      if(num<2.) outp=0.;\
+		      if(num>3.) outp=0.;\
+	      } else if (num>2. && num<4.) outp=1.;\
+         gl_FragColor = vec4(outp, outp, outp, 1.);\
+      }\
+    ');
+
+    simpleShader.call(this, gl.life, {texSize: [this.width, this.height]});
+
+    return this;
+}
+
+function wave() {
+    gl.wave = gl.wave || new Shader(null, '\
+      uniform sampler2D texture;\
+      uniform vec2 texSize;\
+      varying vec2 texCoord;\
+      \
+      vec4 cell(float x, float y){\
+	      return texture2D(texture,vec2(x,y));\
+      }\
+      \
+      void main(void){\
+        float dx=1./texSize.x;\
+        float dy=1./texSize.y;\
+	      float x=texCoord.x;\
+	      float y=texCoord.y;\
+         vec4 m=cell(x,y);\
+         vec4 l=cell(x-dx,y);\
+         vec4 r=cell(x+dx,y);\
+         vec4 u=cell(x,y-dy);\
+         vec4 d=cell(x,y+dy);\
+         vec4 ld=cell(x-dx,y+dy);\
+         vec4 ru=cell(x+dx,y-dy);\
+         vec4 lu=cell(x-dx,y-dy);\
+         vec4 rd=cell(x+dx,y+dy);\
+      \
+          \
+	      vec4 neighbours=(l+r+u+d+ld+ru+lu+rd)/8.;\
+	      \
+	      vec4 state=m;\
+	      \
+	      float flowrate=.02;\
+	      state.x-=(m.y-0.5)*flowrate;\
+	      \
+	      float viscosity=.1;\
+	      state.y+=(m.x-neighbours.x)*viscosity;\
+	      \
+	      float damper=0.01;\
+	      /* state.y=0.5*damper+state.y*(1.-damper); */ \
+	      \
+         gl_FragColor = vec4(state.xy, 0., 1.);\
+      }		\
+    ');
+
+    simpleShader.call(this, gl.wave, {texSize: [this.width, this.height]});
+
+    return this;
+}
+		
+
 
 return exports;
 })();

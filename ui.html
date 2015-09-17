@@ -112,7 +112,9 @@
       "bulgePinch(w/2, h/2, 600, 0.2)",
       "swirl(w/2, h/2, 250.0, Math.sin(t*5.0)*1.0)",
       "hexagonalPixelate(w/2,h/2,4.0+(Math.sin(t*5.0)+1.0)*2.0)",
-      "grid(1.0,0.0)"
+      "grid(1.0,0.0)",
+      "life()",
+      "wave()"
     ];
     effects.forEach(function(effect){
       $('#effects').append('<li class=effect>'+effect+'</li>');
