@@ -6,55 +6,191 @@
   <script src="jquery-ui.js"></script>
 </head>
 <body style="font-size: 20px;">
-  <h1 style="font-size:100%">NF VIS SYNTH MASTER CONTROL PROGRAM</h1>
-  <div id=result style="margin: auto; width: 50em;"></div><br>
-  <input type=text id=command style="margin: auto; width: 50em;"></input><br>
-  <button onclick="send('document.location.reload()')">RESTART</button>
+
+  <div class="header container">
+    <h1 style="font-size:100%">NF VIS SYNTH MASTER CONTROL PROGRAM</h1>
+    <button onclick="send('document.location.reload()')">RESTART</button>
+  </div>
 
 
-  <ul id=effects></ul>
-  <ul id=chain></ul>
+  <div class="effects container">
+    <h2>Effects</h2>
+    <ul id=effects></ul>
+  </div>
+  <div class="chain container">
+    <h2>Chain 1</h2>
+    <ul id=chain></ul>
+  </div>
   
-  <br>
-  <button onclick="start_preview()">PLAY PREVIEW</button>
-  <button onclick="stop_preview()">PAUSE PREVIEW</button>
-  <br>
-  <img id=preview></img>
+  <div class="preview container">
+    <button onclick="start_preview()">PLAY PREVIEW</button>
+    <button onclick="stop_preview()">PAUSE PREVIEW</button>
+    <br>
+    <img id=preview></img>
+  </div>
+
+  <input type=text id=command style="margin: auto; width: 50em;"></input>  
+  <div id=result style="margin: auto; width: 50em;"></div><br>
+
 
   <style>
-   #effects, #chain{
+   body,html{
+      background-color: #000;
+      color: #aaa;
+      font-family: sans-serif;    
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+   }
+   h1{
+    display: inline;
+   }
+   h2{
+    display: block;
+    color: #fff;
+    margin: 2px;
+    padding: 5px;
+    font-size: 110%;
+   }
+   button{
+      border-radius: 5px;
+      background-color: #733;
+      color: #fff;
+      padding: 8px;
+   }
+
+   .container{
+    border: 1px solid #999;
+    padding: 5px;
+    margin: 2px;
+    border-radius: 5px;
+    background-color: #000;
+   }
+   
+   .header{
+     height: 40px;
+   }
+
+   .preview{
+      position: fixed;
+      top: 0px;
+      right: 0px;
+      width: 320px;
+      height: 320px;
+   }
+   .preview img{
+    width: 100%;
+   }
+      
+   .effects, .chain{
       vertical-align: top;
       display: inline-block;
-      width: 500px;
-      height: 50vh;
-      border: 1px solid black;
+      border: 1px solid #555;
+      border-radius: 5px;
       padding: 2px;
+    }
+    #effects, #chain{
       overflow: auto;
+      margin: 0px;
+      padding: 0px;
+      width: 300px;
+      height: 600px;
+    }
+    #effects{
+      width: 550px;
     }
     .effect{
-      background-color: #ddd;
+      display: inline-block;
+      list-style: none;    
+      background-color: #333;
+      color: #fff;
       margin: 2px;
-      padding: 2px;
+      padding: 5px;
       border: 1px solid #000;
-      list-style: none;
-      width: 480px;
+      border-radius: 5px;
+      width: 250px;
+    }
+    .effect div{
+      display: block;
+      font-size: 12px;
     }
     .value{
-      color: blue;
+      color: #f94;
     }
     input.value_ui{
       position: absolute;
-      width: 500px;
       background-color: #555;
+      border-radius: 10px;      
+      width: 500px;
     }
   </style>
 
   <script>
 
+    var save=function()
+    {
+      var chain=[];
+      $('#chain>*').each(function(){
+        var src=$(this).text();
+        chain.push(src);
+      });
+      var json=JSON.stringify(chain);
+      localStorage.setItem('chains',json);
+      
+      console.log('Saved.');
+      
+      savetimeout=false;
+    }
+            
+    var listEffects=function(effects,container)
+    {
+      effects.forEach(function(effect){
+        $(container).append('<li class=effect>'+effect.replace('(','<div>(')+'</div></li>');
+      });
+    }
+   
+    var add_slider=function(event)
+    {
+      var value_element=this;
+      var slider=$('<input class=value_ui type=range min="-10" max="10" step="0.01">');
+      slider.attr('value',logify($(this).html()));
+      slider.on('mouseup',function(){slider.remove()});
+      slider.on('input',function(event){
+        $(value_element).html(expify(this.value));
+        updateChain();
+      });
+      $(document.body).append(slider);
+      slider.position({my:'top',at:'bottom',of:$(this)});
+    }
+
+    var markup=function(item){
+      var html=item.html();
+      var regex=/([0-9]+.[0-9]+)/g;
+      item.html(html.replace(regex,'<span class=value>$1</span>'));
+      item.find('span').on('click',add_slider);
+    }
+        
+    var load=function()
+    {
+      var json=localStorage.getItem('chains');
+      if(!json) return;
+      var chain=JSON.parse(json);
+      listEffects(chain,'#chain');
+      $('#chain>*').each(function(){
+        markup($(this));
+      });
+    }
+    load();
+
+    savetimeout=false;
     var updateChain=function(event,ui)
     {
+      
+      if(savetimeout) clearTimeout(savetimeout);
+      savetimeout=setTimeout(save,1000);
+      
       var chain='[ ';
-      $('#chain *').each(function(){
+      $('#chain>*').each(function(){
         var src=$(this).text();
         chain+=src+',';
       });
@@ -69,29 +205,7 @@
     var expify=function(x){
       return Math.round((x>0 ? 1 : -1)*(Math.pow(2.,Math.abs(x))-1)*100.)/100.;
     }
-    
-    
-    var add_slider=function(event)
-    {
-      var value_element=this;
-      var slider=$('<input class=value_ui type=range min="-10" max="10" step="0.01">');
-      slider.attr('value',logify($(this).html()));
-      slider.on('mouseup',function(){slider.remove()});
-      slider.on('input',function(event){
-        $(value_element).html(expify(this.value));
-        updateChain();
-      });
-      $(document.body).append(slider);
-      slider.position({my:'top',at:'bottom',of:$(this)});
-    }
-    
-    var markup=function(item){
-      var html=item.html();
-      var regex=/([0-9]+.[0-9]+)/g;
-      item.html(html.replace(regex,'<span class=value>$1</span>'));
-      item.find('span').on('click',add_slider);
-    }
-
+       
     $("ul, li").disableSelection();
 
     // build list of effects  
@@ -116,12 +230,11 @@
       "life()",
       "wave()"
     ];
-    effects.forEach(function(effect){
-      $('#effects').append('<li class=effect>'+effect+'</li>');
-    });
 
+    listEffects(effects,'#effects');
+        
     // the effects may be dragged to the chain list
-    $('#effects *').draggable({
+    $('#effects>*').draggable({
       connectToSortable: "#chain",
       helper: "clone",
       revert: "invalid",
