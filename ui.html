@@ -106,7 +106,10 @@
       "colorHalftone(w/2,h/2,30.0,2.0+Math.sin(t*5.0))",
       "unsharpMask(3.0,(Math.sin(t*5.0)+1.0)*2.0)",
       "denoise(3.0)",
-      "denoisefast(3.0)",      
+      "denoisefast(3.0)",
+      "triangleBlur(10.0)",
+      "zoomBlur(w/2, h/2, 0.03)",
+      "bulgePinch(w/2, h/2, 600, 0.2)",
       "swirl(w/2, h/2, 250.0, Math.sin(t*5.0)*1.0)",
       "hexagonalPixelate(w/2,h/2,4.0+(Math.sin(t*5.0)+1.0)*2.0)",
       "grid(1.0,0.0)"
