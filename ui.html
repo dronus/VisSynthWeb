@@ -36,13 +36,14 @@
 
 
   <style>
-   body,html{
+   body,html{   
       background-color: #000;
       color: #aaa;
       font-family: sans-serif;    
       height: 100%;
       margin: 0px;
       padding: 0px;
+      width: 100%;
    }
    h1{
     display: inline;
@@ -70,13 +71,17 @@
    }
    
    .header{
+     position: fixed;
+     top: 0px;
+     left: 0px;
+     right: 0px;
      height: 40px;
    }
 
    .preview{
       position: fixed;
-      top: 0px;
-      right: 0px;
+      bottom: 0px;
+      left: 570px;
       width: 320px;
       height: 320px;
    }
@@ -84,14 +89,33 @@
     width: 100%;
    }
       
-   .effects, #chains{
-      vertical-align: top;
-      display: inline-block;
+   .effects, #chains{   
+      position: fixed;
+      top: 55px;
+      bottom: 0px;
+    }
+    #chains{
+      bottom: 350px;
+    }
+    .effects{
+      width: 550px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    #chains{    
+      left: 570px;
+      right: 0px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;      
     }
 
     #chains>*{
       display:inline-block;
-      vertical-align: top;      
+      vertical-align: top;
+      white-space: normal;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
     
     #chains .active{
@@ -105,14 +129,20 @@
     }
     
     #effects, .chain{
-      overflow: auto;
       margin: 0px;
       padding: 0px;
-      width: 300px;
-      height: 600px;
+      width: 270px;
+      height: 80%;
     }
+    .chain:empty{
+      width: 50px;
+    }
+    
     #effects{
-      width: 550px;
+      width: 540px;
+    }
+    #chains .container{
+      height: 95%;
     }
     .effect{
       display: inline-block;
@@ -133,7 +163,7 @@
       color: #f94;
     }
     input.value_ui{
-      position: absolute;
+      position: fixed;
       background-color: #555;
       border-radius: 10px;      
       width: 500px;
@@ -296,7 +326,9 @@
         
     // the effects may be dragged to the chain list
     $('#effects>*').draggable({
+/*      appendTo:'body',*/
       connectToSortable: ".chain",
+      appendTo:'body',
       helper: "clone",
       revert: "invalid",
       stop: updateChain
