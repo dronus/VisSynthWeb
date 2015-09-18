@@ -2,25 +2,31 @@
 
 window.VideoEngine=function(){
 
-	"use strict";
-	var userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-
-  if(!userMedia)
-  {
-    alert('No getUserMedia');
-    return;
-  }
-		
+    // user settable private callbacks
 		var filter = function(){};
 		var pre_draw_callback=false;
-		var post_draw_callback=false;		
+		var post_draw_callback=false;
 
+		var setFilter = function(newFilter){
+			filter = newFilter;
+		};
+
+		var setCallback = function(pre_draw,post_draw){
+			pre_draw_callback=pre_draw;
+			post_draw_callback=post_draw;
+		};
+
+
+    // <video> object for video decoding
 		var video = document.createElement('video');
 		video.autoplay = true;
+
+    // glfx.js WebGL effect canvas object
 		var canvas = fx.canvas();
 		var texture;
 		
-		var canvasDraw = function(){
+		// main update function, shows video frames via glfx.js canvas
+		var update = function(){
 		
 			if(pre_draw_callback) pre_draw_callback.call(this);
 		
@@ -31,40 +37,32 @@ window.VideoEngine=function(){
 
 			if(post_draw_callback) post_draw_callback.call(this);
 
-			requestAnimationFrame(canvasDraw);
-		};
-				
-		var setFilter = function(newFilter){
-			filter = newFilter;
-		};
-
-		var setCallback = function(pre_draw,post_draw){
-			pre_draw_callback=pre_draw;
-			post_draw_callback=post_draw;
+      // enqueue next update
+			requestAnimationFrame(update);
 		};
 		
-
-		var playInit = function(e){
+		// add our startup code to canplay handler of <video> object
+		video.addEventListener('canplay', 
+		
+		function(e){
 			canvas.width = video.videoWidth;
 			canvas.height = video.videoHeight;
+			texture = canvas.texture(video);
 			
-			setTimeout(function(){
-				texture = canvas.texture(video);
-				canvasDraw();
-			}, 500);
-				
+			// start frequent canvas updates
+			update();
 			
-        };
+        }
 		
-		//event setup
-		video.addEventListener('canplay', playInit, false);
-        
+		, false);
+
+  // initalize getUserMedia() camera capture
+	var userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;        
  	userMedia.call(navigator, {video: true, audio: false}, function(videoStream){
       if (video.mozSrcObject !== undefined) {
 				video.mozSrcObject = videoStream;
 			} else
-				video.src = URL.createObjectURL(videoStream);
-			
+				video.src = URL.createObjectURL(videoStream);			
 		}, function(err){
 			var evt = document.createEvent('Event');
 			evt.initEvent("UserMediaError",true,true);
