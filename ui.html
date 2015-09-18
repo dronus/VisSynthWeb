@@ -234,7 +234,7 @@
 
     var markup=function(item){
       var html=item.html();
-      var regex=/([0-9]+.[0-9]+)/g;
+      var regex=/([0-9]+\.[0-9]+)/g;
       item.html(html.replace(regex,'<span class=value>$1</span>'));
       item.find('span').on('click',add_slider);
     }
@@ -340,7 +340,9 @@
       "life()",
       "ripple(0.3,0.3,0.0,2.0)",
       "colorDisplacement(0.0,3.0)",
-      "analogize(2.0,1.5,1.0,16.0)"
+      "analogize(2.0,1.5,1.0,16.0)",
+      "gammaRGB(1.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0)",
+      
     ];
     listEffects(effects,'#effects');
         
