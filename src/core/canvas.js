@@ -179,6 +179,18 @@ exports.canvas = function() {
     canvas.vibrance = wrap(vibrance);
     canvas.sepia = wrap(sepia);
 
+    canvas.feedbackIn = wrap(feedbackIn);
+    canvas.feedbackOut = wrap(feedbackOut);
+    canvas.grid = wrap(grid);
+    canvas.kaleidoscope = wrap(kaleidoscope);
+    canvas.tile = wrap(tile);
+    canvas.denoisefast = wrap(denoisefast);    
+    canvas.preview=wrap(preview);
+    canvas.life=wrap(life);
+    canvas.ripple=wrap(ripple);
+    canvas.colorDisplacement=wrap(colorDisplacement);
+    canvas.analogize=wrap(analogize);
+
     return canvas;
 };
 exports.splineInterpolate = splineInterpolate;
