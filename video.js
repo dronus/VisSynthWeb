@@ -1,6 +1,7 @@
-var wcvj = window.wcvj || {};
 
-(function(wcvj){
+
+window.VideoEngine=function(){
+
 	"use strict";
 	var userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
@@ -9,9 +10,6 @@ var wcvj = window.wcvj || {};
     alert('No getUserMedia');
     return;
   }
-
-	wcvj.webcam = function(){
-				
 		
 		var filter = function(){};
 		var pre_draw_callback=false;
@@ -75,5 +73,5 @@ var wcvj = window.wcvj || {};
 		});
 		
 		return {canvas: canvas, setFilter: setFilter, setCallback: setCallback};
-	};
-}(window.wcvj));
+};
+

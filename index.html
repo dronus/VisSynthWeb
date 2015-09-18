@@ -42,9 +42,8 @@
     
     
     var w=640, h=480;    
-
-    // WebcamVidja video and effects streaming engine
-    var c = wcvj.webcam();
+    
+    var videoengine = VideoEngine();
 
     var time=0; // running time
     
@@ -53,7 +52,7 @@
 
       // time repeats after 2 periods of PI
       time=(time+.001)%(2*Math.PI);
-      c.setFilter(function(canvas){chain(canvas,time);});
+      videoengine.setFilter(function(canvas){chain(canvas,time);});
     };
     
     
@@ -68,16 +67,16 @@
     var get_preview=function()
     {
       if(!preview_enabled) return;
-      var pixels=c.canvas.toDataURL('image/jpeg');
+      var pixels=videoengine.canvas.toDataURL('image/jpeg');
     
       put('/preview',pixels);
       
       preview_enabled=false;
     }
     
-    c.setCallback(animation,get_preview);
+    videoengine.setCallback(animation,get_preview);
 
-    document.body.appendChild(c.canvas);
+    document.body.appendChild(videoengine.canvas);
 
 
     // command polling for UI server
