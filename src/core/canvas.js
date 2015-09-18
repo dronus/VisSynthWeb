@@ -178,7 +178,7 @@ exports.canvas = function() {
     canvas.vignette = wrap(vignette);
     canvas.vibrance = wrap(vibrance);
     canvas.sepia = wrap(sepia);
-
+    // dronus' filter methods
     canvas.feedbackIn = wrap(feedbackIn);
     canvas.feedbackOut = wrap(feedbackOut);
     canvas.grid = wrap(grid);
@@ -190,6 +190,18 @@ exports.canvas = function() {
     canvas.ripple=wrap(ripple);
     canvas.colorDisplacement=wrap(colorDisplacement);
     canvas.analogize=wrap(analogize);
+    // hexapode's filters methods
+    canvas.coloradjust = wrap(coloradjust);
+    canvas.color = wrap(color);
+    canvas.exposure = wrap(exposure);
+    canvas.gamma = wrap(gamma);
+    canvas.gammaRGB = wrap(gammaRGB);
+    canvas.hue = wrap(hue);
+    canvas.sobel = wrap(sobel);
+    canvas.softContrast = wrap(softContrast);
+    canvas.toHSV = wrap(toHSV);
+    canvas.invertColor = wrap(invertColor);
+    canvas.mirror = wrap(mirror);
 
     return canvas;
 };
