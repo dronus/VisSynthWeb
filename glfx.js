@@ -331,9 +331,10 @@ exports.canvas = function() {
     canvas.sepia = wrap(sepia);
     canvas.preview=wrap(preview);
     canvas.life=wrap(life);
-    canvas.wave=wrap(wave);
+    canvas.ripple=wrap(ripple);
+    canvas.colorDisplacement=wrap(colorDisplacement);
+    canvas.analogize=wrap(analogize);
     
-
     return canvas;
 };
 exports.splineInterpolate = splineInterpolate;
@@ -2049,7 +2050,106 @@ function swirl(centerX, centerY, radius, angle) {
     return this;
 }
 
+function ripple(fx,fy,angle,amplitude) {
+    gl.ripple = gl.ripple || warpShader('\
+        uniform vec4 xform;\
+        uniform float amplitude;\
+        uniform vec2 center;\
+        mat2 mat=mat2(xform.xy,xform.zw);\
+    ', '\
+        coord -= center;\
+        coord += amplitude*sin(mat*coord);\
+        coord += center;\
+    ');
 
+    simpleShader.call(this, gl.ripple, {
+        xform: [
+           Math.cos(angle)*fx, Math.sin(angle)*fy,
+          -Math.sin(angle)*fx, Math.cos(angle)*fy
+        ],
+        amplitude: amplitude,
+        center: [this.width/2, this.height/2],
+        texSize: [this.width, this.height]
+    });
+
+    return this;
+}
+
+function colorDisplacement(angle,amplitude) {
+    gl.colorDisplacement = gl.colorDisplacement || new Shader(null,'\
+    \
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        uniform vec2 texSize;\
+        uniform float angle;\
+        uniform float amplitude;\
+      void main(void){ \
+        float pi=3.14159; \
+        vec2 p3=vec2(pi*2./3.,pi*2./3.); \
+        vec2 angles=vec2(angle,angle+pi/2.); \
+        vec2 or=sin(angles+0.*p3)/texSize*amplitude; \
+        vec2 og=sin(angles+1.*p3)/texSize*amplitude; \
+        vec2 ob=sin(angles+2.*p3)/texSize*amplitude; \
+        gl_FragColor=vec4( \
+            texture2D(texture,texCoord+or).r, \
+            texture2D(texture,texCoord+og).g, \
+            texture2D(texture,texCoord+ob).b, \
+        1.0); \
+        } \
+    ');
+
+    simpleShader.call(this, gl.colorDisplacement, {
+        angle: angle,    
+        amplitude: amplitude,
+        texSize: [this.width, this.height]        
+    });
+
+    return this;
+}
+
+
+function analogize(exposure,gamma,glow,radius) {
+    gl.analogize = gl.analogize || new Shader(null,'\
+    \
+      uniform sampler2D texture;\
+      uniform sampler2D glow_texture;\
+      varying vec2 texCoord;\
+		  uniform float Glow; \
+		  uniform float Exposure;\
+		  uniform float Gamma;\
+		  void main(void){\
+		     vec3 color  = texture2D(glow_texture,vec2(texCoord)).rgb*Glow;\
+		     color  += 	texture2D(texture,texCoord).rgb;\
+		     color=1.0-exp(-Exposure*color);\
+		     color=pow(color, vec3(Gamma,Gamma,Gamma));\
+		     gl_FragColor.rgb = color;\
+		     gl_FragColor.a = 1.0;\
+		  } \
+    ');
+
+    // Store a copy of the current texture in the second texture unit
+    this._.extraTexture.ensureFormat(this._.texture);
+    this._.texture.use();
+    this._.extraTexture.drawTo(function() {
+        Shader.getDefaultShader().drawRect();
+    });
+
+    // Blur the current texture, then use the stored texture to detect edges
+    this._.extraTexture.use(1);
+    this.triangleBlur(radius);
+    gl.analogize.textures({
+        glow_texture: 0,
+        texture: 1
+    });
+    simpleShader.call(this, gl.analogize, {
+        Glow: glow,
+        Exposure: exposure,
+        Gamma: gamma
+    });
+    this._.extraTexture.unuse(1);
+
+    return this;
+}
 
 
 
@@ -2095,54 +2195,6 @@ function life() {
     return this;
 }
 
-function wave() {
-    gl.wave = gl.wave || new Shader(null, '\
-      uniform sampler2D texture;\
-      uniform vec2 texSize;\
-      varying vec2 texCoord;\
-      \
-      vec4 cell(float x, float y){\
-	      return texture2D(texture,vec2(x,y));\
-      }\
-      \
-      void main(void){\
-        float dx=1./texSize.x;\
-        float dy=1./texSize.y;\
-	      float x=texCoord.x;\
-	      float y=texCoord.y;\
-         vec4 m=cell(x,y);\
-         vec4 l=cell(x-dx,y);\
-         vec4 r=cell(x+dx,y);\
-         vec4 u=cell(x,y-dy);\
-         vec4 d=cell(x,y+dy);\
-         vec4 ld=cell(x-dx,y+dy);\
-         vec4 ru=cell(x+dx,y-dy);\
-         vec4 lu=cell(x-dx,y-dy);\
-         vec4 rd=cell(x+dx,y+dy);\
-      \
-          \
-	      vec4 neighbours=(l+r+u+d+ld+ru+lu+rd)/8.;\
-	      \
-	      vec4 state=m;\
-	      \
-	      float flowrate=.02;\
-	      state.x-=(m.y-0.5)*flowrate;\
-	      \
-	      float viscosity=.1;\
-	      state.y+=(m.x-neighbours.x)*viscosity;\
-	      \
-	      float damper=0.01;\
-	      /* state.y=0.5*damper+state.y*(1.-damper); */ \
-	      \
-         gl_FragColor = vec4(state.xy, 0., 1.);\
-      }		\
-    ');
-
-    simpleShader.call(this, gl.wave, {texSize: [this.width, this.height]});
-
-    return this;
-}
-		
 
 
 return exports;
