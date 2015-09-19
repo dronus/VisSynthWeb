@@ -190,6 +190,7 @@ exports.canvas = function() {
     canvas.ripple=wrap(ripple);
     canvas.colorDisplacement=wrap(colorDisplacement);
     canvas.analogize=wrap(analogize);
+    canvas.motion=wrap(motion);
     // hexapode's filters methods
     canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);
