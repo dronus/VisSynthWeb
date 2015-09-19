@@ -8,15 +8,18 @@
 <body style="font-size: 20px;">
 
   <div class="header container">
-    <h1 style="font-size:100%">NF VIS SYNTH MASTER CONTROL PROGRAM</h1>
+    <h1 style="font-size:100%">VIS SYNTH MCP</h1>
     <button onclick="send('document.location.reload()')">RESTART</button>
+    <button onclick="start_preview()">PLAY PREVIEW</button>
+    <button onclick="stop_preview()">PAUSE PREVIEW</button>
   </div>
 
 
   <div class="effects container">
-    <h2>Effects</h2>
+    <h3>Effects</h3>
     <ul id=effects></ul>
   </div>
+  
   <div id="chains">
     <div class="container">
       <h2>Chain 1</h2>
@@ -25,13 +28,10 @@
   </div>
   
   <div class="preview container">
-    <button onclick="start_preview()">PLAY PREVIEW</button>
-    <button onclick="stop_preview()">PAUSE PREVIEW</button>
-    <br>
     <img id=preview></img>
   </div>
-
-  <input type=text id=command style="margin: auto; width: 50em;"></input>  
+  
+  <input type=text id=command></input>        
   <div id=result style="margin: auto; width: 50em;"></div><br>
 
 
@@ -45,6 +45,24 @@
       padding: 0px;
       width: 100%;
    }
+   
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+/*    outline-offset: -2px;*/
+    outline: 2px solid #000;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #222;
+
+  }
+
+  ::-webkit-scrollbar-thumb {
+    width: 5px;
+    background-color: #888;
+  }
+   
    h1{
     display: inline;
    }
@@ -52,18 +70,30 @@
     display: block;
     color: #fff;
     margin: 2px;
-    padding: 5px;
     font-size: 110%;
    }
+   h3{
+    display: block;
+    color: #fff;
+    margin: 2px;
+    font-size: 80%;
+   }
+
    button{
       border-radius: 5px;
       background-color: #733;
       color: #fff;
       padding: 8px;
    }
+   input{
+    background-color: #333;
+    color: #fff;
+    border:none;
+    font-size: 15px;
+    width: 40em;
+   }   
 
    .container{
-    border: 1px solid #999;
     padding: 5px;
     margin: 2px;
     border-radius: 5px;
@@ -81,69 +111,80 @@
    .preview{
       position: fixed;
       bottom: 0px;
-      left: 570px;
+      right: 0px;
       width: 320px;
-      height: 320px;
+      height: 240px;
    }
    .preview img{
-    width: 100%;
+      width: 100%;
    }
+    
+   #command{
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    height: 15px;
+    margin: 5px;
+   } 
       
-   .effects, #chains{   
+   #chains{   
       position: fixed;
-      top: 55px;
-      bottom: 0px;
-    }
-    #chains{
-      bottom: 350px;
-    }
-    .effects{
-      width: 550px;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-    #chains{    
-      left: 570px;
+      top: 50px;
+      bottom: 255px;
+      left: 0px;
       right: 0px;
       overflow-x: auto;
       overflow-y: hidden;
       white-space: nowrap;      
+    }    
+    .effects{
+      position: fixed;
+      height: 225px;
+      bottom: 15px;
+      right: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }    
+    #effects{
+      margin: 0px;    
+      width: 100%;
+      list-style: none;
+      padding: 0px;
+    }
+    #effects .effect{
+      width: 140px;
+      height: 25px;
     }
 
     #chains>*{
+      position:relative;
+      background-color: #111;      
       display:inline-block;
       vertical-align: top;
       white-space: normal;
-      overflow-y: auto;
       overflow-x: hidden;
+      width:240px;
+      height: calc(100% - 17px);
     }
     
     #chains .active{
       background-color: #030;
-      border-color: #0f0;
     }
     
     #chains .active .effect{
       background-color: #050;
-      border-color: #0f0;
     }
     
-    #effects, .chain{
-      position: relative;
+    .chain{
+      position: absolute;
+      top: 32px;
+      bottom:0px;
+      left:0px;
+      right:0px;
+      padding: 2px;
       margin: 0px;
-      padding: 0px;
       padding-bottom: 50px;
-      width: 270px;
-    }
-    .chain:empty{
-      width: 50px;
-    }
-    
-    #effects{
-      width: 540px;
-    }
-    #chains .container{
-      height: 95%;
+      overflow-y: auto;
     }
     .effect{
       display: inline-block;
@@ -153,9 +194,9 @@
       color: #fff;
       margin: 2px;
       padding: 5px;
-      border: 1px solid #000;
       border-radius: 5px;
-      width: 250px;
+      width: 220px;
+      font-size: 10px;
     }
 
     .effect div{
@@ -163,9 +204,6 @@
       vertical-align: top;
     }
     
-    .effect span{
-    }
-
     .effect .ui_object{
       display: block;
     }
@@ -190,7 +228,7 @@
     }
     .effect>.ui_object>.value>:first-child>.value
     {
-      font-size: 16px;
+      font-size: 15px;
     }
         
     .key{
@@ -424,7 +462,7 @@
       send('setChain("'+chain+'")');
       
       // add empty list, if all are used
-      ensure_empty_list();      
+      ensure_empty_list();
     }
 
     var init_chain_list=function(container)
@@ -432,6 +470,7 @@
       // the chain list items are sortable
       $(container).sortable({
         //revert: true,
+        tolerance: 'pointer',
         stop: updateChain,
         receive: function(event,ui){
           markup($(this).data()['ui-sortable'].currentItem);
@@ -450,8 +489,8 @@
       $('#chains .container').has('.chain:empty').remove();
       
       // add another empty list
-      $('#chains').append(empty_list.clone());
-      init_chain_list('#chains .container:last-child .chain');
+      $('#chains').prepend(empty_list.clone());
+      init_chain_list('#chains .container:first-child .chain');
       
       // ensure names
       $('#chains .container h2').each(function(i){
@@ -464,16 +503,20 @@
       if(!json) return;
       var chains=JSON.parse(json);
       
+      
       chains.forEach(function(chain){
+        // move empty list to the end
+        $('#chains').append($('#chains .container:first-child'));
+        
         var list=$('#chains .container:last-child .chain');
         listEffects(chain,list);
         list.find('.effect').each(function(){
           markup($(this));
         });
-        
-        // append another empty list
         ensure_empty_list();
       });
+      
+      
     }    
     get('chains.json',load);
     
@@ -520,19 +563,42 @@
     ];
     listEffects(effects,'#effects');
         
+        
+    var last_draggable=false;
     // the effects may be dragged to the chain list
     $('#effects>*').draggable({
-/*      appendTo:'body',*/
       connectToSortable: ".chain",
       appendTo:'body',
       helper: "clone",
       revert: "invalid",
-      stop: updateChain
+      scroll: false,
+      stop: function(){
+        updateChain();
+        last_draggable=false;
+      },           
+/*      start: function(ev,ui){
+        // part of fix for jQuerys drop zones also intersect elements hidden by overflow:hidden / overflow:scroll
+        last_draggable=$(this).data('ui-draggable');
+        last_draggable.last_sortables=last_draggable.sortables;
+        last_draggable.sortables=[];        
+      }*/
     });
+        
+    // part of fix for jQuerys drop zones also intersect elements hidden by overflow:hidden / overflow:scroll
+    // we only may drop into the sortables, if the draggable helper has entered the parent container
+/*    $('#chains').droppable({'over':function(){
+        if(!last_draggable || !last_draggable.last_sortables) return;
+        last_draggable.sortables=last_draggable.last_sortables;
+        last_draggable.last_sortables=false;
+    }
+    ,refreshPositions:true
+    });
+  */      
+    //$('#effects').droppable({greedy:true});
 
     // the chains are sortable...
     $("#chains").sortable({
-//      stop: updateChains  
+//      stop: updateChains 
     });
     
     $('#chains').on('click','.container',function(){
