@@ -421,6 +421,7 @@
     var generators={
       osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
+      size:flatten,
       rgb:flatten,
       rgba:flatten,
       rgb_range:flatten
@@ -542,7 +543,7 @@
       {effect:'feedbackOut',blend:0.7},
       {effect:'feedbackIn'},
       {effect:'kaleidoscope',sides:5.0,angle:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0},angle2:{type:'osc',f:2.0,a:1.0,p:0.0,o:0.0}},
-      {effect:'tile',divisions:5.0},
+      {effect:'tile',divisions:2.0},
       {effect:'colorHalftone',center:{type:'pos',x:0,y:0},angle:30.0,size:{type:'osc',f:5.0,a:1.0,p:0.0,o:2.0}},
       {effect:'unsharpMask',size:3.0,strength:{type:'osc',f:5.0,a:2.0,p:0.0,o:2.0}},
       {effect:'denoise',strength:10.0},
@@ -554,12 +555,13 @@
       {effect:'hexagonalPixelate',center:{type:'pos',x:0,y:0}, size: 10.0},
       {effect:'grid',size:1.0,angle:0.0},
       {effect:'life'},
-      {effect:'ripple',sizes:{type:'pos',x:0,y:0},angle:0.0,strength:2.0},
+      {effect:'ripple',width:0.3,length:0.3,angle:0.0,strength:2.0},
       {effect:'colorDisplacement',angle:0.0,strength:3.0},
       {effect:'analogize',exposure:2.0,gamma:1.5,glow:1.0,glow_radius:16.0},
       {effect:'gamma',factor:1.0,exponent:1.0,offset:0.0},
       {effect:'gammaRGB',rf:1.0,re:1.0,ro:0.0,  gf:1.0,ge:1.0,go:0.0, bf:1.0,be:1.0,bo:0.0},
-      {effect:'sobel',secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgba',r:0,g:0,b:0,a:1},edges:{type:'rgba',r:1,g:1,b:1,a:1}}      
+      {effect:'sobel',secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgba',r:0,g:0,b:0,a:1},edges:{type:'rgba',r:1,g:1,b:1,a:1}},
+      {effect:'motion',threshold:0.3,interval:1.,damper:0.99},
     ];
     listEffects(effects,'#effects');
         
