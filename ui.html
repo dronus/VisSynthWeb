@@ -146,6 +146,7 @@
     }
     .effect{
       display: inline-block;
+      vertical-align: top;
       list-style: none;    
       background-color: #333;
       color: #fff;
@@ -155,19 +156,81 @@
       border-radius: 5px;
       width: 250px;
     }
+
     .effect div{
+      display: inline-block;
+      vertical-align: top;
+    }
+    
+    .effect span{
+    }
+
+    .effect .ui_object{
       display: block;
-      font-size: 12px;
+    }
+
+    .effects .key>*, .effects .value>*{
+      display: none;
+    }
+        
+    .effect>.ui_object>.value{
+      margin-left: 0px;
+    }
+    .effect>.ui_object>.key
+    {
+      display: none;
+    }
+    .effect>.ui_object>.value>:first-child{
+      display: block;
+    }    
+    .effect>.ui_object>.value>:first-child>.key
+    {
+      display: none;
+    }
+    .effect>.ui_object>.value>:first-child>.value
+    {
+      font-size: 16px;
+    }
+        
+    .key{
+      display: inline-block;
+      background-color:#444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      margin-right: 5px;
+      margin-left: 5px;
+    }
+    .key::after{
+      content: ': '
     }
     .value{
+      vertical-align: top;
       color: #f94;
+      font-size: 10px;
     }
-    input.value_ui{
+    .adjust_ui{
       position: fixed;
-      background-color: #555;
-      border-radius: 10px;      
-      width: 500px;
+      background-color: #444;
+      border-radius: 10px;
+      padding: 10px;
+      width: 550px;
+      border: 2px solid #999;
     }
+    .adjust_ui label{
+      vertical-align: top;
+      color: #fff;
+      display: inline-block;
+      width: 100px;
+    }
+    .adjust_ui input{      
+      width: 400px;
+      height: 40px;
+    }
+    #chains .active .effect.ui_target{
+      border-color: #fff;
+    }
+    
   </style>
 
   <script>
@@ -196,9 +259,9 @@
       var chains=[];      
       $('#chains .chain').each(function(){
         var chain=[];
-        $(this).find('>*').each(function(){
-          var src=$(this).text();
-          chain.push(src);
+        $(this).find('.effect>.ui_object>.value').each(function(){
+          var data=get_data($(this));
+          chain.push(data);
         });
         if(chain.length) chains.push(chain);
       });
@@ -210,35 +273,130 @@
       
       savetimeout=false;
     }
-            
+    
+    var get_ui=function(key,node)
+    {
+      var ui=$('<div>');
+      var key_element=$('<span class=key>');
+      key_element.html(key);
+      ui.append(key_element);
+      
+      var type=typeof(node);
+      ui.addClass('ui_'+type);
+      
+      var value_element=$('<span class=value>');      
+      ui.append(value_element);
+      if(type=='object')
+      {
+        for(var key2 in node)
+        {
+          value_element.append(get_ui(key2,node[key2]));
+        }
+      }
+      else
+      {
+        value_element.html(document.createTextNode(''+node));
+      }
+      
+      return ui;
+    }
+    
+    var get_data=function(ui)
+    {
+      var divs=ui.find('>div');
+      var data={};
+      divs.each(function(){
+        var key=$(this).find('>.key').text();
+        var value_element=$(this).find('>.value');
+        var value;
+        if(value_element.children().length)
+          value=get_data(value_element);
+        else
+          value=value_element.text();
+        data[key]=value;
+      });
+      
+      return data;
+    }
+    
     var listEffects=function(effects,container)
     {
-      effects.forEach(function(effect){
-        $(container).append('<li class=effect>'+effect.replace('(','<div>(')+'</div></li>');
+      effects.forEach(function(effect){        
+        var li=$('<li class=effect>');
+        li.append(get_ui('',effect));
+        $(container).append(li);
       });
     }
-   
-    var add_slider=function(event)
+      
+    var add_slider=function(element,value,callback)
     {
-      var value_element=this;
       var slider=$('<input class=value_ui type=range min="-10" max="10" step="0.01">');
-      slider.attr('value',logify($(this).html()));
-      slider.on('mouseup',function(){slider.remove()});
-      slider.on('input',function(event){
-        $(value_element).html(expify(this.value));
-        updateChain();
+      slider.attr('value',value);
+      slider.on('input',callback);
+      
+      if(element) $(element).append(slider);
+      //slider.position({my:'top',at:'bottom',of:$(value_element)});
+      
+      return slider;      
+    }
+
+    var build_ui=function(effect){
+      effect.addClass('ui_target');
+      var container=$('<div class=adjust_ui>');
+      $(document.body).append(container);
+      container.position({my:'top',at:'bottom',of:$(effect)});
+      container.on('mouseleave',function(){container.remove();effect.removeClass('ui_target');});
+           
+      effect.find('.value').each(function(){
+        var element=$(this);
+        var key  =element.parent().find('.key').text();        
+        var value=element.text();
+        if($.isNumeric(value))
+        {
+          container.append($('<label>').text(key));
+          add_slider(container,logify(value),function(){
+            var v=expify(this.value);
+            element.text(v);
+            updateChain();
+          });
+        }
       });
-      $(document.body).append(slider);
-      slider.position({my:'top',at:'bottom',of:$(this)});
+    };
+    
+    var add_ui=function(event)
+    {
+      build_ui($(this));
     }
 
     var markup=function(item){
-      var html=item.html();
-      var regex=/([0-9]+\.[0-9]+)/g;
-      item.html(html.replace(regex,'<span class=value>$1</span>'));
-      item.find('span').on('click',add_slider);
+      item.on('click',add_ui);
     }
-        
+
+          // generators...
+    var generators={
+      rgb:function(args){return [args.r,args.b,args.g].join(',')},
+      osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
+    };
+    
+    var generate_command=function(effect){
+    
+      var command=effect.effect;
+      var args=[];
+      for(var key in effect)
+      {
+        if(key=='effect') continue;
+        var value=effect[key];
+        if(typeof(value)=='object')
+          args=args.concat(generators[value.type](value));
+        else
+          args.push(value);
+      }
+                                  
+      var code=command+'('+args.join(',')+')';
+            
+      return code;
+    }
+
     savetimeout=false;
     var updateChain=function(event,ui)
     {
@@ -246,12 +404,13 @@
       if(savetimeout) clearTimeout(savetimeout);
       savetimeout=setTimeout(save,1000);
       
-      var chain='[ ';
-      $('#chains .active .effect').each(function(){
-        var src=$(this).text();
-        chain+=src+',';
+      
+      var chain='';
+      $('#chains .active .effect>.ui_object>.value').each(function(){
+        var effect=get_data($(this));
+        chain+=generate_command(effect)+';';
       });
-      chain+=' ]';
+
       send('setChain("'+chain+'")');
       
       // add empty list, if all are used
@@ -319,35 +478,35 @@
     $("ul, li").disableSelection();
 
     // build list of effects  
-    var effects=[    
-      "vibrance(1.0)",
-      "brightnessContrast(0.0, 0.0)",
-      "hueSaturation(0.0,0.3)",
-      "invertColor()",
-      "toHSV()",
-      "color(0.5,0.0,1.0,1.0)",
-      "coloradjust(0.0, 255.0,0.0, 255.0,0.0, 255.0)",
-      "feedbackOut(0.7)",
-      "feedbackIn()",
-      "kaleidoscope(5.0,Math.sin(t*5.0),Math.cos(t*2.0))",
-      "tile(2.0)",
-      "colorHalftone(w/2,h/2,30.0,2.0+Math.sin(t*5.0))",
-      "unsharpMask(3.0,(Math.sin(t*5.0)+1.0)*2.0)",
-      "denoise(3.0)",
-      "denoisefast(3.0)",
-      "triangleBlur(10.0)",
-      "zoomBlur(w/2, h/2, 0.03)",
-      "bulgePinch(w/2, h/2, 600, 0.2)",
-      "swirl(w/2, h/2, 250.0, Math.sin(t*5.0)*1.0)",
-      "hexagonalPixelate(w/2,h/2,4.0+(Math.sin(t*5.0)+1.0)*2.0)",
-      "grid(1.0,0.0)",
-      "life()",
-      "ripple(0.3,0.3,0.0,2.0)",
-      "colorDisplacement(0.0,3.0)",
-      "analogize(2.0,1.5,1.0,16.0)",
-      "gamma(1.0,1.0,0.0)",
-      "gammaRGB(1.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0)",
-      "sobel(0.5,0.5,0.5,0,0,0,1,1,1,1,1)"
+    var effects=[
+      {effect:'vibrance',strength:1.0},
+      {effect:'brightnessContrast',brightness:0.0,contrast:0.0},
+      {effect:'hueSaturation',hue:0.0,saturation:0.0},
+      {effect:'invertColor'},
+      {effect:'toHSV'},
+      {effect:'color',strength:0.5,rgb:{type:'rgb', r:0.0,g:1.0,b:1.0}},
+      {effect:'coloradjust',range:{type:'rgb_range',rl:0.0,rr:255.0,gl:0.0,gr:255.0,bl:0.0,br:255.0}},
+      {effect:'feedbackOut',blend:0.7},
+      {effect:'feedbackIn'},
+      {effect:'kaleidoscope',sides:5.0,angle:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0},angle2:{type:'osc',f:2.0,a:1.0,p:0.0,o:0.0}},
+      {effect:'tile',divisions:5.0},
+      {effect:'colorHalftone',center:{type:'pos',x:0,y:0},angle:30.0,size:{type:'osc',f:5.0,a:1.0,p:0.0,o:2.0}},
+      {effect:'unsharpMask',size:3.0,strength:{type:'osc',f:5.0,a:2.0,p:0.0,o:2.0}},
+      {effect:'denoise',strength:10.0},
+      {effect:'denoisefast',strength:30.0},
+      {effect:'triangleBlur',size:10.0},
+      {effect:'zoomBlur',center:{type:'pos',x:0,y:0}, size: 0.1},
+      {effect:'bulgePinch',center:{type:'pos',x:0,y:0},radius:600,strength:0.2},
+      {effect:'swirl',center:{type:'pos',x:0,y:0},radius:250.0,strength:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0}},
+      {effect:'hexagonalPixelate',center:{type:'pos',x:0,y:0}, size: 10.0},
+      {effect:'grid',size:1.0,angle:0.0},
+      {effect:'life'},
+      {effect:'ripple',sizes:{type:'pos',x:0,y:0},angle:0.0,strength:2.0},
+      {effect:'colorDisplacement',angle:0.0,strength:3.0},
+      {effect:'analogize',exposure:2.0,gamma:1.5,glow:1.0,glow_radius:16.0},
+      {effect:'gamma',factor:1.0,exponent:1.0,offset:0.0},
+      {effect:'gammaRGB',rf:1.0,re:1.0,ro:0.0,  gf:1.0,ge:1.0,go:0.0, bf:1.0,be:1.0,bo:0.0},
+      {effect:'sobel',secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgba',r:0,g:0,b:0,a:1},edges:{type:'rgba',r:1,g:1,b:1,a:1}}      
     ];
     listEffects(effects,'#effects');
         
