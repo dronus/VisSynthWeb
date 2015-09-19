@@ -7,7 +7,7 @@ function gamma(gamma) {
     gl.gamma = gl.gamma || new Shader(null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
-        uniform highp float gamma;\
+        uniform mediump float gamma;\
         void main()\
         {\
             vec4 color = texture2D(texture, texCoord);\

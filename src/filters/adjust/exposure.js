@@ -8,7 +8,7 @@ function exposure(exposure) {
     gl.exposure = gl.exposure || new Shader(null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
-        uniform highp float exposure;\
+        uniform mediump float exposure;\
         void main()\
         {\
             vec4 textureColor = texture2D(texture, texCoord);\

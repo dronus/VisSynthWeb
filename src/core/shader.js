@@ -39,7 +39,7 @@ var Shader = (function() {
         this.program = gl.createProgram();
         vertexSource = vertexSource || defaultVertexSource;
         fragmentSource = fragmentSource || defaultFragmentSource;
-        fragmentSource = 'precision highp float;' + fragmentSource; // annoying requirement is annoying
+        fragmentSource = 'precision mediump float;' + fragmentSource; // annoying requirement is annoying
         gl.attachShader(this.program, compileSource(gl.VERTEX_SHADER, vertexSource));
         gl.attachShader(this.program, compileSource(gl.FRAGMENT_SHADER, fragmentSource));
         gl.linkProgram(this.program);

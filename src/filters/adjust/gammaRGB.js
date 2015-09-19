@@ -9,15 +9,15 @@ function gammaRGB(amplitudeR, exponentR, offsetR ,amplitudeG,exponentG, offsetG,
     gl.gammaRGB = gl.gammaRGB || new Shader(null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
-        uniform highp float amplitudeR;\
-        uniform highp float amplitudeG;\
-        uniform highp float amplitudeB;\
-        uniform highp float exponentR;\
-        uniform highp float exponentG;\
-        uniform highp float exponentB;\
-        uniform highp float offsetR;\
-        uniform highp float offsetG;\
-        uniform highp float offsetB;\
+        uniform mediump float amplitudeR;\
+        uniform mediump float amplitudeG;\
+        uniform mediump float amplitudeB;\
+        uniform mediump float exponentR;\
+        uniform mediump float exponentG;\
+        uniform mediump float exponentB;\
+        uniform mediump float offsetR;\
+        uniform mediump float offsetG;\
+        uniform mediump float offsetB;\
         void main()\
         {\
             vec4 color = texture2D(texture, texCoord);\
