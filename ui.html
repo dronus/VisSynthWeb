@@ -129,10 +129,11 @@
     }
     
     #effects, .chain{
+      position: relative;
       margin: 0px;
       padding: 0px;
+      padding-bottom: 50px;
       width: 270px;
-      height: 80%;
     }
     .chain:empty{
       width: 50px;
@@ -372,10 +373,19 @@
       item.on('click',add_ui);
     }
 
+    var flatten=function(o){
+      var a=[];
+      for(var key in o) if(key!='type') a.push(o[key]);
+      return a.join(',');
+    }
+    
           // generators...
     var generators={
-      rgb:function(args){return [args.r,args.b,args.g].join(',')},
       osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
+      pos:flatten,
+      rgb:flatten,
+      rgba:flatten,
+      rgb_range:flatten
     };
     
     var generate_command=function(effect){
@@ -522,7 +532,7 @@
 
     // the chains are sortable...
     $("#chains").sortable({
-//      stop: updateChains    
+//      stop: updateChains  
     });
     
     $('#chains').on('click','.container',function(){
