@@ -262,7 +262,9 @@
       width: calc(100% - 20px);
       border-radius: 10px;
       padding: 10px;
-      border: 2px solid #999;      
+      border: 2px solid #999;
+      max-height: 90vh;
+      overflow: auto;
     }
     .adjust_ui .ui_object .ui_object{      
       border-radius: 5px;
@@ -509,7 +511,15 @@
 
     var flatten=function(o){
       var a=[];
-      for(var key in o) if(key!='type') a.push(o[key]);
+      for(var key in o) 
+        if(key!='type') 
+        {
+          var value=o[key];
+          if(typeof(value)=='object')
+            a=a.concat(generators[value.type](value));
+          else
+            a.push(value);
+        }
       return a.join(',');
     }
     
