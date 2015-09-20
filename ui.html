@@ -172,7 +172,10 @@
     #chains .active .effect{
       background-color: #050;
     }
-    
+    /* collapse first empty chain */
+    #chains>*:first-child{
+      width: 70px;
+    }    
     .chain{
       position: absolute;
       top: 32px;
@@ -182,6 +185,7 @@
       padding: 2px;
       margin: 0px;
       padding-bottom: 50px;
+      overflow-x: hidden;
       overflow-y: auto;
     }
     .effect{
@@ -570,8 +574,18 @@
           markup(new_element);
           new_element.removeAttr('style'); // remove obsolete jQuery d&d styles
           updateChain(event,ui);
+        },
+        // allow removal of items by dragging them out        
+        over: function(){this.is_outside=false},
+        out: function(){this.is_outside=true},
+        beforeStop: function(ev,ui){
+          if(this.is_outside) 
+          {
+            $(ui.item).remove();
+            updateChain();
+          }
         }
-      }).droppable({greedy: true});      
+      });
     }
     init_chain_list('.chain');
         
@@ -580,16 +594,17 @@
     $('#chains .container').addClass('active');
     
     var ensure_empty_list=function(){
-      // delete surplus empty lists
-      $('#chains .container').has('.chain:empty').remove();
-      
-      // add another empty list
-      $('#chains').prepend(empty_list.clone());
-      init_chain_list('#chains .container:first-child .chain');
+    
+      // always keep an empty list at the left
+      if(!$('#chains .container:first-child .chain:empty').length)
+      {
+        $('#chains').prepend(empty_list.clone());
+        init_chain_list('#chains .container:first-child .chain');
+      }
       
       // ensure names
-      $('#chains .container h2').each(function(i){
-        $(this).html('Chain '+(i+1));
+      $('#chains .container h2').each(function(i){      
+        $(this).html(i==0 ? 'New'  : 'Chain '+i);
       });        
     }
     
@@ -672,29 +687,21 @@
         updateChain();
         last_draggable=false;
       },           
-/*      start: function(ev,ui){
-        // part of fix for jQuerys drop zones also intersect elements hidden by overflow:hidden / overflow:scroll
-        last_draggable=$(this).data('ui-draggable');
-        last_draggable.last_sortables=last_draggable.sortables;
-        last_draggable.sortables=[];        
-      }*/
     });
-        
-    // part of fix for jQuerys drop zones also intersect elements hidden by overflow:hidden / overflow:scroll
-    // we only may drop into the sortables, if the draggable helper has entered the parent container
-/*    $('#chains').droppable({'over':function(){
-        if(!last_draggable || !last_draggable.last_sortables) return;
-        last_draggable.sortables=last_draggable.last_sortables;
-        last_draggable.last_sortables=false;
-    }
-    ,refreshPositions:true
-    });
-  */      
-    //$('#effects').droppable({greedy:true});
 
     // the chains are sortable...
     $("#chains").sortable({
-//      stop: updateChains 
+        stop:function(){updateChain()},
+        // allow removal of items by dragging them out
+        over: function(){this.is_outside=false},
+        out: function(){this.is_outside=true},
+        beforeStop: function(ev,ui){          
+          if(this.is_outside) 
+          {
+            $(ui.item).remove();
+            updateChain();
+          }
+        }
     });
     
     $('#chains').on('click','.container',function(){
@@ -703,14 +710,6 @@
       updateChain();
     });
 
-    // delete items that are dragged out of the chain
-    $('body').droppable({
-      drop: function ( event, ui ) {          
-        ui.draggable.remove();
-      },
-      accept: '#chains .effect'
-    });
-    
     function result(text)
     {
       document.getElementById('result').innerHTML=text;
