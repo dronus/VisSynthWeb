@@ -4,6 +4,7 @@
   <title>NF VisSynth MCP</title>
   <script src="jquery-2.1.4.js"></script>
   <script src="jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.js"></script>  
 </head>
 <body style="font-size: 20px;">
 
@@ -162,7 +163,7 @@
       white-space: normal;
       overflow-x: hidden;
       width:240px;
-      height: calc(100% - 17px);
+      height: calc(100% - 45px); /* leave some empty space to act as scroll anchor on touch devices */
     }
     
     #chains .active{
@@ -497,8 +498,14 @@
       container.append(slider_ui);
       $(document.body).append(container);
       container.position({my:'top',at:'bottom',of:$(effect_element),collision:'fit'});
-      container.on('mouseleave',function(){container.remove();effect_element.removeClass('ui_target');});
+      var close=function(){container.remove();effect_element.removeClass('ui_target');};
+      container.on('mouseleave',close);      
+
+      $(document).one('mouseup',function(ev){
+        $(this).find('.adjust_ui').trigger('mouseleave');
+      });
     };
+    
     
     var add_ui=function(event)
     {
@@ -576,7 +583,6 @@
     {
       // the chain list items are sortable
       $(container).sortable({
-        //revert: true,
         tolerance: 'pointer',
         stop: updateChain,
         receive: function(event,ui){
@@ -696,7 +702,7 @@
       stop: function(){        
         updateChain();
         last_draggable=false;
-      },           
+      }
     });
 
     // the chains are sortable...
