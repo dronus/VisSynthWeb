@@ -45,8 +45,11 @@
       margin: 0px;
       padding: 0px;
       width: 100%;
-   }
-   
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none; 
+  }
   ::-webkit-scrollbar {
     width: 7px;
     height: 7px;
@@ -62,7 +65,7 @@
     width: 5px;
     background-color: #888;
   }
-   
+ 
    h1{
     display: inline;
    }
@@ -162,8 +165,8 @@
       vertical-align: top;
       white-space: normal;
       overflow-x: hidden;
-      width:240px;
-      height: calc(100% - 45px); /* leave some empty space to act as scroll anchor on touch devices */
+      width:260px; /* leave some space right of effects to act as chain scroll anchor on touch */
+      height: calc(100% - 45px); /* leave some empty space below chains to act as chain list scroll anchor on touch */
     }
     
     #chains .active{
@@ -190,6 +193,7 @@
       overflow-y: auto;
     }
     .effect{
+      cursor: pointer;
       display: inline-block;
       vertical-align: top;
       list-style: none;    
@@ -703,7 +707,6 @@
       scroll: false,
       distance: 10,
       delay: 300,
-      disabled: true,
       stop: function(){        
         updateChain();
         last_draggable=false;
@@ -712,6 +715,7 @@
 
     // the chains are sortable...
     $("#chains").sortable({
+        handle: 'h2',
         distance:10,
         delay: 300,
         stop:function(){updateChain()},
