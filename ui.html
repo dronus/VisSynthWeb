@@ -583,6 +583,8 @@
     {
       // the chain list items are sortable
       $(container).sortable({
+        distance:10,
+        delay:300,
         tolerance: 'pointer',
         stop: updateChain,
         receive: function(event,ui){
@@ -699,6 +701,9 @@
       helper: "clone",
       revert: "invalid",
       scroll: false,
+      distance: 10,
+      delay: 300,
+      disabled: true,
       stop: function(){        
         updateChain();
         last_draggable=false;
@@ -707,6 +712,8 @@
 
     // the chains are sortable...
     $("#chains").sortable({
+        distance:10,
+        delay: 300,
         stop:function(){updateChain()},
         // allow removal of items by dragging them out
         over: function(){this.is_outside=false},
