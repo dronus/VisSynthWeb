@@ -32,7 +32,6 @@ function stack_pop()
     return this._.texture;
   }
   this._.stackUnused.push(texture);
-  texture.swapWith(this._.texture);
   
   return texture;
 }

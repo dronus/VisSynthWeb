@@ -12,12 +12,12 @@ function colorkey(r,g,b,threshold,feather) {
         vec4 color  = texture2D(texture , texCoord);\
         vec4 color1 = texture2D(texture1, texCoord);\
         float kY=dot(key_color,coeffY);\
-        float Y =dot(color1.rgb,coeffY);\
+        float Y =dot(color.rgb,coeffY);\
         vec2  k=coeff * (key_color.rb-vec2(kY,kY)); \
-        vec2  c=coeff * (color1.rb-vec2(Y,Y)); \
+        vec2  c=coeff * (color.rb-vec2(Y,Y)); \
         float d=distance(c,k); \
         float alpha=clamp((d - threshold) / feather, 0.0, 1.0); \
-        gl_FragColor = mix(color, color1, alpha);\
+        gl_FragColor = mix(color1, color, alpha);\
       }\
     ');
 
