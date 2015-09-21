@@ -154,7 +154,7 @@
    
     function setChain(effects)
     {
-    
+      effects.unshift({'effect':'stack_prepare'});    
       effects.unshift({'effect':'capture'});
       // var effects=JSON.parse(json);
       
