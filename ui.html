@@ -506,16 +506,23 @@
       container.position({my:'top',at:'bottom',of:$(effect_element),collision:'fit'});
       var close=function(){container.remove();effect_element.removeClass('ui_target');};
       container.on('mouseleave',close);      
-
-      $(document).one('mouseup',function(ev){
+      
+      $(document).one('mouseclick',function(ev){
         if(!$.contains($('.adjust_ui')[0],ev.target))
           $('.adjust_ui').trigger('mouseleave');
       });
+      
     };
     
     
     var add_ui=function(event)
     {
+      if($(this).parent().data('prevent_click'))
+      {
+        $(this).parent().data('prevent_click',false);
+        return;
+      }
+      
       build_ui($(this));
     }
 
@@ -561,6 +568,7 @@
         over: function(){this.is_outside=false},
         out: function(){this.is_outside=true},
         beforeStop: function(ev,ui){
+          $(this).data('prevent_click',true); // store to prevent mouseup click handlers (FF fix)
           if(this.is_outside) 
           {
             $(ui.item).remove();
@@ -620,8 +628,6 @@
       return Math.round((x>0 ? 1 : -1)*(Math.pow(2.,Math.abs(x))-1)*100.)/100.;
     }
        
-    $("ul, li").disableSelection();
-
     // build list of effects  
     var effects=[
       {effect:'capture'},
