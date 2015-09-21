@@ -14,15 +14,12 @@ window.VideoEngine=function()
 
   // glfx.js WebGL effect canvas object
   var canvas = fx.canvas();
-  var texture;
 
   // main update function, shows video frames via glfx.js canvas
   var update = function()
   {
     if(pre_draw_callback) pre_draw_callback.call(this);
 
-    texture.loadContentsOf(video);
-    canvas.draw(texture);
     filter(canvas);
     canvas.update();
 
@@ -34,10 +31,9 @@ window.VideoEngine=function()
 
   // add our startup code to canplay handler of <video> object
   video.addEventListener('canplay',function(e){
-    // adapt canvas and create a texture to pass the captured frames
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    texture = canvas.texture(video);
+    canvas.video=video;
     // start frequent canvas updates
     update();
   },false);
