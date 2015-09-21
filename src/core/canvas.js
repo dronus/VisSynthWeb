@@ -184,6 +184,7 @@ exports.canvas = function() {
     canvas.stack_push=wrap(stack_push);
     canvas.stack_pop=wrap(stack_pop);
     canvas.blend=wrap(blend);
+    canvas.colorkey=wrap(colorkey);    
 //    canvas.=wrap();
     canvas.feedbackIn = wrap(feedbackIn);
     canvas.feedbackOut = wrap(feedbackOut);
