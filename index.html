@@ -105,15 +105,73 @@
     poll_command();
 
 
+    // helper functions for chain code generation
+
+    // flatten tree-like objects values into single array, dropping keys
+    var flatten=function(o){
+      var a=[];
+      for(var key in o) 
+        if(key!='type') 
+        {
+          var value=o[key];
+          if(typeof(value)=='object')
+            a=a.concat(generators[value.type](value));
+          else
+            a.push(value);
+        }
+      return a;
+    }
+    // effect argument value generators...
+    var generators={
+      osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
+      pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
+      size:flatten,
+      rgb:flatten,
+      rgba:flatten,
+      rgb_range:flatten
+    };
+    // generate a single effect function call source code
+    var generate_code=function(effect)
+    {
+      var command=effect.effect;
+      var args=[];
+      for(var key in effect)
+      {
+        if(key=='effect') continue;
+        var value=effect[key];
+        if(typeof(value)=='object')
+          args=args.concat(generators[value.type](value));
+        else
+          args.push(value);
+      }
+      
+      var src=command+'('+args.join(',')+'); ';
+            
+      return src;
+    }
 
     // global functions for UI use
    
-    function setChain(_chain_src){
-      chain_src=_chain_src;
-      var src='var _=function(c,t){with(c){'+chain_src+'}};_';
+    function setChain(effects)
+    {
+      // var effects=JSON.parse(json);
+      
+      // create JS chain function source code
+      var src='var _=function(c,t){with(c){';
+      for (var i=0; i<effects.length; i++)
+        src+=generate_code(effects[i]);
+      src+='}};_';
+
+      // compile chain
       chain=eval(src);
     }
-    setChain("");
+    
+    // set startup chain (second one of chains.json)
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET','/chains.json',false);
+    xmlHttp.send(null);
+    var chains=JSON.parse(xmlHttp.responseText);
+    setChain(chains[0] ? chains[0] : []);
        
     function preview()
     {

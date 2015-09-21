@@ -307,6 +307,7 @@
     var put=function(url,data)
     {
       var xmlHttp = new XMLHttpRequest();
+      xmlHttp.responseType='text';
       xmlHttp.open('PUT',url,true);
       xmlHttp.send(data);
     }
@@ -314,6 +315,7 @@
     var get=function(url,callback)
     {
       var xmlHttp = new XMLHttpRequest();
+      xmlHttp.responseType='text';
       xmlHttp.open('GET',url,true);
       xmlHttp.onreadystatechange=function()
       {
@@ -521,49 +523,6 @@
       item.on('click',add_ui);
     }
 
-    var flatten=function(o){
-      var a=[];
-      for(var key in o) 
-        if(key!='type') 
-        {
-          var value=o[key];
-          if(typeof(value)=='object')
-            a=a.concat(generators[value.type](value));
-          else
-            a.push(value);
-        }
-      return a.join(',');
-    }
-    
-          // generators...
-    var generators={
-      osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
-      pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
-      size:flatten,
-      rgb:flatten,
-      rgba:flatten,
-      rgb_range:flatten
-    };
-    
-    var generate_command=function(effect){
-    
-      var command=effect.effect;
-      var args=[];
-      for(var key in effect)
-      {
-        if(key=='effect') continue;
-        var value=effect[key];
-        if(typeof(value)=='object')
-          args=args.concat(generators[value.type](value));
-        else
-          args.push(value);
-      }
-                                  
-      var code=command+'('+args.join(',')+')';
-            
-      return code;
-    }
-
     savetimeout=false;
     var updateChain=function(event,ui)
     {
@@ -572,13 +531,13 @@
       savetimeout=setTimeout(save,1000);
       
       
-      var chain='';
+      var chain=[];
       $('#chains .active .effect>.ui_object>.value').each(function(){
         var effect=get_data($(this));
-        chain+=generate_command(effect)+';';
+        chain.push(effect);
       });
 
-      send('setChain("'+chain+'")');
+      send('setChain('+JSON.stringify(chain)+')');
       
       // add empty list, if all are used
       ensure_empty_list();
@@ -756,6 +715,7 @@
         get('/result',callback);
       
       var xmlHttp = new XMLHttpRequest();
+      xmlHttp.responseType='text';
       xmlHttp.open('PUT','/command',true);  
       xmlHttp.send(command);
     }
