@@ -1,6 +1,8 @@
-function stack_push()
+function stack_push(from_texture)
 {
-  // push current image onto stack
+  // push given or current image onto stack
+  if(!from_texture) from_texture=this._.texture;
+
 
   // add another texture to empty stack pool if needed
   var t=this._.texture;
@@ -15,15 +17,15 @@ function stack_push()
   }
   
   // copy current frame on top of the stack
-  this._.texture.use();
+  from_texture.use();
   var nt=this._.stackUnused.pop();
   nt.drawTo(function() { Shader.getDefaultShader().drawRect(); });
   this._.stack.push(nt);
 
-  return this;
+  return nt;
 }
 
-function stack_pop()
+function stack_pop(to_texture)
 {
   var texture=this._.stack.pop();
   if(!texture)
@@ -32,6 +34,12 @@ function stack_pop()
     return this._.texture;
   }
   this._.stackUnused.push(texture);
+  
+  if(to_texture) 
+  {
+    texture.swapsWith(to_texture);
+    return null;
+  }
   
   return texture;
 }
