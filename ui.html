@@ -506,7 +506,8 @@
       container.on('mouseleave',close);      
 
       $(document).one('mouseup',function(ev){
-        $(this).find('.adjust_ui').trigger('mouseleave');
+        if(!$.contains($('.adjust_ui')[0],ev.target))
+          $('.adjust_ui').trigger('mouseleave');
       });
     };
     
