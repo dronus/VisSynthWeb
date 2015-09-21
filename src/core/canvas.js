@@ -191,6 +191,8 @@ exports.canvas = function() {
     canvas.colorDisplacement=wrap(colorDisplacement);
     canvas.analogize=wrap(analogize);
     canvas.motion=wrap(motion);
+    canvas.gauze=wrap(gauze);
+    canvas.mandelbrot=wrap(mandelbrot);
     // hexapode's filters methods
     canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);
