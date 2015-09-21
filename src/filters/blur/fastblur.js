@@ -5,7 +5,7 @@
  *               perpendicular triangle filters.
  * @param radius The radius of the pyramid convolved with the image.
  */
-function fastBlur(delta,steps) {
+function fastBlur(radius) {
     gl.fastBlur = gl.fastBlur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -23,6 +23,8 @@ function fastBlur(delta,steps) {
         }\
     ');
 
+    var steps=radius/2;
+    var delta=Math.sqrt(radius);
     for(var i=0; i<steps; i++)
     {
       simpleShader.call(this, gl.fastBlur, { delta: [delta/this.width, delta/this.height]});
