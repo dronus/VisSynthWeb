@@ -538,6 +538,29 @@ function motion(threshold,interval,damper) {
     return this;
 }
 
+// src/filters/video/displacement.js
+function displacement(strength) {
+    gl.displacement = gl.displacement || new Shader(null, '\
+        uniform sampler2D displacement_map;\
+        uniform sampler2D texture;\
+        uniform float strength;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec2 data = texture2D(displacement_map, texCoord).rg;\
+            vec2 pos=texCoord + (data - vec2(0.5,0.5)) * strength; \
+            gl_FragColor = texture2D(texture,pos);\
+        }\
+    ');
+
+    var texture=this.stack_pop();
+    texture.use(1);
+    gl.displacement.textures({displacement_map: 0, texture: 1});
+    simpleShader.call(this, gl.displacement, { strength: strength });
+    texture.unuse(1);
+
+    return this;
+}
+
 // src/filters/video/gauze.js
 function gauze(fx,fy,angle,amplitude,x,y) {
 
@@ -2812,8 +2835,9 @@ exports.canvas = function() {
     canvas.stack_push=wrap(stack_push);
     canvas.stack_pop=wrap(stack_pop);
     canvas.blend=wrap(blend);
-    canvas.blend_alpha=wrap(blend_alpha);    
-    canvas.colorkey=wrap(colorkey);    
+    canvas.blend_alpha=wrap(blend_alpha);
+    canvas.colorkey=wrap(colorkey);
+    canvas.displacement=wrap(displacement);
 //    canvas.=wrap();
     canvas.feedbackIn = wrap(feedbackIn);
     canvas.feedbackOut = wrap(feedbackOut);
