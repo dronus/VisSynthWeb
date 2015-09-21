@@ -180,6 +180,11 @@ exports.canvas = function() {
     canvas.sepia = wrap(sepia);
     // dronus' filter methods
     canvas.capture = wrap(capture);
+    canvas.stack_prepare=wrap(stack_prepare);
+    canvas.stack_push=wrap(stack_push);
+    canvas.stack_pop=wrap(stack_pop);
+    canvas.blend=wrap(blend);
+//    canvas.=wrap();
     canvas.feedbackIn = wrap(feedbackIn);
     canvas.feedbackOut = wrap(feedbackOut);
     canvas.grid = wrap(grid);

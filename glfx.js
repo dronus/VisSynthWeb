@@ -264,6 +264,29 @@ function ripple(fx,fy,angle,amplitude) {
 }
 
 
+// src/filters/video/blend.js
+function blend(alpha) {
+    gl.blend = gl.blend || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform sampler2D texture1;\
+        uniform float alpha;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color  = texture2D(texture , texCoord);\
+            vec4 color1 = texture2D(texture1, texCoord);\
+            gl_FragColor = mix(color, color1, alpha);\
+        }\
+    ');
+
+    var texture1=this.stack_pop();
+    texture1.use(1);
+    gl.blend.textures({texture: 0, texture1: 1});
+    simpleShader.call(this, gl.blend, { alpha: alpha });
+    texture1.unuse(1);
+
+    return this;
+}
+
 // src/filters/video/kaleidoscope.js
 function kaleidoscope(sides,angle,angle2) {
     gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
@@ -681,6 +704,65 @@ function denoisefast(exponent) {
 
     return this;
 }
+
+// src/filters/video/stack.js
+function stack_push()
+{
+  // push current image onto stack
+
+  // add another texture to empty stack pool if needed
+  var t=this._.texture;
+  if(!this._.stackUnused.length)
+    this._.stackUnused.push(new Texture(t.width,t.height,t.format,t.type));
+  
+  // check for stack overflow
+  if(this._.stack.length>10) 
+  {
+    console.log('glfx.js video stack overflow!');
+    return this;
+  }
+  
+  // copy current frame on top of the stack
+  this._.texture.use();
+  var nt=this._.stackUnused.pop();
+  nt.drawTo(function() { Shader.getDefaultShader().drawRect(); });
+  this._.stack.push(nt);
+
+  return this;
+}
+
+function stack_pop()
+{
+  var texture=this._.stack.pop();
+  if(!texture)
+  {
+    console.log('glfx.js video stack underflow!');
+    return this._.texture;
+  }
+  this._.stackUnused.push(texture);
+  texture.swapWith(this._.texture);
+  
+  return texture;
+}
+
+function stack_prepare()
+{
+  // check stack
+
+  // make sure the stack is there
+  if(!this._.stack) this._.stack=[];
+  if(!this._.stackUnused) this._.stackUnused=[];
+
+  // report if stack is still full
+  if(this._.stack.length)
+    console.log("glfx.js video stack leaks "+this._.stack.length+" elements.");
+
+  // pop any remaining elements
+  while(this._.stack.length)
+    this._.stackUnused.push(this._.stack.pop());
+}
+
+
 
 // src/filters/warp/perspective.js
 /**
@@ -2580,6 +2662,11 @@ exports.canvas = function() {
     canvas.sepia = wrap(sepia);
     // dronus' filter methods
     canvas.capture = wrap(capture);
+    canvas.stack_prepare=wrap(stack_prepare);
+    canvas.stack_push=wrap(stack_push);
+    canvas.stack_pop=wrap(stack_pop);
+    canvas.blend=wrap(blend);
+//    canvas.=wrap();
     canvas.feedbackIn = wrap(feedbackIn);
     canvas.feedbackOut = wrap(feedbackOut);
     canvas.grid = wrap(grid);
