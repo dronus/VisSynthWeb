@@ -1,4 +1,4 @@
-function mandelbrot(center,scale,angle,iterations_float) {
+function mandelbrot(x,y,scale,angle,iterations_float) {
 
     iterations_float=Math.min(15,Math.abs(iterations_float));
     
@@ -30,7 +30,7 @@ function mandelbrot(center,scale,angle,iterations_float) {
           -Math.sin(angle)*scale, Math.cos(angle)*scale
         ],
         iterations_fract: iterations_float-iterations,
-        center: [center[0]-this.width/2,center[1]-this.height/2], // TODO remove this fix to cope with UI values top-left origin
+        center: [x,-this.width/2,y-this.height/2], // TODO remove this fix to cope with UI values top-left origin
         texSize: [this.width, this.height]
     });
 

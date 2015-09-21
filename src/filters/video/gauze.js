@@ -1,4 +1,4 @@
-function gauze(fx,fy,angle,amplitude,center) {
+function gauze(fx,fy,angle,amplitude,x,y) {
 
     gl.gauze = gl.gauze || new Shader(null, '\
         uniform sampler2D texture;\
@@ -21,7 +21,7 @@ function gauze(fx,fy,angle,amplitude,center) {
           -Math.sin(angle)*fx, Math.cos(angle)*fy
         ],
         amplitude: amplitude,
-        center: [center[0]-this.width/2,center[1]-this.height/2], // TODO remove this fix to cope with UI values top-left origin
+        center: [x-this.width/2,y-this.height/2], // TODO remove this fix to cope with UI values top-left origin
         texSize: [this.width, this.height]
     });
 
