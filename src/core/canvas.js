@@ -179,6 +179,7 @@ exports.canvas = function() {
     canvas.vibrance = wrap(vibrance);
     canvas.sepia = wrap(sepia);
     // dronus' filter methods
+    canvas.capture = wrap(capture);
     canvas.feedbackIn = wrap(feedbackIn);
     canvas.feedbackOut = wrap(feedbackOut);
     canvas.grid = wrap(grid);
