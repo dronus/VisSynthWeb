@@ -60,9 +60,8 @@ function BeatValue()
 }
 
 
-var initAnalysers=function(stream)
+function initAudioAnalysers(stream)
 {
-    
     // show audio histogram for debug purpose, if canvas exists
     var canvas,audio_canvas_ctx;
     if(canvas=document.getElementById('audiocanvas'))
@@ -126,8 +125,6 @@ var initAnalysers=function(stream)
             audio_canvas_ctx.fillRect(i*5,255-means[i],3,255);
             audio_canvas_ctx.fillStyle='#fff';
             audio_canvas_ctx.fillRect(i*5,255-spectrogram[i],3,2);
-            if(value>threshold)
-              audio_canvas_ctx.fillRect(i*5,255-value,3,value-threshold);
           }
           
           pulse+=Math.max(0,value);
@@ -142,15 +139,16 @@ var initAnalysers=function(stream)
     }
 }
 
+/*
 var initAudio=function()
 {
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
   getUserMedia.call(navigator, {video: false, audio: true}, function(stream){
-    initAnalysers(stream);
+    initAudioAnalysers(stream);
   }, function(err){
     console.log('no audio capture');
   });
 }
 
 initAudio();
-
+*/

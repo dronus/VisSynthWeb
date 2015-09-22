@@ -38,14 +38,39 @@ window.VideoEngine=function()
     update();
   },false);
 
+
+
+function onSourcesAcquired(sources) 
+{
+  var source_ids={audio:[],video:[]};
+
+  for (var i = 0; i != sources.length; ++i) {
+    var source = sources[i];
+    source_ids[source.kind].push(source.id);
+  }
+
+  var device_indices=document.location.hash.substring(1);
+  if(!device_indices) device_indices='0,2';
+  device_indices=device_indices.split(',');
+
+  var constraints = {
+    video:{
+      optional: [{sourceId: source_ids.video[device_indices[0]]}]
+    },
+    audio:{
+      optional: [{sourceId: source_ids.audio[2]}]
+    }
+  };
+
   // initalize getUserMedia() camera capture
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;        
-  getUserMedia.call(navigator, {video: true, audio: false}, function(videoStream){
+  getUserMedia.call(navigator, constraints, function(stream){
     // capture device was successfully acquired
     if (video.mozSrcObject !== undefined) 
-      video.mozSrcObject = videoStream;
+      video.mozSrcObject = stream;
     else
-      video.src = URL.createObjectURL(videoStream);			
+      video.src = URL.createObjectURL(stream);
+    initAudioAnalysers(stream);
   }, function(err){
     // can't capture error handler
     // TODO for what is this event good for? Browser displays a warning or what?
@@ -54,6 +79,9 @@ window.VideoEngine=function()
     evt.UserMediaError = err;
     video.dispatchEvent(evt);
   });
+}
+MediaStreamTrack.getSources( onSourcesAcquired);
+
 
   return {canvas: canvas, setFilter: setFilter, setCallback: setCallback};
 }
