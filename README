@@ -1,0 +1,48 @@
+VisSynthWeb
+
+
+VisSynthWeb is a browser-based realtime video effect and synthesizer platform. It transforms a live video captured by an connected camera by user defined chains made of user adjustable effects. 
+
+The user interface is provided by an embedded control server and may be accessed on any decent internet browser. Effects can be sorted from the collection into several chains, which can be switched on the fly. Effect parameters may be twiddled in realtime by sliders. A stack-based image memory allows the creation of more complex effect networks inside the linear chain. New effects chains can be prepared side by side and switched if ready, but it is also possible to drop effects into the running chain. As the chain paradigm does not require manual interconnecting of the effects the new effect becames active immediately. 
+
+
+
+
+
+It runs well in lower resolutions even on minimalistic hardware like the Odroid U3. Such small computers can be tucked to screens or projectors. They will run the saved effect chain on power-up and can then be accessed as needed to tweak or replace the effect.
+
+
+
+Installation
+
+-Clone this repository to the device sporting the camera and screen.
+
+-Run 'node server.js' inside the repository
+
+-Run the devices browser and enter 127.0.0.1:8082/index.html . The browser asks to allow camera access and the live image should appear after confirmation.
+
+-Run up a browser on another device or second screen, and enter the IP of the video machine, followed by :8082/ui.html . The user interface should appear. Try to drag effects into the active chain (highlighted green) to see if it works. There is no undo, any change is permanent for now!
+
+
+
+Requirements
+
+-A computer with an web browser featuring a reliable WebGL implementation, working camera access, and a working node.js installation. Small EGL-supporting ARM devices like Odroid are feasable. Mobile devices may work, but would require another device to run the control server.
+
+-A reliable webcam or embedded camera.
+
+-Another screen or computer with an up-to-date web browser for remote control. No fun without control!
+
+
+
+Troubleshooting
+
+-Video display or UI does not start up as expected. Check the browsers console and report the bug. Check if the control server is running. Check the connection between the devices.
+
+-Drag and Drop in the UI works not like expected. Try another browser or device, or fix the bug and file a pull request.
+
+-Video display freezes. Try hit the RELOAD button in the remote UI's header. Check the video machine browser's console and report the bug.
+
+
+
+Technical details
