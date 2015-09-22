@@ -484,19 +484,52 @@
         container.remove();
         effect_element.click();
       }
-      slider_ui.find('.ui_object:not([ui_type="osc"])>.value>.ui_number>.value').each(function(){
+      // beat toggler
+      var toggle_beat=function(){
+        var value_element=$($(this).parent().data('original_value_element'));
+        var key=value_element.parent().find('>.key').text();
+        
+        var new_value;
+        if(value_element.parent().attr('ui_type')=='beat')
+        {
+          // replace BEAT by it's pure offset or amplitude value, whats larger.
+          var beat=get_data(value_element);
+          new_value=Math.abs(beat.a)>Math.abs(beat.o) ? beat.a : beat.o;
+        }
+        else
+        { 
+          var offset=parseFloat(value_element.text());
+          new_value={type:'beat',pulse:0.0,f:2.0,a:offset/2,p:0.0,o:offset/2};
+        }
+        var new_ui=get_ui(key,new_value,function(element,value){
+         element.html(document.createTextNode(''+value));
+        });
+        value_element.parent().replaceWith(new_ui);
+
+        // update and store effect chain
+        updateChain();
+
+        // refresh UI
+        container.remove();
+        effect_element.click();
+      }
+
+
+      slider_ui.find('.ui_object:not([ui_type])>.value>.ui_number>.value').each(function(){
         var element=$(this);
         // get value field of original value_element to manipulate by this UI
         var value_element=$(element.data('original_value_element'));
                   
         element.append($('<button>OSC</button>').click(toggle_osc));
+        element.append($('<button>BEAT</button>').click(toggle_beat));
       });
       slider_ui.find('.ui_object[ui_type="osc"]>.value').each(function(){
         var element=$(this);
-        // get value field of original value_element to manipulate by this UI
-        var value_element=$(element.data('original_value_element'));
-  
         element.find('.ui_string').after($('<button>REMOVE OSC</button>').click(toggle_osc));
+      });
+      slider_ui.find('.ui_object[ui_type="beat"]>.value').each(function(){
+        var element=$(this);
+        element.find('.ui_string').after($('<button>REMOVE BEAT</button>').click(toggle_beat));
       });
 
       // add popup container to body
