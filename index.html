@@ -8,7 +8,6 @@
 </head>
 <body>
 <!--  <canvas id=audiocanvas width=640 height=256 style="position: absolute; width: 640px; height: 256px; border: 1px solid pink;">audio test canvas</canvas> -->
-
   <style>
     html,body,canvas{
       width: 100%;
@@ -44,7 +43,7 @@
   <script>
     
     
-    var w=640, h=480;    
+    var w=640, h=480;
     
     var videoengine = VideoEngine();
 
@@ -67,10 +66,21 @@
     
     // post-rendering-callback (preview setup)
     var preview_enabled=false;
+    var preview_canvas=false;
     var get_preview=function()
     {
       if(!preview_enabled) return;
-      var pixels=videoengine.canvas.toDataURL('image/jpeg');
+      
+      // TODO use the preview shader to do scaling by WebGL before copying!
+      if(!preview_canvas)
+      {
+        preview_canvas=document.createElement('canvas');
+        preview_canvas.width=320; preview_canvas.height=200;
+      }
+      var ctx=preview_canvas.getContext('2d');
+      ctx.drawImage(videoengine.canvas,0,0,videoengine.canvas.width,videoengine.canvas.height, 0, 0, preview_canvas.width,preview_canvas.height);
+          
+      var pixels=preview_canvas.toDataURL('image/jpeg');
     
       put('/preview',pixels);
       
