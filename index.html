@@ -4,8 +4,11 @@
   <title>NF VisSynth</title>
   <script src="glfx.js/glfx.js"></script>
   <script src="video.js"></script>
+  <script src="audio.js"></script>
 </head>
 <body>
+<!--  <canvas id=audiocanvas width=640 height=256 style="position: absolute; width: 640px; height: 256px; border: 1px solid pink;">audio test canvas</canvas>
+-->
   <style>
     html,body,canvas{
       width: 100%;
@@ -125,12 +128,14 @@
     var generators={
       osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
+      beat:function(args){return["BeatValue("+flatten(args).join(',')+")"]},
       size:flatten,
       rgb:flatten,
       rgba:flatten,
       rgb_range:flatten
     };
     // generate a single effect function call source code
+
     var generate_code=function(effect)
     {
       var command=effect.effect;

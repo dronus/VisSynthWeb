@@ -638,7 +638,8 @@
       {effect:'blend_alpha'},
       {effect:'colorkey',color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1},      
       {effect:'vibrance',strength:1.0},
-      {effect:'brightnessContrast',brightness:0.0,contrast:0.0},
+/*      {effect:'brightnessContrast',brightness:0.0,contrast:0.0},*/
+      {effect:'brightnessContrast',brightness:{type:'beat',pulse:0.0,f:2.0,a:1.0,p:0.0,o:-0.7},contrast:0.0},
       {effect:'hueSaturation',hue:0.0,saturation:0.0},
       {effect:'invertColor'},
       {effect:'toHSV'},
