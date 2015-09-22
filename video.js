@@ -21,9 +21,10 @@ window.VideoEngine=function()
     if(pre_draw_callback) pre_draw_callback.call(this);
 
     filter(canvas);
-    canvas.update();
-
+    
     if(post_draw_callback) post_draw_callback.call(this);
+
+    canvas.update();
 
     // enqueue next update
     requestAnimationFrame(update);

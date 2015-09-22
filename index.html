@@ -65,26 +65,30 @@
     }
     
     // post-rendering-callback (preview setup)
-    var preview_enabled=false;
+    var preview_cycle=0;
     var preview_canvas=false;
     var get_preview=function()
-    {
-      if(!preview_enabled) return;
-      
-      // TODO use the preview shader to do scaling by WebGL before copying!
-      if(!preview_canvas)
-      {
-        preview_canvas=document.createElement('canvas');
-        preview_canvas.width=320; preview_canvas.height=200;
+    {    
+      if(preview_cycle==1)
+      {      
+        var canvas=videoengine.canvas;
+        if(!preview_canvas)
+        {
+          preview_canvas=document.createElement('canvas');
+          preview_canvas.width=canvas.preview_width; preview_canvas.height=canvas.preview_height;
+        }
+        var ctx=preview_canvas.getContext('2d');
+        ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
+
+        preview_cycle=2;
       }
-      var ctx=preview_canvas.getContext('2d');
-      ctx.drawImage(videoengine.canvas,0,0,videoengine.canvas.width,videoengine.canvas.height, 0, 0, preview_canvas.width,preview_canvas.height);
-          
-      var pixels=preview_canvas.toDataURL('image/jpeg');
-    
-      put('/preview',pixels);
+      else if(preview_cycle==2)
+      {          
+        var pixels=preview_canvas.toDataURL('image/jpeg');    
+        put('/preview',pixels);
       
-      preview_enabled=false;
+        preview_cycle=0;
+      }     
     }
     
     videoengine.setCallback(animation,get_preview);
@@ -103,7 +107,6 @@
             poll_command();
           },100);
           var js=xmlHttp.responseText;
-          console.log(js);
           if(js) 
           {
             var result=window.eval(js);
@@ -192,7 +195,8 @@
        
     function preview()
     {
-      preview_enabled=true;
+      // engage preview process
+      preview_cycle=1;
     }
     
   </script>
