@@ -1,3 +1,3 @@
 #!/bin/sh
 
-nodejs server.js
+nodejs server.js || node server.js
