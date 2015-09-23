@@ -64,3 +64,10 @@ Troubleshooting
 
 Technical details
 TO BE DONE
+
+
+Credits
+
+Uses glfx.js:  http://evanw.github.com/glfx.js/
+
+Originally used and now losely based on WebCamVidja: https://github.com/johanan/WebCamVidja.git
