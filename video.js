@@ -81,8 +81,11 @@ function onSourcesAcquired(sources)
     video.dispatchEvent(evt);
   });
 }
-MediaStreamTrack.getSources( onSourcesAcquired);
 
+if(MediaStreamTrack.getSources)
+  MediaStreamTrack.getSources( onSourcesAcquired);
+else
+  onSourcesAcquired([]);
 
   return {canvas: canvas, setFilter: setFilter, setCallback: setCallback};
 }
