@@ -1,0 +1,57 @@
+<!DOCTYPE  html>
+<html>
+<head>
+  <title>NF VisSynth MCP Help</title>
+</head>
+<body>
+  <div help_for=".header button:nth-child(2)">
+    Restart the live player to correct any mishaps.
+  </div>
+  <div help_for=".header button:nth-child(3)">
+    Start preview streaming. An optional 'preview' effect can be added to any position in the chain to show the intermediate image.
+  </div>
+  <div help_for=".header button:nth-child(4)">
+    Pause preview streaming.
+  </div>
+  
+  <div help_for=".effects h3">
+    The lower list contains effect modules, that can be added to any chain by dragging them into certain position in the chain.
+  </div>
+  <div help_for=".effects .effect">
+    Drag this effect to the chains above to add it.
+  </div>
+  <div help_for="#chains .container">
+    A video effect chain. Click here to activate it. Drag title to reorder or delete it. Drag items inside to rearrange them.
+  </div>
+  <div help_for="#chains .container:first-child">
+    An empty video effect chain. Drag an item inside to begin a new chain.
+  </div>
+
+  <div help_for="#chains .chain .effect">
+    A chained video effect. Drag to reorder it. Click to adjust parameters.
+  </div>
+  <div help_for=".adjust_ui">
+    Use the sliders to adjust the effect's parameters. The center area provides fine grained control, the outer large numbers. Move or click outside to close.
+  </div>
+
+  <div help_for=".adjust_ui button">
+    Press buttons to add or remove oscillator or beat analyser to this parameter.
+  </div>
+
+  <div help_for=".adjust_ui [ui_type='osc']">
+    An OSC controlls this parameter.
+    <p>f: Set the frequency of the value change </p>
+    <p>a: Set the amplitude, that is how much the value will change in every swing </p>
+    <p>p: Sets the phase, this can be used to move the swing in respect to another OSC </p>
+    <p>o: Sets the offset, that is the center value of the swing. </p>
+  </div>
+  <div help_for=".adjust_ui [ui_type='beat']">
+    An BEAT beat analyzer controlls this parameter.
+    <p>f: Set the guessed beat frequency of the audio, if any. For music, this is BPM / 60. </p>
+    <p>a: Set the amplitude, that is how much the value will change with the beat.</p>
+    <p>p: Sets the phase, this can be used to move the swing in respect to the beat.</p>
+    <p>o: Sets the offset, that is the lowest value of the swing.</p>
+  </div>
+
+</body>
+</html>

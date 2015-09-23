@@ -1,38 +1,55 @@
 VisSynthWeb
 
 
-VisSynthWeb is a browser-based realtime video effect and synthesizer platform. It transforms a live video captured by an connected camera by user defined chains made of user adjustable effects. 
+VisSynthWeb is a browser-based realtime video effect and synthesizer platform. It transforms a live video captured by an connected camera by user defined chains made of user adjustable effects. The live video can be controlled by another browser device.
 
-The user interface is provided by an embedded control server and may be accessed on any decent internet browser. Effects can be sorted from the collection into several chains, which can be switched on the fly. Effect parameters may be twiddled in realtime by sliders. A stack-based image memory allows the creation of more complex effect networks inside the linear chain. New effects chains can be prepared side by side and switched if ready, but it is also possible to drop effects into the running chain. As the chain paradigm does not require manual interconnecting of the effects the new effect becames active immediately. 
-
-
-
-
+The user interface is provided by an integrated control server and may be accessed on any decent internet browser. Effects can be sorted from the collection into several chains, which can be switched on the fly. Effect parameters may be twiddled in realtime by sliders. A stack-based image memory allows the creation of more complex effect networks inside the linear chain. New effects chains can be prepared side by side and switched if ready, but it is also possible to drop effects into the running chain. As the chain paradigm does not require manual interconnecting of the effects the new effect becames active immediately. 
 
 It runs well in lower resolutions even on minimalistic hardware like the Odroid U3. Such small computers can be tucked to screens or projectors. They will run the saved effect chain on power-up and can then be accessed as needed to tweak or replace the effect.
 
 
 
-Installation
-
--Clone this repository to the device sporting the camera and screen.
-
--Run 'node server.js' inside the repository
-
--Run the devices browser and enter 127.0.0.1:8082/index.html . The browser asks to allow camera access and the live image should appear after confirmation.
-
--Run up a browser on another device or second screen, and enter the IP of the video machine, followed by :8082/ui.html . The user interface should appear. Try to drag effects into the active chain (highlighted green) to see if it works. There is no undo, any change is permanent for now!
-
-
-
 Requirements
-
 -A computer with an web browser featuring a reliable WebGL implementation, working camera access, and a working node.js installation. Small EGL-supporting ARM devices like Odroid are feasable. Mobile devices may work, but would require another device to run the control server.
-
 -A reliable webcam or embedded camera.
-
 -Another screen or computer with an up-to-date web browser for remote control. No fun without control!
 
+
+
+Installation
+-Clone this repository to the device sporting the camera and screen.
+-Run 'node server.js' inside the repository
+-Run the devices browser and enter 127.0.0.1:8082/index.html . The browser asks to allow camera access and the live image should appear after confirmation.
+-Run up a browser on another device or second screen, and enter the IP of the video machine, followed by :8082/ui.html . The user interface should appear. Try to drag effects into the active chain (highlighted green) to see if it works. There is no undo, any change is permanent for now!
+
+Usage
+-Open the remote interface ui.html.
+-The upper list consist of "chains", one of them is running at a time. Click on their title to make another one active. The chains may be reordered by dragging on their title. A chain may be deleted by dragging it out of the vertical chain list.
+-The lower list contains effect modules, that can be added to any chain by dragging them into certain position in the chain. The chained effects can be reordered by dragging them to a new position inside the chain. An effect is removed of the chain by dragging it out of the chain.
+-An effect can clicked to reveal sliders that allow adjustment of its parameters. The sliders are sporting a large range of numbers, and a finer grained control near the middle.
+-Any parameter can be animated by adding an oscilator OSC or audio beat analyser BEAT using the buttons next to the slider. OSC and BEAT add new sliders, and can be removed again with the respective buttons.
+-An OSC makes the value going up and down repeatedly. Four new parameters can be adjusted:
+--f: Set the frequency of the value change
+--a: Set the amplitude, that is how much the value will change in every swing
+--p: Sets the phase, this can be used to move the swing in respect to another OSC
+--o: Sets the offset, that is the center value of the swing. 
+Usually you may first try an low "a" and set "o" to the old static value to achive a similiar effect.
+-An BEAT makes the value react to sound. Five parameters can be adjusted:
+--pulse: Set the direct reaction to audio amplitude pulses
+--f: Set the guessed beat frequency of the audio, if any. For music, this is BPM / 60.
+--a: Set the amplitude, that is how much the value will change with the beat.
+--p: Sets the phase, this can be used to move the swing in respect to the beat.
+--o: Sets the offset, that is the lowest value of the swing.
+-Effect types: Most effects modify incoming images and have no further effects. Others are special:
+--capture: Has no input and discards the image of the chain above. Outputs the raw camera image like on top of the chain.
+--preview: Has no effect, but feeds the image to the preview if enabled. Allows to check intermediate images in long chains.
+--push_stack: Does not modify the image at all, but places a copy onto a stack. Effects with more then one input use these.
+--blend, blend_alpha, colorkey, displace: This effects require two input images, and works best another image was put to the stack before, which they take off.
+--feedbackOut, feedbackIn: feedbackIn stores one image that is hold onto the next video frame. Use feedbackOut above of it to create a feedback loop.
+--motion, timeshift: These effects keep internal copys of images over some time. 
+-Any change to the active chain (add, order, adjust effects)  takes effect instantly.
+-Any change is saved almost immediately.
+-There is NO undo.
 
 
 Troubleshooting
@@ -46,3 +63,4 @@ Troubleshooting
 
 
 Technical details
+TO BE DONE
