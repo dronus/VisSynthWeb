@@ -208,6 +208,8 @@ exports.canvas = function() {
     canvas.gauze=wrap(gauze);
     canvas.mandelbrot=wrap(mandelbrot);
     canvas.timeshift=wrap(timeshift);
+    canvas.reaction=wrap(reaction);
+    canvas.relief=wrap(relief);    
     // hexapode's filters methods
     canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);

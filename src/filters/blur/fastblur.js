@@ -10,13 +10,13 @@ function fastBlur(radius) {
             color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
             color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
             color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
-            gl_FragColor = color; \
+            gl_FragColor = vec4(color.rgb,1.); \
         }\
     ');
 
-    for(var i=0; i<Math.sqrt(radius); i++)
+    for(var d=1.; d<=radius; d*=1.44)
     {
-      simpleShader.call(this, gl.fastBlur, { delta: [i/this.width, i/this.height]});
+      simpleShader.call(this, gl.fastBlur, { delta: [d/this.width, d/this.height]});
     }
     return this;
 }

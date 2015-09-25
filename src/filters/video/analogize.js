@@ -26,7 +26,7 @@ function analogize(exposure,gamma,glow,radius) {
 
     // Blur the current texture, then use the stored texture to detect edges
     this._.extraTexture.use(1);
-    this.triangleBlur(radius);
+    this.fastBlur(radius);
     gl.analogize.textures({
         glow_texture: 0,
         texture: 1
