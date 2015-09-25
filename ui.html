@@ -29,6 +29,7 @@
   
   <div class="preview container">
     <img id=preview></img>
+    <div id=stats></div>
   </div>
   
   <input type=text id=command></input>        
@@ -133,6 +134,10 @@
    }
    .preview img{
       width: 100%;
+   }
+   .preview .stats{
+      position: absolute; 
+      bottom: 10px; left: 10px;
    }
     
    #command{
@@ -821,6 +826,10 @@
         if(data)
           document.getElementById('preview').src=data;
         requestAnimationFrame(preview_handler);          
+      });
+      get('/frame_time',function(data){
+        if(data)
+          document.getElementById('stats').innerHTML='FPS: '+(Math.round(1000./data));
       });
 
       send('preview()');

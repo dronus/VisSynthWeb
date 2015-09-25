@@ -11,6 +11,7 @@ window.VideoEngine=function()
   // <video> object for video decoding
   var video = document.createElement('video');
   video.autoplay = true;
+  video.muted=true;
 
   // glfx.js WebGL effect canvas object
   var canvas = fx.canvas();
