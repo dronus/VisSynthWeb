@@ -14,7 +14,7 @@ function fastBlur(radius) {
         }\
     ');
 
-    for(var d=1.; d<=radius; d*=1.44)
+    for(var d=1.; d<=radius; d*=Math.sqrt(2))
     {
       simpleShader.call(this, gl.fastBlur, { delta: [d/this.width, d/this.height]});
     }

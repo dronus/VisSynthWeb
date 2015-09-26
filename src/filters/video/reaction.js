@@ -1,4 +1,4 @@
-function reaction(noise_factor,scale1,scale2,scale3,scale4) {
+function reaction(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     gl.reaction = gl.reaction || new Shader(null,'\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur;\n\
@@ -6,6 +6,7 @@ function reaction(noise_factor,scale1,scale2,scale3,scale4) {
       uniform sampler2D texture_blur3;\n\
       uniform sampler2D texture_blur4;\n\
       uniform float noise_factor;\n\
+      uniform float zoom_speed;\n\
       varying vec2 texCoord;\n\
       uniform vec2 texSize;\n\
       uniform vec4 rnd;\n\
@@ -85,7 +86,7 @@ function reaction(noise_factor,scale1,scale2,scale3,scale4) {
         // overall plane deformation vector (zoom-in on the mouse position)\n\
         \n\
         vec2 c = vec2(0.5)+(rnd.zw-0.5)*texSize*16.0; // adding random to avoid artifacts\n\
-        vec2 uv = c+(texCoord-c)*0.997; // 0.7% zoom in per frame\n\
+        vec2 uv = c+(texCoord-c)*(1.0-zoom_speed); // 0.7% zoom in per frame\n\
        \n\
         // green: very soft reaction-diffusion (skin dot synthesis simulation)\n\
        \n\
@@ -167,7 +168,8 @@ function reaction(noise_factor,scale1,scale2,scale3,scale4) {
     simpleShader.call(this, gl.reaction, {
         texSize: [1./this.width,1./this.height],
         rnd: [Math.random(),Math.random(),Math.random(),Math.random()],
-        noise_factor: noise_factor
+        noise_factor: noise_factor,
+        zoom_speed: zoom_speed
     },texture);
 
     blur.unuse(1);
