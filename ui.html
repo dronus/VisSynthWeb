@@ -13,6 +13,7 @@
     <button onclick="send('document.location.reload()')">RESTART</button>
     <button onclick="start_preview()">PLAY PREVIEW</button>
     <button onclick="stop_preview()">PAUSE PREVIEW</button>
+    <button onclick="screenshot()">SCREENSHOT</button>
   </div>
 
   <div class="effects container">
@@ -847,6 +848,18 @@
     function stop_preview(){
       preview=false;
       document.getElementById('preview').src='';
+    }
+
+    function screenshot(){
+      get('/screenshot',function(data){
+        var link=$('<a>');
+        link.attr('href',data);
+        link.attr('download','screenshot.jpg');
+        $(document.body).append(link);
+        link[0].click();
+        // link.remove();
+      });
+      send('screenshot()');
     }
    
    

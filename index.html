@@ -70,8 +70,9 @@
     
     // post-rendering-callback (preview setup)
     var preview_cycle=0;
-    var preview_canvas=false;
-    var get_preview=function()
+    var screenshot_cycle=0;
+    var preview_canvas=null;
+    var after_preview=function()
     {    
       if(preview_cycle==1)
       {      
@@ -97,7 +98,18 @@
       }     
     }
     
-    videoengine.setCallback(animation,get_preview);
+    var after_draw=function()
+    {    
+      if(screenshot_cycle==1)
+      {      
+        // videoengine.canvas.preserveDrawingBuffer=true;
+        var pixels=videoengine.canvas.toDataURL('image/jpeg');    
+        put('/screenshot',pixels);
+        screenshot_cycle=0;
+      }
+    }
+    
+    videoengine.setCallback(animation,after_preview,after_draw);
 
     document.body.appendChild(videoengine.canvas);
 
@@ -211,6 +223,11 @@
       preview_cycle=1;
     }
     
+    function screenshot()
+    {
+      // engage screenshot process
+      screenshot_cycle=1;
+    }
   </script>
 
 </body>
