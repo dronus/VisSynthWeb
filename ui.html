@@ -1,6 +1,7 @@
 <!DOCTYPE  html>
 <html>
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <title>NF VisSynth MCP</title>
   <script src="jquery-2.1.4.js"></script>
   <script src="jquery-ui.js"></script>
@@ -193,9 +194,6 @@
       background-color: #030;
     }
     
-    #chains .active .effect{
-      background-color: #050;
-    }
     /* collapse first empty chain */
     #chains>*:first-child{
       width: 70px;
@@ -217,7 +215,7 @@
       display: inline-block;
       vertical-align: top;
       list-style: none;    
-      background-color: #333;
+      background-color: #222;
       color: #fff;
       margin: 2px;
       padding: 3px;
@@ -261,10 +259,75 @@
     {
       font-size: 15px;
     }
-        
+    
+    /* show chain flow arrows */
+    .chain .effect{
+      position:relative;
+    }
+    /* every effect shows an input arrow be default*/
+    .chain .effect::before{
+      display: block;
+      position:absolute;
+      top: -10px;
+      left: 50%;
+      content: '▾';
+    }
+    /* effects with more inputs show additional stack input arrows.*/
+    .chain .effect[ui_inputs="2"]>.ui_object::before{
+      display: block;
+      position:absolute;
+      top: -3px;
+      right: 10px;
+      content: '◂▤';
+      color: #f00;
+    }
+    .chain .effect[ui_inputs="3"]>.ui_object::before{
+      display: block;
+      position:absolute;
+      top: -3px;
+      right: 10px;
+      content: '◂◂▤';
+      color: #f00;
+    }
+    
+    /* effects with no inputs show no arrows*/
+    .chain .effect[ui_inputs="0"]::before{
+      display: none;
+    }
+    /* effects with additional outputs show stack output arrows*/
+    .chain .effect[ui_outputs]>.ui_object::before{
+      display: block;
+      position:absolute;
+      bottom: -3px;
+      right: 10px;
+      content: '▸▤';
+      color: #f00;
+    }
+
+    
+    /* an effect with no input (source)*/
+    .effect[ui_inputs="0"]
+    {
+      background-color: #242;
+    }
+    /* an effect sporting additional inputs, pops stack */
+    .effect[ui_inputs="2"]
+    {
+      background: linear-gradient(#522,#222);
+    }
+    .effect[ui_inputs="3"]
+    {
+      background: linear-gradient(#622,#222);
+    }
+    
+    .effect[ui_outputs]
+    {
+      background: linear-gradient(#222,#522);
+    }
+                
     .key{
       display: inline-block;
-      background-color:#444;
+      background-color:#333;
       color: #fff;
       font-size: 10px;
       font-weight: bold;
@@ -420,6 +483,11 @@
     var create_effect_element=function(effect,value_renderer)
     {
         var li=$('<div class=effect>');
+        var effect_template=effects[effect.effect];
+        li.attr('ui_effect',effect.effect);
+        for(key in effect_template)
+          if(key!='args')
+            li.attr('ui_'+key, effect_template[key]);
         li.append(get_ui('',effect,value_renderer));
         return li;    
     }
@@ -693,14 +761,14 @@
     // feedback_input:1 denotes the effect reads the feedback buffer from the last frame
     // feedback_output:1 denotes the effect writes the feedback buffer for the next frame
     var effects={
-      'capture':{},
+      'capture':{inputs:0},
       'preview':{},
-      'stack_push':{},
-      'stack_pop':{},
-      'blend':{args:{alpha:0.5}},
-      'displacement':{args:{strength:0.05}},
-      'blend_alpha':{},
-      'colorkey':{args:{color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1}},
+      'stack_push':{outputs:2},
+      'stack_pop' :{inputs: 2},
+      'blend':{inputs: 2,args:{alpha:0.5}},
+      'displacement':{inputs: 2,args:{strength:0.05}},
+      'blend_alpha':{inputs: 3},
+      'colorkey':{inputs: 2,args:{color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1}},
       'vibrance':{args:{strength:1.0}},
 /*      'brightnessContrast':{args:{brightness:0.0,contrast:0.0},*/
       'brightnessContrast':{args:{brightness:{type:'beat',pulse:0.0,f:2.0,a:1.0,p:0.0,o:-0.7},contrast:0.0}},
