@@ -5,8 +5,9 @@ window.VideoEngine=function()
   var setFilter = function(newFilter){ filter = newFilter; };
   
   var pre_draw_callback=false;
+  var preview_callback=false;
   var post_draw_callback=false;
-  var setCallback = function(pre_draw,post_draw){ pre_draw_callback=pre_draw; post_draw_callback=post_draw; };
+  var setCallback = function(pre_draw,preview,post_draw){ pre_draw_callback=pre_draw; preview_callback=preview; post_draw_callback=post_draw; };
 
   // <video> object for video decoding
   var video = document.createElement('video');
@@ -23,9 +24,11 @@ window.VideoEngine=function()
 
     filter(canvas);
     
-    if(post_draw_callback) post_draw_callback.call(this);
+    if(preview_callback) preview_callback.call(this);
 
     canvas.update();
+
+    if(post_draw_callback) post_draw_callback.call(this);
 
     // enqueue next update
     requestAnimationFrame(update);
