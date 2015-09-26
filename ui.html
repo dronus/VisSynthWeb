@@ -684,59 +684,78 @@
       return Math.round((x>0 ? 1 : -1)*(Math.pow(2.,Math.abs(x))-1)*100.)/100.;
     }
        
-    // build list of effects  
-    var effects=[
-      {effect:'capture'},
-      {effect:'preview'},
-      {effect:'stack_push'},
-      {effect:'stack_pop'},
-      {effect:'blend',alpha:0.5},
-      {effect:'displacement',strength:0.05},
-      {effect:'blend_alpha'},
-      {effect:'colorkey',color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1},      
-      {effect:'vibrance',strength:1.0},
-/*      {effect:'brightnessContrast',brightness:0.0,contrast:0.0},*/
-      {effect:'brightnessContrast',brightness:{type:'beat',pulse:0.0,f:2.0,a:1.0,p:0.0,o:-0.7},contrast:0.0},
-      {effect:'hueSaturation',hue:0.0,saturation:0.0},
-      {effect:'invertColor'},
-      {effect:'toHSV'},
-      {effect:'color',strength:0.5,rgb:{type:'rgb', r:0.0,g:1.0,b:1.0}},
-      {effect:'posterize',steps:4.0},
-      {effect:'coloradjust',range:{type:'rgb_range',rl:0.0,rr:255.0,gl:0.0,gr:255.0,bl:0.0,br:255.0}},
-      {effect:'feedbackOut',blend:0.7},
-      {effect:'feedbackIn'},
-      {effect:'kaleidoscope',sides:5.0,angle:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0},angle2:{type:'osc',f:2.0,a:1.0,p:0.0,o:0.0}},
-      {effect:'tile',divisions:2.0,center:{type:'pos',x:0.0,y:0.0}},
-      {effect:'colorHalftone',center:{type:'pos',x:0,y:0},angle:30.0,size:{type:'osc',f:5.0,a:1.0,p:0.0,o:2.0}},
-      {effect:'unsharpMask',size:3.0,strength:{type:'osc',f:5.0,a:2.0,p:0.0,o:2.0}},
-      {effect:'denoise',strength:10.0},
-      {effect:'denoisefast',strength:30.0},
-      {effect:'triangleBlur',size:10.0},
-      {effect:'fastTriangleBlur',size:10.0},      
-      {effect:'fastBlur',size:20.0},
-      {effect:'erode',iterations:2.0},
-      {effect:'dilate',iterations:2.0},            
-      {effect:'localContrast',size:10.0,strength:0.5},
-      {effect:'zoomBlur',center:{type:'pos',x:0,y:0}, size: 0.1},
-      {effect:'bulgePinch',center:{type:'pos',x:0,y:0},radius:600,strength:0.2},
-      {effect:'swirl',center:{type:'pos',x:0,y:0},radius:250.0,strength:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0}},
-      {effect:'hexagonalPixelate',center:{type:'pos',x:0,y:0}, size: 10.0},
-      {effect:'grid',size:1.0,angle:0.0},
-      {effect:'life'},
-      {effect:'ripple',width:0.3,length:0.3,angle:0.0,strength:2.0},
-      {effect:'gauze',width:300,length:200,angle:0.0,strength:0.5,center:{type:'pos',x:0.0,y:0.0}},
-      {effect:'colorDisplacement',angle:0.0,strength:3.0},
-      {effect:'analogize',exposure:2.0,gamma:1.5,glow:1.0,glow_radius:16.0},
-      {effect:'gamma',gamma:1.0},
-      {effect:'gammaRGB',rf:1.0,re:1.0,ro:0.0,  gf:1.0,ge:1.0,go:0.0, bf:1.0,be:1.0,bo:0.0},
-      {effect:'sobel',secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgba',r:0,g:0,b:0,a:1},edges:{type:'rgba',r:1,g:1,b:1,a:1}},
-      {effect:'motion',threshold:0.3,interval:1.,damper:0.99},
-      {effect:'mandelbrot',center:{type:'pos',x:0.7,y:0.5},size:3.0,angle:0.0,iterations:10.0},
-      {effect:'timeshift',time:{type:'osc',f:200.0,a:12.5,p:0.0,o:12.5}},
-      {effect:'reaction',noise_factor:0.5,zoom_speed:0.005,scale1:8.0,scale2:16.0,scale3:32.0,scale4:64.0},
-      {effect:'relief',scale2:16.0,scale4:64.0},      
-    ];
-    listEffects(effects,'#effects');
+    // build list of effects
+    // an effect defines all parameters the UI will show and their default values.
+    // the parameters must match the filter functions arguments in order, as they do not take named parameters.
+    // additional attributes can be defined for the UI:
+    // inputs: n  denotes the number of inputs of the effect. It is expected to pop n-1 stack items! Defaults to 1 if not defined.
+    // outputs: n  denotes the number of outputs of the effect. It is expected to push n-1 stack items! Defaults to 1 if not defined.
+    // feedback_input:1 denotes the effect reads the feedback buffer from the last frame
+    // feedback_output:1 denotes the effect writes the feedback buffer for the next frame
+    var effects={
+      'capture':{},
+      'preview':{},
+      'stack_push':{},
+      'stack_pop':{},
+      'blend':{args:{alpha:0.5}},
+      'displacement':{args:{strength:0.05}},
+      'blend_alpha':{},
+      'colorkey':{args:{color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1}},
+      'vibrance':{args:{strength:1.0}},
+/*      'brightnessContrast':{args:{brightness:0.0,contrast:0.0},*/
+      'brightnessContrast':{args:{brightness:{type:'beat',pulse:0.0,f:2.0,a:1.0,p:0.0,o:-0.7},contrast:0.0}},
+      'hueSaturation':{args:{hue:0.0,saturation:0.0}},
+      'invertColor':{},
+      'toHSV':{},
+      'color':{args:{strength:0.5,rgb:{type:'rgb', r:0.0,g:1.0,b:1.0}}},
+      'posterize':{args:{steps:4.0}},
+      'coloradjust':{args:{range:{type:'rgb_range',rl:0.0,rr:255.0,gl:0.0,gr:255.0,bl:0.0,br:255.0}}},
+      'feedbackOut':{args:{blend:0.7}},
+      'feedbackIn':{},
+      'kaleidoscope':{args:{sides:5.0,angle:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0},angle2:{type:'osc',f:2.0,a:1.0,p:0.0,o:0.0}}},
+      'tile':{args:{divisions:2.0,center:{type:'pos',x:0.0,y:0.0}}},
+      'colorHalftone':{args:{center:{type:'pos',x:0,y:0},angle:30.0,size:{type:'osc',f:5.0,a:1.0,p:0.0,o:2.0}}},
+      'unsharpMask':{args:{size:3.0,strength:{type:'osc',f:5.0,a:2.0,p:0.0,o:2.0}}},
+      'denoise':{args:{strength:10.0}},
+      'denoisefast':{args:{strength:30.0}},
+      'triangleBlur':{args:{size:10.0}},
+      'fastTriangleBlur':{args:{size:10.0}},
+      'fastBlur':{args:{size:20.0}},
+      'erode':{args:{iterations:2.0}},
+      'dilate':{args:{iterations:2.0}},
+      'localContrast':{args:{size:10.0,strength:0.5}},
+      'zoomBlur':{args:{center:{type:'pos',x:0,y:0}, size: 0.1}},
+      'bulgePinch':{args:{center:{type:'pos',x:0,y:0},radius:600,strength:0.2}},
+      'swirl':{args:{center:{type:'pos',x:0,y:0},radius:250.0,strength:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0}}},
+      'hexagonalPixelate':{args:{center:{type:'pos',x:0,y:0}, size: 10.0}},
+      'grid':{args:{size:1.0,angle:0.0}},
+      'life':{},
+      'ripple':{args:{width:0.3,length:0.3,angle:0.0,strength:2.0}},
+      'gauze':{args:{width:300,length:200,angle:0.0,strength:0.5,center:{type:'pos',x:0.0,y:0.0}}},
+      'colorDisplacement':{args:{angle:0.0,strength:3.0}},
+      'analogize':{args:{exposure:2.0,gamma:1.5,glow:1.0,glow_radius:16.0}},
+      'gamma':{args:{gamma:1.0}},
+      'gammaRGB':{args:{rf:1.0,re:1.0,ro:0.0,  gf:1.0,ge:1.0,go:0.0, bf:1.0,be:1.0,bo:0.0}},
+      'sobel':{args:{secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgba',r:0,g:0,b:0,a:1},edges:{type:'rgba',r:1,g:1,b:1,a:1}}},
+      'motion':{args:{threshold:0.3,interval:1.,damper:0.99}},
+      'mandelbrot':{args:{center:{type:'pos',x:0.7,y:0.5},size:3.0,angle:0.0,iterations:10.0}},
+      'timeshift':{args:{time:{type:'osc',f:200.0,a:12.5,p:0.0,o:12.5}}},
+      'reaction':{args:{noise_factor:0.5,zoom_speed:0.005,scale1:8.0,scale2:16.0,scale3:32.0,scale4:64.0}},
+      'relief':{args:{scale2:16.0,scale4:64.0}},
+    };
+    
+    var new_effects=[];
+    for(key in effects)
+    {
+      // create flat object with the effect name in 'effect'
+      // like the ones send to the server
+      var new_effect={effect:key};
+      if(effects[key].args)
+        for(i in effects[key].args)
+          new_effect[i]=effects[key].args[i];
+      new_effects.push(new_effect);
+    }
+    listEffects(new_effects,'#effects');
         
         
     var last_draggable=false;
