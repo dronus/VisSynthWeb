@@ -30,6 +30,19 @@
   <div help_for="#chains .chain .effect">
     A chained video effect. Drag to reorder it. Click to adjust parameters.
   </div>
+  <div help_for=".effect[ui_inputs='0']">
+    A video source (replaces the current image)
+  </div>
+  <div help_for=".effect[ui_outputs='2']">
+    A stack_push effect, copys the current image on the stack.
+  </div>
+  <div help_for=".effect[ui_inputs='2']">
+    A video effect with two inputs, also consumes the topmost image on the stack. Don't forget to add push_stack somewhere above.
+  </div>
+  <div help_for=".effect[ui_inputs='3']">
+    A video effect with three inputs, also consumes two images from the stack. Don't forget to add two push_stack's somewhere above.
+  </div>
+
   <div help_for=".adjust_ui">
     Use the sliders to adjust the effect's parameters. The center area provides fine grained control, the outer large numbers. Move or click outside to close.
   </div>
