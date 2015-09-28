@@ -12,9 +12,8 @@
   <div class="header container">
     <h1 style="font-size:100%">VIS SYNTH MCP</h1>
     <button onclick="send('document.location.reload()')">RESTART</button>
-    <button onclick="start_preview()">PLAY PREVIEW</button>
-    <button onclick="stop_preview()">PAUSE PREVIEW</button>
     <button onclick="screenshot()">SCREENSHOT</button>
+    <button onclick="undo()">UNDO</button>    
   </div>
 
   <div class="effects container">
@@ -29,9 +28,9 @@
     </div>
   </div>
   
-  <div class="preview container">
+  <div class="preview container" onclick="toggle_preview()">
     <img id=preview></img>
-    <div id=stats></div>
+    <div id=stats>PRESS FOR PREVIEW</div>
   </div>
   
   <input type=text id=command></input>        
@@ -122,6 +121,8 @@
      max-width: 400px;
      border-radius: 5px;
      z-index: 100;
+     /* allow click-trough to not disturb work flow on touch screens */
+     pointer-events:none;
    }
    #help:empty{
     display: none;
@@ -411,6 +412,7 @@
       xmlHttp.send(null);      
     }
     
+    var undo_history=[];
     var save=function()
     {
       var chains=[];      
@@ -424,7 +426,8 @@
       });
                   
       var json=JSON.stringify(chains);
-      put('chains.json',json);
+      put('chains.json',json);      
+      undo_history.push(json);
       
       console.log('Saved.');
       
@@ -631,6 +634,7 @@
       var close=function(){container.remove();effect_element.removeClass('ui_target');};
       container.on('mouseleave',close);      
       
+      // hide popup on outside click too
       $(document).one('mouseclick',function(ev){
         if(!$.contains($('.adjust_ui')[0],ev.target))
           $('.adjust_ui').trigger('mouseleave');
@@ -726,7 +730,10 @@
     {
       if(!json) return;
       var chains=JSON.parse(json);
-      
+
+      // delete old lists before loading new ones
+      $('#chains').empty();
+      ensure_empty_list();
       
       chains.forEach(function(chain){
         // move empty list to the end
@@ -739,11 +746,20 @@
         });
         ensure_empty_list();
       });
-      
-      
     }    
     get('chains.json',load);
     
+    function undo(){
+      undo_history.pop(); // pop last "same" state
+      // pop last state
+      var last_state=undo_history.pop();
+      if(last_state)
+      {
+        load(last_state);
+        updateChain();
+      }
+    }
+             
     var logify=function(x){
       return(Math.log(Math.abs(x)+1)/Math.LN2*(x>0 ? 1 : -1));
     }
@@ -841,6 +857,15 @@
         last_draggable=false;
       }
     });
+    
+    // the effects may be cicked to add
+    $('#effects>*').on('click',function(){
+      var current_chain=$('#chains .active .chain');
+      var new_element=$(this).clone();
+      current_chain.append(new_element);
+      markup(new_element);      
+      updateChain();
+    });
 
     // the chains are sortable...
     $("#chains").sortable({
@@ -865,7 +890,13 @@
       $(this).addClass('active');
       updateChain();
     });
-
+    // pressing a number key is like clicking the 0-9 th chain
+    $(document).keypress(function(e){
+      var number=parseInt(String.fromCharCode(event.which));
+      if(number)
+        $('#chains .container:nth-child('+number+')').click();
+    });
+    
     // add help...
     get('/help.html',function(html){
       var help=$(html);
@@ -879,7 +910,7 @@
     
     $(document).on('mousemove',function(e){
       $('#help').css({left: e.pageX+20, top: e.pageY+20});
-    });    
+    });
 
     function result(text)
     {
@@ -889,7 +920,6 @@
     function send(command,callback)
     {
       command+=';\n';
-      console.log(command);
       
       // setup listener for possible incoming result
       if(callback)
@@ -926,17 +956,15 @@
 
       send('preview()');
     };
-        
-    function start_preview(){
-      preview=true;
-      requestAnimationFrame(preview_handler);
-    }
     
-    function stop_preview(){
-      preview=false;
-      document.getElementById('preview').src='';
+    function toggle_preview(){
+      preview=!preview;
+      if(preview)
+        requestAnimationFrame(preview_handler);      
+      else
+        document.getElementById('preview').src='';
     }
-
+                  
     function screenshot(){
       get('/screenshot',function(data){
         var link=$('<a>');
