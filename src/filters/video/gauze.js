@@ -11,7 +11,7 @@ function gauze(fx,fy,angle,amplitude,x,y) {
             vec4 color = texture2D(texture, texCoord);\
             vec2 sines=sin(mat*(texCoord-center));\
             float a=1.+amplitude*(sines.x+sines.y);\
-            gl_FragColor = vec4(color.rgb*a,color.a);\
+            gl_FragColor = color*a;\
         }\
     ');
 

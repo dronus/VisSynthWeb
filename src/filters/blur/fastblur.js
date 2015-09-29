@@ -10,7 +10,7 @@ function fastBlur(radius) {
             color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
             color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
             color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
-            gl_FragColor = vec4(color.rgb,1.); \
+            gl_FragColor = color; \
         }\
     ');
 

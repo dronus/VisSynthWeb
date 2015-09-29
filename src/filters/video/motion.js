@@ -20,7 +20,7 @@ function motion(threshold,interval,damper) {
             vec4 original = texture2D(texture, texCoord);\
             vec4 background = texture2D(motionTexture, texCoord);\
             float d=length(original.rgb-background.rgb);\
-            gl_FragColor = d>threshold ? original : vec4(0.0,0.0,0.0,1.0);  \
+            gl_FragColor = d>threshold ? original : vec4(0.0,0.0,0.0,0.0);  \
         }\
     ');
 

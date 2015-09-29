@@ -529,6 +529,20 @@ function analogize(exposure,gamma,glow,radius) {
 }
 
 
+// src/filters/video/noalpha.js
+function noalpha() {
+    gl.noalpha = gl.noalpha || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            gl_FragColor = vec4(color.rgb,1.);\
+        }\
+    ');
+    simpleShader.call(this, gl.noalpha, {});
+    return this;
+}
+
 // src/filters/video/preview.js
 function preview()
 {
@@ -611,7 +625,7 @@ function motion(threshold,interval,damper) {
             vec4 original = texture2D(texture, texCoord);\
             vec4 background = texture2D(motionTexture, texCoord);\
             float d=length(original.rgb-background.rgb);\
-            gl_FragColor = d>threshold ? original : vec4(0.0,0.0,0.0,1.0);  \
+            gl_FragColor = d>threshold ? original : vec4(0.0,0.0,0.0,0.0);  \
         }\
     ');
 
@@ -872,7 +886,7 @@ function gauze(fx,fy,angle,amplitude,x,y) {
             vec4 color = texture2D(texture, texCoord);\
             vec2 sines=sin(mat*(texCoord-center));\
             float a=1.+amplitude*(sines.x+sines.y);\
-            gl_FragColor = vec4(color.rgb*a,color.a);\
+            gl_FragColor = color*a;\
         }\
     ');
 
@@ -1665,7 +1679,7 @@ function fastBlur(radius) {
             color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
             color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
             color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
-            gl_FragColor = vec4(color.rgb,1.); \
+            gl_FragColor = color; \
         }\
     ');
 
@@ -3275,6 +3289,7 @@ exports.canvas = function() {
     canvas.softContrast = wrap(softContrast);
     canvas.toHSV = wrap(toHSV);
     canvas.invertColor = wrap(invertColor);
+    canvas.noalpha = wrap(noalpha);
     canvas.mirror = wrap(mirror);
 
     return canvas;

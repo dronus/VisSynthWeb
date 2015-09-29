@@ -223,6 +223,7 @@ exports.canvas = function() {
     canvas.softContrast = wrap(softContrast);
     canvas.toHSV = wrap(toHSV);
     canvas.invertColor = wrap(invertColor);
+    canvas.noalpha = wrap(noalpha);
     canvas.mirror = wrap(mirror);
 
     return canvas;
