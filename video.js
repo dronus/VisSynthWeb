@@ -31,18 +31,12 @@ window.VideoEngine=function()
     // enqueue next update
     requestAnimationFrame(update);
   };
-  
-/*
-    var device_indices=document.location.hash.substring(1);
-    if(!device_indices) device_indices='0,2';
-    device_indices=device_indices.split(',');
-*/
 
   // enumerate the available sources at startup...
   var source_ids={audio:[],video:[]};
   function onSourcesAcquired(sources) 
   {
-    for (var i = 0; i != sources.length; ++i) {
+    for (var i = 0; i != sources.length; ++i) {      
       var source = sources[i];
       source_ids[source.kind].push(source.id);
     }
@@ -64,6 +58,11 @@ window.VideoEngine=function()
   var get_video=function(source_index)
   {
     source_index = source_index | 0;
+
+    var device_mapping=document.location.hash.substring(1);
+    if(device_mapping) device_mapping=JSON.parse(device_mapping);
+    if(device_mapping[source_index]) 
+      source_index=device_mapping[source_index];
     
     // jsut return video, if already started
     if(videos[source_index]) 
