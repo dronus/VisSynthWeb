@@ -1,4 +1,4 @@
-function tile(size,center) {
+function tile(size,centerx,centery) {
     gl.tile = gl.tile || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -10,7 +10,7 @@ function tile(size,center) {
         }\
     ');
 
-    simpleShader.call(this, gl.tile, {size:size,center: center});
+    simpleShader.call(this, gl.tile, {size:size,center: [centerx,centery]});
 
     return this;
 }

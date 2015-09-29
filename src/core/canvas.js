@@ -149,6 +149,7 @@ exports.canvas = function() {
 
     // Core methods
     canvas.texture = wrap(texture);
+    canvas.initialize=wrap(initialize);
     canvas.draw = wrap(draw);
     canvas.update = wrap(update);
     canvas.replace = wrap(replace);
@@ -209,7 +210,8 @@ exports.canvas = function() {
     canvas.mandelbrot=wrap(mandelbrot);
     canvas.timeshift=wrap(timeshift);
     canvas.reaction=wrap(reaction);
-    canvas.relief=wrap(relief);    
+    canvas.relief=wrap(relief);  
+    canvas.transform=wrap(transform);
     // hexapode's filters methods
     canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);

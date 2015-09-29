@@ -1,9 +1,13 @@
-function capture()
+function capture(source_index)
 {
-    if(!this.video) return this;       
-    if(!this._.videoTexture) this._.videoTexture=this.texture(this.video);
+    source_index=Math.floor(source_index);    
+    var v=this.video(source_index);
     
-    this._.videoTexture.loadContentsOf(this.video);
+    // make sure the video has adapted to the capture source
+    if(!v || v.currentTime==0) return this; 
+    
+    if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
+    this._.videoTexture.loadContentsOf(v);
     this.draw(this._.videoTexture);
         
     return this;
