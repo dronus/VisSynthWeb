@@ -894,7 +894,7 @@
     });
     // pressing a number key is like clicking the 0-9 th chain
     $(document).keypress(function(e){
-      var number=parseInt(String.fromCharCode(event.which));
+      var number=parseInt(String.fromCharCode(e.which));
       if(number)
         $('#chains .container:nth-child('+number+')').click();
     });
