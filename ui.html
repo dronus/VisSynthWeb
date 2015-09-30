@@ -874,10 +874,11 @@
     var clone_chain=function(chain)
     {
       var new_chain=chain.clone();
-      chain.parent().prepend(new_chain);
+      chain.siblings().first().after(new_chain); // insert new chain after the empty list following the current chain position
       new_chain.find('.effect').each(function(){
         markup($(this));
       });
+      init_chain_list(new_chain.find('.chain'));
       new_chain.click(); // mark new chain active
     }
 
@@ -891,8 +892,10 @@
           // duplicate it.
           var chain=ui.item;
           if(chain[0].parentNode.firstChild==chain[0])
+          {
+            $(this).sortable('cancel');  // the original element keeps its position.
             clone_chain(chain);
-          updateChain();
+          }
         },
         // allow removal of items by dragging them out
         over: function(){this.is_outside=false},
@@ -915,20 +918,39 @@
     $(document).keypress(function(e){
       var number=parseInt(String.fromCharCode(e.which));
       if(number)
-        $('#chains .container:nth-child('+number+')').click();
+        $('#chains .container:nth-child('+(number+1)+')').click();
     });
     
+
     // add help...
+
+    // a tooltip is shown for any item matching certain selector 
+    // the help content is taken from the list in help.html, using
+    // the selector set in their help_for attributes to assign it.
     get('/help.html',function(html){
       var help=$(html);
+      var helper_timeout=false;
+      // each help block is shown for all elements matching it's selector
       help.filter('div').each(function(){
+        // read selector from this help block
         var selector=$(this).attr('help_for');
-        var text=$(this);
-        $(document).on('mouseenter',selector,function(){$('#help').html(text);});
-        $(document).on('mouseleave',selector,function(){$('#help').html('');});        
+        var text=this;
+        // defered event handlers (on body) to assign all future elements as well.
+        $(document).on('mouseenter',selector,function(){
+          clearTimeout(helper_timeout);
+          // add a little delay before showing the tooltip to avoid clutter and permanent CPU stress on mouse motion
+          helper_timeout=setTimeout(function(){
+            $('#help').html(text);
+            $('#help').show();
+          },400);
+        });
+        $(document).on('mouseleave',selector,function(){
+          clearTimeout(helper_timeout);
+          $('#help').hide();
+        });
       });
     });
-    
+    // keep help at the mouse        
     $(document).on('mousemove',function(e){
       $('#help').css({left: e.pageX+20, top: e.pageY+20});
     });
