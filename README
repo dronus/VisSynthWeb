@@ -17,7 +17,8 @@ Requirements
 
 
 Installation
--Clone this repository to the device sporting the camera and screen.
+-Clone this repository to the device sporting the camera and screen:
+  git clone --recursive https://github.com/dronus/VisSynthWeb.git
 -Run 'node server.js' inside the repository
 -Run the devices browser and enter 127.0.0.1:8082/index.html . The browser asks to allow camera access and the live image should appear after confirmation.
 -Run up a browser on another device or second screen, and enter the IP of the video machine, followed by :8082/ui.html . The user interface should appear. Try to drag effects into the active chain (highlighted green) to see if it works. There is no undo, any change is permanent for now!
@@ -60,7 +61,7 @@ Troubleshooting
 
 -Video display freezes. Try hit the RELOAD button in the remote UI's header. Check the video machine browser's console and report the bug.
 
-
+-Crashes after updating by git pull. Remember to always do 'git submodule update' after pulling.
 
 Technical details
 TO BE DONE
