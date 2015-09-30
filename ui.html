@@ -29,8 +29,9 @@
   </div>
   
   <div class="preview container" onclick="toggle_preview()">
+    <button>PREVIEW</button>  
     <img id=preview></img>
-    <div id=stats>PRESS FOR PREVIEW</div>
+    <div id=stats></div>
   </div>
   
   <input type=text id=command></input>        
@@ -144,6 +145,7 @@
    }
     
    #command{
+    display: none;
     position: absolute;
     left: 0px;
     bottom: 0px;
@@ -164,7 +166,7 @@
     .effects{
       position: fixed;
       height: 225px;
-      bottom: 15px;
+      bottom: 0px;
       right: 400px;
       overflow-y: auto;
       overflow-x: hidden;
@@ -176,7 +178,7 @@
       padding: 0px;
     }
     #effects .effect{
-      width: 140px;
+      width: 130px;
       height: 25px;
     }
 
@@ -289,8 +291,7 @@
       right: 10px;
       content: '◂◂▤';
       color: #f00;
-    }
-    
+    }    
     /* effects with no inputs show no arrows*/
     .chain .effect[ui_inputs="0"]::before{
       display: none;
@@ -304,12 +305,14 @@
       content: '▸▤';
       color: #f00;
     }
-
-    
     /* an effect with no input (source)*/
     .effect[ui_inputs="0"]
     {
       background-color: #242;
+    }
+    .chain .effect[ui_inputs="0"]
+    {
+      margin-top: 10px;
     }
     /* an effect sporting additional inputs, pops stack */
     .effect[ui_inputs="2"]
@@ -320,10 +323,17 @@
     {
       background: linear-gradient(#622,#222);
     }
-    
     .effect[ui_outputs]
     {
       background: linear-gradient(#222,#522);
+    }
+    .effect[ui_effect^="feedback"]
+    {
+      background: #332;
+    }
+    .effect[ui_effect="preview"]
+    {
+      background: #531;
     }
                 
     .key{
@@ -383,6 +393,12 @@
       width: 550px;
       height: 40px;
     }
+    .adjust_ui .slider_value{
+      padding-top: 15px;
+      width: 40px;
+      font-size: 120%;
+    }
+    
     .adjust_ui button{
       margin: 2px;
     }
@@ -507,16 +523,20 @@
       
     var add_slider=function(container,value_element)
     {  
-      var slider=$('<input class=value_ui type=range min="-10" max="10" step="0.01">');
+      var slider=$('<span  class=slider_value></span><input class=value_ui type=range min="-0.999" max="0.999" step="0.0002">');
       
       // initalize slider knob with current value 
       var value=value_element.text();
+      var slider_value_element=slider.filter('.slider_value');
+      slider_value_element.html(value);
       value=logify(value);
       slider.attr('value',value);
       
-      var handler=function(){
-        var value=expify(this.value);
+      var handler=function(){        
+        var value=expify(parseFloat(this.value));
+        console.log(this.value+" "+value);
         value_element.text(value);
+        slider_value_element.html(value);
         updateChain();
       };
       slider.on('input',handler);
@@ -761,11 +781,13 @@
     }
              
     var logify=function(x){
-      return(Math.log(Math.abs(x)+1)/Math.LN2*(x>0 ? 1 : -1));
+//      return(Math.log(Math.abs(x)+1)/Math.LN2*(x>0 ? 1 : -1));
+      return (-2+Math.sqrt(x*x+4))/x;
     }
     
-    var expify=function(x){
-      return Math.round((x>0 ? 1 : -1)*(Math.pow(2.,Math.abs(x))-1)*100.)/100.;
+    var expify=function(x){    
+      return  Math.round((-2/(x+1)-2/(x-1))*1000)/1000;
+//      return Math.round((x>0 ? 1 : -1)*(Math.pow(2.,Math.abs(x))-1)*1000.)/1000.;
     }
        
     // build list of effects
