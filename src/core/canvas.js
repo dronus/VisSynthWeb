@@ -212,6 +212,8 @@ exports.canvas = function() {
     canvas.reaction=wrap(reaction);
     canvas.relief=wrap(relief);  
     canvas.transform=wrap(transform);
+    canvas.polygon = wrap(polygon);
+    canvas.matte = wrap(matte);    
     // hexapode's filters methods
     canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);

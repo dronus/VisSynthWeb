@@ -259,6 +259,18 @@ function colorDisplacement(angle,amplitude) {
     return this;
 }
 
+// src/filters/video/matte.js
+function matte(r,g,b) {
+    gl.matte = gl.matte || new Shader(null, '\
+        uniform vec3 color;\
+        void main() {\
+            gl_FragColor = vec4(color,1.);\
+        }\
+    ');
+    simpleShader.call(this, gl.matte, {color:[r,g,b]});
+    return this;
+}
+
 // src/filters/video/ripple.js
 function ripple(fx,fy,angle,amplitude) {
     gl.ripple = gl.ripple || warpShader('\
@@ -468,8 +480,6 @@ function transform(x,y,scale,angle) {
             gl_FragColor = vec4(0.,0.,0.,0.); \
         }\
     ');
-    
-    console.log(x+" "+y+" "+scale+" "+angle);
     
     simpleShader.call(this, gl.transform, {
       translation: [x,y],
@@ -976,6 +986,46 @@ function life() {
     ');
 
     simpleShader.call(this, gl.life, {texSize: [this.width, this.height]});
+
+    return this;
+}
+
+
+// src/filters/video/polygon.js
+function polygon(sides,x,y,size,angle) {
+
+    gl.polygon = gl.polygon || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 size;\
+        uniform float sides;\
+        uniform float angle;\
+        uniform vec2 center;\
+        uniform vec2 aspect;\
+        varying vec2 texCoord;\
+        float PI=3.14159; \
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            vec2 uv=texCoord-vec2(0.5,0.5)-center;\
+            uv/=size;\
+            \
+            float a=atan(uv.x,uv.y)-angle; \
+            float r=length(uv); \
+            \
+            float d = r / (cos(PI/sides)/cos(mod(a,(2.*PI/sides))-(PI/sides))); \
+            \
+            if(d<1.) \
+              gl_FragColor=color; \
+            else \
+              gl_FragColor=vec4(0.); \
+        }\
+    ');
+
+    simpleShader.call(this, gl.polygon, {
+        size:[size*this.height/this.width,size],
+        sides:Math.floor(sides),
+        angle:angle,
+        center: [x,y]
+    });
 
     return this;
 }
@@ -2436,7 +2486,7 @@ function sobel(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
             gl_FragColor = color;\
         }\
     ');
-    console.log(arguments);
+
     simpleShader.call(this, gl.sobel, {
         secondary : secondary,
         coef : coef,
@@ -2453,6 +2503,7 @@ function sobel(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 
     return this;
 }
+
 // src/filters/fun/posterize.js
 
 function posterize(steps) {
@@ -3278,6 +3329,8 @@ exports.canvas = function() {
     canvas.reaction=wrap(reaction);
     canvas.relief=wrap(relief);  
     canvas.transform=wrap(transform);
+    canvas.polygon = wrap(polygon);
+    canvas.matte = wrap(matte);    
     // hexapode's filters methods
     canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);

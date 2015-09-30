@@ -15,8 +15,6 @@ function transform(x,y,scale,angle) {
         }\
     ');
     
-    console.log(x+" "+y+" "+scale+" "+angle);
-    
     simpleShader.call(this, gl.transform, {
       translation: [x,y],
       xform: [
