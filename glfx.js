@@ -1193,11 +1193,18 @@ function stack_pop(to_texture)
   
   if(to_texture) 
   {
-    texture.swapsWith(to_texture);
+    texture.swapWith(to_texture);
     return null;
   }
   
   return texture;
+}
+
+function stack_swap()
+{
+  // exchange topmost stack element with current texture
+  if(this._.stack.length<1) return;  
+  this._.texture.swapWith(this._.stack[this._.stack.length-1]);
 }
 
 function stack_prepare()
@@ -3304,6 +3311,7 @@ exports.canvas = function() {
     canvas.stack_prepare=wrap(stack_prepare);
     canvas.stack_push=wrap(stack_push);
     canvas.stack_pop=wrap(stack_pop);
+    canvas.stack_swap=wrap(stack_swap);
     canvas.blend=wrap(blend);
     canvas.blend_alpha=wrap(blend_alpha);
     canvas.colorkey=wrap(colorkey);

@@ -37,11 +37,18 @@ function stack_pop(to_texture)
   
   if(to_texture) 
   {
-    texture.swapsWith(to_texture);
+    texture.swapWith(to_texture);
     return null;
   }
   
   return texture;
+}
+
+function stack_swap()
+{
+  // exchange topmost stack element with current texture
+  if(this._.stack.length<1) return;  
+  this._.texture.swapWith(this._.stack[this._.stack.length-1]);
 }
 
 function stack_prepare()
