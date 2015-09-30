@@ -701,7 +701,7 @@
           {
             $(ui.item).remove();
             updateChain();
-          }
+          }          
         }
       });
     }
@@ -719,7 +719,7 @@
         $('#chains').prepend(empty_list.clone());
         init_chain_list('#chains .container:first-child .chain');
       }
-      
+
       // ensure names
       $('#chains .container h2').each(function(i){      
         $(this).html(i==0 ? 'New'  : 'Chain '+i);
@@ -778,6 +778,7 @@
     // feedback_output:1 denotes the effect writes the feedback buffer for the next frame
     var effects={
       'capture':{inputs:0,args:{device:0}},
+      'matte':{inputs:0, args:{rgb:{type:'rgb', r:0.0,g:1.0,b:1.0}}},      
       'preview':{},
       'stack_push':{outputs:2},
       'stack_pop' :{inputs: 2},
@@ -798,6 +799,7 @@
       'coloradjust':{args:{range:{type:'rgb_range',rl:0.0,rr:255.0,gl:0.0,gr:255.0,bl:0.0,br:255.0}}},
       'feedbackOut':{args:{blend:0.7}},
       'feedbackIn':{},
+      'polygon':{args:{sides:6.0,x:0.0,y:0.0,size:0.5,angle:0.0}},
       'kaleidoscope':{args:{sides:5.0,angle:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0},angle2:{type:'osc',f:2.0,a:1.0,p:0.0,o:0.0}}},
       'tile':{args:{divisions:2.0,center:{type:'pos',x:0.0,y:0.0}}},
       'colorHalftone':{args:{center:{type:'pos',x:0,y:0},angle:30.0,size:{type:'osc',f:5.0,a:1.0,p:0.0,o:2.0}}},
@@ -869,12 +871,29 @@
       updateChain();
     });
 
+    var clone_chain=function(chain)
+    {
+      var new_chain=chain.clone();
+      chain.parent().prepend(new_chain);
+      new_chain.find('.effect').each(function(){
+        markup($(this));
+      });
+      new_chain.click(); // mark new chain active
+    }
+
     // the chains are sortable...
     $("#chains").sortable({
         handle: 'h2',
         distance:10,
         delay: 300,
-        stop:function(){updateChain()},
+        stop:function(ev,ui){
+          // if the element is dragged beyond the empty chain to the left, 
+          // duplicate it.
+          var chain=ui.item;
+          if(chain[0].parentNode.firstChild==chain[0])
+            clone_chain(chain);
+          updateChain();
+        },
         // allow removal of items by dragging them out
         over: function(){this.is_outside=false},
         out: function(){this.is_outside=true},
