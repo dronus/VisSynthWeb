@@ -327,6 +327,11 @@
     {
       background: linear-gradient(#222,#522);
     }
+    /* an effect manipulating the topmost stack elements */
+    .effect[ui_inputs="2"][ui_outputs]
+    {
+      background: linear-gradient(#522,#222,#522);
+    }
     .effect[ui_effect^="feedback"]
     {
       background: #332;
@@ -803,7 +808,8 @@
       'matte':{inputs:0, args:{rgb:{type:'rgb', r:0.0,g:1.0,b:1.0}}},      
       'preview':{},
       'stack_push':{outputs:2},
-      'stack_pop' :{inputs: 2},
+      'stack_swap':{inputs: 2,outputs:2},
+       'stack_pop' :{inputs: 2},
       'blend':{inputs: 2,args:{alpha:0.5}},
       'displacement':{inputs: 2,args:{strength:0.05}},
       'blend_alpha':{inputs: 2},
