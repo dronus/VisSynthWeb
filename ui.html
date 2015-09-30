@@ -400,7 +400,8 @@
     }
     .adjust_ui .slider_value{
       padding-top: 15px;
-      width: 40px;
+      width: 35px;
+      overflow:hidden;
       font-size: 120%;
     }
     
@@ -528,11 +529,10 @@
       
     var add_slider=function(container,value_element)
     {  
-      var slider=$('<span  class=slider_value></span><input class=value_ui type=range min="-0.999" max="0.999" step="0.0002">');
-      
+      var slider=$('<input class=value_ui type=range min="-0.999" max="0.999" step="0.0002">');
+      var slider_value_element=$('<span class=slider_value></span>');
       // initalize slider knob with current value 
       var value=value_element.text();
-      var slider_value_element=slider.filter('.slider_value');
       slider_value_element.html(value);
       value=logify(value);
       slider.attr('value',value);
@@ -545,10 +545,14 @@
         updateChain();
       };
       slider.on('input',handler);
-      
-      if(container) $(container).append(slider);
-      
-      return slider;      
+      slider.on('dblclick',function(){
+        // reset to 0 on double click
+        this.value="0";
+        handler.call(this);
+      });      
+
+      $(container).append(slider_value_element);      
+      $(container).append(slider);
     }
 
     var build_ui=function(effect_element){
