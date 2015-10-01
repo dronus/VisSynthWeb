@@ -5,6 +5,8 @@ var pending={};
 
 var fs=require('fs');
 
+var writable={'chains.json':true};
+
 var server=http.createServer(function (req, res) {
 
   console.log("Serving "+req.url);
@@ -23,7 +25,7 @@ var server=http.createServer(function (req, res) {
       res.end();
      
       // if it denotes a file, store it.
-      if(fs.existsSync(key) && fs.statSync(key).isFile())
+      if(writable[key])
       {
         fs.writeFileSync(key,data[key]);
         delete data[key];
@@ -39,7 +41,7 @@ var server=http.createServer(function (req, res) {
       }
     });
   }
-  else if(fs.existsSync(key) && fs.statSync(key).isFile())
+  else if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     res.setHeader("Content-Type", "text/html");
     res.end(fs.readFileSync(parts[0]));
