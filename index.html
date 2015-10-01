@@ -56,8 +56,7 @@
       frame_time=frame_time*0.9 + (current_time-time)*0.1;
       time=current_time;
 
-      // time repeats after 2 periods of PI
-      var effect_time=(time*0.000002)%(2*Math.PI); // 0.02 units per second
+      var effect_time=time*0.001; // 1 units per second
       videoengine.setFilter(function(canvas){chain(canvas,effect_time);});
     };
     
