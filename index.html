@@ -158,7 +158,7 @@
     var generators={
       osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
-      beat:function(args){return["BeatValue("+flatten(args).join(',')+")"]},
+      beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
       size:flatten,
       rgb:flatten,
       rgba:flatten,

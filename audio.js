@@ -1,4 +1,5 @@
 
+audio_engine={};
 
 var BeatAnalyser=function()
 {
@@ -45,7 +46,7 @@ var BeatAnalyser=function()
 var beatAnalysers=[];
 
 // helper function for retrieving beat values. creates analysers on demand.
-function BeatValue()
+audio_engine.beatValue=function()
 {
 
   // TODO prevent leaking, how to remove dumped analysers? 
@@ -59,6 +60,8 @@ function BeatValue()
   return beatAnalysers[0].analyse.apply(beatAnalysers[0],arguments);
 }
 
+audio_engine.spectrogram=false;
+audio_engine.waveform=false;
 
 function initAudioAnalysers(stream)
 {
@@ -75,14 +78,14 @@ function initAudioAnalysers(stream)
       window.AudioContext = window.webkitAudioContext;
     var context = new AudioContext();
     
-    var samples=512;
+    var samples=1024;
 
     var scriptNode = context.createScriptProcessor(samples, 1, 1);
     scriptNode.connect(context.destination);
 
     var analyser = context.createAnalyser();
-    analyser.smoothingTimeConstant = 0.1;
-    analyser.fftSize = 128;
+    analyser.smoothingTimeConstant = 0.0;
+    analyser.fftSize = 1024;
     analyser.connect(scriptNode);
     
     var source = context.createMediaStreamSource(stream);
@@ -93,13 +96,15 @@ function initAudioAnalysers(stream)
     // see http://code.google.com/p/chromium/issues/detail?id=82795
     window.audioReferencesFix=[scriptNode,analyser,source,context];
 
+    // store time domain waveform
+    var waveform    =  new Uint8Array  (analyser.fftSize);
     // store spectrogram and it's gliding means
     var spectrogram =  new Uint8Array  (analyser.frequencyBinCount);
     var means       =  new Float32Array(analyser.frequencyBinCount);
 
     scriptNode.onaudioprocess = function()
     {
-
+        analyser.getByteTimeDomainData(waveform);
         analyser.getByteFrequencyData(spectrogram);
 
         // clear the current state
@@ -137,6 +142,8 @@ function initAudioAnalysers(stream)
         for(var i=0; i<beatAnalysers.length; i++)
           beatAnalysers[i].update(pulse,dt);
     }
+    audio_engine.waveform   =waveform;
+    audio_engine.spectrogram=spectrogram;
 }
 
 /*
