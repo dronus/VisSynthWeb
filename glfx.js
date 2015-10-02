@@ -914,6 +914,25 @@ function gauze(fx,fy,angle,amplitude,x,y) {
 }
 
 
+// src/filters/video/waveform.js
+function waveform()
+{
+    var values=audio_engine.waveform;
+    if(!values) return;
+    
+    if(!this._.waveformTexture)
+      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+      
+    this._.waveformTexture.load(values);
+    
+    this._.waveformTexture.use();
+    this._.texture.drawTo(function() {
+        Shader.getDefaultShader().drawRect();
+    });
+        
+    return this;
+}
+
 // src/filters/video/colorkey.js
 function colorkey(r,g,b,threshold,feather) {
     gl.colorkey = gl.colorkey || new Shader(null, '\
@@ -1077,6 +1096,28 @@ function capture(source_index)
     return this;
 }
 
+// src/filters/video/rainbow.js
+function rainbow(size, angle) {
+    gl.rainbow = gl.rainbow || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        void main() {\
+          vec4 rgba = texture2D(texture, texCoord);\
+          float l=dot(rgba,vec4(1.,1.,1.,0.)/3.0); \
+          vec3 hsv=vec3(l,1.,1.); \
+          vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0); \
+          vec3 p = abs(fract(hsv.xxx + K.xyz) * 6.0 - K.www); \
+          vec3 rgb=hsv.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), hsv.y); \
+          \
+          gl_FragColor = vec4(rgb,rgba.a);\
+        }\
+    ');
+
+    simpleShader.call(this, gl.rainbow, {});
+
+    return this;
+}
+
 // src/filters/video/grid.js
 /**
  * @filter         Grid
@@ -1104,6 +1145,23 @@ function grid(size, angle) {
 
     simpleShader.call(this, gl.grid, {size: size, angle:angle
     });
+
+    return this;
+}
+
+// src/filters/video/absolute.js
+function absolute(size, angle) {
+    gl.absolute = gl.absolute || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        void main() {\
+          vec4 rgba = texture2D(texture, texCoord);\
+          vec3 abs_rgb  = abs(rgba.rgb-vec3(0.5))*2.0; \
+          gl_FragColor = vec4(abs_rgb,rgba.a);\
+        }\
+    ');
+
+    simpleShader.call(this, gl.absolute, {});
 
     return this;
 }
@@ -1150,6 +1208,25 @@ function denoisefast(exponent) {
         });
     }
 
+    return this;
+}
+
+// src/filters/video/spectrogram.js
+function spectrogram()
+{
+    var values=audio_engine.spectrogram;
+    if(!values) return;
+    
+    if(!this._.spectrogramTexture)
+      this._.spectrogramTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+      
+    this._.spectrogramTexture.load(values);
+    
+    this._.spectrogramTexture.use();
+    this._.texture.drawTo(function() {
+        Shader.getDefaultShader().drawRect();
+    });
+        
     return this;
 }
 
@@ -3338,7 +3415,9 @@ exports.canvas = function() {
     canvas.relief=wrap(relief);  
     canvas.transform=wrap(transform);
     canvas.polygon = wrap(polygon);
-    canvas.matte = wrap(matte);    
+    canvas.matte = wrap(matte);
+    canvas.waveform=wrap(waveform);
+    canvas.spectrogram=wrap(spectrogram);
     // hexapode's filters methods
     canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);
@@ -3346,6 +3425,8 @@ exports.canvas = function() {
     canvas.gamma = wrap(gamma);
     canvas.gammaRGB = wrap(gammaRGB);
     canvas.hue = wrap(hue);
+    canvas.absolute = wrap(absolute);
+    canvas.rainbow = wrap(rainbow);    
     canvas.sobel = wrap(sobel);
     canvas.softContrast = wrap(softContrast);
     canvas.toHSV = wrap(toHSV);
@@ -3381,6 +3462,11 @@ var Texture = (function() {
         if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
     }
 
+    Texture.prototype.load = function(data) {
+        gl.bindTexture(gl.TEXTURE_2D, this.id);
+        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, data);
+    };
+    
     Texture.prototype.loadContentsOf = function(element) {
         this.width = element.width || element.videoWidth;
         this.height = element.height || element.videoHeight;
@@ -3395,7 +3481,7 @@ var Texture = (function() {
         this.type = gl.UNSIGNED_BYTE;
         gl.bindTexture(gl.TEXTURE_2D, this.id);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, this.type, new Uint8Array(data));
-    };
+    };       
 
     Texture.prototype.destroy = function() {
         gl.deleteTexture(this.id);

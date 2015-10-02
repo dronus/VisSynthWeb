@@ -21,6 +21,11 @@ var Texture = (function() {
         if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
     }
 
+    Texture.prototype.load = function(data) {
+        gl.bindTexture(gl.TEXTURE_2D, this.id);
+        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, data);
+    };
+    
     Texture.prototype.loadContentsOf = function(element) {
         this.width = element.width || element.videoWidth;
         this.height = element.height || element.videoHeight;
