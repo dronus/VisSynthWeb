@@ -194,6 +194,7 @@ exports.canvas = function() {
     canvas.displacement=wrap(displacement);
     canvas.posterize=wrap(posterize);
 //    canvas.=wrap();
+    canvas.superquadric=wrap(superquadric);
     canvas.feedbackIn = wrap(feedbackIn);
     canvas.feedbackOut = wrap(feedbackOut);
     canvas.grid = wrap(grid);

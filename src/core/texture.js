@@ -78,11 +78,23 @@ var Texture = (function() {
         }
     };
 
-    Texture.prototype.drawTo = function(callback) {
+    Texture.prototype.drawTo = function(callback,with_depth) {
         // start rendering to this texture
         gl.framebuffer = gl.framebuffer || gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.id, 0);
+                
+        if(with_depth)
+        {
+          if(!this.depthbuffer)
+          {
+            this.depthbuffer=gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthbuffer);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
+          }
+          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.depthbuffer);          
+        }
+        
         if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
             throw new Error('incomplete framebuffer');
         }
@@ -92,6 +104,7 @@ var Texture = (function() {
         callback();
 
         // stop rendering to this texture
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 

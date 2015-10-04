@@ -60,7 +60,7 @@ var Shader = (function() {
             var location = gl.getUniformLocation(this.program, name);
             if (location === null) continue; // will be null if the uniform isn't used in the shader
             var value = uniforms[name];
-            if (isArray(value)) {
+            if (isArray(value) || ArrayBuffer.isView(value)) {
                 switch (value.length) {
                     case 1: gl.uniform1fv(location, new Float32Array(value)); break;
                     case 2: gl.uniform2fv(location, new Float32Array(value)); break;
@@ -124,6 +124,34 @@ var Shader = (function() {
         gl.vertexAttribPointer(this.texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
+
+    Shader.prototype.drawTriangles = function(vertices,uvs){
+        if (this.vertexBuffer == null) 
+            this.vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+        if (this.texCoordBuffer == null) 
+            this.texCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+
+        if (this.vertexAttribute == null) {
+            this.vertexAttribute = gl.getAttribLocation(this.program, 'vertex');
+            gl.enableVertexAttribArray(this.vertexAttribute);
+        }
+        if (this.texCoordAttribute == null) {
+            this.texCoordAttribute = gl.getAttribLocation(this.program, '_texCoord');
+            gl.enableVertexAttribArray(this.texCoordAttribute);
+        }
+        gl.useProgram(this.program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.vertexAttribPointer(this.vertexAttribute, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
+        gl.vertexAttribPointer(this.texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length/3);
+    };
+
 
     Shader.getDefaultShader = function() {
         gl.defaultShader = gl.defaultShader || new Shader();
