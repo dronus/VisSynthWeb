@@ -815,11 +815,12 @@
       'preview':{},
       'stack_push':{outputs:2},
       'stack_swap':{inputs: 2,outputs:2},
-       'stack_pop' :{inputs: 2},
+      'stack_pop' :{inputs: 2},
       'blend':{inputs: 2,args:{alpha:0.5}},
       'displacement':{inputs: 2,args:{strength:0.05}},
       'blend_alpha':{inputs: 2},
       'transform':{args:{x:0.0,y:0.0,scale:1.0,angle:0.0}},
+      'perspective':{args:{perspective:{type:'perspective', x1:-0.75,y1:-0.75, x2:-0.75,y2:0.75,x3:0.75,y3:-0.75,x4:0.75,y4:0.75}}},
       'colorkey':{inputs: 2,args:{color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1}},
       'vibrance':{args:{strength:1.0}},
 /*      'brightnessContrast':{args:{brightness:0.0,contrast:0.0},*/
