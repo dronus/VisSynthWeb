@@ -16,12 +16,12 @@
 function matrixWarp(matrix, inverse, useTextureSpace) {
     gl.matrixWarp = gl.matrixWarp || warpShader('\
         uniform mat3 matrix;\
-        uniform bool useTextureSpace;\
+        uniform float useTextureSpace;\
     ', '\
-        if (useTextureSpace) coord = coord / texSize * 2.0 - 1.0;\
+        if (useTextureSpace>0.) coord = coord / texSize * 2.0 - 1.0;\
         vec3 warp = matrix * vec3(coord, 1.0);\
         coord = warp.xy / warp.z;\
-        if (useTextureSpace) coord = (coord * 0.5 + 0.5) * texSize;\
+        if (useTextureSpace>0.) coord = (coord * 0.5 + 0.5) * texSize;\
     ');
 
     // Flatten all members of matrix into one big list
