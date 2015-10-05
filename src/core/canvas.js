@@ -192,6 +192,7 @@ exports.canvas = function() {
     canvas.blend_alpha=wrap(blend_alpha);
     canvas.colorkey=wrap(colorkey);
     canvas.displacement=wrap(displacement);
+    canvas.mesh_displacement=wrap(mesh_displacement);    
     canvas.posterize=wrap(posterize);
 //    canvas.=wrap();
     canvas.superquadric=wrap(superquadric);
