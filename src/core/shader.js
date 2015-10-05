@@ -125,7 +125,7 @@ var Shader = (function() {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
 
-    Shader.prototype.drawTriangles = function(vertices,uvs){
+    Shader.prototype.drawTriangles = function(vertices,uvs,mode){
         if (this.vertexBuffer == null) 
             this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -149,7 +149,7 @@ var Shader = (function() {
         gl.vertexAttribPointer(this.vertexAttribute, 3, gl.FLOAT, false, 0, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
         gl.vertexAttribPointer(this.texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length/3);
+        gl.drawArrays(mode ? mode : gl.TRIANGLE_STRIP, 0, vertices.length/3);
     };
 
 
