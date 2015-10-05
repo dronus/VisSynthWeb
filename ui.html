@@ -178,7 +178,7 @@
       padding: 0px;
     }
     #effects .effect{
-      width: 130px;
+      width: 150px;
       height: 25px;
     }
 
@@ -818,7 +818,8 @@
       'stack_pop' :{inputs: 2},
       'blend':{inputs: 2,args:{alpha:0.5}},
       'displacement':{inputs: 2,args:{strength:0.05}},
-      'mesh_displacement':{inputs: 2,args:{sx:0.05,sy:0.05,sz:0.05,anglex:0.0,angley:0.0,anglez:0.0}},
+      'mesh_displacement':{inputs: 2,args:{sx:0.0,sy:0.0,sz:0.1,anglex:1.0,angley:0.5,anglez:0.0}},
+      'patch_displacement':{inputs: 2,args:{sx:0.0,sy:0.0,sz:0.1,anglex:0.0,angley:0.3,anglez:0.0,scale:2.0,pixelate:0.0}},
       'blend_alpha':{inputs: 2},
       'transform':{args:{x:0.0,y:0.0,scale:1.0,angle:0.0}},
       'perspective':{args:{perspective:{type:'perspective', x1:-0.75,y1:-0.75, x2:-0.75,y2:0.75,x3:0.75,y3:-0.75,x4:0.75,y4:0.75}}},
