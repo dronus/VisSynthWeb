@@ -206,6 +206,7 @@ exports.canvas = function() {
     canvas.localContrast=wrap(localContrast);
     canvas.preview=wrap(preview);
     canvas.life=wrap(life);
+    canvas.smoothlife=wrap(smoothlife);
     canvas.ripple=wrap(ripple);
     canvas.colorDisplacement=wrap(colorDisplacement);
     canvas.analogize=wrap(analogize);
