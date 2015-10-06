@@ -156,6 +156,7 @@
     }
     // effect argument value generators...
     var generators={
+      perspective:function(args){delete args.type; return ["[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],["+flatten(args).join(',')+"],true"]},
       osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
       beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
