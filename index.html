@@ -190,6 +190,7 @@
    
     function setChain(effects)
     {
+      effects.shift(); // remove name
       effects.unshift({'effect':'stack_prepare'});    
       effects.unshift({'effect':'capture'});
       var havePreview=false;
