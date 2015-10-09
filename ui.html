@@ -29,6 +29,7 @@
     </div>
   </div>
 
+  <h2 id=chain_header></h2>
   <div class="chain container">    
     <ul id="chain">
       <h2>Chain 1</h2>    
@@ -168,7 +169,7 @@
    #chains{
       position: fixed;
       top: 95px;
-      bottom: 255px;
+      bottom: 0px;
       left: 0px;
       width: 250px;
       overflow-x: hidden;
@@ -200,7 +201,8 @@
     
     .effects{
       position: fixed;
-      height: 225px;
+      top: 50px;
+      left:600px;
       bottom: 0px;
       right: 400px;
       overflow-y: auto;
@@ -217,10 +219,15 @@
       height: 25px;
     }
 
+     #chain_header{
+        position: fixed;
+        top: 50px;
+        left: 270px;
+     }
     .chain{
       position: absolute;
-      top: 50px;
-      bottom: 255px;
+      top: 95px;
+      bottom: 0px;
       left:270px;
       width:300px;
       padding: 2px;
@@ -972,7 +979,8 @@
 
       // load chain to editor
       var list=$('#chain');
-      var chain=$(this).data('chain');
+      var chain=$(this).data('chain');      
+      $('#chain_header').text("Chain '"+chain[0]+"'");
       list.empty();
       listEffects(chain,list);
       list.find('.effect').each(function(){
