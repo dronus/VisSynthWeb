@@ -4,31 +4,42 @@
   <title>NF VisSynth MCP Help</title>
 </head>
 <body>
-  <div help_for=".header button:nth-child(2)">
+
+  <div help_for="#restart">
     Restart the live player to correct any mishaps.
   </div>
-  <div help_for=".header button:nth-child(3)">
+  <div help_for="#screenshot">
     Take screenshot. The image will be downloaded to your disk or opened, depending on your browser settings.
+  </div>
+  <div help_for="#undo">
+    Undo last operation.
   </div>
   <div help_for=".preview">
      Start preview streaming. An optional 'preview' effect can be added to any position in the chain to show the intermediate image.
   </div>
+
+  <div help_for="#chains .chain_token">
+    A video effect chain. Click here to activate and edit it. Drag to reorder or delete it.
+  </div>
+  <div help_for="#new_chain">
+    Add a new empty video effect chain.
+  </div>
+  <div help_for="#clone_chain">
+    Duplicate the selected video effect chain.
+  </div>  
+  
+  <div help_for=".chain #chain:empty">
+    An empty video effect chain. Drag an effect inside to add it.
+  </div>
+  <div help_for=".chain .effect">
+    A chained video effect. Drag to reorder it. Click to adjust parameters.
+  </div>
   
   <div help_for=".effects h3">
-    The lower list contains effect modules, that can be added to any chain by dragging them into certain position in the chain.
+    This list contains effect modules, that can be added to the chain by dragging them into it.
   </div>
   <div help_for=".effects .effect">
-    Drag this effect to the chains above to add it.
-  </div>
-  <div help_for="#chains .container">
-    A video effect chain. Click here to activate it. Drag title to reorder or delete it. Drag items inside to rearrange them. 
-  </div>
-  <div help_for="#chains .container:first-child">
-    An empty video effect chain. Drag an item inside to begin a new chain. Drag another chain over the left of it to duplicate it.
-  </div>
-
-  <div help_for="#chains .chain .effect">
-    A chained video effect. Drag to reorder it. Click to adjust parameters.
+    Drag this effect to the chain to add it.
   </div>
   <div help_for=".effect[ui_effect='preview']">
     A preview tap. Insert this effect into a chain and run preview to view the intermediate image.

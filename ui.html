@@ -11,9 +11,9 @@
 
   <div class="header container">
     <h1 style="font-size:100%">VIS SYNTH MCP</h1>
-    <button onclick="send('document.location.reload()')">RESTART</button>
-    <button onclick="screenshot()">SCREENSHOT</button>
-    <button onclick="undo()">UNDO</button>    
+    <button id=restart onclick="send('document.location.reload()')">RESTART</button>
+    <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
+    <button id=undo onclick="undo()">UNDO</button>    
   </div>
 
   <div class="effects container">
@@ -22,7 +22,7 @@
   </div>
 
 
-  <h2 id=chains_header>Chains <button onclick="new_chain()">ADD EMPTY</button><button onclick="clone_chain()">CLONE</button></h2>
+  <h2 id=chains_header>Chains <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button></h2>
   <div id="chains" class=container>
     <div class="chain_token">
       <input placeholder="enter name" value="">
