@@ -187,17 +187,15 @@
     #chains .active{
       background-color: #030;
     }
+    /* block chain name input on first click  */
     #chains>* input{
       width: 99%;
       pointer-events: none;
     }
-    
-    
-    /* collapse first empty chain */
-/*    #chains>*:first-child{
-      width: 70px;
+    /* allow another click after activation to focus chain name input */
+    #chains>*.active input{
+      pointer-events: auto;
     }
-  */           
     
     .effects{
       position: fixed;
@@ -998,9 +996,6 @@
     });
     
     // chains can be renamed
-    $('#chains').on('dblclick','.chain_token',function(){
-      $(this).find('input').focus();
-    });
     $('#chains').on('change','.chain_token>input',updateChain);
 
     // activate first chain    
@@ -1142,7 +1137,18 @@
     
     
    */
-  </script>
+   
+    // double tap quirk
+    
+    var last_tap;
+    $(document.body).on('touchend','*',function(e){
+      var timestamp=Date.now();
+      if(timestamp<last_tap+300)
+        $(this).trigger('dblclick');
+      last_tap=timestamp;
+    });
+    
+    </script>
 
 </body>
 </html>
