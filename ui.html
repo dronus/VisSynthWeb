@@ -16,9 +16,8 @@
     <button id=undo onclick="undo()">UNDO</button>    
   </div>
 
-  <div class="effects container">
-    <h3>Effects</h3>
-    <ul id=effects></ul>
+  <h2 id=effects_header>Effects</h2>
+  <div class="effects container" id=effects>
   </div>
 
 
@@ -30,10 +29,7 @@
   </div>
 
   <h2 id=chain_header></h2>
-  <div class="chain container">    
-    <ul id="chain">
-      <h2>Chain 1</h2>    
-    </ul>
+  <div class="chain container" id="chain">
   </div>
 
 
@@ -197,18 +193,20 @@
       pointer-events: auto;
     }
     
-    .effects{
+    #effects_header{
+        position: fixed;
+        top: 50px;
+        left: 600px;
+     }    
+    #effects{
       position: fixed;
-      top: 50px;
+      top: 90px;
       left:600px;
       bottom: 0px;
       right: 400px;
       overflow-y: auto;
       overflow-x: hidden;
-    }    
-    #effects{
       margin: 0px;    
-      width: 100%;
       list-style: none;
       padding: 0px;
     }
