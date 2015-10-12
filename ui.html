@@ -16,24 +16,27 @@
     <button id=undo onclick="undo()">UNDO</button>    
   </div>
 
-  <h2 id=effects_header>Effects</h2>
-  <div class="effects container" id=effects>
-  </div>
-
-
-  <h2 id=chains_header>Chains <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button></h2>
-  <div id="chains" class=container>
-    <div class="chain_token">
-      <input placeholder="enter name" value="">
+  <div class="effects container">
+    <h2>Effects</h2>
+    <div id=effects>
     </div>
   </div>
 
-  <h2 id=chain_header></h2>
-  <div class="chain container" id="chain">
+  <div class="chains container">
+    <h2>Chains <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button></h2>
+    <div id="chains">
+      <div class="chain_token">
+        <input placeholder="enter name" value="">
+      </div>
+    </div>
+  </div>
+  
+  <div class="chain container">
+    <h2></h2>
+    <div id="chain">
+    </div>
   </div>
 
-
-  
   <div class="preview container" onclick="toggle_preview()">
     <button>PREVIEW</button>  
     <img id=preview></img>
@@ -132,6 +135,14 @@
     display: none;
    }
 
+
+    body>.container{
+      border: 1px solid #555;
+      border-radius: 10px;
+      padding: 2px;
+      margin: 2px;
+    }
+
    .preview{
       position: fixed;
       bottom: 0px;
@@ -155,21 +166,19 @@
     height: 15px;
     margin: 5px;
    } 
-      
-      
-   #chains_header{
+    .chains{
       position: fixed;
       top: 50px;
-      left: 0px;
-   }
-   #chains{
-      position: fixed;
-      top: 95px;
       bottom: 0px;
       left: 0px;
-      width: 250px;
+      width: 260px;      
+    }
+    #chains{
       overflow-x: hidden;
       overflow-y: auto;
+      position: absolute;
+      top:50px;
+      bottom: 0px;
     }
     #chains>*{
       background-color: #111;
@@ -193,21 +202,21 @@
       pointer-events: auto;
     }
     
-    #effects_header{
-        position: fixed;
-        top: 50px;
-        left: 600px;
-     }    
-    #effects{
+    .effects{
       position: fixed;
-      top: 90px;
-      left:600px;
+      top: 50px;
+      left:560px;
       bottom: 0px;
-      right: 400px;
+      right: 330px;
+    }
+    #effects{
+      position: absolute;
+      top: 50px;
+      bottom: 0px;
       overflow-y: auto;
       overflow-x: hidden;
-      margin: 0px;    
       list-style: none;
+      margin: 0px;
       padding: 0px;
     }
     #effects .effect{
@@ -215,19 +224,21 @@
       height: 25px;
     }
 
-     #chain_header{
-        position: fixed;
-        top: 50px;
-        left: 270px;
-     }
     .chain{
-      position: absolute;
-      top: 95px;
+      position: fixed;
+      top: 50px;
       bottom: 0px;
       left:270px;
-      width:300px;
+      width:280px;
       padding: 2px;
       margin: 0px;
+    }
+    #chain
+    {
+      position: absolute;
+      top: 50px;
+      bottom: 0px;
+      left: 10px;
       /*padding-bottom: 50px;*/
       overflow-x: hidden;
       overflow-y: auto;
@@ -976,7 +987,7 @@
       // load chain to editor
       var list=$('#chain');
       var chain=$(this).data('chain');      
-      $('#chain_header').text("Chain '"+chain[0]+"'");
+      $('.chain h2').text("Chain "+chain[0]);
       list.empty();
       listEffects(chain,list);
       list.find('.effect').each(function(){
