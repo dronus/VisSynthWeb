@@ -1,0 +1,53 @@
+<!DOCTYPE  html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>NF VisSynth MCP</title>
+  <script src="jquery-2.1.4.js"></script>
+  <script src="jquery-ui.js"></script>
+  <script src="jquery.ui.touch-punch.js"></script>  
+</head>
+<body>
+<style>
+  body{
+    background-color: #000;
+    text-align: center;
+    color: #fff;
+    font-family: sans-serif;
+  }
+  input,button{
+    font-size:30px;
+    border-radius: 10px;
+    background-color: #333;
+    text-align: center;
+    color: #fff;
+  }
+  button{
+    background-color: #500;
+  }
+</style>
+<h1>VIS SYNTH SESSION STARTER</h1>
+<p>Enter same key on both machines to connect:</p>
+<input onclick="this.value='';" id=key size=5 maxlength=5><br>
+<p>Click PRESENTER on a machine sporting a camera. Click REMOTE CONTROL on any machine to display user interface. </p>
+<button onclick="goto('index.html')">PRESENTER</button><button onclick="goto('ui.html')">REMOTE CONTROL</button>
+<p>After connecting, you may bookmark the pages to keep your session forever.</p>
+
+<script>
+var chars='0123456789abcdefghijklmnopqrstuvwxyz';
+var key='';
+for(var i=0; i<5; i++)
+  key+=chars[Math.floor(Math.random()*chars.length)];
+var key_input=document.getElementById('key');
+key_input.value=key;
+
+function goto(url)
+{
+  document.location=url+'#'+key;
+}
+</script>
+
+
+
+</body>
+</html>

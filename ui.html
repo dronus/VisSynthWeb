@@ -447,11 +447,16 @@
 
   <script>
   
+    // get session url, if any
+    var session_url='';
+    if(document.location.hash)
+      session_url='/'+document.location.hash.substring(1);
+
     var put=function(url,data)
     {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
-      xmlHttp.open('PUT',url,true);
+      xmlHttp.open('PUT',session_url+url,true);
       xmlHttp.send(data);
     }
     
@@ -459,7 +464,7 @@
     {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
-      xmlHttp.open('GET',url,true);
+      xmlHttp.open('GET',session_url+url,true);
       xmlHttp.onreadystatechange=function()
       {
         if(xmlHttp.readyState!=4) return;

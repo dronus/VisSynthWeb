@@ -24,13 +24,17 @@
     var canvas = fx.canvas();
     // append the canvas to the view
     document.body.appendChild(canvas);
+        
+    // get session url, if any
+    var session_url='';
+    if(document.location.hash)
+      session_url='/'+document.location.hash.substring(1);
     
     var put=function(url,data){
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('PUT',url,true);  
+      xmlHttp.open('PUT',session_url+url,true);  
       xmlHttp.send(data);
     }
-
 
     var time=0,frame_time=0; // running time
     var preview_cycle=0;
@@ -191,7 +195,7 @@
     var poll_command=function()
     {
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', '/command', true);
+      xmlHttp.open('GET', session_url+'/command', true);
       xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
           setTimeout(function(){
@@ -303,7 +307,7 @@
     
     // load startup chain (first one of chains.json)
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET','/chains.json',false);
+    xmlHttp.open('GET',session_url+'_chains.json',false);
     xmlHttp.send(null);
     var chains=JSON.parse(xmlHttp.responseText);
     setChain(chains[0] ? chains[0] : []);
