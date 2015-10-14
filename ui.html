@@ -43,12 +43,12 @@
     <div id=stats></div>
   </div>
   
-  <input type=text id=command></input>        
-  <div id=result style="margin: auto; width: 50em;"></div><br>
-
   <div id=help></div>
 
   <style>
+  
+   /* general element styles */
+
    body,html{   
       background-color: #000;
       color: #aaa;
@@ -62,17 +62,15 @@
       -ms-user-select: none;
       user-select: none; 
   }
+
   ::-webkit-scrollbar {
     width: 7px;
     height: 7px;
-/*    outline-offset: -2px;*/
     outline: 2px solid #000;
   }
-
   ::-webkit-scrollbar-track {
     background-color: #222;
   }
-
   ::-webkit-scrollbar-thumb {
     width: 5px;
     background-color: #888;
@@ -104,6 +102,8 @@
    input{
     border:none;
    }   
+
+   /* recursive containers */
    .container{
     padding: 5px;
     margin: 2px;
@@ -119,6 +119,7 @@
      height: 40px;
    }
 
+   /* help tooltip */
    #help{
      position: fixed;     
      background-color: rgba(0,0,0,.9);
@@ -132,40 +133,18 @@
      pointer-events:none;
    }
    #help:empty{
-    display: none;
+     display: none;
    }
 
-
+    /* outline top level containers */
     body>.container{
       border: 1px solid #555;
       border-radius: 10px;
       padding: 2px;
       margin: 2px;
     }
-
-   .preview{
-      position: fixed;
-      bottom: 0px;
-      right: 0px;
-      width: 320px;
-      height: 240px;
-   }
-   .preview img{
-      width: 100%;
-   }
-   .preview .stats{
-      position: absolute; 
-      bottom: 10px; left: 10px;
-   }
     
-   #command{
-    display: none;
-    position: absolute;
-    left: 0px;
-    bottom: 0px;
-    height: 15px;
-    margin: 5px;
-   } 
+    /* chain selector pane */
     .chains{
       position: fixed;
       top: 50px;
@@ -192,16 +171,17 @@
     #chains .active{
       background-color: #030;
     }
-    /* block chain name input on first click  */
     #chains>* input{
+      /* block chain name input on first click  */
       width: 99%;
       pointer-events: none;
     }
-    /* allow another click after activation to focus chain name input */
     #chains>*.active input{
+      /* allow another click after activation to focus chain name input */
       pointer-events: auto;
     }
     
+    /* effects template pane */
     .effects{
       position: fixed;
       top: 50px;
@@ -224,6 +204,7 @@
       height: 25px;
     }
 
+    /* current chain effect list */
     .chain{
       position: fixed;
       top: 50px;
@@ -248,7 +229,8 @@
       content: "drag effects here";
       color: #777;
     }
-           
+
+    /* effect in effect template pane or current chain pane */
     .effect{
       cursor: pointer;
       display: inline-block;
@@ -263,23 +245,18 @@
       width: 220px;
       font-size: 10px;
     }
-
     .effect *{
       vertical-align: top;
     }
-
     .effect div, .effect span{
       display: inline-block;
     }
-    
     .effect .ui_object{
       display: block;
     }
-
     .effects .key>*, .effects .value>*{
       display: none;
     }
-        
     .effect>.ui_object>.value{
       margin-left: 0px;
     }
@@ -298,7 +275,9 @@
     {
       font-size: 15px;
     }
-    
+
+    /* detail display of effects placed in current chain */    
+
     /* show chain flow arrows */
     .chain .effect{
       position:relative;
@@ -376,7 +355,8 @@
     {
       background: #531;
     }
-                
+
+    /* effect key and value details */
     .key{
       display: inline-block;
       background-color:#333;
@@ -394,6 +374,8 @@
       color: #fff;
       font-size: 10px;
     }
+    
+    /* effect parameter adjust UI popup */
     .adjust_ui{
       position: fixed;
       width: 750px;
@@ -420,8 +402,7 @@
     }
     .adjust_ui .ui_object .ui_object .ui_object{
       background-color: #555;
-    }
-    
+    }    
     .adjust_ui .ui_number{
       display: block !important;
     }
@@ -430,20 +411,37 @@
       background-color:transparent;
       width: 60px;
     }
+    /* sliders */
     .adjust_ui input{
       width: 550px;
       height: 40px;
     }
+    /* slider numerical value display */
     .adjust_ui .slider_value{
       padding-top: 15px;
       width: 35px;
       overflow:hidden;
       font-size: 120%;
-    }
-    
+    }    
     .adjust_ui button{
       margin: 2px;
     }
+
+   /* video preview pane */
+   .preview{
+      position: fixed;
+      bottom: 0px;
+      right: 0px;
+      width: 320px;
+      height: 240px;
+   }
+   .preview img{
+      width: 100%;
+   }
+   .preview .stats{
+      position: absolute; 
+      bottom: 10px; left: 10px;
+   }
     
   </style>
 
@@ -470,7 +468,16 @@
       xmlHttp.send(null);      
     }
     
+    // send command to remote server
+    function send(command)
+    {
+      put('/command',command+';\n');
+    }
+    
+    /* the undo history. updated by frequent save() calls */
     var undo_history=[];
+    
+    /* save all chains to server and undo_history */
     var save=function()
     {
       var chains=[];
@@ -479,7 +486,7 @@
       });
       
       var json=JSON.stringify(chains);
-      put('chains.json',json);      
+      put('chains.json',json);
       undo_history.push(json);
       
       console.log('Saved.');
@@ -487,6 +494,7 @@
       savetimeout=false;
     }
     
+    /*  recursively create UI for an effect, callback provides the UI for a signle value */
     var get_ui=function(key,node,callback)
     {
       var ui=$('<div>');
@@ -514,7 +522,8 @@
       
       return ui;
     }
-    
+
+    /* create JS object from UI DOM  */    
     var get_data=function(ui)
     {
       var divs=ui.find('>div');
@@ -536,6 +545,7 @@
       return data;
     }
   
+    /* create a effect DOM, value_renderer provides the UI for a single value */
     var create_effect_element=function(effect,value_renderer)
     {
         var li=$('<div class=effect>');
@@ -548,6 +558,7 @@
         return li;    
     }
     
+    /* create UI DOM for an array of effects into container  */
     var listEffects=function(effects,container)
     {
       effects.forEach(function(effect){
@@ -560,16 +571,20 @@
       });
     }
       
+    // callback for creating a slider manipulating a single value
     var add_slider=function(container,value_element)
     {  
       var slider=$('<input class=value_ui type=range min="-0.999" max="0.999" step="0.0002">');
       var slider_value_element=$('<span class=slider_value></span>');
+
       // initalize slider knob with current value 
       var value=value_element.text();
+      // also initalize numerical display element
       slider_value_element.html(value);
       value=logify(value);
       slider.attr('value',value);
       
+      // adjust the value_element if slider is moved 
       var handler=function(){        
         var value=expify(parseFloat(this.value));
         console.log(this.value+" "+value);
@@ -577,18 +592,22 @@
         slider_value_element.html(value);
         updateChain();
       };
-      slider.on('input',handler);
+      slider.on('input',handler);      
+      
+      // reset to 0 on double click
       slider.on('dblclick',function(){
-        // reset to 0 on double click
         this.value="0";
         handler.call(this);
       });      
 
-      $(container).append(slider_value_element);      
+      $(container).append(slider_value_element);
       $(container).append(slider);
     }
 
-    var build_ui=function(effect_element){
+    // create value adjust UI for a single effect
+    var get_adjust_ui=function(effect_element){
+    
+      // visibly mark effect as the currently adjusted
       effect_element.addClass('ui_target');
 
       // link value elements to theirself to know the original one to adjust after cloning
@@ -599,7 +618,8 @@
       
       // copy the UI with data but without event handlers
       var slider_ui=effect_element.clone(true).off();
-      
+ 
+      // add slider to each numerical value     
       slider_ui.find('.ui_number>.value').each(function(){
         var element=$(this);
         var key=element.parent().find('.key').text();
@@ -611,7 +631,7 @@
         add_slider(element,value_element);          
       });
 
-      // osc toggler
+      // OSC toggle button handler
       var toggle_osc=function(){
         var value_element=$($(this).parent().data('original_value_element'));
         var key=value_element.parent().find('>.key').text();
@@ -640,7 +660,7 @@
         container.remove();
         effect_element.click();
       }
-      // beat toggler
+      // BEAT toggle button handler
       var toggle_beat=function(){
         var value_element=$($(this).parent().data('original_value_element'));
         var key=value_element.parent().find('>.key').text();
@@ -670,7 +690,7 @@
         effect_element.click();
       }
 
-
+      // add OSC and BEAT button to each value
       slider_ui.find('.ui_object:not([ui_type])>.value>.ui_number>.value').each(function(){
         var element=$(this);
         // get value field of original value_element to manipulate by this UI
@@ -679,10 +699,12 @@
         element.append($('<button>OSC</button>').click(toggle_osc));
         element.append($('<button>BEAT</button>').click(toggle_beat));
       });
+      // add REMOVE OSC button to each value OSC UI
       slider_ui.find('.ui_object[ui_type="osc"]>.value').each(function(){
         var element=$(this);
         element.find('.ui_string').after($('<button>REMOVE OSC</button>').click(toggle_osc));
       });
+      // add REMOVE BEAT button to each value BEAT UI
       slider_ui.find('.ui_object[ui_type="beat"]>.value').each(function(){
         var element=$(this);
         element.find('.ui_string').after($('<button>REMOVE BEAT</button>').click(toggle_beat));
@@ -704,22 +726,6 @@
       
     };
     
-    
-    var add_ui=function(event)
-    {
-      if($(this).parent().data('prevent_click'))
-      {
-        $(this).parent().data('prevent_click',false);
-        return;
-      }
-      
-      build_ui($(this));
-    }
-
-    var markup=function(item){
-      item.on('click',add_ui);
-    }
-
     savetimeout=false;
     var updateChain=function(event,ui)
     {
@@ -750,7 +756,6 @@
         stop: updateChain,
         receive: function(event,ui){
           var new_element=$(this).data()['ui-sortable'].currentItem;
-          markup(new_element);
           new_element.removeAttr('style'); // remove obsolete jQuery d&d styles
           updateChain(event,ui);
         },
@@ -772,21 +777,6 @@
     var token=$('#chains .chain_token').clone();
     $('#chains .chain_token').addClass('active');
     
-    var ensure_empty_list=function(){
-    
-      // always keep an empty list at the left
-/*      if(!$('#chains .chain:empty').length)
-      {
-        $('#chains').prepend(empty_list.clone());
-        init_chain_list('#chains .current_chain:first-child .chain');
-      }
-*/
-      // ensure names
-      $('#chains .chain_token h2').each(function(i){      
-        $(this).html(i==0 ? 'New'  : 'Chain '+i);
-      });        
-    }
-    
     var load=function(json)
     {
       if(!json) return;
@@ -794,7 +784,6 @@
 
       // delete old lists before loading new ones
       $('#chains').empty();
-      // ensure_empty_list();
       
       chains.forEach(function(chain)
       {
@@ -806,19 +795,12 @@
           chain.unshift("");
         chain_token.find('input').val(chain[0]);
         chain_token.data('chain',chain);
-
-        /*
-        var list=$('#chains .current_chain:last-child .chain');
-        listEffects(chain,list);
-        list.find('.effect').each(function(){
-          markup($(this));
-        });
-        ensure_empty_list();*/
       });
       
       $('#chains>*:first-child').click();
     }    
-    
+
+    /* pop last undo state */    
     function undo(){
       undo_history.pop(); // pop last "same" state
       // pop last state
@@ -830,14 +812,12 @@
       }
     }
              
+    /* compress and expand values for sliders to enable large adjustments */
     var logify=function(x){
-//      return(Math.log(Math.abs(x)+1)/Math.LN2*(x>0 ? 1 : -1));
       return (-2+Math.sqrt(x*x+4))/x;
-    }
-    
+    }    
     var expify=function(x){    
       return  Math.round((-2/(x+1)-2/(x-1))*1000)/1000;
-//      return Math.round((x>0 ? 1 : -1)*(Math.pow(2.,Math.abs(x))-1)*1000.)/1000.;
     }
        
     // build list of effects
@@ -867,8 +847,7 @@
       'colorkey':{inputs: 2,args:{color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1}},
       'superquadric':{args:{A:1.0,B:1.0,C:1.0,r:1.0,s:1.0,t:1.0,angle:{type:'osc',f:1.0,a:10.0,p:0.0,o:0.0}}},
       'vibrance':{args:{strength:1.0}},
-/*      'brightnessContrast':{args:{brightness:0.0,contrast:0.0},*/
-      'brightnessContrast':{args:{brightness:{type:'beat',pulse:0.0,f:2.0,a:1.0,p:0.0,o:-0.7},contrast:0.0}},
+      'brightnessContrast':{args:{brightness:0.0,contrast:0.0}},
       'hueSaturation':{args:{hue:0.0,saturation:0.0}},
       'invertColor':{},
       'noalpha':{},
@@ -948,21 +927,22 @@
       var current_chain=$('#chains .active .chain');
       var new_element=$(this).clone();
       current_chain.append(new_element);
-      markup(new_element);      
       updateChain();
     });
     
-    function clone_chain()
-    {
-      var chain=$('#chains .active');
-      var new_chain=chain.clone(true); // clone with data appended
-      chain.siblings().first().after(new_chain); // insert new chain after the empty list following the current chain position
-      new_chain.click(); // mark new chain active
-    }
-    
+    // the effects in the current chain may be clicked to display adjust UI
+    $('.chain').on('click','.effect',function(){
+      if($(this).parent().data('prevent_click'))
+      {
+        $(this).parent().data('prevent_click',false);
+        return;
+      }
+      
+      get_adjust_ui($(this));
+    });
+
     // the chains are sortable...
     $("#chains").sortable({
- //       handle: 'h2',
         distance:10,
         delay: 300,
         // allow removal of items by dragging them out
@@ -990,9 +970,6 @@
       $('.chain h2').text("Chain "+chain[0]);
       list.empty();
       listEffects(chain,list);
-      list.find('.effect').each(function(){
-        markup($(this));
-      });
       
       // send chain to output
       updateChain();
@@ -1007,10 +984,16 @@
     // chains can be renamed
     $('#chains').on('change','.chain_token>input',updateChain);
 
-    // activate first chain    
-    get('chains.json',load);
-    
-    // new buttom
+    // clone current chain 
+    function clone_chain()
+    {
+      var chain=$('#chains .active');
+      var new_chain=chain.clone(true); // clone with data appended
+      chain.siblings().first().after(new_chain); // insert new chain after the empty list following the current chain position
+      new_chain.click(); // mark new chain active
+    }
+
+    // create new chain buttom
     function new_chain(){
         var chain_token=token.clone();
         $('#chains').prepend(chain_token);
@@ -1018,6 +1001,9 @@
         chain_token.click();
     }
 
+    // load chains
+    get('chains.json',load);
+    
     // add help...
 
     // a tooltip is shown for any item matching certain selector 
@@ -1051,33 +1037,8 @@
       $('#help').css({left: e.pageX+20, top: e.pageY+20});
     });
 
-    function result(text)
-    {
-      document.getElementById('result').innerHTML=text;
-    }
-    
-    function send(command,callback)
-    {
-      command+=';\n';
-      
-      // setup listener for possible incoming result
-      if(callback)
-        get('/result',callback);
-      
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.responseType='text';
-      xmlHttp.open('PUT','/command',true);  
-      xmlHttp.send(command);
-    }
-
-    var cmd_element=document.getElementById('command');
-    cmd_element.addEventListener('change',function(){
-      send(cmd_element.value,result);      
-      cmd_element.value='';
-    });
-
+    // preview pane
     var preview=false;
-
     var preview_handler=function(){
     
       if(!preview) return;         
@@ -1094,8 +1055,7 @@
       });
 
       send('preview()');
-    };
-    
+    };    
     function toggle_preview(){
       preview=!preview;
       if(preview)
@@ -1103,7 +1063,8 @@
       else
         document.getElementById('preview').src='';
     }
-                  
+      
+    // screenshot button      
     function screenshot(){
       get('/screenshot',function(data){
         var link=$('<a>');
@@ -1115,40 +1076,8 @@
       });
       send('screenshot()');
     }
-   
-   
-   
-   /*
-    TODO
-    perspective adjustment UI from index.html:
-      var pc=get_cookie('perspective');
-
-    var perspective=pc ? JSON.parse(pc) : [0,0,0,h,w,0,w,h];
-
-    var dragged=false;
-    c.canvas.addEventListener('mousedown',function(e){
-      if(e.button==1)
-        perspective=[0,0,0,h,w,0,w,h];
-      else    
-        dragged=true;
-    });
-    c.canvas.addEventListener('mouseup'  ,function(e){dragged=false;});
-    c.canvas.addEventListener('mousemove',function(e){
-      if(!dragged) return;
-      var x=e.offsetX/c.canvas.offsetWidth*w, y=e.offsetY/c.canvas.offsetHeight*h;
-      var i=0;
-      if(x>w/2) i+=2;
-      if(y>h/2) i+=1;
-      perspective[i*2]=x;
-      perspective[i*2+1]=y;  
-      set_cookie('perspective',JSON.stringify(perspective));    
-    });
-    
-    
-   */
-   
-    // double tap quirk
-    
+      
+    // double tap quirk for touch screens
     var last_tap;
     $(document.body).on('touchend','*',function(e){
       var timestamp=Date.now();
