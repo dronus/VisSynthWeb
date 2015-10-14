@@ -36,6 +36,7 @@
     var preview_cycle=0;
     var screenshot_cycle=0;
     var preview_canvas=null;
+    var chain=null;
 
     // main update function, shows video frames via glfx.js canvas
     var update = function()
@@ -51,7 +52,7 @@
       var effect_time=time*0.001; // 1 units per second      
 
       // run effect chain
-      chain(canvas,effect_time);
+      if(chain) chain(canvas,effect_time);
 
       // provide preview if requested
       if(preview_cycle==1)
