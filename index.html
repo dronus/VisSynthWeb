@@ -20,35 +20,17 @@
   </style>
 
   <script>
-    function get_cookie(cookie_name)
-    {
-      var cookie = document.cookie;
-      var cookies = cookie.split(';');
-      for (var i=0; i<cookies.length; ++i)
-      {
-        parts = cookies[i].split('=');
-        if (parts[0].trim()==cookie_name)
-        {
-          return parts[1].trim();
-        }
-      }
-
-    }
-
-    function set_cookie(key,value)
-    {
-      document.cookie = key+'='+value+';path=/;expires=Thu, 1 Jan 2095 00:00:00 GMT;';
-    }
-  </script>
-  <script>
-    
-    
-    var w=640, h=480;
-    
     var videoengine = VideoEngine();
 
     var time=0,frame_time=0; // running time
     
+    var put=function(url,data){
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('PUT',url,true);  
+      xmlHttp.send(data);
+    }
+
+
     // pre-rendering callback (filter setup)
     var animation=function(){
 
@@ -59,13 +41,6 @@
       var effect_time=time*0.001; // 1 units per second
       videoengine.setFilter(function(canvas){chain(canvas,effect_time);});
     };
-    
-    
-    var put=function(url,data){
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('PUT',url,true);  
-      xmlHttp.send(data);
-    }
     
     // post-rendering-callback (preview setup)
     var preview_cycle=0;
@@ -84,7 +59,7 @@
         var ctx=preview_canvas.getContext('2d');
         ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
 
-	put('/frame_time',""+frame_time);
+        put('/frame_time',""+frame_time);
 
         preview_cycle=2;
       }
@@ -96,24 +71,24 @@
         preview_cycle=0;
       }     
     }
-    
+    // drawing finished callback    
     var after_draw=function()
     {    
       if(screenshot_cycle==1)
       {      
-        // videoengine.canvas.preserveDrawingBuffer=true;
         var pixels=videoengine.canvas.toDataURL('image/jpeg');    
         put('/screenshot',pixels);
         screenshot_cycle=0;
       }
     }
-    
+
+    // install all three callbacks    
     videoengine.setCallback(animation,after_preview,after_draw);
 
+    // append the videoengine canvas to the view
     document.body.appendChild(videoengine.canvas);
 
-
-    // command polling for UI server
+    // command polling from remote control server
     var poll_command=function()
     {
       var xmlHttp = new XMLHttpRequest();
@@ -165,8 +140,8 @@
       rgba:flatten,
       rgb_range:flatten
     };
-    // generate a single effect function call source code
 
+    // generate a single effect function call source code
     var generate_code=function(effect)
     {
       var command=effect.effect;
@@ -186,8 +161,9 @@
       return src;
     }
 
-    // global functions for UI use
-   
+    // global functions called by remote control
+
+    // set effect chain to render
     function setChain(effects)
     {
       effects.shift(); // remove name
@@ -208,27 +184,31 @@
       src+='}};_';
 
       // compile chain
+      var w=videoengine.canvas.width, h=videoengine.canvas.height; // provide global values for chain functions
       chain=eval(src);
     }
     
-    // set startup chain (second one of chains.json)
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET','/chains.json',false);
-    xmlHttp.send(null);
-    var chains=JSON.parse(xmlHttp.responseText);
-    setChain(chains[0] ? chains[0] : []);
-       
+    // receive preview request from remote       
     function preview()
     {
       // engage preview process
       preview_cycle=1;
     }
     
+    // receive screenshot request from remote
     function screenshot()
     {
       // engage screenshot process
       screenshot_cycle=1;
     }
+    
+    // load startup chain (first one of chains.json)
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET','/chains.json',false);
+    xmlHttp.send(null);
+    var chains=JSON.parse(xmlHttp.responseText);
+    setChain(chains[0] ? chains[0] : []);
+    
   </script>
 
 </body>
