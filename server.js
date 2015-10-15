@@ -23,33 +23,36 @@ var server=http.createServer(function (req, res) {
     {    
       res.end();
      
-      // if it denotes a file, store it.
-      if(key.match('.*chains.json'))
+      if(key.match(/saves\/.*/))
       {
+        // if it denotes a file in saves/, store it to disk
         fs.writeFileSync(key,data[key]);
         delete data[key];
-      }
-
-      // answer pending requests for this key
-      var waiter=pending[key];
-      if(pending[key])
+      }      
+      else if(key.match(/feeds\/.*/) && pending[key])
       {
+        // if it denotes a feed in feeds/ answer pending requests for this key
         pending[key].end(data[key]);        
         delete pending[key];
         delete data[key];
       }
+      else
+        res.end('Invalid PUT path');
     });
   }
+  else if(key.match(/feeds\/.*/))
+  {
+    // data in feeds/ is delivered by long polling
+    if(pending[key]) pending[key].end();
+    pending[key]=res;
+  }  
   else if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     res.setHeader("Content-Type", "text/html");
     res.end(fs.readFileSync(key));
   }
   else
-  {
-    if(pending[key]) pending[key].end();
-    pending[key]=res;
-  }  
+    res.end();
 });
 
 var port=8082;

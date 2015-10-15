@@ -32,7 +32,7 @@
     
     var put=function(url,data){
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('PUT',session_url+url,true);  
+      xmlHttp.open('PUT','/feeds'+session_url+url,true);  
       xmlHttp.send(data);
     }
 
@@ -122,10 +122,12 @@
     {
       source_index = source_index | 0;
 
+      /*
       var device_mapping=document.location.hash.substring(1);
       if(device_mapping) device_mapping=JSON.parse(device_mapping);
       if(device_mapping[source_index]) 
         source_index=device_mapping[source_index];
+        */
       
       // jsut return video, if already started
       if(videos[source_index]) 
@@ -195,7 +197,7 @@
     var poll_command=function()
     {
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', session_url+'/command', true);
+      xmlHttp.open('GET', '/feeds'+session_url+'/command', true);
       xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
           setTimeout(function(){
@@ -307,10 +309,13 @@
     
     // load startup chain (first one of chains.json)
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET',session_url+'_chains.json',false);
-    xmlHttp.send(null);
-    var chains=JSON.parse(xmlHttp.responseText);
-    setChain(chains[0] ? chains[0] : []);
+    xmlHttp.open('GET','saves'+session_url+'_chains.json',false);
+    xmlHttp.send(null);   
+    if(xmlHttp.responseText)
+    { 
+      var chains=JSON.parse(xmlHttp.responseText);
+      setChain(chains[0] ? chains[0] : []);
+    }
     
   </script>
 

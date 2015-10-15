@@ -97,7 +97,7 @@
       border-radius: 5px;
       background-color: #733;
       color: #fff;
-      padding: 8px;
+      padding: 4px;
    }
    input{
     border:none;
@@ -456,7 +456,7 @@
     {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
-      xmlHttp.open('PUT',session_url+url,true);
+      xmlHttp.open('PUT',url,true);
       xmlHttp.send(data);
     }
     
@@ -464,7 +464,7 @@
     {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
-      xmlHttp.open('GET',session_url+url,true);
+      xmlHttp.open('GET',url,true);
       xmlHttp.onreadystatechange=function()
       {
         if(xmlHttp.readyState!=4) return;
@@ -476,7 +476,7 @@
     // send command to remote server
     function send(command)
     {
-      put('/command',command+';\n');
+      put('/feeds'+session_url+'/command',command+';\n');
     }
     
     /* the undo history. updated by frequent save() calls */
@@ -491,7 +491,7 @@
       });
       
       var json=JSON.stringify(chains);
-      put('chains.json',json);
+      put('/saves'+session_url+'_chains.json',json);
       undo_history.push(json);
       
       console.log('Saved.');
@@ -1007,7 +1007,12 @@
     }
 
     // load chains
-    get('chains.json',load);
+    get('/saves'+session_url+'_chains.json',function(data){
+      if(!data) // no saved chains in this session 
+        get('/chains.json',load); // load default chain instead
+      else
+        load(data);        
+    });
     
     // add help...
 
@@ -1048,13 +1053,13 @@
     
       if(!preview) return;         
 
-      get('/preview',function(data)
+      get('/feeds'+session_url+'/preview',function(data)
       {
         if(data)
           document.getElementById('preview').src=data;
         requestAnimationFrame(preview_handler);          
       });
-      get('/frame_time',function(data){
+      get('/feeds'+session_url+'/frame_time',function(data){
         if(data)
           document.getElementById('stats').innerHTML='FPS: '+(Math.round(1000./data));
       });
@@ -1071,7 +1076,7 @@
       
     // screenshot button      
     function screenshot(){
-      get('/screenshot',function(data){
+      get('/feeds'+session_url+'/screenshot',function(data){
         var link=$('<a>');
         link.attr('href',data);
         link.attr('download','screenshot.jpg');
