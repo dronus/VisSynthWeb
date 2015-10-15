@@ -4,6 +4,7 @@ var data={};
 var pending={};
 
 var fs=require('fs');
+var path=require('path');
 
 var writable={'chains.json':true};
 
@@ -41,7 +42,7 @@ var server=http.createServer(function (req, res) {
       }
     });
   }
-  else if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
+  else if(path.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     res.setHeader("Content-Type", "text/html");
     res.end(fs.readFileSync(parts[0]));
