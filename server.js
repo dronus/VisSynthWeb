@@ -29,6 +29,7 @@ var server=http.createServer(function (req, res) {
         // if it denotes a file in saves/, store it to disk
         fs.writeFileSync(key,data[key]);
         delete data[key];
+        console.log(key+' stored.');
       }      
       else if(key.match(/feeds\/.*/) && pending[key])
       {

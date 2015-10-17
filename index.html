@@ -26,9 +26,9 @@
     document.body.appendChild(canvas);
         
     // get session url, if any
-    var session_url='';
+    var session_url='/';
     if(document.location.hash)
-      session_url='/'+document.location.hash.substring(1);
+      session_url+=document.location.hash.substring(1)+'_';
     
     var put=function(url,data){
       var xmlHttp = new XMLHttpRequest();
@@ -69,14 +69,14 @@
         var ctx=preview_canvas.getContext('2d');
         ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
 
-        put('/frame_time',""+frame_time);
+        put('frame_time',""+frame_time);
 
         preview_cycle=2;
       }
       else if(preview_cycle==2)
       {          
         var pixels=preview_canvas.toDataURL('image/jpeg');    
-        put('/preview',pixels);
+        put('preview',pixels);
       
         preview_cycle=0;
       }     
@@ -88,7 +88,7 @@
       if(screenshot_cycle==1)
       {      
         var pixels=canvas.toDataURL('image/jpeg');    
-        put('/screenshot',pixels);
+        put('screenshot',pixels);
         screenshot_cycle=0;
       }
 
@@ -199,7 +199,7 @@
     var poll_command=function()
     {
       var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', '/feeds'+session_url+'/command', true);
+      xmlHttp.open('GET', '/feeds'+session_url+'command', true);
       xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
           setTimeout(function(){
@@ -210,7 +210,7 @@
           {
             var result=window.eval(js);
             if(result){
-              put('/result',JSON.stringify(result));
+              put('result',JSON.stringify(result));
             }
           }
         }
@@ -311,7 +311,7 @@
     
     // load startup chain (first one of chains.json)
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET','saves'+session_url+(session_url ? '_' : '/')+'chains.json',false);
+    xmlHttp.open('GET','saves'+session_url+'chains.json',false);
     xmlHttp.send(null);   
     if(xmlHttp.responseText)
     { 

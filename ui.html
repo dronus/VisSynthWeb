@@ -448,9 +448,9 @@
   <script>
   
     // get session url, if any
-    var session_url='';
+    var session_url='/';
     if(document.location.hash)
-      session_url='/'+document.location.hash.substring(1);
+      session_url+=document.location.hash.substring(1)+'_';
 
     var put=function(url,data)
     {
@@ -476,7 +476,7 @@
     // send command to remote server
     function send(command)
     {
-      put('/feeds'+session_url+'/command',command+';\n');
+      put('/feeds'+session_url+'command',command+';\n');
     }
     
     /* the undo history. updated by frequent save() calls */
@@ -491,7 +491,7 @@
       });
       
       var json=JSON.stringify(chains);
-      put('/saves'+session_url+(session_url ? '_':'/')+'chains.json',json);
+      put('/saves'+session_url+'chains.json',json);
       undo_history.push(json);
       
       console.log('Saved.');
@@ -1008,9 +1008,9 @@
     }
 
     // load chains
-    get('/saves'+session_url+(session_url ? '_':'/')+'chains.json',function(data){
+    get('/saves'+session_url+'chains.json',function(data){
       if(!data) // no saved chains in this session 
-        get('/chains.json',load); // load default chain instead
+        get('/saves/chains.json',load); // load default chain instead
       else
         load(data);        
     });
@@ -1054,13 +1054,13 @@
     
       if(!preview) return;         
 
-      get('/feeds'+session_url+'/preview',function(data)
+      get('/feeds'+session_url+'preview',function(data)
       {
         if(data)
           document.getElementById('preview').src=data;
         requestAnimationFrame(preview_handler);          
       });
-      get('/feeds'+session_url+'/frame_time',function(data){
+      get('/feeds'+session_url+'frame_time',function(data){
         if(data)
           document.getElementById('stats').innerHTML='FPS: '+(Math.round(1000./data));
       });
@@ -1077,7 +1077,7 @@
       
     // screenshot button      
     function screenshot(){
-      get('/feeds'+session_url+'/screenshot',function(data){
+      get('/feeds'+session_url+'screenshot',function(data){
         var link=$('<a>');
         link.attr('href',data);
         link.attr('download','screenshot.jpg');
