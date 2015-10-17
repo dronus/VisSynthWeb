@@ -6,3 +6,4 @@ node_modules
 *~
 chains.json
 saves/*.json
+*.mp4
