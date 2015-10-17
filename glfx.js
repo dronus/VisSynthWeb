@@ -2437,6 +2437,31 @@ function matte(r,g,b) {
     return this;
 }
 
+// src/filters/video/video.js
+function video()
+{
+
+    var v=this._.videoFilterElement;
+    if(!v)
+    {
+      var v = document.createElement('video');
+      v.autoplay = true;
+      v.muted=true;
+      v.loop=true;
+      v.src="test.mp4";
+      this._.videoFilterElement=v;
+    }  
+      
+    // make sure the video has adapted to the video source
+    if(v.currentTime==0 || !v.videoWidth) return this; 
+    
+    if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
+    this._.videoTexture.loadContentsOf(v);
+    this.draw(this._.videoTexture);
+        
+    return this;
+}
+
 // src/filters/video/ripple.js
 function ripple(fx,fy,angle,amplitude) {
     gl.ripple = gl.ripple || warpShader('\
@@ -3322,7 +3347,7 @@ function timeshift(time)
 function capture(source_index)
 {
     source_index=Math.floor(source_index);    
-    var v=this.video(source_index);
+    var v=this.video_source(source_index);
     
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
@@ -5800,6 +5825,7 @@ exports.canvas = function() {
     canvas.sepia = wrap(sepia);
     // dronus' filter methods
     canvas.capture = wrap(capture);
+    canvas.video = wrap(video);
     canvas.stack_prepare=wrap(stack_prepare);
     canvas.stack_push=wrap(stack_push);
     canvas.stack_pop=wrap(stack_pop);

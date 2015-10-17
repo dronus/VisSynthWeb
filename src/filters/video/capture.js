@@ -1,7 +1,7 @@
 function capture(source_index)
 {
     source_index=Math.floor(source_index);    
-    var v=this.video(source_index);
+    var v=this.video_source(source_index);
     
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 

@@ -184,6 +184,7 @@ exports.canvas = function() {
     canvas.sepia = wrap(sepia);
     // dronus' filter methods
     canvas.capture = wrap(capture);
+    canvas.video = wrap(video);
     canvas.stack_prepare=wrap(stack_prepare);
     canvas.stack_push=wrap(stack_push);
     canvas.stack_pop=wrap(stack_pop);
