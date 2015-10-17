@@ -55,10 +55,13 @@ function mesh_displacement(sx,sy,sz,anglex,angley,anglez) {
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.frontFace(gl.CCW);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.mesh_displacement.drawTriangles();
         gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.CULL_FACE);
     },true);
     // replace current texture by spare texture
     this._.spareTexture.swapWith(this._.texture);
