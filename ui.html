@@ -491,7 +491,7 @@
       });
       
       var json=JSON.stringify(chains);
-      put('/saves'+session_url+'_chains.json',json);
+      put('/saves'+session_url+(session_url ? '_':'/')+'chains.json',json);
       undo_history.push(json);
       
       console.log('Saved.');
@@ -1007,7 +1007,7 @@
     }
 
     // load chains
-    get('/saves'+session_url+'_chains.json',function(data){
+    get('/saves'+session_url+(session_url ? '_':'/')+'chains.json',function(data){
       if(!data) // no saved chains in this session 
         get('/chains.json',load); // load default chain instead
       else

@@ -125,9 +125,11 @@
       /*
       var device_mapping=document.location.hash.substring(1);
       if(device_mapping) device_mapping=JSON.parse(device_mapping);
+      */
+      var device_mapping={0:2};
       if(device_mapping[source_index]) 
         source_index=device_mapping[source_index];
-        */
+        
       
       // jsut return video, if already started
       if(videos[source_index]) 
@@ -309,7 +311,7 @@
     
     // load startup chain (first one of chains.json)
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET','saves'+session_url+'_chains.json',false);
+    xmlHttp.open('GET','saves'+session_url+(session_url ? '_' : '/')+'chains.json',false);
     xmlHttp.send(null);   
     if(xmlHttp.responseText)
     { 
