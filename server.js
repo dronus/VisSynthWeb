@@ -51,7 +51,8 @@ var server=http.createServer(function (req, res) {
   else if(path.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     res.setHeader("Content-Type", "text/html");
-    res.end(fs.readFileSync(key));
+    var instream=fs.createReadStream(key);
+    instream.pipe(res);
   }
   else
     res.end();
