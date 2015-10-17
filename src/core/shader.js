@@ -36,6 +36,8 @@ var Shader = (function() {
     function Shader(vertexSource, fragmentSource) {
         this.vertexAttribute = null;
         this.texCoordAttribute = null;
+        this._attributes={};
+        this._element_count=0;
         this.program = gl.createProgram();
         vertexSource = vertexSource || defaultVertexSource;
         fragmentSource = fragmentSource || defaultFragmentSource;
@@ -125,31 +127,37 @@ var Shader = (function() {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
 
-    Shader.prototype.drawTriangles = function(vertices,uvs,mode){
-        if (this.vertexBuffer == null) 
-            this.vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-        if (this.texCoordBuffer == null) 
-            this.texCoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+    Shader.prototype.attributes=function(attributes,sizes){
+      for(key in attributes)
+      {
+        var attribute=this._attributes[key];
+        if(!attribute)
+        {
+          attribute={};
+          attribute.buffer=gl.createBuffer();
+          attribute.location=gl.getAttribLocation(this.program, key);
+          attribute.size=sizes[key];
+          gl.enableVertexAttribArray(attribute.location);          
+          this._attributes[key]=attribute;
+        }
 
-        if (this.vertexAttribute == null) {
-            this.vertexAttribute = gl.getAttribLocation(this.program, 'vertex');
-            gl.enableVertexAttribArray(this.vertexAttribute);
-        }
-        if (this.texCoordAttribute == null) {
-            this.texCoordAttribute = gl.getAttribLocation(this.program, '_texCoord');
-            gl.enableVertexAttribArray(this.texCoordAttribute);
-        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attributes[key]), gl.STATIC_DRAW);
+        this._element_count=attributes[key].length/attribute.size;
+      }
+    }
+
+    Shader.prototype.drawTriangles = function(mode){
+    
         gl.useProgram(this.program);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.vertexAttribPointer(this.vertexAttribute, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
-        gl.vertexAttribPointer(this.texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(mode ? mode : gl.TRIANGLE_STRIP, 0, vertices.length/3);
+        for(key in this._attributes)
+        {
+          var attribute=this._attributes[key];
+          gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+          gl.vertexAttribPointer(attribute.location, attribute.size, gl.FLOAT, false, 0, 0);          
+        }
+        gl.drawArrays(mode ? mode : gl.TRIANGLE_STRIP, 0, this._element_count);
     };
 
 

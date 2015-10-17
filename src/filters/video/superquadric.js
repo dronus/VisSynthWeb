@@ -122,7 +122,8 @@ function superquadric(A,B,C,r,s,t,angle) {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.superquadric.uniforms(uniforms).drawTriangles(vertices,uvs);
+        gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
+        gl.superquadric.uniforms(uniforms).drawTriangles();
         gl.disable(gl.DEPTH_TEST);
     },true);
     this._.spareTexture.swapWith(this._.texture);

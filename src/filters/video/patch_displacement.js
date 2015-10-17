@@ -39,6 +39,7 @@ function patch_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
               this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
           }
       }
+      gl.patch_displacement.attributes({vertex: this._.gridPatchesVertices,_texCoord:this._.gridPatchesUvs},{vertex: 3, _texCoord:2});
     }
 
     // perspective projection matrix
@@ -67,15 +68,12 @@ function patch_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     texture.use(1);
     gl.patch_displacement.textures({displacement_map: 0, texture: 1});
 
-    var vertices=this._.gridPatchesVertices;
-    var uvs=this._.gridPatchesUvs;
-    
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.patch_displacement.drawTriangles(vertices,uvs,gl.TRIANGLES);
+        gl.patch_displacement.drawTriangles(gl.TRIANGLES);
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture

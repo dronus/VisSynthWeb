@@ -2226,7 +2226,8 @@ function superquadric(A,B,C,r,s,t,angle) {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.superquadric.uniforms(uniforms).drawTriangles(vertices,uvs);
+        gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
+        gl.superquadric.uniforms(uniforms).drawTriangles();
         gl.disable(gl.DEPTH_TEST);
     },true);
     this._.spareTexture.swapWith(this._.texture);
@@ -2273,88 +2274,98 @@ function tile(size,centerx,centery) {
 
 // src/filters/video/supershape.js
 function supershape(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
-    gl.supershape = gl.supershape || new Shader('\
-    attribute vec3 vertex;\
-    attribute vec2 _texCoord;\
-    varying vec2 texCoord;\
-    uniform mat4 matrix;\
-    void main() {\
-        texCoord = _texCoord;\
-        vec4 pos=matrix * (vec4(vertex,1.0));  \
-        gl_Position = pos/pos.w; \
-    }','\
+
+  if(!gl.supershape)
+  {
+    gl.supershape = new Shader('\
+      float superFormula(in float a, in float b, in float m, in float n1, in float n2, in float n3, in float phi)\
+      {\
+          vec2 ret;\
+          float Out;\
+          float t1 = cos(m * phi / 4.0);\
+          t1 = t1 / a;\
+          t1 = abs(t1);\
+          t1 = pow(t1, n2);\
+          float t2 = sin(m * phi / 4.0);\
+          t2 = t2 / b;\
+          t2 = abs(t2);\
+          t2 = pow(t2, n3);\
+          float T = t1 + t2;\
+          Out = pow(T, 1.0 / n1);\
+          if (abs(Out) == 0.0) {\
+              Out = 0.0;\
+          } else {\
+              Out = 1.0 / Out;\
+          }\
+       \
+          return Out;\
+      }\
+      \
+      uniform float a;\
+      uniform float b;\
+      uniform float m;\
+      uniform float n1;\
+      uniform float n2;\
+      uniform float n3;\
+      uniform float ab;\
+      uniform float bb;\
+      uniform float mb;\
+      uniform float n1b;\
+      uniform float n2b;\
+      uniform float n3b;\
+      \
+      attribute vec2 _texCoord;\
+      varying vec2 texCoord;\
+      uniform mat4 matrix;\
+      \
+      float PI=3.14159;\
+      \
+      void main()\
+      {\
+          vec2 uv = (_texCoord-vec2(0.5)) * vec2(2.*PI,PI);\
+           \
+          float rt = superFormula(a,b,m, n1, n2, n3, uv.x);\
+          float rp = superFormula(ab,bb,mb, n1b, n2b, n3b, uv.y);\
+          float st = sin(uv.x);\
+          float ct = cos(uv.x);\
+          float sp = sin(uv.y);\
+          float cp = cos(uv.y);\
+           \
+          vec4 pos;\
+          pos.x = rt * ct * rp * cp;\
+          pos.z = rt * st * rp * cp;\
+          pos.y = rp * sp;\
+          pos.w=1.;\
+                \
+          texCoord = _texCoord;\
+          pos=matrix*pos;\
+          gl_Position = pos/pos.w;\
+      }','\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
           vec4 rgba = texture2D(texture, texCoord);\
           gl_FragColor = rgba;\
         }\
-    ');
+      ');
+      var uvs=[];
+      for (sv=-Math.PI/2,i=0;sv<=Math.PI/2;sv+=Math.PI/50,i++) { 
+          for (su=-Math.PI,j=0;su<=Math.PI;su+=Math.PI/100,j++) { 
+          
+              var u=su/Math.PI/2+0.5;
+              var v=sv/Math.PI+0.5;
 
-  var supershape_p=function(u,v) {
-      var point = [];
-
-      var p=v;
-      var s=u;
-
-      var f, e, n, d, t, a, q, m, l, k, h;
-      var c = 0;
-      var o = 0;
-      var u = 0;
-      f = Math.cos(m1 * s / 4);
-      f = 1 / a1 * Math.abs(f);
-      f = Math.abs(f);
-      e = Math.sin(m1 * s / 4);
-      e = 1 / b1 * Math.abs(e);
-      e = Math.abs(e);
-      m = Math.pow(f, n21);
-      l = Math.pow(e, n31);
-      d = m + l;
-      t = Math.abs(d);
-      t = Math.pow(t, (-1 / n11));
-      f = Math.cos(m2 * p / 4);
-      f = 1 / a2 * Math.abs(f);
-      f = Math.abs(f);
-      e = Math.sin(m2 * p / 4);
-      e = 1 / b2 * Math.abs(e);
-      e = Math.abs(e);
-      k = Math.pow(f, n22);
-      h = Math.pow(e, n32);
-      a = k + h;
-      q = Math.abs(a);
-      q = Math.pow(q, (-1 / n12));
-      point.x = t * Math.cos(s) * q * Math.cos(p);
-      point.y = t * Math.sin(s) * q * Math.cos(p);
-      point.z = q * Math.sin(p);
-
-      return point;
-  }
-
-    var vertices=[];
-    var uvs=[];
-
-    for (sv=-Math.PI/2,i=0;sv<=Math.PI/2;sv+=Math.PI/25,i++) { 
-        for (su=-Math.PI,j=0;su<=Math.PI;su+=Math.PI/50,j++) { 
-        
-            var u=su/Math.PI/2+0.5;
-            var v=sv/Math.PI+0.5;
-
-            var sv2=sv-Math.PI/25;
-            var v2=sv2/Math.PI+0.5;
-        
-            var p1 = supershape_p(su,sv);
-            vertices.push(p1.x,p1.z,p1.y);
-            uvs.push(u,v);
-
-            var p2 = supershape_p(su,sv2);
-            vertices.push(p2.x,p2.z,p2.y);
-            uvs.push(u,v2);
-                
-        }
+              var sv2=sv-Math.PI/25;
+              var v2=sv2/Math.PI+0.5;
+          
+              uvs.push(u,v);
+              uvs.push(u,v2);                  
+          }
+      }
+      gl.supershape.attributes({_texCoord:uvs},{_texCoord:2});
     }
-
+       
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
-
     var matrix=mat4.identity();
     mat4.translate(matrix,[0,0,-5.]);
     mat4.rotate(matrix,angleX,[1.0,0.0,0.0]);
@@ -2362,16 +2373,18 @@ function supershape(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
     mat4.multiply(proj,matrix,matrix);
     
     var uniforms={
+      a: a1, b: b1, m:m1, n1:n11, n2:n21, n3:n31,
+      ab: a2, bb: b2, mb:m2, n1b:n12, n2b:n22, n3b:n32,
       matrix:matrix
     };
 
-  
+    var supershapeMeshUVs=this._.supershapeMeshUVs;
     this._.texture.use(0);
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.supershape.uniforms(uniforms).drawTriangles(vertices,uvs);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
+        gl.supershape.uniforms(uniforms).drawTriangles();
         gl.disable(gl.DEPTH_TEST);
     },true);
     this._.spareTexture.swapWith(this._.texture);
@@ -2454,7 +2467,6 @@ function ripple(fx,fy,angle,amplitude) {
 // src/filters/video/mesh_displacement.js
 function mesh_displacement(sx,sy,sz,anglex,angley,anglez) {
     gl.mesh_displacement = gl.mesh_displacement || new Shader('\
-    attribute vec3 vertex;\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
     uniform mat4 matrix;\
@@ -2463,25 +2475,23 @@ function mesh_displacement(sx,sy,sz,anglex,angley,anglez) {
     void main() {\
         texCoord = _texCoord;\
         vec3 dis = texture2D(displacement_map, _texCoord).xyz-0.5;\
-        vec4 pos=matrix * (vec4(vertex+dis*strength,1.0));\
+        vec4 pos=matrix * (vec4(vec3(_texCoord,0.0)+dis*strength,1.0));\
         gl_Position = pos/pos.w;\
     }');
 
     // generate grid mesh
-    if(!this._.gridMeshVertices)
+    if(!this._.gridMeshUvs)
     {
-      this._.gridMeshVertices=[];
       this._.gridMeshUvs=[];
-      var dx=1./160.;
-      var dy=1./100.;    
+      var dx=1./640.;
+      var dy=1./480.;    
       for (var y=0;y<=1.0;y+=dy) {
           for (var x=0;x<=1.0;x+=dx) {        
-              this._.gridMeshVertices.push(x,y,0);
               this._.gridMeshUvs.push(x,y);
-              this._.gridMeshVertices.push(x,y-dy,0);
               this._.gridMeshUvs.push(x,y-dy);
           }
       }
+      gl.mesh_displacement.attributes({_texCoord:this._.gridMeshUvs},{_texCoord:2});
     }
 
     // perspective projection matrix
@@ -2508,15 +2518,13 @@ function mesh_displacement(sx,sy,sz,anglex,angley,anglez) {
     texture.use(1);
     gl.mesh_displacement.textures({displacement_map: 0, texture: 1});
 
-    var vertices=this._.gridMeshVertices;
-    var uvs=this._.gridMeshUvs;
     
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.mesh_displacement.drawTriangles(vertices,uvs);
+        gl.mesh_displacement.drawTriangles();
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture
@@ -3629,6 +3637,7 @@ function patch_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
               this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
           }
       }
+      gl.patch_displacement.attributes({vertex: this._.gridPatchesVertices,_texCoord:this._.gridPatchesUvs},{vertex: 3, _texCoord:2});
     }
 
     // perspective projection matrix
@@ -3657,15 +3666,12 @@ function patch_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     texture.use(1);
     gl.patch_displacement.textures({displacement_map: 0, texture: 1});
 
-    var vertices=this._.gridPatchesVertices;
-    var uvs=this._.gridPatchesUvs;
-    
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.patch_displacement.drawTriangles(vertices,uvs,gl.TRIANGLES);
+        gl.patch_displacement.drawTriangles(gl.TRIANGLES);
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture
@@ -5474,6 +5480,8 @@ var Shader = (function() {
     function Shader(vertexSource, fragmentSource) {
         this.vertexAttribute = null;
         this.texCoordAttribute = null;
+        this._attributes={};
+        this._element_count=0;
         this.program = gl.createProgram();
         vertexSource = vertexSource || defaultVertexSource;
         fragmentSource = fragmentSource || defaultFragmentSource;
@@ -5563,31 +5571,37 @@ var Shader = (function() {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
 
-    Shader.prototype.drawTriangles = function(vertices,uvs,mode){
-        if (this.vertexBuffer == null) 
-            this.vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-        if (this.texCoordBuffer == null) 
-            this.texCoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+    Shader.prototype.attributes=function(attributes,sizes){
+      for(key in attributes)
+      {
+        var attribute=this._attributes[key];
+        if(!attribute)
+        {
+          attribute={};
+          attribute.buffer=gl.createBuffer();
+          attribute.location=gl.getAttribLocation(this.program, key);
+          attribute.size=sizes[key];
+          gl.enableVertexAttribArray(attribute.location);          
+          this._attributes[key]=attribute;
+        }
 
-        if (this.vertexAttribute == null) {
-            this.vertexAttribute = gl.getAttribLocation(this.program, 'vertex');
-            gl.enableVertexAttribArray(this.vertexAttribute);
-        }
-        if (this.texCoordAttribute == null) {
-            this.texCoordAttribute = gl.getAttribLocation(this.program, '_texCoord');
-            gl.enableVertexAttribArray(this.texCoordAttribute);
-        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(attributes[key]), gl.STATIC_DRAW);
+        this._element_count=attributes[key].length/attribute.size;
+      }
+    }
+
+    Shader.prototype.drawTriangles = function(mode){
+    
         gl.useProgram(this.program);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.vertexAttribPointer(this.vertexAttribute, 3, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
-        gl.vertexAttribPointer(this.texCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(mode ? mode : gl.TRIANGLE_STRIP, 0, vertices.length/3);
+        for(key in this._attributes)
+        {
+          var attribute=this._attributes[key];
+          gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+          gl.vertexAttribPointer(attribute.location, attribute.size, gl.FLOAT, false, 0, 0);          
+        }
+        gl.drawArrays(mode ? mode : gl.TRIANGLE_STRIP, 0, this._element_count);
     };
 
 
