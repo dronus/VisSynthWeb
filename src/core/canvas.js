@@ -64,9 +64,9 @@ function initialize(width, height) {
    are used.
 */
 function draw(texture, width, height) {
-    if (!this._.isInitialized || texture._.width != this.width || texture._.height != this.height) {
+   /* if (!this._.isInitialized || texture._.width != this.width || texture._.height != this.height) {
         initialize.call(this, width ? width : texture._.width, height ? height : texture._.height);
-    }
+    }*/
 
     texture._.use();
     this._.texture.drawTo(function() {
