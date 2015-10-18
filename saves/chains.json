@@ -11,6 +11,156 @@
  ],
  [],
  [
+  "reactive life",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.359,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.374
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.131,
+   "birth_max": 0.206,
+   "death_min": 0.577
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.823
+  },
+  {
+   "effect": "reaction",
+   "noise_factor": 0,
+   "zoom_speed": 0,
+   "scale1": 8,
+   "scale2": 16,
+   "scale3": 32,
+   "scale4": 64
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "relief",
+   "scale2": 16,
+   "scale4": 64
+  }
+ ],
+ [
+  "smooth life",
+  {
+   "effect": "sobel",
+   "secondary": 2.849,
+   "coeff": 3.88,
+   "alpha": 0.891,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.298
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.056,
+   "birth_max": 0.237,
+   "death_min": 0.69
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.609
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "the wave",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "transform",
+   "x": -0.306,
+   "y": -0.004,
+   "scale": 0.657,
+   "angle": {
+    "type": "osc",
+    "f": 1.14,
+    "a": -0.259,
+    "p": 0,
+    "o": -0.46
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "transform",
+   "x": 0.131,
+   "y": 0,
+   "scale": 0.577,
+   "angle": {
+    "type": "osc",
+    "f": 1.14,
+    "a": 0.374,
+    "p": 0.722,
+    "o": 0.42
+   }
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "timeshift",
+   "time": 16.608
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
   "infinity contours  2",
   {
    "effect": "motion",
@@ -139,6 +289,10 @@
   {
    "effect": "feedbackOut",
    "blend": 1
+  },
+  {
+   "effect": "timeshift",
+   "time": 12.5
   },
   {
    "effect": "transform",
@@ -293,13 +447,13 @@
     "p": 0,
     "o": 0
    },
-   "a1": 1,
-   "b1": 1,
+   "a1": 1.085,
+   "b1": 1.013,
    "m1": 5,
    "n11": 1,
    "n21": 1,
    "n31": 2,
-   "a2": 1.954,
+   "a2": 2.421,
    "b2": 1.235,
    "m2": 5,
    "n12": 1,
