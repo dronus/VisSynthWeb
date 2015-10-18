@@ -7,6 +7,32 @@
  ],
  [],
  [
+  "supershape",
+  {
+   "effect": "supershape",
+   "angleX": -0.7,
+   "angleY": {
+    "type": "osc",
+    "f": 0.1,
+    "a": 10,
+    "p": 0,
+    "o": 0
+   },
+   "a1": 1,
+   "b1": 1,
+   "m1": 5,
+   "n11": 1,
+   "n21": 1,
+   "n31": 2,
+   "a2": 1,
+   "b2": 1,
+   "m2": 5,
+   "n12": 1,
+   "n22": 1,
+   "n32": 3
+  }
+ ],
+ [
   "waveform",
   {
    "effect": "matte",
@@ -40,32 +66,6 @@
   {
    "effect": "displacement",
    "strength": 1.095
-  }
- ],
- [
-  "supershape",
-  {
-   "effect": "supershape",
-   "angleX": -0.7,
-   "angleY": {
-    "type": "osc",
-    "f": 0.1,
-    "a": 10,
-    "p": 0,
-    "o": 0
-   },
-   "a1": 1,
-   "b1": 1,
-   "m1": 5,
-   "n11": 1,
-   "n21": 1,
-   "n31": 2,
-   "a2": 1,
-   "b2": 1,
-   "m2": 5,
-   "n12": 1,
-   "n22": 1,
-   "n32": 3
   }
  ],
  [
