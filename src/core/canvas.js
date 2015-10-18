@@ -192,6 +192,7 @@ exports.canvas = function() {
     canvas.blend=wrap(blend);
     canvas.blend_alpha=wrap(blend_alpha);
     canvas.colorkey=wrap(colorkey);
+    canvas.lumakey=wrap(lumakey);
     canvas.displacement=wrap(displacement);
     canvas.mesh_displacement=wrap(mesh_displacement);
     canvas.patch_displacement=wrap(patch_displacement);
