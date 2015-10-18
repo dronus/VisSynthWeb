@@ -113,6 +113,19 @@
       onSourcesAcquired([]);
 
 
+    // let the remote change the source device mapping
+    var device_mapping={};
+    function map_video(source,target)
+    {
+      device_mapping[parseInt(source)]=parseInt(target);
+    }
+    
+    var audio_device_index=0;
+    function select_audio(device_index)
+    {
+      audio_device_index=parseInt(device_index);
+    }
+
     // get the video feed from a capture device name by source_index into source_ids
     // opens the capture device and starts streaming on demand
     // the consumer may receive a still starting <video> object, so it has to add and handle 'canplay' event before properties like videoWidth are read.
@@ -126,7 +139,6 @@
       var device_mapping=document.location.hash.substring(1);
       if(device_mapping) device_mapping=JSON.parse(device_mapping);
       */
-      var device_mapping={0:2};
       if(device_mapping[source_index]) 
         source_index=device_mapping[source_index];
         
@@ -153,7 +165,7 @@
       // for now, we just take the first device queried
       if(!audio_found)
       {
-        constraints.audio={optional:[{sourceId:source_ids.audio[source_index]}]};
+        constraints.audio={optional:[{sourceId:source_ids.audio[audio_device_index]}]};
         audio_found=true;
       }
 
@@ -273,9 +285,7 @@
     // set effect chain to render
     function setChain(effects)
     {
-      effects.shift(); // remove name
       effects.unshift({'effect':'stack_prepare'});    
-      effects.unshift({'effect':'capture'});
       var havePreview=false;
       for(var i=0; i<effects.length; i++)
         if(effects[i].effect=='preview')
@@ -287,7 +297,8 @@
       // create JS chain function source code
       var src='var _=function(c,t){with(c){';
       for (var i=0; i<effects.length; i++)
-        src+=generate_code(effects[i]);
+        if(typeof(effects[i])!='string')  // skip names
+          src+=generate_code(effects[i]);
       src+='}};_';
 
       // compile chain
@@ -309,14 +320,15 @@
       screenshot_cycle=1;
     }
     
-    // load startup chain (first one of chains.json)
+    // load startup chain (first three of chains.json : setup pre, current, setup after)
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open('GET','saves'+session_url+'chains.json',false);
-    xmlHttp.send(null);   
+    xmlHttp.send(null);
     if(xmlHttp.responseText)
     { 
       var chains=JSON.parse(xmlHttp.responseText);
-      setChain(chains[0] ? chains[0] : []);
+      var full_chain=chains[0].concat(chains[2],chains[1]);
+      setChain(full_chain);
     }
     
   </script>

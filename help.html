@@ -34,6 +34,14 @@
   <div help_for=".chain .effect">
     A chained video effect. Drag to reorder it. Click to adjust parameters.
   </div>
+
+  <div help_for=".pre_chain">
+    The pre-chain setup. This chain runs before the currently active chain. Place select_audio and map_video here. Usually this ends with a capture item.
+  </div>
+  <div help_for=".post_chain">
+    The post-chain setup. This chain will be run after the currently active chain. Useful for location specific setup like correction by the perspective effect.
+  </div>
+
   
   <div help_for=".effects h3">
     This list contains effect modules, that can be added to the chain by dragging them into it.
@@ -55,6 +63,15 @@
   </div>
   <div help_for=".effect[ui_inputs='3']">
     A video effect with three inputs, also consumes two images from the stack. Don't forget to add two push_stack's somewhere above.
+  </div>
+  <div help_for=".effect[ui_inputs='0'][ui_outputs='0']">
+    A setup item, does not manipulate the image itself.
+  </div>
+  <div help_for=".effect[ui_effect='select_audio']">
+    An audio source selector. Sets the audio device used for BEAT oscilators, waveform and spectrogram effects.
+  </div>
+  <div help_for=".effect[ui_effect='map_video']">
+    A video source mapping. Allows to replace a single video capture device number by another device. Useful to adapt changing camera setups.
   </div>
 
   <div help_for=".adjust_ui">
