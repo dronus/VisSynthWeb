@@ -1,11 +1,33 @@
 [
  [
   {
+   "effect": "select_audio",
+   "audio_device": 2.332
+  },
+  {
    "effect": "capture",
    "device": 0
+  },
+  {
+   "effect": "levels",
+   "min": 0,
+   "gamma": 0.609,
+   "max": 1,
+   "r_min": 0,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1,
+   "g_max": 1,
+   "b_max": 1
   }
  ],
  [],
+ [
+  ""
+ ],
  [
   "supershape",
   {
@@ -24,8 +46,8 @@
    "n11": 1,
    "n21": 1,
    "n31": 2,
-   "a2": 1,
-   "b2": 1,
+   "a2": 1.954,
+   "b2": 1.235,
    "m2": 5,
    "n12": 1,
    "n22": 1,
@@ -124,15 +146,14 @@
  [
   "straße mit dach",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 1.023
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
+   "effect": "stack_swap"
   },
   {
    "effect": "transform",
@@ -190,22 +211,21 @@
  [
   "spectro tunnel",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 1.023
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
+   "effect": "stack_swap"
   },
   {
    "effect": "rainbow"
   },
   {
    "effect": "motion",
-   "threshold": 0.253,
+   "threshold": 0.405,
    "interval": 1,
    "damper": 0.936
   },
@@ -216,7 +236,7 @@
    "effect": "transform",
    "x": 0,
    "y": 0,
-   "scale": 0.99,
+   "scale": 0.995,
    "angle": 0
   },
   {
@@ -331,22 +351,21 @@
  [
   "spectro road",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 1.023
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
+   "effect": "stack_swap"
   },
   {
    "effect": "rainbow"
   },
   {
    "effect": "motion",
-   "threshold": 0.193,
+   "threshold": 0.206,
    "interval": 1,
    "damper": 0.936
   },
@@ -391,15 +410,14 @@
  [
   "rainbow looper",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 1.023
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
+   "effect": "stack_swap"
   },
   {
    "effect": "vibrance",
@@ -947,26 +965,6 @@
  [
   "worm trip",
   {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgb",
-    "r": 0,
-    "g": -0.01,
-    "b": -0.06
-   }
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.988
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
-  },
-  {
    "effect": "polygon",
    "sides": 37.59,
    "x": 0,
@@ -1005,6 +1003,25 @@
     "p": 0,
     "o": 0
    }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgb",
+    "r": 0,
+    "g": -0.01,
+    "b": -0.06
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.988
+  },
+  {
+   "effect": "stack_swap"
   },
   {
    "effect": "blend_alpha"
@@ -1173,6 +1190,9 @@
  [
   "pulse worm",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "matte",
    "rgb": {
     "type": "rgb",
@@ -1186,11 +1206,7 @@
    "blend": 0.988
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
+   "effect": "stack_swap"
   },
   {
    "effect": "polygon",
@@ -1247,6 +1263,9 @@
  [
   "hex worm",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "matte",
    "rgb": {
     "type": "rgb",
@@ -1258,6 +1277,29 @@
   {
    "effect": "feedbackOut",
    "blend": 0.99
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "brightnessContrast",
+   "brightness": {
+    "type": "beat",
+    "pulse": 0,
+    "f": 2,
+    "a": 1,
+    "p": 0,
+    "o": -0.7
+   },
+   "contrast": 0
+  },
+  {
+   "effect": "polygon",
+   "sides": 6.52,
+   "x": 0,
+   "y": 0,
+   "size": 0.47,
+   "angle": 0
   },
   {
    "effect": "stack_push"
@@ -1280,31 +1322,7 @@
    "angle": 0
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture",
-   "device": 0
-  },
-  {
-   "effect": "brightnessContrast",
-   "brightness": {
-    "type": "beat",
-    "pulse": 0,
-    "f": 2,
-    "a": 1,
-    "p": 0,
-    "o": -0.7
-   },
-   "contrast": 0
-  },
-  {
-   "effect": "polygon",
-   "sides": 6.52,
-   "x": 0,
-   "y": 0,
-   "size": 0.47,
-   "angle": 0
+   "effect": "stack_swap"
   },
   {
    "effect": "blend_alpha"
@@ -1455,8 +1473,8 @@
   },
   {
    "effect": "reaction",
-   "noise_factor": 0.28,
-   "zoom_speed": 0,
+   "noise_factor": 0,
+   "zoom_speed": 0.006,
    "scale1": 14.56,
    "scale2": 25.17,
    "scale3": 32.82,
@@ -1612,6 +1630,9 @@
  [
   "hex glitter",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "hexagonalPixelate",
    "center": {
     "type": "pos",
@@ -1682,18 +1703,33 @@
    "alpha": 0.37
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture"
+   "effect": "stack_swap"
   },
   {
    "effect": "blend",
-   "alpha": 0.64
+   "alpha": 0.839
+  },
+  {
+   "effect": "levels",
+   "min": 0,
+   "gamma": 0.856,
+   "max": 0.722,
+   "r_min": 0,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1,
+   "g_max": 1,
+   "b_max": 1
   }
  ],
  [
   "drawing",
+  {
+   "effect": "stack_push"
+  },
   {
    "effect": "denoisefast",
    "strength": 30
@@ -1708,10 +1744,7 @@
    "steps": 4
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture"
+   "effect": "stack_swap"
   },
   {
    "effect": "sobel",
@@ -1745,9 +1778,6 @@
  ],
  [
   "heartbeat",
-  {
-   "effect": "capture"
-  },
   {
    "effect": "bulgePinch",
    "center": {
@@ -1909,8 +1939,11 @@
  [
   "glitter",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "motion",
-   "threshold": 0.389,
+   "threshold": 0.192,
    "interval": 1,
    "damper": 0.71
   },
@@ -1966,14 +1999,11 @@
    "alpha": 0.374
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture"
+   "effect": "stack_swap"
   },
   {
    "effect": "blend",
-   "alpha": 0.329
+   "alpha": 0.561
   }
  ],
  [
@@ -2005,6 +2035,9 @@
  ],
  [
   "motion grid warp",
+  {
+   "effect": "stack_push"
+  },
   {
    "effect": "sobel",
    "secondary": 0.5,
@@ -2040,10 +2073,7 @@
    "angle": 0
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture"
+   "effect": "stack_swap"
   },
   {
    "effect": "motion",
@@ -2202,8 +2232,11 @@
  [
   "rainbow drunk",
   {
+   "effect": "preview"
+  },
+  {
    "effect": "motion",
-   "threshold": 0.24,
+   "threshold": 0.221,
    "interval": 1,
    "damper": 0.97
   },
