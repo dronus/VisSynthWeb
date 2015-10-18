@@ -490,7 +490,7 @@
         chains.push($(this).data('chain'));
       });
       
-      var json=JSON.stringify(chains);
+      var json=JSON.stringify(chains,null,' ');
       put('/saves'+session_url+'chains.json',json);
       undo_history.push(json);
       
