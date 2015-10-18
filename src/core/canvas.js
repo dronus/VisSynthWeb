@@ -224,16 +224,11 @@ exports.canvas = function() {
     canvas.waveform=wrap(waveform);
     canvas.spectrogram=wrap(spectrogram);
     // hexapode's filters methods
-    canvas.coloradjust = wrap(coloradjust);
     canvas.color = wrap(color);
-    canvas.exposure = wrap(exposure);
-    canvas.gamma = wrap(gamma);
-    canvas.gammaRGB = wrap(gammaRGB);
-    canvas.hue = wrap(hue);
+    canvas.levels = wrap(levels);
     canvas.absolute = wrap(absolute);
     canvas.rainbow = wrap(rainbow);    
     canvas.sobel = wrap(sobel);
-    canvas.softContrast = wrap(softContrast);
     canvas.toHSV = wrap(toHSV);
     canvas.invertColor = wrap(invertColor);
     canvas.noalpha = wrap(noalpha);
