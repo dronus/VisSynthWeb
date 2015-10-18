@@ -4614,7 +4614,7 @@ function levels(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max
 
     simpleShader.call(this, gl.levels, {
         rgb_min:[r_min+min,g_min+min,b_min+min],
-        rgb_gamma:[r_gamma+gamma,g_gamma+gamma,b_gamma+gamma],
+        rgb_gamma:[r_gamma*gamma,g_gamma*gamma,b_gamma*gamma],
         rgb_max:[r_max+max-1.,g_max+max-1.,b_max+max-1.]
     });
 
