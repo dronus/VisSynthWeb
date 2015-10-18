@@ -4270,7 +4270,7 @@ function blend(alpha,factor) {
     var texture1=this.stack_pop();
     texture1.use(1);
     gl.blend.textures({texture: 0, texture1: 1});
-    simpleShader.call(this, gl.blend, { alpha: alpha, factor: factor });
+    simpleShader.call(this, gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 });
     texture1.unuse(1);
 
     return this;
