@@ -7,26 +7,279 @@
   {
    "effect": "capture",
    "device": 0
-  },
-  {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 0.609,
-   "max": 1,
-   "r_min": 0,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1,
-   "g_max": 1,
-   "b_max": 1
   }
  ],
  [],
  [
-  ""
+  "infinity contours  2",
+  {
+   "effect": "motion",
+   "threshold": 0.176,
+   "interval": 1,
+   "damper": 0.96
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.161,
+   "coeff": 0.298,
+   "alpha": 1.031,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "timeshift",
+   "time": 12.5
+  },
+  {
+   "effect": "transform",
+   "x": -0.058,
+   "y": 0.032,
+   "scale": 0.925,
+   "angle": 0
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 2
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "infinity contours",
+  {
+   "effect": "perspective",
+   "perspective": {
+    "type": "perspective",
+    "x1": -0.814,
+    "y1": 0.146,
+    "x2": -0.715,
+    "y2": 0.772,
+    "x3": -0.428,
+    "y3": 0.146,
+    "x4": -0.397,
+    "y4": 0.886
+   }
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.161,
+   "coeff": 0.298,
+   "alpha": 1.031,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "timeshift",
+   "time": 12.5
+  },
+  {
+   "effect": "transform",
+   "x": -0.02,
+   "y": 0.002,
+   "scale": 0.977,
+   "angle": 0
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 2
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "infinity chain",
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "transform",
+   "x": -0.153,
+   "y": 0.086,
+   "scale": 0.805,
+   "angle": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "capture",
+   "device": 0
+  },
+  {
+   "effect": "perspective",
+   "perspective": {
+    "type": "perspective",
+    "x1": -0.814,
+    "y1": 0.146,
+    "x2": -0.715,
+    "y2": 0.772,
+    "x3": -0.428,
+    "y3": 0.146,
+    "x4": -0.397,
+    "y4": 0.886
+   }
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "voiceprint pure",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "spectrogram"
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": 1.57
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": -0.605,
+   "saturation": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "transform",
+   "x": -0.006,
+   "y": 0,
+   "scale": 1,
+   "angle": 0
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "spectro wave pure",
+  {
+   "effect": "spectrogram"
+  },
+  {
+   "effect": "transform",
+   "x": -0.148,
+   "y": 0,
+   "scale": 1.359,
+   "angle": 1.569
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "waveform"
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "patch_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": 1.031,
+   "anglex": 0,
+   "angley": 0,
+   "anglez": 0,
+   "scale": 1.041,
+   "pixelate": 0
+  }
+ ],
+ [
+  "displaced",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "fastBlur",
+   "size": 8.379
+  },
+  {
+   "effect": "mesh_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": -0.665,
+   "anglex": -0.079,
+   "angley": -0.004,
+   "anglez": 0
+  }
  ],
  [
   "supershape",
@@ -91,25 +344,48 @@
   }
  ],
  [
-  "levels",
+  "bloody beat",
   {
    "effect": "levels",
    "min": 0,
-   "gamma": 1.048,
+   "gamma": 1.58,
    "max": 1.013,
    "r_min": 0,
    "g_min": 0,
    "b_min": 0,
-   "r_gamma": 0.995,
+   "r_gamma": {
+    "type": "beat",
+    "pulse": -22.485,
+    "f": 0,
+    "a": 0,
+    "p": 0,
+    "o": 1.013
+   },
    "g_gamma": 0.925,
    "b_gamma": 0.805,
    "r_max": 0.995,
    "g_max": 0.977,
    "b_max": 1
+  },
+  {
+   "effect": "zoomBlur",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "size": {
+    "type": "beat",
+    "pulse": 3.033,
+    "f": 0,
+    "a": 0,
+    "p": 0,
+    "o": 0
+   }
   }
  ],
  [
-  "spentro",
+  "cushions",
   {
    "effect": "timeshift",
    "time": {
@@ -129,22 +405,16 @@
   },
   {
    "effect": "mesh_displacement",
-   "sx": 0,
+   "sx": 0.251,
    "sy": 0,
-   "sz": {
-    "type": "osc",
-    "f": 7.312,
-    "a": 0.1715,
-    "p": 0,
-    "o": 0.343
-   },
-   "anglex": 0,
+   "sz": 0.343,
+   "anglex": 0.756,
    "angley": 0,
    "anglez": 0
   }
  ],
  [
-  "straße mit dach",
+  "road roof",
   {
    "effect": "stack_push"
   },
@@ -294,7 +564,7 @@
   }
  ],
  [
-  "straße mit dach",
+  "spectro road roof",
   {
    "effect": "feedbackOut",
    "blend": 1.023
@@ -497,7 +767,7 @@
    "x": -0.148,
    "y": 0,
    "scale": 1.359,
-   "angle": 1.586
+   "angle": 1.575
   },
   {
    "effect": "rainbow"
@@ -517,18 +787,18 @@
   },
   {
    "effect": "blend",
-   "alpha": 0.5
+   "alpha": 0.53
   },
   {
    "effect": "stack_push"
   },
   {
    "effect": "patch_displacement",
-   "sx": 0.119,
-   "sy": 0.163,
-   "sz": 0.1,
+   "sx": 0,
+   "sy": 0,
+   "sz": 1.031,
    "anglex": 0,
-   "angley": 0.512,
+   "angley": 0,
    "anglez": 0,
    "scale": 1.041,
    "pixelate": 0.954
