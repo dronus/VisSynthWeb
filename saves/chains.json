@@ -6,10 +6,94 @@
   },
   {
    "effect": "capture",
-   "device": 0
+   "device": 0.237
   }
  ],
  [],
+ [
+  ""
+ ],
+ [
+  "spectro particles",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "spectrogram"
+  },
+  {
+   "effect": "transform",
+   "x": -0.148,
+   "y": 0,
+   "scale": 1.359,
+   "angle": 1.575
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "waveform"
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.805,
+   "saturation": 0
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "particles",
+   "anglex": 0.221,
+   "angley": 0,
+   "anglez": 0,
+   "size": 15,
+   "strength": 1.067,
+   "homing": 0.086,
+   "noise": 1,
+   "displacement": 0.116
+  }
+ ],
+ [
+  "motion particles",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "motion",
+   "threshold": 0.176,
+   "interval": 1,
+   "damper": 0.977
+  },
+  {
+   "effect": "fastBlur",
+   "size": 2.61
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "particles",
+   "anglex": 0.873,
+   "angley": 0,
+   "anglez": 0,
+   "size": 8.379,
+   "strength": 0.995,
+   "homing": 0.01,
+   "noise": 0.011,
+   "displacement": -0.004
+  }
+ ],
  [
   "reactive life",
   {
