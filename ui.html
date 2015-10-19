@@ -47,9 +47,8 @@
   </div>
 
   <div class="preview container" onclick="toggle_preview()">
-    <button>PREVIEW</button>  
+    <button>PREVIEW</button> <span id=stats></span>
     <img id=preview></img>
-    <div id=stats></div>
   </div>
   
   <div id=help></div>
@@ -222,10 +221,6 @@
       width:280px;
       padding: 2px;
       margin: 0px;
-    }
-    .chain h2::before
-    {
-      content: 'Chain '
     }
     #chain, #pre_chain, #post_chain
     {
@@ -811,7 +806,6 @@
       $('#chains .active').data('chain',chain);
 
       // send out to control server
-      console.log(JSON.stringify(full_chain));
       send('setChain('+JSON.stringify(full_chain)+')');
     }
 
