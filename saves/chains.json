@@ -2,7 +2,7 @@
  [
   {
    "effect": "select_audio",
-   "audio_device": 2.332
+   "audio_device": 1.538
   },
   {
    "effect": "capture",
