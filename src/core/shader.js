@@ -157,7 +157,7 @@ var Shader = (function() {
           gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
           gl.vertexAttribPointer(attribute.location, attribute.size, gl.FLOAT, false, 0, 0);          
         }
-        gl.drawArrays(mode ? mode : gl.TRIANGLE_STRIP, 0, this._element_count);
+        gl.drawArrays(typeof(mode)!='undefined' ? mode : gl.TRIANGLE_STRIP, 0, this._element_count);
     };
 
 
