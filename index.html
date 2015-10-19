@@ -75,10 +75,12 @@
       }
       else if(preview_cycle==2)
       {          
-        var pixels=preview_canvas.toDataURL('image/jpeg');    
-        put('preview',pixels);
+        var jpeg=preview_canvas.toDataURL('image/jpeg');
+	var data={frame_time:frame_time, jpeg:jpeg};
+	var json=JSON.stringify(data);
+        put('preview',json);
       
-        preview_cycle=0;
+        preview_cycle=1;
       }     
 
       // redraw visible canvas
@@ -307,10 +309,10 @@
     }
     
     // receive preview request from remote       
-    function preview()
+    function preview(enabled)
     {
       // engage preview process
-      preview_cycle=1;
+      preview_cycle=enabled ? 1 : 0;
     }
     
     // receive screenshot request from remote

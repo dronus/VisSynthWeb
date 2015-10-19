@@ -18,7 +18,7 @@ var server=http.createServer(function (req, res) {
   if(req.method=='PUT')
   {
     // a new value is given, fetch body data and store it
-    if(!data[key]) data[key]='';
+    data[key]='';
     req.on('data',function(chunk){data[key]+=chunk;});
     req.on('end' ,function()
     {    
