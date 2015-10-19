@@ -3578,48 +3578,62 @@ function smoothlife(birth_min,birth_max,death_min) {
 
 
 // src/filters/video/particle_displacement.js
-function particle_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
-    gl.particle_displacement = gl.particle_displacement || new Shader('\
+function particles(anglex,angley,anglez,size,strength,homing,noise,displacement) {
+    gl.particles = gl.particles || new Shader('\
     attribute vec2 _texCoord;\
     uniform sampler2D texture;\
     uniform mat4 matrix;\
-    uniform sampler2D displacement_map;\
-    uniform vec3 strength;\
-    uniform float scale;\
+    uniform sampler2D particles;\
+    uniform float strength;\
+    uniform float size;\
     varying vec4 rgba;\
     void main() {\
-        vec3 dis = texture2D(displacement_map, _texCoord).xyz-0.5;\
-        vec4 pos=matrix * (vec4((vec3(_texCoord,0.0)+dis*strength)*scale,1.0));\
+        vec3 loc = texture2D(particles, _texCoord).xyz-0.5;\
+        loc=mix(vec3(_texCoord,0.0),loc,strength);\
+        vec4 pos=matrix * vec4(loc,1.0);\
         gl_Position = pos/pos.w;\
-        gl_PointSize=20./pos.w;\
+        gl_PointSize=size/pos.w;\
         rgba = texture2D(texture, _texCoord);\
     }','\
     varying vec4 rgba;\
     void main() {\
       vec2 uv=gl_PointCoord;\
       float d=2.*max(0.,0.5-length(uv-vec2(0.5)));\
-      gl_FragColor = vec4(rgba.rgb,rgba.a*d);\
+      gl_FragColor = vec4(rgba.rgb,rgba.a*2.*d);\
       if(rgba.a*d<.1) discard; \
     }\
     ');
 
     gl.particle_update = gl.particle_update || new Shader(null,'\
         uniform sampler2D texture;\
-        uniform sampler2D displacement;\
+        uniform sampler2D displacement_texture;\
+        uniform float homing; \
+        uniform float noise; \
+        uniform float displacement; \
         varying vec2 texCoord;\
+        vec3 noise3(vec3 t){\
+          vec3 dots=vec3(\
+            dot(t.xy ,vec2(12.9898,78.233)),\
+            dot(t.yz ,vec2(12.9898,78.233)),\
+            dot(t.zx ,vec2(12.9898,78.233))\
+          );\
+          return fract(sin(dots) * 43758.5453);\
+        }\
         void main() {\
-            vec4 data = texture2D(texture, texCoord);\
-            vec4 disp = texture2D(displacement, texCoord);\
-            vec2 inp=(data+disp).xy+texCoord;\
-            float noi=fract(sin(dot(inp ,vec2(12.9898,78.233))) * 43758.5453);\
-            vec2 d=vec2(sin(noi*10.),cos(noi*10.));\
-            data.xy+=d/50.;\
-            gl_FragColor = vec4(data.rgb,1.0);\
+            vec3 pos = texture2D(texture, texCoord).xyz-0.5;\
+            vec3 disp = texture2D(displacement_texture, texCoord).xyz-0.5;\
+            vec3 home=vec3(texCoord,0.0);\
+            vec3 uvw=(pos+disp)+home;\
+            vec3 n=noise3(uvw)-0.5;\
+            pos+=noise*n/100.;\
+            pos=mix(pos,home,homing);\
+            pos+=displacement*disp;\
+            gl_FragColor = vec4(pos+0.5,1.0);\
         }\
     ');
 
     // generate grid mesh and particle data textures
-    var w=160, h=100;
+    var w=320, h=240;
     if(!this._.particleUvs)
     {
       this._.particleUvs=[];
@@ -3630,7 +3644,7 @@ function particle_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
               this._.particleUvs.push(x,y);
           }
       }
-      gl.particle_displacement.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
+      gl.particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
       
       // generate particle data double buffer
       if ( !gl.getExtension( 'OES_texture_float' ) ) alert( 'Float textures not supported' );
@@ -3639,6 +3653,23 @@ function particle_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
         this._.particleTextureB=new Texture(w,h, gl.RGBA, gl.FLOAT);
       }
     }
+    
+    this._.particleTextureB.swapWith(this._.particleTextureA);
+
+    gl.particle_update.uniforms({
+      homing:homing,
+      noise:noise,
+      displacement:displacement
+    });             
+    var texture=this.stack_pop();
+    texture.use(0);
+    this._.particleTextureB.use(1);
+    gl.particle_update.textures({displacement_texture: 0, texture: 1});
+        
+    this._.particleTextureA.drawTo(function() { gl.particle_update.drawRect(); });
+
+
+
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -3654,32 +3685,24 @@ function particle_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     
         
     // set shader parameters
-    gl.particle_displacement.uniforms({
+    gl.particles.uniforms({
       matrix:matrix,
-      strength: [sx,sy,sz],
-      scale: scale,
+      strength:strength,
+      size:size
     });
-    
-    this._.particleTextureB.swapWith(this._.particleTextureA);
-         
-    var texture=this.stack_pop();
-    texture.use(0);
-    this._.particleTextureB.use(1);
-    gl.particle_update.textures({displacement: 0, texture: 1});    
-    this._.particleTextureA.drawTo(function() { gl.particle_update.drawRect(); });
     
     // set shader textures    
     this._.particleTextureA.use(0);
     this._.texture.use(1);
 
-    gl.particle_displacement.textures({displacement_map: 0, texture: 1});
+    gl.particles.textures({particles: 0, texture: 1});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.particle_displacement.drawTriangles(gl.POINTS);
+        gl.particles.drawTriangles(gl.POINTS);
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture
@@ -5805,7 +5828,7 @@ exports.canvas = function() {
     canvas.displacement=wrap(displacement);
     canvas.mesh_displacement=wrap(mesh_displacement);
     canvas.patch_displacement=wrap(patch_displacement);
-    canvas.particle_displacement=wrap(particle_displacement);
+    canvas.particles=wrap(particles);
     canvas.posterize=wrap(posterize);
 //    canvas.=wrap();
     canvas.superquadric=wrap(superquadric);
