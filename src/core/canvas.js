@@ -132,7 +132,7 @@ function wrap(func) {
 exports.canvas = function() {
     var canvas = document.createElement('canvas');
     try {
-        gl = canvas.getContext('experimental-webgl', { premultipliedAlpha: false });
+        gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
     } catch (e) {
         gl = null;
     }
