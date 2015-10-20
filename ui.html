@@ -1121,25 +1121,20 @@
     
       if(!preview) return;         
 
-      get('/feeds'+session_url+'preview',function(data)
+      get('/feeds'+session_url+'preview',function(json)
       {
-        if(data)
-          document.getElementById('preview').src=data;
-        requestAnimationFrame(preview_handler);          
+        if(!json) return;
+        var data=JSON.parse(json);
+        document.getElementById('preview').src=data.jpeg;
+        document.getElementById('stats').innerHTML='FPS: '+(Math.round(1000./data.frame_time));
+        requestAnimationFrame(preview_handler); 
       });
-      get('/feeds'+session_url+'frame_time',function(data){
-        if(data)
-          document.getElementById('stats').innerHTML='FPS: '+(Math.round(1000./data));
-      });
-
-      send('preview()');
     };    
     function toggle_preview(){
       preview=!preview;
+      send('preview('+preview+')');
       if(preview)
-        requestAnimationFrame(preview_handler);      
-      else
-        document.getElementById('preview').src='';
+        requestAnimationFrame(preview_handler);
     }
       
     // screenshot button      
