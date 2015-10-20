@@ -153,8 +153,8 @@ function warpShader(uniforms, warp) {
         gl_FragColor = texture2D(texture, coord / texSize);\
         vec2 clampedCoord = clamp(coord, vec2(0.0), texSize);\
         if (coord != clampedCoord) {\
-            /* fade to transparent if we are outside the image */\
-            gl_FragColor.a *= max(0.0, 1.0 - length(coord - clampedCoord));\
+            /* fade to transparent black if we are outside the image */\
+            gl_FragColor *= max(0.0, 1.0 - length(coord - clampedCoord));\
         }\
     }');
 }
@@ -3599,7 +3599,7 @@ function particles(anglex,angley,anglez,size,strength,homing,noise,displacement)
     void main() {\
       vec2 uv=gl_PointCoord;\
       float d=2.*max(0.,0.5-length(uv-vec2(0.5)));\
-      gl_FragColor = vec4(rgba.rgb,rgba.a*2.*d);\
+      gl_FragColor = rgba*2.*d;\
       if(rgba.a*d<.1) discard; \
     }\
     ');
@@ -5767,7 +5767,7 @@ function wrap(func) {
 exports.canvas = function() {
     var canvas = document.createElement('canvas');
     try {
-        gl = canvas.getContext('experimental-webgl', { premultipliedAlpha: false });
+        gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
     } catch (e) {
         gl = null;
     }

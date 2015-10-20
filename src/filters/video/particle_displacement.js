@@ -19,7 +19,7 @@ function particles(anglex,angley,anglez,size,strength,homing,noise,displacement)
     void main() {\
       vec2 uv=gl_PointCoord;\
       float d=2.*max(0.,0.5-length(uv-vec2(0.5)));\
-      gl_FragColor = vec4(rgba.rgb,rgba.a*2.*d);\
+      gl_FragColor = rgba*2.*d;\
       if(rgba.a*d<.1) discard; \
     }\
     ');
