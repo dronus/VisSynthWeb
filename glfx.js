@@ -5556,16 +5556,18 @@ var Shader = (function() {
 
     Shader.prototype.drawRect = function(left, top, right, bottom) {
         var undefined;
-        var viewport = gl.getParameter(gl.VIEWPORT);
+        
+        var  viewport = gl.current_viewport;
+          
         top = top !== undefined ? (top - viewport[1]) / viewport[3] : 0;
         left = left !== undefined ? (left - viewport[0]) / viewport[2] : 0;
         right = right !== undefined ? (right - viewport[0]) / viewport[2] : 1;
         bottom = bottom !== undefined ? (bottom - viewport[1]) / viewport[3] : 1;
-        if (gl.vertexBuffer == null) {
+        if (gl.vertexBuffer == null) 
             gl.vertexBuffer = gl.createBuffer();
-        }
         gl.bindBuffer(gl.ARRAY_BUFFER, gl.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ left, top, left, bottom, right, top, right, bottom ]), gl.STATIC_DRAW);
+
         if (gl.texCoordBuffer == null) {
             gl.texCoordBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, gl.texCoordBuffer);
@@ -5677,6 +5679,7 @@ function initialize(width, height) {
     if (this._.spareTexture) this._.spareTexture.destroy();
     this.width = width;
     this.height = height;
+    gl.current_viewport=[0, 0, width, height]; // our own viewport cache
     this._.texture = new Texture(width, height, gl.RGBA, type);
     this._.spareTexture = new Texture(width, height, gl.RGBA, type);
     this._.extraTexture = this._.extraTexture || new Texture(0, 0, gl.RGBA, type);
@@ -5875,7 +5878,7 @@ exports.splineInterpolate = splineInterpolate;
 // src/core/texture.js
 var Texture = (function() {
     Texture.fromElement = function(element) {
-        var texture = new Texture(0, 0, gl.RGBA, gl.UNSIGNED_BYTE);
+        var texture = new Texture(0, 0, gl.RGB, gl.UNSIGNED_BYTE);
         texture.loadContentsOf(element);
         return texture;
     };
@@ -5970,10 +5973,14 @@ var Texture = (function() {
           gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.depthbuffer);          
         }
         
-        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+        // TODO this forces GPU sync it seems, CPU is waiting. 
+        // If removed, the load seem to show off on another GL feedback method (eg. getParameter) .
+        /*if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
             throw new Error('incomplete framebuffer');
-        }
+        }*/
+        var base_viewport=gl.current_viewport;
         gl.viewport(0, 0, this.width, this.height);
+        gl.current_viewport=[0, 0, this.width, this.height];
 
         // do the drawing
         callback();
@@ -5981,6 +5988,7 @@ var Texture = (function() {
         // stop rendering to this texture
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.current_viewport=base_viewport;
     };
 
     var canvas = null;

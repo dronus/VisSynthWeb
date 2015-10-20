@@ -96,16 +96,18 @@ var Shader = (function() {
 
     Shader.prototype.drawRect = function(left, top, right, bottom) {
         var undefined;
-        var viewport = gl.getParameter(gl.VIEWPORT);
+        
+        var  viewport = gl.current_viewport;
+          
         top = top !== undefined ? (top - viewport[1]) / viewport[3] : 0;
         left = left !== undefined ? (left - viewport[0]) / viewport[2] : 0;
         right = right !== undefined ? (right - viewport[0]) / viewport[2] : 1;
         bottom = bottom !== undefined ? (bottom - viewport[1]) / viewport[3] : 1;
-        if (gl.vertexBuffer == null) {
+        if (gl.vertexBuffer == null) 
             gl.vertexBuffer = gl.createBuffer();
-        }
         gl.bindBuffer(gl.ARRAY_BUFFER, gl.vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ left, top, left, bottom, right, top, right, bottom ]), gl.STATIC_DRAW);
+
         if (gl.texCoordBuffer == null) {
             gl.texCoordBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, gl.texCoordBuffer);
