@@ -40,7 +40,7 @@ canvas.blend_alpha=function() {
     var texture1=this.stack_pop();
     texture1.use(1);
     gl.blend_alpha.textures({texture1: 0, texture1: 1});
-    simpleShader.call(this, gl.blend_alpha, {});
+    this.simpleShader( gl.blend_alpha, {});
     texture1.unuse(1);
 
     return this;
@@ -211,7 +211,7 @@ canvas.tile=function(size,centerx,centery) {
         }\
     ');
 
-    simpleShader.call(this, gl.tile, {size:size,center: [centerx,centery]});
+    this.simpleShader( gl.tile, {size:size,center: [centerx,centery]});
 
     return this;
 }
@@ -361,7 +361,7 @@ canvas.colorDisplacement=function(angle,amplitude) {
         } \
     ');
 
-    simpleShader.call(this, gl.colorDisplacement, {
+    this.simpleShader( gl.colorDisplacement, {
         angle: angle,    
         amplitude: amplitude,
         texSize: [this.width, this.height]        
@@ -378,7 +378,7 @@ canvas.matte=function(r,g,b) {
             gl_FragColor = vec4(color,1.);\
         }\
     ');
-    simpleShader.call(this, gl.matte, {color:[r,g,b]});
+    this.simpleShader( gl.matte, {color:[r,g,b]});
     return this;
 }
 
@@ -420,7 +420,7 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
         coord += center;\
     ');
 
-    simpleShader.call(this, gl.ripple, {
+    this.simpleShader( gl.ripple, {
         xform: [
            Math.cos(angle)*fx, Math.sin(angle)*fy,
           -Math.sin(angle)*fx, Math.cos(angle)*fy
@@ -526,7 +526,7 @@ canvas.blend=function(alpha,factor) {
     var texture1=this.stack_pop();
     texture1.use(1);
     gl.blend.textures({texture: 0, texture1: 1});
-    simpleShader.call(this, gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 });
+    this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 });
     texture1.unuse(1);
 
     return this;
@@ -553,7 +553,7 @@ canvas.kaleidoscope=function(sides,angle,angle2) {
 	}\
     ');
 
-    simpleShader.call(this, gl.kaleidoscope, {sides:Math.round(sides), angle:angle, angle2:angle2});
+    this.simpleShader( gl.kaleidoscope, {sides:Math.round(sides), angle:angle, angle2:angle2});
 
     return this;
 }
@@ -587,7 +587,7 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
         }\
     ');
 
-    simpleShader.call(this, gl.mandelbrot, {
+    this.simpleShader( gl.mandelbrot, {
         xform: [
            Math.cos(angle)*scale, Math.sin(angle)*scale,
           -Math.sin(angle)*scale, Math.cos(angle)*scale
@@ -664,7 +664,7 @@ canvas.relief=function(scale2,scale4) {
         texture_blur4: 2
     });    
     
-    simpleShader.call(this, gl.relief, {
+    this.simpleShader( gl.relief, {
         texSize: [1./this.width,1./this.height],
     },texture);
 
@@ -693,7 +693,7 @@ canvas.transform=function(x,y,scale,angle) {
         }\
     ');
     
-    simpleShader.call(this, gl.transform, {
+    this.simpleShader( gl.transform, {
       translation: [x,y],
       xform: [
          Math.cos(angle)/scale, Math.sin(angle)/scale,
@@ -740,7 +740,7 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
         glow_texture: 0,
         texture: 1
     });
-    simpleShader.call(this, gl.analogize, {
+    this.simpleShader( gl.analogize, {
         Glow: glow,
         Exposure: exposure,
         Gamma: gamma
@@ -761,7 +761,7 @@ canvas.noalpha=function() {
             gl_FragColor = vec4(color.rgb,1.);\
         }\
     ');
-    simpleShader.call(this, gl.noalpha, {});
+    this.simpleShader( gl.noalpha, {});
     return this;
 }
 
@@ -816,7 +816,7 @@ canvas.feedbackOut=function(blend) {
         texture: 0,
         feedbackTexture: 1
     });
-    simpleShader.call(this, gl.feedbackOut, {
+    this.simpleShader( gl.feedbackOut, {
         blend: blend
     });
     this._.feedbackTexture.unuse(1);
@@ -863,7 +863,7 @@ canvas.motion=function(threshold,interval,damper) {
       gl.motionBlend.textures({
           motionTexture: 1
       });
-      simpleShader.call(this, gl.motionBlend, {
+      this.simpleShader( gl.motionBlend, {
           blend: damper
       },this._.texture,this._.motionTexture);
       this._.motionTexture.unuse(1);
@@ -877,7 +877,7 @@ canvas.motion=function(threshold,interval,damper) {
     gl.motion.textures({
         motionTexture: 1
     });
-    simpleShader.call(this, gl.motion, {
+    this.simpleShader( gl.motion, {
         threshold: threshold
     });
     this._.motionTexture.unuse(1);
@@ -1053,7 +1053,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         texture_blur4: 4
     });    
     
-    simpleShader.call(this, gl.reaction, {
+    this.simpleShader( gl.reaction, {
         texSize: [1./this.width,1./this.height],
         rnd: [Math.random(),Math.random(),Math.random(),Math.random()],
         noise_factor: noise_factor,
@@ -1088,7 +1088,7 @@ canvas.displacement=function(strength) {
     var texture=this.stack_pop();
     texture.use(1);
     gl.displacement.textures({displacement_map: 0, texture: 1});
-    simpleShader.call(this, gl.displacement, { strength: strength });
+    this.simpleShader( gl.displacement, { strength: strength });
     texture.unuse(1);
 
     return this;
@@ -1112,7 +1112,7 @@ canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
         }\
     ');
 
-    simpleShader.call(this, gl.gauze, {
+    this.simpleShader( gl.gauze, {
         xform: [
            Math.cos(angle)*fx, Math.sin(angle)*fy,
           -Math.sin(angle)*fx, Math.cos(angle)*fy
@@ -1165,7 +1165,7 @@ canvas.lumakey=function(threshold,feather) {
     var texture1=this.stack_pop();
     texture1.use(1);
     gl.lumakey.textures({texture: 0, texture1: 1});
-    simpleShader.call(this, gl.lumakey, { threshold: threshold, feather: feather });
+    this.simpleShader( gl.lumakey, { threshold: threshold, feather: feather });
     texture1.unuse(1);
 
     return this;
@@ -1198,7 +1198,7 @@ canvas.colorkey=function(r,g,b,threshold,feather) {
     var texture1=this.stack_pop();
     texture1.use(1);
     gl.colorkey.textures({texture: 0, texture1: 1});
-    simpleShader.call(this, gl.colorkey, { key_color:[r,g,b], threshold: threshold, feather: feather });
+    this.simpleShader( gl.colorkey, { key_color:[r,g,b], threshold: threshold, feather: feather });
     texture1.unuse(1);
 
     return this;
@@ -1242,7 +1242,7 @@ canvas.life=function() {
       }\
     ');
 
-    simpleShader.call(this, gl.life, {texSize: [this.width, this.height]});
+    this.simpleShader( gl.life, {texSize: [this.width, this.height]});
 
     return this;
 }
@@ -1277,7 +1277,7 @@ canvas.polygon=function(sides,x,y,size,angle) {
         }\
     ');
 
-    simpleShader.call(this, gl.polygon, {
+    this.simpleShader( gl.polygon, {
         size:[size*this.height/this.width,size],
         sides:Math.floor(sides),
         angle:angle,
@@ -1351,7 +1351,7 @@ canvas.rainbow=function(size, angle) {
         }\
     ');
 
-    simpleShader.call(this, gl.rainbow, {});
+    this.simpleShader( gl.rainbow, {});
 
     return this;
 }
@@ -1381,7 +1381,7 @@ canvas.grid=function(size, angle) {
         }\
     ');
 
-    simpleShader.call(this, gl.grid, {size: size, angle:angle
+    this.simpleShader( gl.grid, {size: size, angle:angle
     });
 
     return this;
@@ -1399,7 +1399,7 @@ canvas.absolute=function(size, angle) {
         }\
     ');
 
-    simpleShader.call(this, gl.absolute, {});
+    this.simpleShader( gl.absolute, {});
 
     return this;
 }
@@ -1440,7 +1440,7 @@ canvas.denoisefast=function(exponent) {
 
     // Perform five iterations for stronger results
     for (var i = 0; i < 5; i++) {
-        simpleShader.call(this, gl.denoisefast, {
+        this.simpleShader( gl.denoisefast, {
             exponent: Math.max(0, exponent),
             texSize: [this.width, this.height]
         });
@@ -1511,7 +1511,7 @@ canvas.smoothlife=function(birth_min,birth_max,death_min) {
       }\
     ');
 
-    simpleShader.call(this, gl.smoothlife, {
+    this.simpleShader( gl.smoothlife, {
       birth_min:birth_min,
       birth_max:birth_max,
       death_min:death_min,
@@ -1877,7 +1877,7 @@ canvas.matrixWarp=function(matrix, inverse, useTextureSpace) {
         throw 'can only warp with 2x2 or 3x3 matrix';
     }
 
-    simpleShader.call(this, gl.matrixWarp, {
+    this.simpleShader( gl.matrixWarp, {
         matrix: inverse ? getInverse(matrix) : matrix,
         texSize: [this.width, this.height],
         useTextureSpace: useTextureSpace | 0
@@ -1917,7 +1917,7 @@ canvas.swirl=function(centerX, centerY, radius, angle) {
         coord += center;\
     ');
 
-    simpleShader.call(this, gl.swirl, {
+    this.simpleShader( gl.swirl, {
         radius: radius,
         center: [centerX, centerY],
         angle: angle,
@@ -1955,7 +1955,7 @@ canvas.bulgePinch=function(centerX, centerY, radius, strength) {
         coord += center;\
     ');
 
-    simpleShader.call(this, gl.bulgePinch, {
+    this.simpleShader( gl.bulgePinch, {
         radius: radius,
         strength: clamp(-1, strength, 1),
         center: [centerX, centerY],
@@ -2009,7 +2009,7 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
         }\
     ');
 
-    simpleShader.call(this, gl.zoomBlur, {
+    this.simpleShader( gl.zoomBlur, {
         center: [centerX, centerY],
         strength: strength,
         texSize: [this.width, this.height]
@@ -2058,10 +2058,10 @@ canvas.triangleBlur=function(radius) {
         }\
     ');
 
-    simpleShader.call(this, gl.triangleBlur, {
+    this.simpleShader( gl.triangleBlur, {
         delta: [radius / this.width, 0]
     });
-    simpleShader.call(this, gl.triangleBlur, {
+    this.simpleShader( gl.triangleBlur, {
         delta: [0, radius / this.height]
     });
 
@@ -2090,7 +2090,7 @@ canvas.dilate=function(iterations) {
     ');
 
     for(var i=0; i<iterations; i++)
-      simpleShader.call(this, gl.dilate, {texSize: [this.width, this.height]});
+      this.simpleShader( gl.dilate, {texSize: [this.width, this.height]});
 
     return this;
 }
@@ -2159,16 +2159,16 @@ canvas.localContrast=function(radius,strength) {
     var delta=Math.sqrt(radius);
 
     for(var i=0; i<steps; i++)
-      simpleShader.call(this, gl.localContrastMin, { delta: [delta/this.width, delta/this.height]}, min_image, min_image);
+      this.simpleShader( gl.localContrastMin, { delta: [delta/this.width, delta/this.height]}, min_image, min_image);
 
     for(var i=0; i<steps; i++)
-      simpleShader.call(this, gl.localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
+      this.simpleShader( gl.localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
 
   
     min_image.use(1);
     max_image.use(2);
     gl.localContrast.textures({min_texture:1, max_texture:2});
-    simpleShader.call(this, gl.localContrast, {strength:strength},original_image);
+    this.simpleShader( gl.localContrast, {strength:strength},original_image);
     
     this.stack_pop();
     this.stack_pop();    
@@ -2200,7 +2200,7 @@ canvas.erode=function(iterations) {
     ');
 
     for(var i=0; i<iterations; i++)
-      simpleShader.call(this, gl.erode, {texSize: [this.width, this.height]});
+      this.simpleShader( gl.erode, {texSize: [this.width, this.height]});
 
     return this;
 }
@@ -2288,26 +2288,26 @@ canvas.lensBlur=function(radius, brightness, angle) {
     var power = Math.pow(10, clamp(-1, brightness, 1));
 
     // Remap the texture values, which will help make the bokeh effect
-    simpleShader.call(this, gl.lensBlurPrePass, {
+    this.simpleShader( gl.lensBlurPrePass, {
         power: power
     });
 
     // Blur two rhombi in parallel into extraTexture
     this._.extraTexture.ensureFormat(this._.texture);
-    simpleShader.call(this, gl.lensBlur0, {
+    this.simpleShader( gl.lensBlur0, {
         delta0: dir[0]
     }, this._.texture, this._.extraTexture);
-    simpleShader.call(this, gl.lensBlur1, {
+    this.simpleShader( gl.lensBlur1, {
         delta0: dir[1],
         delta1: dir[2]
     }, this._.extraTexture, this._.extraTexture);
 
     // Blur the last rhombus and combine with extraTexture
-    simpleShader.call(this, gl.lensBlur0, {
+    this.simpleShader( gl.lensBlur0, {
         delta0: dir[1]
     });
     this._.extraTexture.use(1);
-    simpleShader.call(this, gl.lensBlur2, {
+    this.simpleShader( gl.lensBlur2, {
         power: 1 / power,
         delta0: dir[2]
     });
@@ -2334,7 +2334,7 @@ canvas.fastBlur=function(radius) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2))
     {
-      simpleShader.call(this, gl.fastBlur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( gl.fastBlur, { delta: [d/this.width, d/this.height]});
     }
     return this;
 }
@@ -2399,7 +2399,7 @@ canvas.tiltShift=function(startX, startY, endX, endY, blurRadius, gradientRadius
     var dx = endX - startX;
     var dy = endY - startY;
     var d = Math.sqrt(dx * dx + dy * dy);
-    simpleShader.call(this, gl.tiltShift, {
+    this.simpleShader( gl.tiltShift, {
         blurRadius: blurRadius,
         gradientRadius: gradientRadius,
         start: [startX, startY],
@@ -2407,7 +2407,7 @@ canvas.tiltShift=function(startX, startY, endX, endY, blurRadius, gradientRadius
         delta: [dx / d, dy / d],
         texSize: [this.width, this.height]
     });
-    simpleShader.call(this, gl.tiltShift, {
+    this.simpleShader( gl.tiltShift, {
         blurRadius: blurRadius,
         gradientRadius: gradientRadius,
         start: [startX, startY],
@@ -2454,7 +2454,7 @@ canvas.unsharpMask=function(radius, strength) {
     gl.unsharpMask.textures({
         originalTexture: 1
     });
-    simpleShader.call(this, gl.unsharpMask, {
+    this.simpleShader( gl.unsharpMask, {
         strength: strength
     });
     this._.extraTexture.unuse(1);
@@ -2488,7 +2488,7 @@ canvas.noise=function(amount) {
         }\
     ');
 
-    simpleShader.call(this, gl.noise, {
+    this.simpleShader( gl.noise, {
         amount: clamp(0, amount, 1)
     });
 
@@ -2521,7 +2521,7 @@ canvas.color=function(alpha,r,g,b) {
         }\
     ');
 
-    simpleShader.call(this, gl.color, {
+    this.simpleShader( gl.color, {
        r  : r,
        g  : g,
        b  : b,
@@ -2566,7 +2566,7 @@ canvas.denoise=function(exponent) {
 
     // Perform two iterations for stronger results
     for (var i = 0; i < 2; i++) {
-        simpleShader.call(this, gl.denoise, {
+        this.simpleShader( gl.denoise, {
             exponent: Math.max(0, exponent),
             texSize: [this.width, this.height]
         });
@@ -2598,7 +2598,7 @@ canvas.vignette=function(size, amount) {
         }\
     ');
 
-    simpleShader.call(this, gl.vignette, {
+    this.simpleShader( gl.vignette, {
         size: clamp(0, size, 1),
         amount: clamp(0, amount, 1)
     });
@@ -2627,7 +2627,7 @@ canvas.vibrance=function(amount) {
         }\
     ');
 
-    simpleShader.call(this, gl.vibrance, {
+    this.simpleShader( gl.vibrance, {
         amount: clamp(-1, amount, 1)
     });
 
@@ -2695,7 +2695,7 @@ canvas.curves=function(red, green, blue) {
     gl.curves.textures({
         map: 1
     });
-    simpleShader.call(this, gl.curves, {});
+    this.simpleShader( gl.curves, {});
 
     return this;
 }
@@ -2720,7 +2720,7 @@ canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma
         }\
     ');
 
-    simpleShader.call(this, gl.levels, {
+    this.simpleShader( gl.levels, {
         rgb_min:[r_min+min,g_min+min,b_min+min],
         rgb_gamma:[r_gamma*gamma,g_gamma*gamma,b_gamma*gamma],
         rgb_max:[r_max+max-1.,g_max+max-1.,b_max+max-1.]
@@ -2754,7 +2754,7 @@ canvas.sepia=function(amount) {
         }\
     ');
 
-    simpleShader.call(this, gl.sepia, {
+    this.simpleShader( gl.sepia, {
         amount: clamp(0, amount, 1)
     });
 
@@ -2806,7 +2806,7 @@ canvas.hueSaturation=function(hue, saturation) {
         }\
     ');
 
-    simpleShader.call(this, gl.hueSaturation, {
+    this.simpleShader( gl.hueSaturation, {
         hue: clamp(-1, hue, 1),
         saturation: clamp(-1, saturation, 1)
     });
@@ -2839,7 +2839,7 @@ canvas.brightnessContrast=function(brightness, contrast) {
         }\
     ');
 
-    simpleShader.call(this, gl.brightnessContrast, {
+    this.simpleShader( gl.brightnessContrast, {
         brightness: clamp(-1, brightness, 1),
         contrast: clamp(-1, contrast, 1)
     });
@@ -2911,7 +2911,7 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
         }\
     ');
 
-    simpleShader.call(this, gl.sobel, {
+    this.simpleShader( gl.sobel, {
         secondary : secondary,
         coef : coef,
         alpha : alpha,
@@ -2941,7 +2941,7 @@ canvas.posterize=function(steps) {
         }\
     ');
 
-    simpleShader.call(this, gl.posterize, { steps: Math.round(steps) });
+    this.simpleShader( gl.posterize, { steps: Math.round(steps) });
 
     return this;
 }
@@ -2962,7 +2962,7 @@ canvas.mirror=function() {
         }\
     ');
 
-    simpleShader.call(this, gl.mirror, {  
+    this.simpleShader( gl.mirror, {  
     });
 
     return this;
@@ -3032,10 +3032,10 @@ canvas.edgeWork=function(radius) {
         }\
     ');
 
-    simpleShader.call(this, gl.edgeWork1, {
+    this.simpleShader( gl.edgeWork1, {
         delta: [radius / this.width, 0]
     });
-    simpleShader.call(this, gl.edgeWork2, {
+    this.simpleShader( gl.edgeWork2, {
         delta: [0, radius / this.height]
     });
 
@@ -3094,7 +3094,7 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
         }\
     ');
 
-    simpleShader.call(this, gl.hexagonalPixelate, {
+    this.simpleShader( gl.hexagonalPixelate, {
         center: [centerX, centerY],
         scale: scale,
         texSize: [this.width, this.height]
@@ -3144,7 +3144,7 @@ canvas.colorHalftone=function(centerX, centerY, angle, size) {
         }\
     ');
 
-    simpleShader.call(this, gl.colorHalftone, {
+    this.simpleShader( gl.colorHalftone, {
         center: [centerX, centerY],
         angle: angle,
         scale: Math.PI / size,
@@ -3195,7 +3195,7 @@ canvas.ink=function(strength) {
         }\
     ');
 
-    simpleShader.call(this, gl.ink, {
+    this.simpleShader( gl.ink, {
         strength: strength * strength * strength * strength * strength,
         texSize: [this.width, this.height]
     });
@@ -3258,7 +3258,7 @@ canvas.toHSV=function() {
         }\
     ');
 
-    simpleShader.call(this, gl.toHSV, {
+    this.simpleShader( gl.toHSV, {
 
     });
 
@@ -3279,7 +3279,7 @@ canvas.invertColor=function() {
             gl_FragColor = color;\
         }\
     ');
-    simpleShader.call(this, gl.invertColor, {});
+    this.simpleShader( gl.invertColor, {});
     return this;
 }
 // src/filters/fun/dotscreen.js
@@ -3318,7 +3318,7 @@ canvas.dotScreen=function(centerX, centerY, angle, size) {
         }\
     ');
 
-    simpleShader.call(this, gl.dotScreen, {
+    this.simpleShader( gl.dotScreen, {
         center: [centerX, centerY],
         angle: angle,
         scale: Math.PI / size,
