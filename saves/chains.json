@@ -2,16 +2,461 @@
  [
   {
    "effect": "select_audio",
-   "audio_device": 2.332
+   "audio_device": 1
   },
   {
    "effect": "capture",
-   "device": 0.237
+   "device": 0
   }
  ],
  [],
  [
   ""
+ ],
+ [
+  "plasma party",
+  {
+   "effect": "feedbackOut",
+   "blend": 0.223
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.104,
+   "birth_max": 0.359,
+   "death_min": 0.735
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.988,
+   "saturation": 0
+  },
+  {
+   "effect": "localContrast",
+   "size": 5.592,
+   "strength": -0.591
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.768
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "plazm flash",
+  {
+   "effect": "feedbackOut",
+   "blend": 0.313
+  },
+  {
+   "effect": "zoomBlur",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "size": 0.119
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.104,
+   "birth_max": 0.359,
+   "death_min": 0.735
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 1.481,
+   "saturation": 0
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.768
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "plazm crash",
+  {
+   "effect": "feedbackOut",
+   "blend": 0.178
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.104,
+   "birth_max": 0.359,
+   "death_min": 0.735
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 1,
+   "saturation": 0.784
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.768
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "plasma max",
+  {
+   "effect": "feedbackOut",
+   "blend": 0.238
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.104,
+   "birth_max": 0.343,
+   "death_min": 0.622
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 1.059,
+   "saturation": -0.119
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.686
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "van oorten plasma",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.654,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.343
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.104,
+   "birth_max": 0.343,
+   "death_min": 0.622
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 1.243,
+   "saturation": -0.163
+  },
+  {
+   "effect": "colorDisplacement",
+   "angle": 0,
+   "strength": 2.986
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.497
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "van oorten 2",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.654,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "invertColor"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.343
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.193,
+   "birth_max": 0.313,
+   "death_min": 0.622
+  },
+  {
+   "effect": "colorDisplacement",
+   "angle": 0,
+   "strength": 10.439
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.497
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "van oorten",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.654,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "invertColor"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.104
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.193,
+   "birth_max": 0.313,
+   "death_min": 0.622
+  },
+  {
+   "effect": "colorDisplacement",
+   "angle": 0,
+   "strength": 10.439
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.497
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "crosshatches",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.654,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "invertColor"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.238
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.193,
+   "birth_max": 0.313,
+   "death_min": 0.622
+  },
+  {
+   "effect": "colorDisplacement",
+   "angle": 0,
+   "strength": 3.302
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.606
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "agar",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.686,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "invertColor"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.193
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.163,
+   "birth_max": 0.236,
+   "death_min": 0.671
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0,
+   "saturation": 0
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.654
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "color clash",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.686,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.178
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.163,
+   "birth_max": 0.236,
+   "death_min": 0.671
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.389,
+   "saturation": 0.768
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.884
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "maya ife",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.868,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.735
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.163,
+   "birth_max": 0.236,
+   "death_min": 0.671
+  },
+  {
+   "effect": "erode",
+   "iterations": 1
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.703
+  },
+  {
+   "effect": "feedbackIn"
+  }
  ],
  [
   "spectro particles",
@@ -531,18 +976,18 @@
     "p": 0,
     "o": 0
    },
-   "a1": 1.085,
-   "b1": 1.013,
-   "m1": 5,
-   "n11": 1,
+   "a1": 1,
+   "b1": 1,
+   "m1": 2,
+   "n11": 0.97,
    "n21": 1,
    "n31": 2,
    "a2": 2.421,
    "b2": 1.235,
-   "m2": 5,
-   "n12": 1,
-   "n22": 1,
-   "n32": 3
+   "m2": 2.083,
+   "n12": 0.33,
+   "n22": 0.33,
+   "n32": 0.33
   }
  ],
  [
@@ -1170,6 +1615,9 @@
  [
   "diamond",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "superquadric",
    "A": 1.629,
    "B": 2.007,
@@ -1184,6 +1632,9 @@
     "p": 0,
     "o": 0
    }
+  },
+  {
+   "effect": "blend_alpha"
   }
  ],
  [
@@ -1583,9 +2034,6 @@
   {
    "effect": "feedbackOut",
    "blend": 0.88
-  },
-  {
-   "effect": "preview"
   },
   {
    "effect": "transform",
@@ -2196,41 +2644,30 @@
   },
   {
    "effect": "brightnessContrast",
-   "brightness": -0.16,
-   "contrast": 1.11
+   "brightness": -0.068,
+   "contrast": 0.868
   },
   {
    "effect": "stack_push"
   },
   {
    "effect": "fastBlur",
-   "size": 38.67
+   "size": 31.122
   },
   {
    "effect": "blend",
-   "alpha": 0.37
+   "alpha": 0.435,
+   "factor": 1
+  },
+  {
+   "effect": "preview"
   },
   {
    "effect": "stack_swap"
   },
   {
    "effect": "blend",
-   "alpha": 0.839
-  },
-  {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 0.856,
-   "max": 0.722,
-   "r_min": 0,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1,
-   "g_max": 1,
-   "b_max": 1
+   "alpha": 0.919
   }
  ],
  [
@@ -2397,7 +2834,7 @@
   "motion echo",
   {
    "effect": "feedbackOut",
-   "blend": 0.72
+   "blend": 0.735
   },
   {
    "effect": "timeshift",
