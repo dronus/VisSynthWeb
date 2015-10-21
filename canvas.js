@@ -4,37 +4,7 @@ function clamp(lo, value, hi) {
     return Math.max(lo, Math.min(value, hi));
 }
 
-function wrapTexture(texture) {
-    return {
-        _: texture,
-        loadContentsOf: function(element) {
-            // Make sure that we're using the correct global WebGL context
-            gl = this._.gl;
-            this._.loadContentsOf(element);
-        },
-        destroy: function() {
-            // Make sure that we're using the correct global WebGL context
-            gl = this._.gl;
-            this._.destroy();
-        }
-    };
-}
-
-function simpleShader(shader, uniforms, textureIn, textureOut) {
-    (textureIn || this._.texture).use();
-    this._.spareTexture.drawTo(function() {
-        shader.uniforms(uniforms).drawRect();
-    });
-    this._.spareTexture.swapWith(textureOut || this._.texture);
-}
-
-function replace(node) {
-    node.parentNode.insertBefore(this, node);
-    node.parentNode.removeChild(node);
-    return this;
-}
-
-function wrap(func) {
+/*function wrap(func) {
     return function() {
         // Make sure that we're using the correct global WebGL context
         gl = this._.gl;
@@ -43,7 +13,7 @@ function wrap(func) {
         return func.apply(this, arguments);
     };
 }
-
+*/
 canvas = function() {
     var canvas = document.createElement('canvas');
     try {
@@ -61,6 +31,22 @@ canvas = function() {
         spareTexture: null,
         flippedShader: null
     };
+
+    var wrapTexture=function(texture) {
+        return {
+            _: texture,
+            loadContentsOf: function(element) {
+                // Make sure that we're using the correct global WebGL context
+                gl = this._.gl;
+                this._.loadContentsOf(element);
+            },
+            destroy: function() {
+                // Make sure that we're using the correct global WebGL context
+                gl = this._.gl;
+                this._.destroy();
+            }
+        };
+    }
 
     canvas.texture=function(element) {
         return wrapTexture(Texture.fromElement(element));
@@ -148,7 +134,13 @@ canvas = function() {
         return array;
     }
     
-    canvas.simpleShader=simpleShader;
+    canvas.simpleShader=function(shader, uniforms, textureIn, textureOut) {
+        (textureIn || this._.texture).use();
+        this._.spareTexture.drawTo(function() {
+            shader.uniforms(uniforms).drawRect();
+        });
+        this._.spareTexture.swapWith(textureOut || this._.texture);
+    };
 
     return canvas;
 };
