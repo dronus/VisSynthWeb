@@ -646,9 +646,9 @@ canvas.relief=function(scale2,scale4) {
     ');
 
     var texture=this.stack_push();
-    this.fastBlur(scale2);
+    this.blur(scale2);
     var blur2=this.stack_push();
-    this.fastBlur(scale4);
+    this.blur(scale4);
     var blur4=this.stack_push();
 
     this.stack_pop();
@@ -735,7 +735,7 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 
     // Blur the current texture, then use the stored texture to detect edges
     this._.extraTexture.use(1);
-    this.fastBlur(radius);
+    this.blur(radius);
     gl.analogize.textures({
         glow_texture: 0,
         texture: 1
@@ -1025,13 +1025,13 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     ');
 
     var texture=this.stack_push();
-    this.fastBlur(scale1);
+    this.blur(scale1);
     var blur=this.stack_push();
-    this.fastBlur(scale2);
+    this.blur(scale2);
     var blur2=this.stack_push();
-    this.fastBlur(scale3);
+    this.blur(scale3);
     var blur3=this.stack_push();
-    this.fastBlur(scale4);
+    this.blur(scale4);
     var blur4=this.stack_push();
 
     this.stack_pop();
@@ -1829,25 +1829,25 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
  * @param after  The x and y coordinates of four points after the transform in a flat list, just
  *               like the other argument.
  */
-function getSquareToQuad(x0, y0, x1, y1, x2, y2, x3, y3) {
-    var dx1 = x1 - x2;
-    var dy1 = y1 - y2;
-    var dx2 = x3 - x2;
-    var dy2 = y3 - y2;
-    var dx3 = x0 - x1 + x2 - x3;
-    var dy3 = y0 - y1 + y2 - y3;
-    var det = dx1*dy2 - dx2*dy1;
-    var a = (dx3*dy2 - dx2*dy3) / det;
-    var b = (dx1*dy3 - dx3*dy1) / det;
-    return [
-        x1 - x0 + a*x1, y1 - y0 + a*y1, a, 0,
-        x3 - x0 + b*x3, y3 - y0 + b*y3, b, 0,
-        x0, y0, 1 , 0,
-        0,0,0,1
-    ];
-}
-
 canvas.perspective=function(before, after,use_texture_space) {
+    function getSquareToQuad(x0, y0, x1, y1, x2, y2, x3, y3) {
+        var dx1 = x1 - x2;
+        var dy1 = y1 - y2;
+        var dx2 = x3 - x2;
+        var dy2 = y3 - y2;
+        var dx3 = x0 - x1 + x2 - x3;
+        var dy3 = y0 - y1 + y2 - y3;
+        var det = dx1*dy2 - dx2*dy1;
+        var a = (dx3*dy2 - dx2*dy3) / det;
+        var b = (dx1*dy3 - dx3*dy1) / det;
+        return [
+            x1 - x0 + a*x1, y1 - y0 + a*y1, a, 0,
+            x3 - x0 + b*x3, y3 - y0 + b*y3, b, 0,
+            x0, y0, 1 , 0,
+            0,0,0,1
+        ];
+    }
+
     var a = getSquareToQuad.apply(null, after);
     var b = getSquareToQuad.apply(null, before);
     var c = mat4.multiply( b,mat4.inverse(a));
@@ -2023,56 +2023,6 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
     return this;
 }
 
-// src/filters/blur/triangleblur.js
-/**
- * @filter       Triangle Blur
- * @description  This is the most basic blur filter, which convolves the image with a
- *               pyramid filter. The pyramid filter is separable and is applied as two
- *               perpendicular triangle filters.
- * @param radius The radius of the pyramid convolved with the image.
- */
-canvas.triangleBlur=function(radius) {
-    gl.triangleBlur = gl.triangleBlur || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform vec2 delta;\
-        varying vec2 texCoord;\
-        ' + randomShaderFunc + '\
-        void main() {\
-            vec4 color = vec4(0.0);\
-            float total = 0.0;\
-            \
-            /* randomize the lookup values to hide the fixed number of samples */\
-            float offset = random(vec3(12.9898, 78.233, 151.7182), 0.0);\
-            \
-            for (float t = -30.0; t <= 30.0; t++) {\
-                float percent = (t + offset - 0.5) / 30.0;\
-                float weight = 1.0 - abs(percent);\
-                vec4 sample = texture2D(texture, texCoord + delta * percent);\
-                \
-                /* switch to pre-multiplied alpha to correctly blur transparent images */\
-                sample.rgb *= sample.a;\
-                \
-                color += sample * weight;\
-                total += weight;\
-            }\
-            \
-            gl_FragColor = color / total;\
-            \
-            /* switch back from pre-multiplied alpha */\
-            gl_FragColor.rgb /= gl_FragColor.a + 0.00001;\
-        }\
-    ');
-
-    this.simpleShader( gl.triangleBlur, {
-        delta: [radius / this.width, 0]
-    });
-    this.simpleShader( gl.triangleBlur, {
-        delta: [0, radius / this.height]
-    });
-
-    return this;
-}
-
 // src/filters/blur/dilate.js
 canvas.dilate=function(iterations) {
     gl.dilate = gl.dilate || new Shader(null, '\
@@ -2156,7 +2106,7 @@ canvas.localContrast=function(radius,strength) {
     // save current image to stack
     var original_image=this.stack_push();
     
-    this.fastBlur(radius);    
+    this.blur(radius);    
     var min_image=this.stack_push();
     var max_image=this.stack_push();
 
@@ -2320,9 +2270,9 @@ canvas.lensBlur=function(radius, brightness, angle) {
     return this;
 }
 
-// src/filters/blur/fastblur.js
-canvas.fastBlur=function(radius) {
-    gl.fastBlur = gl.fastBlur || new Shader(null, '\
+// src/filters/blur/blur.js
+canvas.blur=function(radius) {
+    gl.blur = gl.blur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2339,90 +2289,12 @@ canvas.fastBlur=function(radius) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2))
     {
-      this.simpleShader( gl.fastBlur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( gl.blur, { delta: [d/this.width, d/this.height]});
     }
     return this;
 }
 
-// src/filters/blur/tiltshift.js
-/**
- * @filter               Tilt Shift
- * @description          Simulates the shallow depth of field normally encountered in close-up
- *                       photography, which makes the scene seem much smaller than it actually
- *                       is. This filter assumes the scene is relatively planar, in which case
- *                       the part of the scene that is completely in focus can be described by
- *                       a line (the intersection of the focal plane and the scene). An example
- *                       of a planar scene might be looking at a road from above at a downward
- *                       angle. The image is then blurred with a blur radius that starts at zero
- *                       on the line and increases further from the line.
- * @param startX         The x coordinate of the start of the line segment.
- * @param startY         The y coordinate of the start of the line segment.
- * @param endX           The x coordinate of the end of the line segment.
- * @param endY           The y coordinate of the end of the line segment.
- * @param blurRadius     The maximum radius of the pyramid blur.
- * @param gradientRadius The distance from the line at which the maximum blur radius is reached.
- */
-canvas.tiltShift=function(startX, startY, endX, endY, blurRadius, gradientRadius) {
-    gl.tiltShift = gl.tiltShift || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform float blurRadius;\
-        uniform float gradientRadius;\
-        uniform vec2 start;\
-        uniform vec2 end;\
-        uniform vec2 delta;\
-        uniform vec2 texSize;\
-        varying vec2 texCoord;\
-        ' + randomShaderFunc + '\
-        void main() {\
-            vec4 color = vec4(0.0);\
-            float total = 0.0;\
-            \
-            /* randomize the lookup values to hide the fixed number of samples */\
-            float offset = random(vec3(12.9898, 78.233, 151.7182), 0.0);\
-            \
-            vec2 normal = normalize(vec2(start.y - end.y, end.x - start.x));\
-            float radius = smoothstep(0.0, 1.0, abs(dot(texCoord * texSize - start, normal)) / gradientRadius) * blurRadius;\
-            for (float t = -30.0; t <= 30.0; t++) {\
-                float percent = (t + offset - 0.5) / 30.0;\
-                float weight = 1.0 - abs(percent);\
-                vec4 sample = texture2D(texture, texCoord + delta / texSize * percent * radius);\
-                \
-                /* switch to pre-multiplied alpha to correctly blur transparent images */\
-                sample.rgb *= sample.a;\
-                \
-                color += sample * weight;\
-                total += weight;\
-            }\
-            \
-            gl_FragColor = color / total;\
-            \
-            /* switch back from pre-multiplied alpha */\
-            gl_FragColor.rgb /= gl_FragColor.a + 0.00001;\
-        }\
-    ');
-
-    var dx = endX - startX;
-    var dy = endY - startY;
-    var d = Math.sqrt(dx * dx + dy * dy);
-    this.simpleShader( gl.tiltShift, {
-        blurRadius: blurRadius,
-        gradientRadius: gradientRadius,
-        start: [startX, startY],
-        end: [endX, endY],
-        delta: [dx / d, dy / d],
-        texSize: [this.width, this.height]
-    });
-    this.simpleShader( gl.tiltShift, {
-        blurRadius: blurRadius,
-        gradientRadius: gradientRadius,
-        start: [startX, startY],
-        end: [endX, endY],
-        delta: [-dy / d, dx / d],
-        texSize: [this.width, this.height]
-    });
-
-    return this;
-}
+canvas.fastBlur=canvas.blur; // legacy name for old filter chains
 
 // src/filters/adjust/unsharpmask.js
 /**
@@ -2455,7 +2327,7 @@ canvas.unsharpMask=function(radius, strength) {
 
     // Blur the current texture, then use the stored texture to detect edges
     this._.extraTexture.use(1);
-    this.triangleBlur(radius);
+    this.blur(radius);
     gl.unsharpMask.textures({
         originalTexture: 1
     });
@@ -2580,36 +2452,7 @@ canvas.denoise=function(exponent) {
     return this;
 }
 
-// src/filters/adjust/vignette.js
-/**
- * @filter         Vignette
- * @description    Adds a simulated lens edge darkening effect.
- * @param size     0 to 1 (0 for center of frame, 1 for edge of frame)
- * @param amount   0 to 1 (0 for no effect, 1 for maximum lens darkening)
- */
-canvas.vignette=function(size, amount) {
-    gl.vignette = gl.vignette || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform float size;\
-        uniform float amount;\
-        varying vec2 texCoord;\
-        void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            \
-            float dist = distance(texCoord, vec2(0.5, 0.5));\
-            color.rgb *= smoothstep(0.8, size * 0.799, dist * (amount + size));\
-            \
-            gl_FragColor = color;\
-        }\
-    ');
 
-    this.simpleShader( gl.vignette, {
-        size: clamp(0, size, 1),
-        amount: clamp(0, amount, 1)
-    });
-
-    return this;
-}
 
 // src/filters/adjust/vibrance.js
 /**
@@ -2649,6 +2492,8 @@ canvas.splineInterpolate=function(points) {
     return array;
 }
 
+
+// TODO integrate...
 /**
  * @filter      Curves
  * @description A powerful mapping tool that transforms the colors in the image
@@ -2729,38 +2574,6 @@ canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma
         rgb_min:[r_min+min,g_min+min,b_min+min],
         rgb_gamma:[r_gamma*gamma,g_gamma*gamma,b_gamma*gamma],
         rgb_max:[r_max+max-1.,g_max+max-1.,b_max+max-1.]
-    });
-
-    return this;
-}
-
-// src/filters/adjust/sepia.js
-/**
- * @filter         Sepia
- * @description    Gives the image a reddish-brown monochrome tint that imitates an old photograph.
- * @param amount   0 to 1 (0 for no effect, 1 for full sepia coloring)
- */
-canvas.sepia=function(amount) {
-    gl.sepia = gl.sepia || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform float amount;\
-        varying vec2 texCoord;\
-        void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            float r = color.r;\
-            float g = color.g;\
-            float b = color.b;\
-            \
-            color.r = min(1.0, (r * (1.0 - (0.607 * amount))) + (g * (0.769 * amount)) + (b * (0.189 * amount)));\
-            color.g = min(1.0, (r * 0.349 * amount) + (g * (1.0 - (0.314 * amount))) + (b * 0.168 * amount));\
-            color.b = min(1.0, (r * 0.272 * amount) + (g * 0.534 * amount) + (b * (1.0 - (0.869 * amount))));\
-            \
-            gl_FragColor = color;\
-        }\
-    ');
-
-    this.simpleShader( gl.sepia, {
-        amount: clamp(0, amount, 1)
     });
 
     return this;
@@ -2951,102 +2764,6 @@ canvas.posterize=function(steps) {
     return this;
 }
 
-// src/filters/fun/mirror.js
-/**
- * @filter           Mirror
- * @description      mirror rhe image horizontaly
- */
-canvas.mirror=function() {
-    gl.mirror = gl.mirror || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform float brightness;\
-        varying vec2 texCoord;\
-        void main() {\
-            vec4 color = texture2D(texture, vec2(1.0 - texCoord.x,texCoord.y));\
-            gl_FragColor = color;\
-        }\
-    ');
-
-    this.simpleShader( gl.mirror, {  
-    });
-
-    return this;
-}
-// src/filters/fun/edgework.js
-/**
- * @filter       Edge Work
- * @description  Picks out different frequencies in the image by subtracting two
- *               copies of the image blurred with different radii.
- * @param radius The radius of the effect in pixels.
- */
-canvas.edgeWork=function(radius) {
-    gl.edgeWork1 = gl.edgeWork1 || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform vec2 delta;\
-        varying vec2 texCoord;\
-        ' + randomShaderFunc + '\
-        void main() {\
-            vec2 color = vec2(0.0);\
-            vec2 total = vec2(0.0);\
-            \
-            /* randomize the lookup values to hide the fixed number of samples */\
-            float offset = random(vec3(12.9898, 78.233, 151.7182), 0.0);\
-            \
-            for (float t = -30.0; t <= 30.0; t++) {\
-                float percent = (t + offset - 0.5) / 30.0;\
-                float weight = 1.0 - abs(percent);\
-                vec3 sample = texture2D(texture, texCoord + delta * percent).rgb;\
-                float average = (sample.r + sample.g + sample.b) / 3.0;\
-                color.x += average * weight;\
-                total.x += weight;\
-                if (abs(t) < 15.0) {\
-                    weight = weight * 2.0 - 1.0;\
-                    color.y += average * weight;\
-                    total.y += weight;\
-                }\
-            }\
-            gl_FragColor = vec4(color / total, 0.0, 1.0);\
-        }\
-    ');
-    gl.edgeWork2 = gl.edgeWork2 || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform vec2 delta;\
-        varying vec2 texCoord;\
-        ' + randomShaderFunc + '\
-        void main() {\
-            vec2 color = vec2(0.0);\
-            vec2 total = vec2(0.0);\
-            \
-            /* randomize the lookup values to hide the fixed number of samples */\
-            float offset = random(vec3(12.9898, 78.233, 151.7182), 0.0);\
-            \
-            for (float t = -30.0; t <= 30.0; t++) {\
-                float percent = (t + offset - 0.5) / 30.0;\
-                float weight = 1.0 - abs(percent);\
-                vec2 sample = texture2D(texture, texCoord + delta * percent).xy;\
-                color.x += sample.x * weight;\
-                total.x += weight;\
-                if (abs(t) < 15.0) {\
-                    weight = weight * 2.0 - 1.0;\
-                    color.y += sample.y * weight;\
-                    total.y += weight;\
-                }\
-            }\
-            float c = clamp(10000.0 * (color.y / total.y - color.x / total.x) + 0.5, 0.0, 1.0);\
-            gl_FragColor = vec4(c, c, c, 1.0);\
-        }\
-    ');
-
-    this.simpleShader( gl.edgeWork1, {
-        delta: [radius / this.width, 0]
-    });
-    this.simpleShader( gl.edgeWork2, {
-        delta: [0, radius / this.height]
-    });
-
-    return this;
-}
-
 // src/filters/fun/hexagonalpixelate.js
 /**
  * @filter        Hexagonal Pixelate
@@ -3159,123 +2876,13 @@ canvas.colorHalftone=function(centerX, centerY, angle, size) {
     return this;
 }
 
-// src/filters/fun/ink.js
-/**
- * @filter         Ink
- * @description    Simulates outlining the image in ink by darkening edges stronger than a
- *                 certain threshold. The edge detection value is the difference of two
- *                 copies of the image, each blurred using a blur of a different radius.
- * @param strength The multiplicative scale of the ink edges. Values in the range 0 to 1
- *                 are usually sufficient, where 0 doesn't change the image and 1 adds lots
- *                 of black edges. Negative strength values will create white ink edges
- *                 instead of black ones.
- */
-canvas.ink=function(strength) {
-    gl.ink = gl.ink || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform float strength;\
-        uniform vec2 texSize;\
-        varying vec2 texCoord;\
-        void main() {\
-            vec2 dx = vec2(1.0 / texSize.x, 0.0);\
-            vec2 dy = vec2(0.0, 1.0 / texSize.y);\
-            vec4 color = texture2D(texture, texCoord);\
-            float bigTotal = 0.0;\
-            float smallTotal = 0.0;\
-            vec3 bigAverage = vec3(0.0);\
-            vec3 smallAverage = vec3(0.0);\
-            for (float x = -2.0; x <= 2.0; x += 1.0) {\
-                for (float y = -2.0; y <= 2.0; y += 1.0) {\
-                    vec3 sample = texture2D(texture, texCoord + dx * x + dy * y).rgb;\
-                    bigAverage += sample;\
-                    bigTotal += 1.0;\
-                    if (abs(x) + abs(y) < 2.0) {\
-                        smallAverage += sample;\
-                        smallTotal += 1.0;\
-                    }\
-                }\
-            }\
-            vec3 edge = max(vec3(0.0), bigAverage / bigTotal - smallAverage / smallTotal);\
-            gl_FragColor = vec4(color.rgb - dot(edge, edge) * strength * 100000.0, color.a);\
-        }\
-    ');
-
-    this.simpleShader( gl.ink, {
-        strength: strength * strength * strength * strength * strength,
-        texSize: [this.width, this.height]
-    });
-
-    return this;
-}
-
-// src/filters/fun/hsv.js
-/**
- * @description  transform image to HSV
- */
-
-canvas.toHSV=function() {
-    gl.toHSV = gl.toHSV || new Shader(null, '\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
-        void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            if (texCoord.y > 0.5){\
-            float min = color.r;\
-            float max = color.r;\
-\
-            if (color.g < min){\
-                min = color.g;\
-            }   \
-            if (color.g > max){\
-                max = color.g;\
-            }\
-            if (color.b < min){\
-                min = color.b;\
-            }\
-            if (color.b > max){\
-                max = color.b;\
-            }\
-\
-            float delta = max - min;\
-            float s = 0.0;\
-            float h = 0.0;\
-            float v = max;\
-            if (max != 0.0) {\
-                s = delta / max;\
-                if (color. r == max) {\
-                    h = (color.g - color.b) / delta;\
-                }\
-                else if (color.g == max){\
-                    h = 2.0 + (color.b - color.r) / delta;\
-                }\
-                else {\
-                    h = 4.0 + (color.r - color.g) / delta;\
-                }\
-                h = h * 60.0;\
-                if (h < 0.0)\
-                    h = h + 360.0;\
-            }\
-            color.r = h / 360.0;\
-            color.g = s;\
-            color.b = v;\
-        }\
-            gl_FragColor = color;\
-        }\
-    ');
-
-    this.simpleShader( gl.toHSV, {
-
-    });
-
-    return this;
-}
-// src/filters/fun/invertcolor.js
+// src/filters/fun/invert.js
 /**
  * @description Invert the colors!
  */
 
-canvas.invertColor=function() {
-    gl.invertColor = gl.invertColor || new Shader(null, '\
+canvas.invert=function() {
+    gl.invert = gl.invert || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3284,51 +2891,9 @@ canvas.invertColor=function() {
             gl_FragColor = color;\
         }\
     ');
-    this.simpleShader( gl.invertColor, {});
+    this.simpleShader( gl.invert, {});
     return this;
 }
-// src/filters/fun/dotscreen.js
-/**
- * @filter        Dot Screen
- * @description   Simulates a black and white halftone rendering of the image by multiplying
- *                pixel values with a rotated 2D sine wave pattern.
- * @param centerX The x coordinate of the pattern origin.
- * @param centerY The y coordinate of the pattern origin.
- * @param angle   The rotation of the pattern in radians.
- * @param size    The diameter of a dot in pixels.
- */
-canvas.dotScreen=function(centerX, centerY, angle, size) {
-    gl.dotScreen = gl.dotScreen || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform vec2 center;\
-        uniform float angle;\
-        uniform float scale;\
-        uniform vec2 texSize;\
-        varying vec2 texCoord;\
-        \
-        float pattern() {\
-            float s = sin(angle), c = cos(angle);\
-            vec2 tex = texCoord * texSize - center;\
-            vec2 point = vec2(\
-                c * tex.x - s * tex.y,\
-                s * tex.x + c * tex.y\
-            ) * scale;\
-            return (sin(point.x) * sin(point.y)) * 4.0;\
-        }\
-        \
-        void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            float average = (color.r + color.g + color.b) / 3.0;\
-            gl_FragColor = vec4(vec3(average * 10.0 - 5.0 + pattern()), color.a);\
-        }\
-    ');
 
-    this.simpleShader( gl.dotScreen, {
-        center: [centerX, centerY],
-        angle: angle,
-        scale: Math.PI / size,
-        texSize: [this.width, this.height]
-    });
+canvas.invertColor=canvas.invert; // legacy name
 
-    return this;
-}
