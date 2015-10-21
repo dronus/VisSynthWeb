@@ -14,6 +14,60 @@
   ""
  ],
  [
+  "gaston julia",
+  {
+   "effect": "julia",
+   "cx": -0.23,
+   "cy": -0.538,
+   "center": {
+    "type": "pos",
+    "x": 0.7,
+    "y": 0.5
+   },
+   "size": 2.082,
+   "angle": 0,
+   "iterations": 3.679
+  }
+ ],
+ [
+  "blu",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 0,
+    "a": 1
+   }
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "blend_mask"
+  }
+ ],
+ [
   "plasma party",
   {
    "effect": "feedbackOut",

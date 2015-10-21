@@ -39,12 +39,40 @@ canvas.blend_alpha=function() {
 
     var texture1=this.stack_pop();
     texture1.use(1);
-    gl.blend_alpha.textures({texture1: 0, texture1: 1});
+    gl.blend_alpha.textures({texture2: 0, texture1: 1});
     this.simpleShader( gl.blend_alpha, {});
     texture1.unuse(1);
 
     return this;
 }
+
+canvas.blend_mask=function() {
+    gl.blend_mask = gl.blend_mask || new Shader(null, '\
+        uniform sampler2D texture1;\
+        uniform sampler2D texture2;\
+        uniform sampler2D mask;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color1 = texture2D(texture1, texCoord);\
+            vec4 color2 = texture2D(texture2, texCoord);\
+            float alpha = dot(texture2D(mask, texCoord).rgb,vec3(1./3.));\
+            gl_FragColor = mix(color1, color2, alpha);\
+        }\
+    ');
+
+    this._.texture.use(0);
+    var texture2=this.stack_pop();
+    texture2.use(2);
+    var texture1=this.stack_pop();
+    texture1.use(1);
+    gl.blend_mask.textures({mask: 0, texture1: 1, texture2: 2});
+    this.simpleShader( gl.blend_mask, {});
+    texture1.unuse(1);
+    texture2.unuse(2);    
+
+    return this;
+}
+
 
 // src/filters/video/superquadric.js
 canvas.superquadric=function(A,B,C,r,s,t,angle) {
@@ -371,14 +399,15 @@ canvas.colorDisplacement=function(angle,amplitude) {
 }
 
 // src/filters/video/matte.js
-canvas.matte=function(r,g,b) {
+canvas.matte=function(r,g,b,a) {
     gl.matte = gl.matte || new Shader(null, '\
-        uniform vec3 color;\
+        uniform vec4 color;\
         void main() {\
-            gl_FragColor = vec4(color,1.);\
+            gl_FragColor = color;\
         }\
     ');
-    this.simpleShader( gl.matte, {color:[r,g,b]});
+    if(typeof(a)=='undefined') a=1.; // legacy
+    this.simpleShader( gl.matte, {color:[r,g,b,a]});
     return this;
 }
 
@@ -559,7 +588,6 @@ canvas.kaleidoscope=function(sides,angle,angle2) {
 }
 
 
-// src/filters/video/mandelbrot.js
 canvas.mandelbrot=function(x,y,scale,angle,iterations) {
 
     iterations=Math.min(15,Math.abs(iterations));
@@ -593,6 +621,47 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
           -Math.sin(angle)*scale, Math.cos(angle)*scale
         ],
         iterations  : iterations,
+        center: [x-this.width/2,y-this.height/2], // TODO remove this fix to cope with UI values top-left origin
+        texSize: [this.width, this.height]
+    });
+
+    return this;
+}
+
+canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
+
+    iterations=Math.min(15,Math.abs(iterations));
+
+    // use a single shader.
+    // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
+    gl.julia = gl.julia || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec4 xform;\
+        uniform vec2 center;\
+        uniform vec2 c;\
+        uniform float iterations; \
+        varying vec2 texCoord;\
+        mat2 mat=mat2(xform.xy,xform.zw);\
+        void main() {\
+            vec2 z; \
+            vec2 nz=mat*(texCoord-center); \
+            for (int iter = 0;iter <= 15; iter++){ \
+              if(iter>=int(iterations)) break;  \
+              z = nz; \
+              nz = vec2(z.x*z.x-z.y*z.y, 2.0*z.x*z.y) + c ; \
+            } \
+            vec2 pos=mix(z,nz,fract(iterations));\
+            gl_FragColor = texture2D(texture, pos/8.0+vec2(0.5,0.5));\
+        }\
+    ');
+
+    this.simpleShader( gl.julia, {
+        xform: [
+           Math.cos(angle)*scale, Math.sin(angle)*scale,
+          -Math.sin(angle)*scale, Math.cos(angle)*scale
+        ],
+        iterations  : iterations,
+        c: [cx,cy], 
         center: [x-this.width/2,y-this.height/2], // TODO remove this fix to cope with UI values top-left origin
         texSize: [this.width, this.height]
     });
@@ -1146,7 +1215,7 @@ canvas.waveform=function()
 }
 
 // src/filters/video/lumakey.js
-canvas.lumakey=function(threshold,feather) {
+canvas.lumakey=canvas.luma_key=function(threshold,feather) {
     gl.lumakey = gl.lumakey || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
@@ -1156,8 +1225,8 @@ canvas.lumakey=function(threshold,feather) {
       void main() {\
         vec4 color  = texture2D(texture , texCoord);\
         vec4 color1 = texture2D(texture1, texCoord);\
-        float d=dot(color.rgb,vec3(1./3.)); \
-        float alpha=clamp((d - threshold) / feather, 0.0, 1.0); \
+        float luma=dot(color.rgb,vec3(1./3.)); \
+        float alpha=clamp((luma - threshold) / feather, 0.0, 1.0); \
         gl_FragColor = mix(color1, color, alpha);\
       }\
     ');
@@ -1172,7 +1241,7 @@ canvas.lumakey=function(threshold,feather) {
 }
 
 // src/filters/video/colorkey.js
-canvas.colorkey=function(r,g,b,threshold,feather) {
+canvas.colorkey=canvas.chroma_key=function(r,g,b,threshold,feather) {
     gl.colorkey = gl.colorkey || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
