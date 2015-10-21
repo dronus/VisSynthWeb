@@ -1,5 +1,5 @@
 // src/filters/common.js
-function warpShader(uniforms, warp) {
+var warpShader=function(uniforms, warp) {
     return new Shader(null, uniforms + '\
     uniform sampler2D texture;\
     uniform vec2 texSize;\
@@ -25,7 +25,7 @@ var randomShaderFunc = '\
 ';
 
 // src/filters/video/blend_alpha.js
-function blend_alpha() {
+canvas.blend_alpha=function() {
     gl.blend_alpha = gl.blend_alpha || new Shader(null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
@@ -47,7 +47,7 @@ function blend_alpha() {
 }
 
 // src/filters/video/superquadric.js
-function superquadric(A,B,C,r,s,t,angle) {
+canvas.superquadric=function(A,B,C,r,s,t,angle) {
     gl.superquadric = gl.superquadric || new Shader('\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
@@ -181,7 +181,7 @@ function superquadric(A,B,C,r,s,t,angle) {
 }
 
 // src/filters/video/feedbackIn.js
-function feedbackIn()
+canvas.feedbackIn=function()
 {
     // Store a copy of the current texture in the feedback texture unit
 
@@ -199,7 +199,7 @@ function feedbackIn()
 }
 
 // src/filters/video/tile.js
-function tile(size,centerx,centery) {
+canvas.tile=function(size,centerx,centery) {
     gl.tile = gl.tile || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -218,7 +218,7 @@ function tile(size,centerx,centery) {
 
 
 // src/filters/video/supershape.js
-function supershape(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
+canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
 
   if(!gl.supershape)
   {
@@ -338,7 +338,7 @@ function supershape(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
 }
 
 // src/filters/video/colorDisplacement.js
-function colorDisplacement(angle,amplitude) {
+canvas.colorDisplacement=function(angle,amplitude) {
     gl.colorDisplacement = gl.colorDisplacement || new Shader(null,'\
     \
         uniform sampler2D texture;\
@@ -371,7 +371,7 @@ function colorDisplacement(angle,amplitude) {
 }
 
 // src/filters/video/matte.js
-function matte(r,g,b) {
+canvas.matte=function(r,g,b) {
     gl.matte = gl.matte || new Shader(null, '\
         uniform vec3 color;\
         void main() {\
@@ -383,7 +383,7 @@ function matte(r,g,b) {
 }
 
 // src/filters/video/video.js
-function video()
+canvas.video=function()
 {
 
     var v=this._.videoFilterElement;
@@ -408,7 +408,7 @@ function video()
 }
 
 // src/filters/video/ripple.js
-function ripple(fx,fy,angle,amplitude) {
+canvas.ripple=function(fx,fy,angle,amplitude) {
     gl.ripple = gl.ripple || warpShader('\
         uniform vec4 xform;\
         uniform float amplitude;\
@@ -435,7 +435,7 @@ function ripple(fx,fy,angle,amplitude) {
 
 
 // src/filters/video/mesh_displacement.js
-function mesh_displacement(sx,sy,sz,anglex,angley,anglez) {
+canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     gl.mesh_displacement = gl.mesh_displacement || new Shader('\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -509,7 +509,7 @@ function mesh_displacement(sx,sy,sz,anglex,angley,anglez) {
 }
 
 // src/filters/video/blend.js
-function blend(alpha,factor) {
+canvas.blend=function(alpha,factor) {
     gl.blend = gl.blend || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D texture1;\
@@ -533,7 +533,7 @@ function blend(alpha,factor) {
 }
 
 // src/filters/video/kaleidoscope.js
-function kaleidoscope(sides,angle,angle2) {
+canvas.kaleidoscope=function(sides,angle,angle2) {
     gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
         uniform sampler2D texture;\
 	uniform float angle;\
@@ -560,7 +560,7 @@ function kaleidoscope(sides,angle,angle2) {
 
 
 // src/filters/video/mandelbrot.js
-function mandelbrot(x,y,scale,angle,iterations) {
+canvas.mandelbrot=function(x,y,scale,angle,iterations) {
 
     iterations=Math.min(15,Math.abs(iterations));
 
@@ -602,7 +602,7 @@ function mandelbrot(x,y,scale,angle,iterations) {
 
 
 // src/filters/video/relief.js
-function relief(scale2,scale4) {
+canvas.relief=function(scale2,scale4) {
       gl.relief = gl.relief || new Shader(null,'\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur2;\n\
@@ -676,7 +676,7 @@ function relief(scale2,scale4) {
 
 
 // src/filters/video/transform.js
-function transform(x,y,scale,angle) {
+canvas.transform=function(x,y,scale,angle) {
     gl.transform = gl.transform || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
@@ -707,7 +707,7 @@ function transform(x,y,scale,angle) {
 
 
 // src/filters/video/analogize.js
-function analogize(exposure,gamma,glow,radius) {
+canvas.analogize=function(exposure,gamma,glow,radius) {
     gl.analogize = gl.analogize || new Shader(null,'\
     \
       uniform sampler2D texture;\
@@ -752,7 +752,7 @@ function analogize(exposure,gamma,glow,radius) {
 
 
 // src/filters/video/noalpha.js
-function noalpha() {
+canvas.noalpha=function() {
     gl.noalpha = gl.noalpha || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -766,7 +766,7 @@ function noalpha() {
 }
 
 // src/filters/video/preview.js
-function preview()
+canvas.preview=function()
 {
     // Draw a downscaled copy of the current texture to the viewport 
     
@@ -793,7 +793,7 @@ function preview()
 
 
 // src/filters/video/feedbackOut.js
-function feedbackOut(blend) {
+canvas.feedbackOut=function(blend) {
     gl.feedbackOut = gl.feedbackOut || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D feedbackTexture;\
@@ -825,7 +825,7 @@ function feedbackOut(blend) {
 }
 
 // src/filters/video/motion.js
-function motion(threshold,interval,damper) {
+canvas.motion=function(threshold,interval,damper) {
     gl.motionBlend = gl.motionBlend || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
@@ -886,7 +886,7 @@ function motion(threshold,interval,damper) {
 }
 
 // src/filters/video/reaction.js
-function reaction(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
+canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     gl.reaction = gl.reaction || new Shader(null,'\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur;\n\
@@ -1072,7 +1072,7 @@ function reaction(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 
 // src/filters/video/displacement.js
-function displacement(strength) {
+canvas.displacement=function(strength) {
     gl.displacement = gl.displacement || new Shader(null, '\
         uniform sampler2D displacement_map;\
         uniform sampler2D texture;\
@@ -1095,7 +1095,7 @@ function displacement(strength) {
 }
 
 // src/filters/video/gauze.js
-function gauze(fx,fy,angle,amplitude,x,y) {
+canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
 
     gl.gauze = gl.gauze || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1127,7 +1127,7 @@ function gauze(fx,fy,angle,amplitude,x,y) {
 
 
 // src/filters/video/waveform.js
-function waveform()
+canvas.waveform=function()
 {
     var values=audio_engine.waveform;
     if(!values) return;
@@ -1146,7 +1146,7 @@ function waveform()
 }
 
 // src/filters/video/lumakey.js
-function lumakey(threshold,feather) {
+canvas.lumakey=function(threshold,feather) {
     gl.lumakey = gl.lumakey || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
@@ -1172,7 +1172,7 @@ function lumakey(threshold,feather) {
 }
 
 // src/filters/video/colorkey.js
-function colorkey(r,g,b,threshold,feather) {
+canvas.colorkey=function(r,g,b,threshold,feather) {
     gl.colorkey = gl.colorkey || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
@@ -1205,7 +1205,7 @@ function colorkey(r,g,b,threshold,feather) {
 }
 
 // src/filters/video/life.js
-function life() {
+canvas.life=function() {
     gl.life = gl.life || new Shader(null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
@@ -1249,7 +1249,7 @@ function life() {
 
 
 // src/filters/video/polygon.js
-function polygon(sides,x,y,size,angle) {
+canvas.polygon=function(sides,x,y,size,angle) {
 
     gl.polygon = gl.polygon || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1289,7 +1289,7 @@ function polygon(sides,x,y,size,angle) {
 
 
 // src/filters/video/timeshift.js
-function timeshift(time)
+canvas.timeshift=function(time)
 {
     // Store a stream of the last second in a ring buffer
 
@@ -1319,7 +1319,7 @@ function timeshift(time)
 }
 
 // src/filters/video/capture.js
-function capture(source_index)
+canvas.capture=function(source_index)
 {
     source_index=Math.floor(source_index);    
     var v=this.video_source(source_index);
@@ -1335,7 +1335,7 @@ function capture(source_index)
 }
 
 // src/filters/video/rainbow.js
-function rainbow(size, angle) {
+canvas.rainbow=function(size, angle) {
     gl.rainbow = gl.rainbow || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -1361,7 +1361,7 @@ function rainbow(size, angle) {
  * @filter         Grid
  * @description    Adds a grid to the image
  */
-function grid(size, angle) {
+canvas.grid=function(size, angle) {
     gl.grid = gl.grid || new Shader(null, '\
         uniform sampler2D texture;\
       	uniform float size;\
@@ -1388,7 +1388,7 @@ function grid(size, angle) {
 }
 
 // src/filters/video/absolute.js
-function absolute(size, angle) {
+canvas.absolute=function(size, angle) {
     gl.absolute = gl.absolute || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -1413,7 +1413,7 @@ function absolute(size, angle) {
  *                 than zero. A value of zero just gives an 9x9 box blur and high values
  *                 give the original image, but ideal values are usually around 10-100.
  */
-function denoisefast(exponent) {
+canvas.denoisefast=function(exponent) {
     // Do a 3x3 bilateral box filter
     gl.denoisefast = gl.denoisefast || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1450,7 +1450,7 @@ function denoisefast(exponent) {
 }
 
 // src/filters/video/spectrogram.js
-function spectrogram()
+canvas.spectrogram=function()
 {
     var values=audio_engine.spectrogram;
     if(!values) return;
@@ -1469,7 +1469,7 @@ function spectrogram()
 }
 
 // src/filters/video/smoothlife.js
-function smoothlife(birth_min,birth_max,death_min) {
+canvas.smoothlife=function(birth_min,birth_max,death_min) {
     gl.smoothlife = gl.smoothlife || new Shader(null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
@@ -1523,7 +1523,7 @@ function smoothlife(birth_min,birth_max,death_min) {
 
 
 // src/filters/video/particle_displacement.js
-function particles(anglex,angley,anglez,size,strength,homing,noise,displacement) {
+canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
     gl.particles = gl.particles || new Shader('\
     attribute vec2 _texCoord;\
     uniform sampler2D texture;\
@@ -1659,7 +1659,7 @@ function particles(anglex,angley,anglez,size,strength,homing,noise,displacement)
 }
 
 // src/filters/video/stack.js
-function stack_push(from_texture)
+canvas.stack_push=function(from_texture)
 {
   // push given or current image onto stack
   if(!from_texture) from_texture=this._.texture;
@@ -1686,7 +1686,7 @@ function stack_push(from_texture)
   return nt;
 }
 
-function stack_pop(to_texture)
+canvas.stack_pop=function(to_texture)
 {
   var texture=this._.stack.pop();
   if(!texture)
@@ -1705,14 +1705,14 @@ function stack_pop(to_texture)
   return texture;
 }
 
-function stack_swap()
+canvas.stack_swap=function()
 {
   // exchange topmost stack element with current texture
   if(this._.stack.length<1) return;  
   this._.texture.swapWith(this._.stack[this._.stack.length-1]);
 }
 
-function stack_prepare()
+canvas.stack_prepare=function()
 {
   // check stack
 
@@ -1732,7 +1732,7 @@ function stack_prepare()
 
 
 // src/filters/video/patch_displacement.js
-function patch_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
+canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     gl.patch_displacement = gl.patch_displacement || new Shader('\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
@@ -1829,7 +1829,7 @@ function patch_displacement(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
  * @param after  The x and y coordinates of four points after the transform in a flat list, just
  *               like the other argument.
  */
-function perspective(before, after,use_texture_space) {
+canvas.perspective=function(before, after,use_texture_space) {
     var a = getSquareToQuad.apply(null, after);
     var b = getSquareToQuad.apply(null, before);
     var c = multiply(getInverse(a), b);
@@ -1852,7 +1852,7 @@ function perspective(before, after,use_texture_space) {
  *                        from -1 to 1 instead of 0 to width - 1 or height - 1, and are easier
  *                        to use for simple operations like flipping and rotating.
  */
-function matrixWarp(matrix, inverse, useTextureSpace) {
+canvas.matrixWarp=function(matrix, inverse, useTextureSpace) {
     gl.matrixWarp = gl.matrixWarp || warpShader('\
         uniform mat3 matrix;\
         uniform float useTextureSpace;\
@@ -1896,7 +1896,7 @@ function matrixWarp(matrix, inverse, useTextureSpace) {
  * @param angle   The angle in radians that the pixels in the center of
  *                the circular region will be rotated by.
  */
-function swirl(centerX, centerY, radius, angle) {
+canvas.swirl=function(centerX, centerY, radius, angle) {
     gl.swirl = gl.swirl || warpShader('\
         uniform float radius;\
         uniform float angle;\
@@ -1936,7 +1936,7 @@ function swirl(centerX, centerY, radius, angle) {
  * @param radius   The radius of the circle of effect.
  * @param strength -1 to 1 (-1 is strong pinch, 0 is no effect, 1 is strong bulge)
  */
-function bulgePinch(centerX, centerY, radius, strength) {
+canvas.bulgePinch=function(centerX, centerY, radius, strength) {
     gl.bulgePinch = gl.bulgePinch || warpShader('\
         uniform float radius;\
         uniform float strength;\
@@ -1974,7 +1974,7 @@ function bulgePinch(centerX, centerY, radius, strength) {
  * @param strength The strength of the blur. Values in the range 0 to 1 are usually sufficient,
  *                 where 0 doesn't change the image and 1 creates a highly blurred image.
  */
-function zoomBlur(centerX, centerY, strength) {
+canvas.zoomBlur=function(centerX, centerY, strength) {
     gl.zoomBlur = gl.zoomBlur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -2026,7 +2026,7 @@ function zoomBlur(centerX, centerY, strength) {
  *               perpendicular triangle filters.
  * @param radius The radius of the pyramid convolved with the image.
  */
-function triangleBlur(radius) {
+canvas.triangleBlur=function(radius) {
     gl.triangleBlur = gl.triangleBlur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -2069,7 +2069,7 @@ function triangleBlur(radius) {
 }
 
 // src/filters/blur/dilate.js
-function dilate(iterations) {
+canvas.dilate=function(iterations) {
     gl.dilate = gl.dilate || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
@@ -2103,7 +2103,7 @@ function dilate(iterations) {
  *               perpendicular triangle filters.
  * @param radius The radius of the pyramid convolved with the image.
  */
-function localContrast(radius,strength) {
+canvas.localContrast=function(radius,strength) {
     gl.localContrastMin = gl.localContrastMin || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -2179,7 +2179,7 @@ function localContrast(radius,strength) {
 
 
 // src/filters/blur/erode.js
-function erode(iterations) {
+canvas.erode=function(iterations) {
     gl.erode = gl.erode || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
@@ -2222,7 +2222,7 @@ function erode(iterations) {
  * @param brightness -1 to 1 (the brightness of the bokeh, negative values will create dark bokeh)
  * @param angle      the rotation of the bokeh in radians
  */
-function lensBlur(radius, brightness, angle) {
+canvas.lensBlur=function(radius, brightness, angle) {
     // All averaging is done on values raised to a power to make more obvious bokeh
     // (we will raise the average to the inverse power at the end to compensate).
     // Without this the image looks almost like a normal blurred image. This hack is
@@ -2316,7 +2316,7 @@ function lensBlur(radius, brightness, angle) {
 }
 
 // src/filters/blur/fastblur.js
-function fastBlur(radius) {
+canvas.fastBlur=function(radius) {
     gl.fastBlur = gl.fastBlur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -2357,7 +2357,7 @@ function fastBlur(radius) {
  * @param blurRadius     The maximum radius of the pyramid blur.
  * @param gradientRadius The distance from the line at which the maximum blur radius is reached.
  */
-function tiltShift(startX, startY, endX, endY, blurRadius, gradientRadius) {
+canvas.tiltShift=function(startX, startY, endX, endY, blurRadius, gradientRadius) {
     gl.tiltShift = gl.tiltShift || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float blurRadius;\
@@ -2427,7 +2427,7 @@ function tiltShift(startX, startY, endX, endY, blurRadius, gradientRadius) {
  * @param radius   The blur radius that calculates the average of the neighboring pixels.
  * @param strength A scale factor where 0 is no effect and higher values cause a stronger effect.
  */
-function unsharpMask(radius, strength) {
+canvas.unsharpMask=function(radius, strength) {
     gl.unsharpMask = gl.unsharpMask || new Shader(null, '\
         uniform sampler2D blurredTexture;\
         uniform sampler2D originalTexture;\
@@ -2468,7 +2468,7 @@ function unsharpMask(radius, strength) {
  * @description    Adds black and white noise to the image.
  * @param amount   0 to 1 (0 for no effect, 1 for maximum noise)
  */
-function noise(amount) {
+canvas.noise=function(amount) {
     gl.noise = gl.noise || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float amount;\
@@ -2504,7 +2504,7 @@ function noise(amount) {
  * @param g          0 to 1 Importance of the Green Chanel modification
  * @param b          0 to 1 Importance of the Blue Chanel modification
  */
-function color(alpha,r,g,b) {
+canvas.color=function(alpha,r,g,b) {
     gl.color = gl.color || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float r;\
@@ -2539,7 +2539,7 @@ function color(alpha,r,g,b) {
  *                 than zero. A value of zero just gives an 9x9 box blur and high values
  *                 give the original image, but ideal values are usually around 10-20.
  */
-function denoise(exponent) {
+canvas.denoise=function(exponent) {
     // Do a 9x9 bilateral box filter
     gl.denoise = gl.denoise || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2582,7 +2582,7 @@ function denoise(exponent) {
  * @param size     0 to 1 (0 for center of frame, 1 for edge of frame)
  * @param amount   0 to 1 (0 for no effect, 1 for maximum lens darkening)
  */
-function vignette(size, amount) {
+canvas.vignette=function(size, amount) {
     gl.vignette = gl.vignette || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float size;\
@@ -2612,7 +2612,7 @@ function vignette(size, amount) {
  * @description  Modifies the saturation of desaturated colors, leaving saturated colors unmodified.
  * @param amount -1 to 1 (-1 is minimum vibrance, 0 is no change, and 1 is maximum vibrance)
  */
-function vibrance(amount) {
+canvas.vibrance=function(amount) {
     gl.vibrance = gl.vibrance || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float amount;\
@@ -2635,7 +2635,7 @@ function vibrance(amount) {
 }
 
 // src/filters/adjust/curves.js
-function splineInterpolate(points) {
+canvas.splineInterpolate=function(points) {
     var interpolator = new SplineInterpolator(points);
     var array = [];
     for (var i = 0; i < 256; i++) {
@@ -2663,7 +2663,7 @@ function splineInterpolate(points) {
  * @param blue  (optional) A list of points that define the function for the blue
  *              channel (just like for red).
  */
-function curves(red, green, blue) {
+canvas.curves=function(red, green, blue) {
     // Create the ramp texture
     red = splineInterpolate(red);
     if (arguments.length == 1) {
@@ -2702,7 +2702,7 @@ function curves(red, green, blue) {
 
 // src/filters/adjust/levels.js
 // min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0
-function levels(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
+canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
     gl.levels = gl.levels || new Shader(null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
@@ -2735,7 +2735,7 @@ function levels(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max
  * @description    Gives the image a reddish-brown monochrome tint that imitates an old photograph.
  * @param amount   0 to 1 (0 for no effect, 1 for full sepia coloring)
  */
-function sepia(amount) {
+canvas.sepia=function(amount) {
     gl.sepia = gl.sepia || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float amount;\
@@ -2774,7 +2774,7 @@ function sepia(amount) {
  *                   and 1 is 180 degree rotation in the positive direction)
  * @param saturation -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
-function hueSaturation(hue, saturation) {
+canvas.hueSaturation=function(hue, saturation) {
     gl.hueSaturation = gl.hueSaturation || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float hue;\
@@ -2821,7 +2821,7 @@ function hueSaturation(hue, saturation) {
  * @param brightness -1 to 1 (-1 is solid black, 0 is no change, and 1 is solid white)
  * @param contrast   -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
-function brightnessContrast(brightness, contrast) {
+canvas.brightnessContrast=function(brightness, contrast) {
     gl.brightnessContrast = gl.brightnessContrast || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float brightness;\
@@ -2863,7 +2863,7 @@ function brightnessContrast(brightness, contrast) {
  * @param a2 (0 to 1) alpha chanel color of the sobel area
  */
 
-function sobel(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
+canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
     gl.sobel = gl.sobel || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float alpha;\
@@ -2930,7 +2930,7 @@ function sobel(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 
 // src/filters/fun/posterize.js
 
-function posterize(steps) {
+canvas.posterize=function(steps) {
     gl.posterize = gl.posterize || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float steps;\
@@ -2951,7 +2951,7 @@ function posterize(steps) {
  * @filter           Mirror
  * @description      mirror rhe image horizontaly
  */
-function mirror() {
+canvas.mirror=function() {
     gl.mirror = gl.mirror || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float brightness;\
@@ -2974,7 +2974,7 @@ function mirror() {
  *               copies of the image blurred with different radii.
  * @param radius The radius of the effect in pixels.
  */
-function edgeWork(radius) {
+canvas.edgeWork=function(radius) {
     gl.edgeWork1 = gl.edgeWork1 || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -3051,7 +3051,7 @@ function edgeWork(radius) {
  * @param centerY The y coordinate of the pattern center.
  * @param scale   The width of an individual tile, in pixels.
  */
-function hexagonalPixelate(centerX, centerY, scale) {
+canvas.hexagonalPixelate=function(centerX, centerY, scale) {
     gl.hexagonalPixelate = gl.hexagonalPixelate || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -3114,7 +3114,7 @@ function hexagonalPixelate(centerX, centerY, scale) {
  * @param angle   The rotation of the pattern in radians.
  * @param size    The diameter of a dot in pixels.
  */
-function colorHalftone(centerX, centerY, angle, size) {
+canvas.colorHalftone=function(centerX, centerY, angle, size) {
     gl.colorHalftone = gl.colorHalftone || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -3165,7 +3165,7 @@ function colorHalftone(centerX, centerY, angle, size) {
  *                 of black edges. Negative strength values will create white ink edges
  *                 instead of black ones.
  */
-function ink(strength) {
+canvas.ink=function(strength) {
     gl.ink = gl.ink || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float strength;\
@@ -3208,7 +3208,7 @@ function ink(strength) {
  * @description  transform image to HSV
  */
 
-function toHSV() {
+canvas.toHSV=function() {
     gl.toHSV = gl.toHSV || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -3269,7 +3269,7 @@ function toHSV() {
  * @description Invert the colors!
  */
 
-function invertColor() {
+canvas.invertColor=function() {
     gl.invertColor = gl.invertColor || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -3292,7 +3292,7 @@ function invertColor() {
  * @param angle   The rotation of the pattern in radians.
  * @param size    The diameter of a dot in pixels.
  */
-function dotScreen(centerX, centerY, angle, size) {
+canvas.dotScreen=function(centerX, centerY, angle, size) {
     gl.dotScreen = gl.dotScreen || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
