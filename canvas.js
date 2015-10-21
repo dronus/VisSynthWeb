@@ -130,7 +130,7 @@ function wrap(func) {
     };
 }
 
-exports.canvas = function() {
+canvas = function() {
     var canvas = document.createElement('canvas');
     try {
         gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
@@ -239,4 +239,4 @@ exports.canvas = function() {
 
     return canvas;
 };
-exports.splineInterpolate = splineInterpolate;
+// exports.splineInterpolate = splineInterpolate;

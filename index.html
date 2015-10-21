@@ -2,7 +2,14 @@
 <html>
 <head>
   <title>NF VisSynth</title>
-  <script src="glfx.js/glfx.js"></script>
+  <script src="OES_texture_float_linear-polyfill.js"></script>  
+  <script src="spline.js"></script>
+  <script src="texture.js"></script>
+  <script src="shader.js"></script>
+  <script src="matrix.js"></script>
+  <script src="glmatrix.js"></script>
+  <script src="filters.js"></script>
+  <script src="canvas.js"></script>
   <script src="audio.js"></script>
 </head>
 <body>
@@ -21,7 +28,7 @@
   <script>
 
     // glfx.js WebGL effect canvas object
-    var canvas = fx.canvas();
+    var canvas = canvas(); // from canvas.js
     // append the canvas to the view
     document.body.appendChild(canvas);
         

@@ -29,8 +29,6 @@
 
 "use strict";
 
-global=window;
-
 // Type declarations
 (function(_global) {
     // account for CommonJS environments
