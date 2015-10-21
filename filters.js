@@ -1829,11 +1829,30 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
  * @param after  The x and y coordinates of four points after the transform in a flat list, just
  *               like the other argument.
  */
+function getSquareToQuad(x0, y0, x1, y1, x2, y2, x3, y3) {
+    var dx1 = x1 - x2;
+    var dy1 = y1 - y2;
+    var dx2 = x3 - x2;
+    var dy2 = y3 - y2;
+    var dx3 = x0 - x1 + x2 - x3;
+    var dy3 = y0 - y1 + y2 - y3;
+    var det = dx1*dy2 - dx2*dy1;
+    var a = (dx3*dy2 - dx2*dy3) / det;
+    var b = (dx1*dy3 - dx3*dy1) / det;
+    return [
+        x1 - x0 + a*x1, y1 - y0 + a*y1, a, 0,
+        x3 - x0 + b*x3, y3 - y0 + b*y3, b, 0,
+        x0, y0, 1 , 0,
+        0,0,0,1
+    ];
+}
+
 canvas.perspective=function(before, after,use_texture_space) {
     var a = getSquareToQuad.apply(null, after);
     var b = getSquareToQuad.apply(null, before);
-    var c = multiply(getInverse(a), b);
-    return this.matrixWarp(c,false,use_texture_space);
+    var c = mat4.multiply( b,mat4.inverse(a));
+    var d = mat4.toMat3(c);
+    return this.matrixWarp(d,false,use_texture_space);
 }
 
 // src/filters/warp/matrixwarp.js
@@ -1862,20 +1881,6 @@ canvas.matrixWarp=function(matrix, inverse, useTextureSpace) {
         coord = warp.xy / warp.z;\
         if (useTextureSpace>0.) coord = (coord * 0.5 + 0.5) * texSize;\
     ');
-
-    // Flatten all members of matrix into one big list
-    matrix = Array.prototype.concat.apply([], matrix);
-
-    // Extract a 3x3 matrix out of the arguments
-    if (matrix.length == 4) {
-        matrix = [
-            matrix[0], matrix[1], 0,
-            matrix[2], matrix[3], 0,
-            0, 0, 1
-        ];
-    } else if (matrix.length != 9) {
-        throw 'can only warp with 2x2 or 3x3 matrix';
-    }
 
     this.simpleShader( gl.matrixWarp, {
         matrix: inverse ? getInverse(matrix) : matrix,
