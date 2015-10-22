@@ -32,24 +32,8 @@ canvas = function() {
         flippedShader: null
     };
 
-    var wrapTexture=function(texture) {
-        return {
-            _: texture,
-            loadContentsOf: function(element) {
-                // Make sure that we're using the correct global WebGL context
-                gl = this._.gl;
-                this._.loadContentsOf(element);
-            },
-            destroy: function() {
-                // Make sure that we're using the correct global WebGL context
-                gl = this._.gl;
-                this._.destroy();
-            }
-        };
-    }
-
     canvas.texture=function(element) {
-        return wrapTexture(Texture.fromElement(element));
+        return Texture.fromElement(element);
     }
 
     canvas.initialize=function(width, height) {
@@ -86,52 +70,11 @@ canvas = function() {
         this._.isInitialized = true;
     }
 
-    /*
-       Draw a texture to the canvas, with an optional width and height to scale to.
-       If no width and height are given then the original texture width and height
-       are used.
-    */
-    canvas.draw=function(texture, width, height) {
-       /* if (!this._.isInitialized || texture._.width != this.width || texture._.height != this.height) {
-            initialize.call(this, width ? width : texture._.width, height ? height : texture._.height);
-        }*/
-
-        texture._.use();
-        this._.texture.drawTo(function() {
-            Shader.getDefaultShader().drawRect();
-        });
-
-        return this;
-    }
-
     canvas.update=function() {
         this._.texture.use();
         gl.viewport(0, 0, this.width, this.height);        
         this._.flippedShader.drawRect();
         return this;
-    }
-
-    canvas.contents=function() {
-        var texture = new Texture(this._.texture.width, this._.texture.height, gl.RGBA, gl.UNSIGNED_BYTE);
-        this._.texture.use();
-        texture.drawTo(function() {
-            Shader.getDefaultShader().drawRect();
-        });
-        return wrapTexture(texture);
-    }
-
-    /*
-       Get a Uint8 array of pixel values: [r, g, b, a, r, g, b, a, ...]
-       Length of the array will be width * height * 4.
-    */
-    canvas.getPixelArray=function() {
-        var w = this._.texture.width;
-        var h = this._.texture.height;
-        var array = new Uint8Array(w * h * 4);
-        this._.texture.drawTo(function() {
-            gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, array);
-        });
-        return array;
     }
     
     canvas.simpleShader=function(shader, uniforms, textureIn, textureOut) {

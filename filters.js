@@ -244,10 +244,7 @@ canvas.feedbackIn=function()
       this._.feedbackTexture=new Texture(t.width,t.height,t.format,t.type);
     
     this._.feedbackTexture.ensureFormat(this._.texture);
-    this._.texture.use();
-    this._.feedbackTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.texture.copyTo(this._.feedbackTexture);
 
     return this;
 }
@@ -457,7 +454,7 @@ canvas.video=function()
     
     if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
     this._.videoTexture.loadContentsOf(v);
-    this.draw(this._.videoTexture);
+    this._.videoTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -831,10 +828,7 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 
     // Store a copy of the current texture in the second texture unit
     this._.extraTexture.ensureFormat(this._.texture);
-    this._.texture.use();
-    this._.extraTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.texture.copyTo(this._.extraTexture);
 
     // Blur the current texture, then use the stored texture to detect edges
     this._.extraTexture.use(1);
@@ -871,21 +865,6 @@ canvas.noalpha=function() {
 // src/filters/video/preview.js
 canvas.preview=function()
 {
-    // Draw a downscaled copy of the current texture to the viewport 
-    
-  /*  
-    var t=this._.texture;
-    
-    if(!this._.previewTexture) 
-      this._.previewTexture=new Texture(t.width/4,t.height/4,t.format,t.type);
-    this._.previewTexture.ensureFormat(t.width/4,t.height/4,t.format,t.type );
-
-    this._.texture.use();
-    this._.previewTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
-*/
-
     this.preview_width=320; this.preview_height=200;
     this._.texture.use();
     this._.flippedShader.drawRect(0,0,this.preview_width,this.preview_height);
@@ -1299,11 +1278,7 @@ canvas.waveform=function()
       this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
       
     this._.waveformTexture.load(values);
-    
-    this._.waveformTexture.use();
-    this._.texture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.waveformTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -1466,16 +1441,15 @@ canvas.timeshift=function(time)
     
     // copy current frame to the start of the queue, pushing all frames back
     var nt=this._.pastTextures.pop();
-    this._.texture.use();
-    nt.drawTo(function() { Shader.getDefaultShader().drawRect(); });
+    nt.ensureFormat(this._.texture);
+    this._.texture.copyTo(nt);
     this._.pastTextures.unshift(nt);
 
     // copy past frame from the queue to the current texture, if available
     var j=Math.abs(Math.floor(time) % max_frames);
     if(this._.pastTextures[j]) 
     {
-      this._.pastTextures[j].use();
-      this._.texture.drawTo(function() { Shader.getDefaultShader().drawRect(); });
+      this._.pastTextures[j].copyTo(this._.texture);
     }
 
     return this;
@@ -1492,7 +1466,8 @@ canvas.capture=function(source_index)
     
     if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
     this._.videoTexture.loadContentsOf(v);
-    this.draw(this._.videoTexture);
+//    this.draw(this._.videoTexture);
+    this._.videoTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -1622,11 +1597,7 @@ canvas.spectrogram=function()
       this._.spectrogramTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
       
     this._.spectrogramTexture.load(values);
-    
-    this._.spectrogramTexture.use();
-    this._.texture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.spectrogramTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -1820,9 +1791,6 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
         
     this._.particleTextureA.drawTo(function() { gl.particle_update.drawRect(); });
 
-
-
-
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
     // camera placement transformation matrix
@@ -1885,10 +1853,9 @@ canvas.stack_push=function(from_texture)
   }
   
   // copy current frame on top of the stack
-  from_texture.use();
   var nt=this._.stackUnused.pop();
   nt.ensureFormat(from_texture);
-  nt.drawTo(function() { Shader.getDefaultShader().drawRect(); });
+  from_texture.copyTo(nt);
   this._.stack.push(nt);
 
   return nt;
@@ -2529,9 +2496,7 @@ canvas.unsharpMask=function(radius, strength) {
     // Store a copy of the current texture in the second texture unit
     this._.extraTexture.ensureFormat(this._.texture);
     this._.texture.use();
-    this._.extraTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.texture.copyTo(this._.extraTexture);
 
     // Blur the current texture, then use the stored texture to detect edges
     this._.extraTexture.use(1);

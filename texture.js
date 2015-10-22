@@ -109,7 +109,15 @@ var Texture = (function() {
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
+    
 
+    Texture.prototype.copyTo = function(target) {
+        this.use();
+        target.drawTo(function() {
+            Shader.getDefaultShader().drawRect();
+        });
+    };
+    
     var canvas = null;
 
     function getCanvas(texture) {
