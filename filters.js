@@ -842,7 +842,9 @@ canvas.preview=function()
 {
     this.preview_width=320; this.preview_height=200;
     this._.texture.use();
-    this._.flippedShader.drawRect(0,0,this.preview_width,this.preview_height);
+    gl.viewport(0,0,this.preview_width,this.preview_height);
+    this._.flippedShader.drawRect();
+    gl.viewport(0,0,this.width,this.height);
 
     return this;
 }
@@ -1135,16 +1137,16 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 
 // src/filters/video/displacement.js
-canvas.reaction2=function(F,K,speed) {
+canvas.reaction2=function(F,K,D_a,D_b,iterations) {
+    iterations=Math.floor(Math.min(iterations,100.));
     gl.reaction2 = gl.reaction2 || new Shader(null, '\
       uniform sampler2D texture;\n\
       uniform float F;\n\
       uniform float K;\n\
-      uniform float speed;\n\
+      uniform float D_a;\n\
+      uniform float D_b;\n\
       uniform vec2 scale;\n\
       varying vec2 texCoord;\n\
-      \n\
-      const float D_a = 0.2, D_b = 0.1;\n\
       \n\
       void main() {\n\
 	      vec2 p = texCoord.xy,\n\
@@ -1163,12 +1165,13 @@ canvas.reaction2=function(F,K,speed) {
 	      vec2 delta = vec2(D_a * laplacian.x - val.x*val.y*val.y + F * (1.0-val.x),\n\
 		      D_b * laplacian.y + val.x*val.y*val.y - (K+F) * val.y);\n\
       \n\
-	      gl_FragColor = vec4(val + delta * speed, 0, 0);\n\
+	      gl_FragColor = vec4(clamp(val + delta,-1.0,1.0), 0.0, 1.0);\n\
       }\n\
     ');
 
     this._.texture.use(0);
-    this.simpleShader( gl.reaction2, {F:F,K:K,speed:speed , scale: [this.width,this.height] });
+    for(var i=0; i<iterations; i++)
+      this.simpleShader( gl.reaction2, {F:F,K:K,D_a:D_a,D_b:D_b, scale: [this.width,this.height] });
 
     return this;
 }
