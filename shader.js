@@ -80,9 +80,12 @@ var Shader = (function() {
     // even though floating point numbers represent the integers 0 through 7 exactly
     Shader.prototype.textures = function(textures) {
         gl.useProgram(this.program);
+        var i=0;
         for (var name in textures) {
-            if (!textures.hasOwnProperty(name)) continue;
-            gl.uniform1i(gl.getUniformLocation(this.program, name), textures[name]);
+            // if (!textures.hasOwnProperty(name)) continue;
+            textures[name].use(i);
+            gl.uniform1i(gl.getUniformLocation(this.program, name), i);
+            i++;
         }
         // allow chaining
         return this;
