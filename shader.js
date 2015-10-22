@@ -49,11 +49,6 @@ var Shader = (function() {
         }
     }
 
-    Shader.prototype.destroy = function() {
-        gl.deleteProgram(this.program);
-        this.program = null;
-    };
-
     Shader.prototype.uniforms = function(uniforms) {
         gl.useProgram(this.program);
         for (var name in uniforms) {
@@ -130,7 +125,7 @@ var Shader = (function() {
       }
     }
 
-    Shader.prototype.drawTriangles = function(mode){
+    Shader.prototype.drawArrays = function(mode){
     
         gl.useProgram(this.program);
         for(key in this._attributes)
@@ -139,7 +134,7 @@ var Shader = (function() {
           gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
           gl.vertexAttribPointer(attribute.location, attribute.size, gl.FLOAT, false, 0, 0);          
         }
-        gl.drawArrays(typeof(mode)!='undefined' ? mode : gl.TRIANGLE_STRIP, 0, this._element_count);
+        gl.drawArrays(mode, 0, this._element_count);
     };
 
 

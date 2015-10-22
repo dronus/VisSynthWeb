@@ -226,7 +226,7 @@ canvas.superquadric=function(A,B,C,r,s,t,angle) {
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
-        gl.superquadric.uniforms(uniforms).drawTriangles();
+        gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
     },true);
     this._.spareTexture.swapWith(this._.texture);
@@ -380,7 +380,7 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
-        gl.supershape.uniforms(uniforms).drawTriangles();
+        gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
     },true);
     this._.spareTexture.swapWith(this._.texture);
@@ -548,7 +548,7 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
         gl.frontFace(gl.CCW);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.mesh_displacement.drawTriangles();
+        gl.mesh_displacement.drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.CULL_FACE);
     },true);
@@ -1822,7 +1822,7 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.particles.drawTriangles(gl.POINTS);
+        gl.particles.drawArrays(gl.POINTS);
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture
@@ -1982,7 +1982,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.patch_displacement.drawTriangles(gl.TRIANGLES);
+        gl.patch_displacement.drawArrays(gl.TRIANGLES);
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture
