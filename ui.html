@@ -906,7 +906,7 @@
       'type_float':{inputs:0,outputs:0},
       'resolution':{inputs:0,outputs:0,args:{x:640,y:480}},
       'capture':{inputs:0,args:{device:0}},
-      // 'video':{inputs:0,args:{}},      
+      'video':{inputs:0,args:{}},      
       'matte':{inputs:0, args:{rgb:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0}}},
       'waveform':{inputs:0},
       'spectrogram':{inputs:0},
@@ -969,7 +969,7 @@
       'julia':{args:{cx:-0.8, cy:0.2, center:{type:'pos',x:0.7,y:0.5},size:3.0,angle:0.0,iterations:10.0}},
       'timeshift':{args:{time:{type:'osc',f:200.0,a:12.5,p:0.0,o:12.5}}},
       'reaction':{args:{noise_factor:0.5,zoom_speed:0.005,scale1:8.0,scale2:16.0,scale3:32.0,scale4:64.0}},
-      'reaction2':{},      
+      'reaction2':{args:{F:0.0545,K:0.062,speed:1.0}},
       'relief':{args:{scale2:16.0,scale4:64.0}},
     };
     

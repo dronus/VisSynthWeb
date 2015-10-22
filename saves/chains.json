@@ -5,8 +5,11 @@
    "audio_device": 1.538
   },
   {
+   "effect": "type_float"
+  },
+  {
    "effect": "capture",
-   "device": 0.237
+   "device": 0
   }
  ],
  [],
@@ -37,20 +40,21 @@
   },
   {
    "effect": "feedbackOut",
-   "blend": 0.298
+   "blend": 0.359
   },
   {
-   "effect": "smoothlife",
-   "birth_min": 0.056,
-   "birth_max": 0.237,
-   "death_min": 0.69
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.609
+   "effect": "reaction2",
+   "F": 0.0545,
+   "K": 0.062,
+   "speed": 1
   },
   {
    "effect": "feedbackIn"
+  },
+  {
+   "effect": "relief",
+   "scale2": 16,
+   "scale4": 64
   }
  ],
  [
@@ -636,6 +640,9 @@
  [
   "reactive life",
   {
+   "effect": "invertColor"
+  },
+  {
    "effect": "sobel",
    "secondary": 1.292,
    "coeff": 1.292,
@@ -728,7 +735,7 @@
   }
  ],
  [
-  "the wave",
+  "hokusai",
   {
    "effect": "stack_push"
   },

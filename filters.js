@@ -1135,16 +1135,16 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 
 // src/filters/video/displacement.js
-canvas.reaction2=function() {
+canvas.reaction2=function(F,K,speed) {
     gl.reaction2 = gl.reaction2 || new Shader(null, '\
       uniform sampler2D texture;\n\
+      uniform float F;\n\
+      uniform float K;\n\
+      uniform float speed;\n\
       uniform vec2 scale;\n\
       varying vec2 texCoord;\n\
       \n\
-      const float F = 0.0545, K = 0.062,\n\
-	      D_a = 0.2, D_b = 0.1;\n\
-      \n\
-      const float TIMESTEP = 1.0;\n\
+      const float D_a = 0.2, D_b = 0.1;\n\
       \n\
       void main() {\n\
 	      vec2 p = texCoord.xy,\n\
@@ -1163,12 +1163,12 @@ canvas.reaction2=function() {
 	      vec2 delta = vec2(D_a * laplacian.x - val.x*val.y*val.y + F * (1.0-val.x),\n\
 		      D_b * laplacian.y + val.x*val.y*val.y - (K+F) * val.y);\n\
       \n\
-	      gl_FragColor = vec4(val + delta * TIMESTEP, 0, 0);\n\
+	      gl_FragColor = vec4(val + delta * speed, 0, 0);\n\
       }\n\
     ');
 
     this._.texture.use(0);
-    this.simpleShader( gl.reaction2, { scale: [this.width,this.height] });
+    this.simpleShader( gl.reaction2, {F:F,K:K,speed:speed , scale: [this.width,this.height] });
 
     return this;
 }
