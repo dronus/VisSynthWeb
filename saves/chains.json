@@ -17,6 +17,57 @@
   "smooth life",
   {
    "effect": "sobel",
+   "secondary": 1.58,
+   "coeff": 1.737,
+   "alpha": 1,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.977
+  },
+  {
+   "effect": "reaction2"
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  {
+   "effect": "pixelate",
+   "x1": -0.034,
+   "y1": 0.237,
+   "x2": -0.094,
+   "y2": -0.094,
+   "x3": 0.02,
+   "y3": 0.02
+  }
+ ],
+ [
+  "smooth life",
+  {
+   "effect": "sobel",
    "secondary": 2.849,
    "coeff": 3.88,
    "alpha": 0.891,
@@ -2548,13 +2599,33 @@
  [
   "reaction",
   {
+   "effect": "sobel",
+   "secondary": 0.5,
+   "coeff": 0.5,
+   "alpha": 1,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
    "effect": "feedbackOut",
-   "blend": 0.965
+   "blend": 0.977
   },
   {
    "effect": "reaction",
    "noise_factor": 0,
-   "zoom_speed": 0.006,
+   "zoom_speed": 0,
    "scale1": 14.56,
    "scale2": 25.17,
    "scale3": 32.82,

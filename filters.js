@@ -1,3 +1,29 @@
+
+
+canvas.for_all_textures=function(callback){
+  callback(this._.texture);
+  callback(this._.spareTexture);
+  callback(this._.extraTexture);
+};
+
+canvas.type_byte=function(){
+  this.for_all_textures(function(texture){
+    texture.ensureFormat(texture.width,texture.height,texture.format,gl.UNSIGNED_BYTE);
+  });
+};
+
+canvas.type_float=function(){
+  this.for_all_textures(function(texture){
+    texture.ensureFormat(texture.width,texture.height,texture.format,gl.FLOAT);
+  });
+};
+
+canvas.resolution=function(w,h){
+  this.for_all_textures(function(texture){
+    texture.ensureFormat(w,h,texture.format,texture.type);
+  });
+};
+
 // src/filters/common.js
 var warpShader=function(uniforms, warp) {
     return new Shader(null, uniforms + '\
@@ -672,7 +698,9 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
 // src/filters/video/relief.js
 canvas.relief=function(scale2,scale4) {
-      gl.relief = gl.relief || new Shader(null,'\
+      gl.getExtension('OES_standard_derivatives');
+      gl.relief = gl.relief || new Shader(null,'\n\
+      #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur2;\n\
       uniform sampler2D texture_blur4;\n\
@@ -684,14 +712,14 @@ canvas.relief=function(scale2,scale4) {
        \n\
         vec2 d = texSize*1.; \n\
         vec2 gy; // green texCoord gradient vector \n\
-        gy.x = texture2D(texture, texCoord-vec2(1.,0.)*d).y - texture2D(texture, texCoord+vec2(1.,0.)*d).y; \n\
-        gy.y = texture2D(texture, texCoord-vec2(0.,1.)*d).y - texture2D(texture, texCoord+vec2(0.,1.)*d).y; \n\
+        gy.x = dFdx(texture2D(texture, texCoord).y); \n\
+        gy.y = dFdy(texture2D(texture, texCoord).y); \n\
        \n\
         d = texSize*4.; \n\
        \n\
         vec2 gz; // blue blur2 gradient vector \n\
-        gz.x += texture2D(texture_blur2, texCoord-vec2(1.,0.)*d).z - texture2D(texture_blur2, texCoord+vec2(1.,0.)*d).z; \n\
-        gz.y += texture2D(texture_blur2, texCoord-vec2(0.,1.)*d).z - texture2D(texture_blur2, texCoord+vec2(0.,1.)*d).z; \n\
+        gz.x = dFdx(texture2D(texture_blur2, texCoord).z)*4.0; \n\
+        gz.y = dFdy(texture2D(texture_blur2, texCoord).z)*4.0; \n\
        \n\
         gl_FragColor = vec4(0.); \n\
        \n\
@@ -708,25 +736,31 @@ canvas.relief=function(scale2,scale4) {
         gl_FragColor.y += gl_FragColor.z*0.5 - 0.1; // blue -> cyan \n\
          \n\
          \n\
-        //gl_FragColor = texture2D(texture, texCoord); // bypass \n\
+        gl_FragColor = clamp(gl_FragColor,0.0,1.0);\n\
          \n\
         gl_FragColor.a = 1.;\n\
       } \n\
     ');
 
     var texture=this.stack_push();
-    this.blur(scale2);
-    var blur2=this.stack_push();
-    this.blur(scale4);
-    var blur4=this.stack_push();
 
-    this.stack_pop();
-    this.stack_pop();
-    this.stack_pop();
-
+    var textures=[];
+    var scales=[scale2,scale4];
+    for(var d=1.; !(textures[0] && textures[1] ) ; d*=Math.sqrt(2))
+    {
+      this.simpleShader( gl.reaction_blur, { delta: [d/this.width, d/this.height]});
+      
+      for(var s=0; s<2; s++)
+        if(!textures[s] && d>scales[s])
+          textures[s]=this.stack_push();          
+    }
+    for(var s=0; s<=2; s++)
+      this.stack_pop();
+      
+    for(var s=0; s<2; s++)
+      textures[s].use(s+1);
     texture.use(0);
-    blur2.use(1);
-    blur4.use(2);
+
     gl.relief.textures({
         texture: 0,
         texture_blur2: 1,
@@ -737,8 +771,8 @@ canvas.relief=function(scale2,scale4) {
         texSize: [1./this.width,1./this.height],
     },texture);
 
-    blur2.unuse(2);
-    blur4.unuse(4);    
+    for(var s=0; s<2; s++)
+      textures[s].unuse(s+1);
 
     return this;
 }
@@ -1112,7 +1146,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         gl_FragColor.x +=  - ((1.-gl_FragColor.y)-0.02)*.025;\n\
       \n\
         gl_FragColor.a = 1.;\n\
-        gl_FragColor=clamp(gl_FragColor,-2.0,2.0); \n\
+        gl_FragColor=clamp(gl_FragColor,-1.0,1.0); \n\
       }\n\
     ');
 
@@ -1134,7 +1168,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
       this.stack_pop();
       
     for(var s=0; s<4; s++)
-      textures[s].use(s);      
+      textures[s].use(s+1);
     texture.use(0);
 
     gl.reaction.textures({
@@ -1153,8 +1187,49 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     },texture);
 
     for(var s=0; s<4; s++)
-      texture.unuse(s);
+      texture.unuse(s+1);
   
+    return this;
+}
+
+
+
+// src/filters/video/displacement.js
+canvas.reaction2=function() {
+    gl.reaction2 = gl.reaction2 || new Shader(null, '\
+      uniform sampler2D texture;\n\
+      uniform vec2 scale;\n\
+      varying vec2 texCoord;\n\
+      \n\
+      const float F = 0.0545, K = 0.062,\n\
+	      D_a = 0.2, D_b = 0.1;\n\
+      \n\
+      const float TIMESTEP = 1.0;\n\
+      \n\
+      void main() {\n\
+	      vec2 p = texCoord.xy,\n\
+	           n = p + vec2(0.0, 1.0)/scale,\n\
+	           e = p + vec2(1.0, 0.0)/scale,\n\
+	           s = p + vec2(0.0, -1.0)/scale,\n\
+	           w = p + vec2(-1.0, 0.0)/scale;\n\
+      \n\
+	      vec2 val = texture2D(texture, p).xy,\n\
+	           laplacian = texture2D(texture, n).xy\n\
+		      + texture2D(texture, e).xy\n\
+		      + texture2D(texture, s).xy\n\
+		      + texture2D(texture, w).xy\n\
+		      - 4.0 * val;\n\
+      \n\
+	      vec2 delta = vec2(D_a * laplacian.x - val.x*val.y*val.y + F * (1.0-val.x),\n\
+		      D_b * laplacian.y + val.x*val.y*val.y - (K+F) * val.y);\n\
+      \n\
+	      gl_FragColor = vec4(val + delta * TIMESTEP, 0, 0);\n\
+      }\n\
+    ');
+
+    this._.texture.use(0);
+    this.simpleShader( gl.reaction2, { scale: [this.width,this.height] });
+
     return this;
 }
 
@@ -1812,6 +1887,7 @@ canvas.stack_push=function(from_texture)
   // copy current frame on top of the stack
   from_texture.use();
   var nt=this._.stackUnused.pop();
+  nt.ensureFormat(from_texture);
   nt.drawTo(function() { Shader.getDefaultShader().drawRect(); });
   this._.stack.push(nt);
 
@@ -2956,6 +3032,37 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
 
     return this;
 }
+
+canvas.pixelate=function(x1,y1,x2,y2) {
+    gl.pixelate = gl.pixelate || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 v1;\
+        uniform vec2 v2;\
+        uniform vec2 v3;\
+        varying vec2 texCoord;\
+        vec2 snap(vec2 x, vec2 s)\
+        {\
+          float t=dot(x,s)/dot(s,s);\
+          vec2 x1=s*(floor(t+0.5)-0.5); \
+          vec2 x2=x-s*t; \
+          return x1+x2;\
+        }\
+        void main() {\
+            vec2 x=texCoord;\
+            x=snap(x,v1);\
+            x=snap(x,v2);\
+            gl_FragColor = texture2D(texture, x);\
+        }\
+    ');
+
+    this.simpleShader( gl.pixelate, {
+        v1:[x1,y1],
+        v2:[x2,y2]
+    });
+
+    return this;
+}
+
 
 // src/filters/fun/colorhalftone.js
 /**

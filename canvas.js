@@ -107,6 +107,7 @@ canvas = function() {
 
     canvas.update=function() {
         this._.texture.use();
+        gl.viewport(0, 0, this.width, this.height);        
         this._.flippedShader.drawRect();
         return this;
     }
