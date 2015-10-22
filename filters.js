@@ -956,7 +956,26 @@ canvas.motion=function(threshold,interval,damper) {
 
 // src/filters/video/reaction.js
 canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
-    gl.reaction = gl.reaction || new Shader(null,'\
+
+    gl.getExtension('OES_standard_derivatives');
+
+    gl.reaction_blur = gl.reaction_blur || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 delta;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = vec4(0.0);\
+            float b=1./4.;\
+            color+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) );\
+            color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
+            color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
+            color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
+            gl_FragColor = color; \
+        }\
+    ');
+    
+    gl.reaction = gl.reaction || new Shader(null,'\n\
+      #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur;\n\
       uniform sampler2D texture_blur2;\n\
@@ -1056,13 +1075,15 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         \n\
         vec2 d = texSize*8.;\n\
         vec2 gy; // gradient in green\n\
-        gy.x = texture2D(texture_blur2, texCoord-vec2(1.,0.)*d).y - texture2D(texture_blur2, texCoord+vec2(1.,0.)*d).y;\n\
-        gy.y = texture2D(texture_blur2, texCoord-vec2(0.,1.)*d).y - texture2D(texture_blur2, texCoord+vec2(0.,1.)*d).y;\n\
+        gy.x = dFdx(texture2D(texture_blur2, texCoord).y);\n\
+        gy.y = dFdy(texture2D(texture_blur2, texCoord).y);\n\
+        gy*=8.;\n\
       \n\
         d = texSize*4.;\n\
         vec2 gz; // gradient in blue\n\
-        gz.x = texture2D(texture_blur, texCoord-vec2(1.,0.)*d).z - texture2D(texture_blur, texCoord+vec2(1.,0.)*d).z;\n\
-        gz.y = texture2D(texture_blur, texCoord-vec2(0.,1.)*d).z - texture2D(texture_blur, texCoord+vec2(0.,1.)*d).z;\n\
+        gz.x = dFdx(texture2D(texture_blur, texCoord).z);\n\
+        gz.y = dFdy(texture2D(texture_blur, texCoord).z);\n\
+        gz*=4.;\n\
       \n\
         uv += gy.yx*vec2(1.,-1.)*texSize*4. //gradient in green rotated by 90 degree\n\
           - gy*texSize*16. // gradient in green\n\
@@ -1077,8 +1098,9 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         // since this became such a beauty, the code for red is mostly a copy, but the inhibitor is inverted to the absence of green\n\
       \n\
         vec2 gx; // gradient in blue\n\
-        gx.x = texture2D(texture_blur, texCoord-vec2(1.,0.)*d).x - texture2D(texture_blur, texCoord+vec2(1.,0.)*d).x;\n\
-        gx.y = texture2D(texture_blur, texCoord-vec2(0.,1.)*d).x - texture2D(texture_blur, texCoord+vec2(0.,1.)*d).x;\n\
+        gx.x = dFdx(texture2D(texture_blur, texCoord).x);\n\
+        gx.y = dFdy(texture2D(texture_blur, texCoord).x);\n\
+        gx*=4.;\n\
       \n\
         uv += - gy.yx*vec2(1.,-1.)*texSize*8. //gradient in green rotated by 90 degree\n\
           + gy*texSize*32. // gradient in green\n\
@@ -1090,30 +1112,31 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         gl_FragColor.x +=  - ((1.-gl_FragColor.y)-0.02)*.025;\n\
       \n\
         gl_FragColor.a = 1.;\n\
+        gl_FragColor=clamp(gl_FragColor,-2.0,2.0); \n\
       }\n\
     ');
 
     var texture=this.stack_push();
-    this.blur(scale1);
-    var blur=this.stack_push();
-    this.blur(scale2);
-    var blur2=this.stack_push();
-    this.blur(scale3);
-    var blur3=this.stack_push();
-    this.blur(scale4);
-    var blur4=this.stack_push();
 
-    this.stack_pop();
-    this.stack_pop();
-    this.stack_pop();
-    this.stack_pop();
-    this.stack_pop(); 
-
+    var textures=[];
+    var scales=[scale1,scale2,scale3,scale4];
+    for(var d=1.; !(textures[0] && textures[1] && textures[2] && textures[3] ) ; d*=Math.sqrt(2))
+    {
+      this.simpleShader( gl.reaction_blur, { delta: [d/this.width, d/this.height]});
+      
+      for(var s=0; s<4; s++)
+        if(!textures[s] && d>scales[s])
+        {
+          textures[s]=this.stack_push();          
+        }
+    }
+    for(var s=0; s<=4; s++)
+      this.stack_pop();
+      
+    for(var s=0; s<4; s++)
+      textures[s].use(s);      
     texture.use(0);
-    blur.use(1);
-    blur2.use(2);
-    blur3.use(3);
-    blur4.use(4);
+
     gl.reaction.textures({
         texture: 0,
         texture_blur: 1,
@@ -1129,13 +1152,9 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         zoom_speed: zoom_speed
     },texture);
 
-    blur.unuse(1);
-    blur2.unuse(2);
-    blur3.unuse(3);
-    blur4.unuse(4);    
-
-               
-
+    for(var s=0; s<4; s++)
+      texture.unuse(s);
+  
     return this;
 }
 
