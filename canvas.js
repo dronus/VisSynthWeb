@@ -73,7 +73,6 @@ canvas = function() {
         if (this._.spareTexture) this._.spareTexture.destroy();
         this.width = width;
         this.height = height;
-        gl.current_viewport=[0, 0, width, height]; // our own viewport cache
         this._.texture = new Texture(width, height, gl.RGBA, type);
         this._.spareTexture = new Texture(width, height, gl.RGBA, type);
         this._.extraTexture = this._.extraTexture || new Texture(0, 0, gl.RGBA, type);

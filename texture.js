@@ -100,9 +100,7 @@ var Texture = (function() {
         /*if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
             throw new Error('incomplete framebuffer');
         }*/
-        var base_viewport=gl.current_viewport;
         gl.viewport(0, 0, this.width, this.height);
-        gl.current_viewport=[0, 0, this.width, this.height];
 
         // do the drawing
         callback();
@@ -110,7 +108,6 @@ var Texture = (function() {
         // stop rendering to this texture
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.current_viewport=base_viewport;
     };
 
     var canvas = null;
