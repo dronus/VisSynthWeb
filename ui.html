@@ -382,7 +382,7 @@
     /* an effect without in and outputs (setup) */
     .effect[ui_inputs="0"][ui_outputs="0"]
     {
-      background: #121;
+      background: #112;
     }
 
     /* effect key and value details */
@@ -902,6 +902,9 @@
     var effects={
       'select_audio':{inputs:0,outputs:0, args:{audio_device:0.0}},
       'map_video':{inputs:0,outputs:0, args:{source_device:0.0, target_device:0.0}},
+      'type_byte':{inputs:0,outputs:0},
+      'type_float':{inputs:0,outputs:0},
+      'resolution':{inputs:0,outputs:0,args:{x:640,y:480}},
       'capture':{inputs:0,args:{device:0}},
       // 'video':{inputs:0,args:{}},      
       'matte':{inputs:0, args:{rgb:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0}}},
@@ -942,7 +945,8 @@
       'unsharpMask':{args:{size:3.0,strength:{type:'osc',f:5.0,a:2.0,p:0.0,o:2.0}}},
       'denoise':{args:{strength:10.0}},
       'denoisefast':{args:{strength:30.0}},
-      'blur':{args:{size:20.0}},
+      'blur':{args:{radius:20.0}},
+      'blur2':{args:{radius:20.0,exponent: 1.0}},
       'erode':{args:{iterations:2.0}},
       'dilate':{args:{iterations:2.0}},
       'localContrast':{args:{size:10.0,strength:0.5}},
@@ -950,9 +954,11 @@
       'bulgePinch':{args:{center:{type:'pos',x:0,y:0},radius:600,strength:0.2}},
       'swirl':{args:{center:{type:'pos',x:0,y:0},radius:250.0,strength:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0}}},
       'hexagonalPixelate':{args:{center:{type:'pos',x:0,y:0}, size: 10.0}},
+      'pixelate':{args:{x1:10.0,y1:10.0, x2:10.0,y2:10.0 }},
       'grid':{args:{size:1.0,angle:0.0}},
       'life':{},
       'smoothlife':{args:{birth_min:7.0,birth_max:10.0,death_min:15.0}},
+      'soft_life':{args:{birth_min:7.0,birth_max:10.0,death_min:15.0}},      
       'ripple':{args:{width:0.3,length:0.3,angle:0.0,strength:2.0}},
       'gauze':{args:{width:300,length:200,angle:0.0,strength:0.5,center:{type:'pos',x:0.0,y:0.0}}},
       'colorDisplacement':{args:{angle:0.0,strength:3.0}},
@@ -963,6 +969,7 @@
       'julia':{args:{cx:-0.8, cy:0.2, center:{type:'pos',x:0.7,y:0.5},size:3.0,angle:0.0,iterations:10.0}},
       'timeshift':{args:{time:{type:'osc',f:200.0,a:12.5,p:0.0,o:12.5}}},
       'reaction':{args:{noise_factor:0.5,zoom_speed:0.005,scale1:8.0,scale2:16.0,scale3:32.0,scale4:64.0}},
+      'reaction2':{},      
       'relief':{args:{scale2:16.0,scale4:64.0}},
     };
     

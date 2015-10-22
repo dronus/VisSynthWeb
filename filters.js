@@ -1,3 +1,29 @@
+
+
+canvas.for_all_textures=function(callback){
+  callback(this._.texture);
+  callback(this._.spareTexture);
+  callback(this._.extraTexture);
+};
+
+canvas.type_byte=function(){
+  this.for_all_textures(function(texture){
+    texture.ensureFormat(texture.width,texture.height,texture.format,gl.UNSIGNED_BYTE);
+  });
+};
+
+canvas.type_float=function(){
+  this.for_all_textures(function(texture){
+    texture.ensureFormat(texture.width,texture.height,texture.format,gl.FLOAT);
+  });
+};
+
+canvas.resolution=function(w,h){
+  this.for_all_textures(function(texture){
+    texture.ensureFormat(w,h,texture.format,texture.type);
+  });
+};
+
 // src/filters/common.js
 var warpShader=function(uniforms, warp) {
     return new Shader(null, uniforms + '\
@@ -38,10 +64,8 @@ canvas.blend_alpha=function() {
     ');
 
     var texture1=this.stack_pop();
-    texture1.use(1);
-    gl.blend_alpha.textures({texture2: 0, texture1: 1});
+    gl.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
     this.simpleShader( gl.blend_alpha, {});
-    texture1.unuse(1);
 
     return this;
 }
@@ -60,15 +84,10 @@ canvas.blend_mask=function() {
         }\
     ');
 
-    this._.texture.use(0);
     var texture2=this.stack_pop();
-    texture2.use(2);
     var texture1=this.stack_pop();
-    texture1.use(1);
-    gl.blend_mask.textures({mask: 0, texture1: 1, texture2: 2});
+    gl.blend_mask.textures({mask: this._.texture, texture1: texture1, texture2: texture2});
     this.simpleShader( gl.blend_mask, {});
-    texture1.unuse(1);
-    texture2.unuse(2);    
 
     return this;
 }
@@ -200,7 +219,7 @@ canvas.superquadric=function(A,B,C,r,s,t,angle) {
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
-        gl.superquadric.uniforms(uniforms).drawTriangles();
+        gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
     },true);
     this._.spareTexture.swapWith(this._.texture);
@@ -218,10 +237,7 @@ canvas.feedbackIn=function()
       this._.feedbackTexture=new Texture(t.width,t.height,t.format,t.type);
     
     this._.feedbackTexture.ensureFormat(this._.texture);
-    this._.texture.use();
-    this._.feedbackTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.texture.copyTo(this._.feedbackTexture);
 
     return this;
 }
@@ -357,7 +373,7 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
-        gl.supershape.uniforms(uniforms).drawTriangles();
+        gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
     },true);
     this._.spareTexture.swapWith(this._.texture);
@@ -431,7 +447,7 @@ canvas.video=function()
     
     if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
     this._.videoTexture.loadContentsOf(v);
-    this.draw(this._.videoTexture);
+    this._.videoTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -512,12 +528,8 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     });
     
     // set shader textures
-    this._.texture.use(0); 
-    var texture=this.stack_pop();
-    texture.use(1);
-    gl.mesh_displacement.textures({displacement_map: 0, texture: 1});
+    gl.mesh_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
-    
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
@@ -525,15 +537,13 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
         gl.frontFace(gl.CCW);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.mesh_displacement.drawTriangles();
+        gl.mesh_displacement.drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
         gl.disable(gl.CULL_FACE);
     },true);
     // replace current texture by spare texture
     this._.spareTexture.swapWith(this._.texture);
  
-    texture.unuse(1);
-     
     return this;
 }
 
@@ -552,11 +562,8 @@ canvas.blend=function(alpha,factor) {
         }\
     ');
 
-    var texture1=this.stack_pop();
-    texture1.use(1);
-    gl.blend.textures({texture: 0, texture1: 1});
+    gl.blend.textures({texture: this._.texture, texture1: this.stack_pop()});
     this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 });
-    texture1.unuse(1);
 
     return this;
 }
@@ -672,7 +679,9 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
 // src/filters/video/relief.js
 canvas.relief=function(scale2,scale4) {
-      gl.relief = gl.relief || new Shader(null,'\
+      gl.getExtension('OES_standard_derivatives');
+      gl.relief = gl.relief || new Shader(null,'\n\
+      #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur2;\n\
       uniform sampler2D texture_blur4;\n\
@@ -684,14 +693,14 @@ canvas.relief=function(scale2,scale4) {
        \n\
         vec2 d = texSize*1.; \n\
         vec2 gy; // green texCoord gradient vector \n\
-        gy.x = texture2D(texture, texCoord-vec2(1.,0.)*d).y - texture2D(texture, texCoord+vec2(1.,0.)*d).y; \n\
-        gy.y = texture2D(texture, texCoord-vec2(0.,1.)*d).y - texture2D(texture, texCoord+vec2(0.,1.)*d).y; \n\
+        gy.x = dFdx(texture2D(texture, texCoord).y); \n\
+        gy.y = dFdy(texture2D(texture, texCoord).y); \n\
        \n\
         d = texSize*4.; \n\
        \n\
         vec2 gz; // blue blur2 gradient vector \n\
-        gz.x += texture2D(texture_blur2, texCoord-vec2(1.,0.)*d).z - texture2D(texture_blur2, texCoord+vec2(1.,0.)*d).z; \n\
-        gz.y += texture2D(texture_blur2, texCoord-vec2(0.,1.)*d).z - texture2D(texture_blur2, texCoord+vec2(0.,1.)*d).z; \n\
+        gz.x = dFdx(texture2D(texture_blur2, texCoord).z)*4.0; \n\
+        gz.y = dFdy(texture2D(texture_blur2, texCoord).z)*4.0; \n\
        \n\
         gl_FragColor = vec4(0.); \n\
        \n\
@@ -708,37 +717,36 @@ canvas.relief=function(scale2,scale4) {
         gl_FragColor.y += gl_FragColor.z*0.5 - 0.1; // blue -> cyan \n\
          \n\
          \n\
-        //gl_FragColor = texture2D(texture, texCoord); // bypass \n\
+        gl_FragColor = clamp(gl_FragColor,0.0,1.0);\n\
          \n\
         gl_FragColor.a = 1.;\n\
       } \n\
     ');
 
     var texture=this.stack_push();
-    this.blur(scale2);
-    var blur2=this.stack_push();
-    this.blur(scale4);
-    var blur4=this.stack_push();
 
-    this.stack_pop();
-    this.stack_pop();
-    this.stack_pop();
-
-    texture.use(0);
-    blur2.use(1);
-    blur4.use(2);
+    var textures=[];
+    var scales=[scale2,scale4];
+    for(var d=1.; !(textures[0] && textures[1] ) ; d*=Math.sqrt(2))
+    {
+      this.simpleShader( gl.reaction_blur, { delta: [d/this.width, d/this.height]});
+      
+      for(var s=0; s<2; s++)
+        if(!textures[s] && d>scales[s])
+          textures[s]=this.stack_push();          
+    }
+    for(var s=0; s<=2; s++)
+      this.stack_pop();
+      
     gl.relief.textures({
-        texture: 0,
-        texture_blur2: 1,
-        texture_blur4: 2
+        texture: texture,
+        texture_blur2: textures[0],
+        texture_blur4: textures[1]
     });    
     
     this.simpleShader( gl.relief, {
         texSize: [1./this.width,1./this.height],
     },texture);
-
-    blur2.unuse(2);
-    blur4.unuse(4);    
 
     return this;
 }
@@ -797,24 +805,19 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 
     // Store a copy of the current texture in the second texture unit
     this._.extraTexture.ensureFormat(this._.texture);
-    this._.texture.use();
-    this._.extraTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.texture.copyTo(this._.extraTexture);
 
-    // Blur the current texture, then use the stored texture to detect edges
-    this._.extraTexture.use(1);
     this.blur(radius);
+
     gl.analogize.textures({
-        glow_texture: 0,
-        texture: 1
+        glow_texture: this._.texture,
+        texture: this._.extraTexture
     });
     this.simpleShader( gl.analogize, {
         Glow: glow,
         Exposure: exposure,
         Gamma: gamma
     });
-    this._.extraTexture.unuse(1);
 
     return this;
 }
@@ -837,21 +840,6 @@ canvas.noalpha=function() {
 // src/filters/video/preview.js
 canvas.preview=function()
 {
-    // Draw a downscaled copy of the current texture to the viewport 
-    
-  /*  
-    var t=this._.texture;
-    
-    if(!this._.previewTexture) 
-      this._.previewTexture=new Texture(t.width/4,t.height/4,t.format,t.type);
-    this._.previewTexture.ensureFormat(t.width/4,t.height/4,t.format,t.type );
-
-    this._.texture.use();
-    this._.previewTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
-*/
-
     this.preview_width=320; this.preview_height=200;
     this._.texture.use();
     this._.flippedShader.drawRect(0,0,this.preview_width,this.preview_height);
@@ -875,20 +863,15 @@ canvas.feedbackOut=function(blend) {
         }\
     ');
 
-    var t=this._.texture;    
-    if(!this._.feedbackTexture) 
-      this._.feedbackTexture=new Texture(t.width,t.height,t.format,t.type);
+    if(!this._.feedbackTexture) return this;
 
-    this._.feedbackTexture.ensureFormat(this._.texture);
-    this._.feedbackTexture.use(1);
     gl.feedbackOut.textures({
-        texture: 0,
-        feedbackTexture: 1
+        texture: this._.texture,
+        feedbackTexture: this._.feedbackTexture
     });
     this.simpleShader( gl.feedbackOut, {
         blend: blend
     });
-    this._.feedbackTexture.unuse(1);
 
     return this;
 }
@@ -928,28 +911,26 @@ canvas.motion=function(threshold,interval,damper) {
     if(!this._.motionCycle || this._.motionCycle>interval)
     {
       // blend current image into mean motion texture
-      this._.motionTexture.use(1);
       gl.motionBlend.textures({
-          motionTexture: 1
+          texture: this._.texture,
+          motionTexture: this._.motionTexture
       });
       this.simpleShader( gl.motionBlend, {
           blend: damper
       },this._.texture,this._.motionTexture);
-      this._.motionTexture.unuse(1);
 
       this._.motionCycle=0;
     }
     this._.motionCycle++;
 
     // rebind, motionTexture was exchanged by simpleShader
-    this._.motionTexture.use(1);
     gl.motion.textures({
-        motionTexture: 1
+        texture: this._.texture,
+        motionTexture: this._.motionTexture
     });
     this.simpleShader( gl.motion, {
         threshold: threshold
     });
-    this._.motionTexture.unuse(1);
 
     return this;
 }
@@ -1112,7 +1093,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         gl_FragColor.x +=  - ((1.-gl_FragColor.y)-0.02)*.025;\n\
       \n\
         gl_FragColor.a = 1.;\n\
-        gl_FragColor=clamp(gl_FragColor,-2.0,2.0); \n\
+        gl_FragColor=clamp(gl_FragColor,-1.0,1.0); \n\
       }\n\
     ');
 
@@ -1133,16 +1114,12 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     for(var s=0; s<=4; s++)
       this.stack_pop();
       
-    for(var s=0; s<4; s++)
-      textures[s].use(s);      
-    texture.use(0);
-
     gl.reaction.textures({
-        texture: 0,
-        texture_blur: 1,
-        texture_blur2: 2,
-        texture_blur3: 3,
-        texture_blur4: 4
+        texture: texture,
+        texture_blur: textures[0],
+        texture_blur2: textures[1],
+        texture_blur3: textures[2],
+        texture_blur4: textures[3]
     });    
     
     this.simpleShader( gl.reaction, {
@@ -1152,9 +1129,47 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         zoom_speed: zoom_speed
     },texture);
 
-    for(var s=0; s<4; s++)
-      texture.unuse(s);
-  
+    return this;
+}
+
+
+
+// src/filters/video/displacement.js
+canvas.reaction2=function() {
+    gl.reaction2 = gl.reaction2 || new Shader(null, '\
+      uniform sampler2D texture;\n\
+      uniform vec2 scale;\n\
+      varying vec2 texCoord;\n\
+      \n\
+      const float F = 0.0545, K = 0.062,\n\
+	      D_a = 0.2, D_b = 0.1;\n\
+      \n\
+      const float TIMESTEP = 1.0;\n\
+      \n\
+      void main() {\n\
+	      vec2 p = texCoord.xy,\n\
+	           n = p + vec2(0.0, 1.0)/scale,\n\
+	           e = p + vec2(1.0, 0.0)/scale,\n\
+	           s = p + vec2(0.0, -1.0)/scale,\n\
+	           w = p + vec2(-1.0, 0.0)/scale;\n\
+      \n\
+	      vec2 val = texture2D(texture, p).xy,\n\
+	           laplacian = texture2D(texture, n).xy\n\
+		      + texture2D(texture, e).xy\n\
+		      + texture2D(texture, s).xy\n\
+		      + texture2D(texture, w).xy\n\
+		      - 4.0 * val;\n\
+      \n\
+	      vec2 delta = vec2(D_a * laplacian.x - val.x*val.y*val.y + F * (1.0-val.x),\n\
+		      D_b * laplacian.y + val.x*val.y*val.y - (K+F) * val.y);\n\
+      \n\
+	      gl_FragColor = vec4(val + delta * TIMESTEP, 0, 0);\n\
+      }\n\
+    ');
+
+    this._.texture.use(0);
+    this.simpleShader( gl.reaction2, { scale: [this.width,this.height] });
+
     return this;
 }
 
@@ -1173,11 +1188,8 @@ canvas.displacement=function(strength) {
         }\
     ');
 
-    var texture=this.stack_pop();
-    texture.use(1);
-    gl.displacement.textures({displacement_map: 0, texture: 1});
+    gl.displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
     this.simpleShader( gl.displacement, { strength: strength });
-    texture.unuse(1);
 
     return this;
 }
@@ -1224,11 +1236,7 @@ canvas.waveform=function()
       this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
       
     this._.waveformTexture.load(values);
-    
-    this._.waveformTexture.use();
-    this._.texture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.waveformTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -1250,11 +1258,8 @@ canvas.lumakey=canvas.luma_key=function(threshold,feather) {
       }\
     ');
 
-    var texture1=this.stack_pop();
-    texture1.use(1);
-    gl.lumakey.textures({texture: 0, texture1: 1});
+    gl.lumakey.textures({texture: this._.texture, texture1: this.stack_pop()});
     this.simpleShader( gl.lumakey, { threshold: threshold, feather: feather });
-    texture1.unuse(1);
 
     return this;
 }
@@ -1283,11 +1288,8 @@ canvas.colorkey=canvas.chroma_key=function(r,g,b,threshold,feather) {
       }\
     ');
 
-    var texture1=this.stack_pop();
-    texture1.use(1);
-    gl.colorkey.textures({texture: 0, texture1: 1});
+    gl.colorkey.textures({texture: this._.texture, texture1: this.stack_pop()});
     this.simpleShader( gl.colorkey, { key_color:[r,g,b], threshold: threshold, feather: feather });
-    texture1.unuse(1);
 
     return this;
 }
@@ -1391,16 +1393,15 @@ canvas.timeshift=function(time)
     
     // copy current frame to the start of the queue, pushing all frames back
     var nt=this._.pastTextures.pop();
-    this._.texture.use();
-    nt.drawTo(function() { Shader.getDefaultShader().drawRect(); });
+    nt.ensureFormat(this._.texture);
+    this._.texture.copyTo(nt);
     this._.pastTextures.unshift(nt);
 
     // copy past frame from the queue to the current texture, if available
     var j=Math.abs(Math.floor(time) % max_frames);
     if(this._.pastTextures[j]) 
     {
-      this._.pastTextures[j].use();
-      this._.texture.drawTo(function() { Shader.getDefaultShader().drawRect(); });
+      this._.pastTextures[j].copyTo(this._.texture);
     }
 
     return this;
@@ -1417,7 +1418,8 @@ canvas.capture=function(source_index)
     
     if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
     this._.videoTexture.loadContentsOf(v);
-    this.draw(this._.videoTexture);
+//    this.draw(this._.videoTexture);
+    this._.videoTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -1547,11 +1549,7 @@ canvas.spectrogram=function()
       this._.spectrogramTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
       
     this._.spectrogramTexture.load(values);
-    
-    this._.spectrogramTexture.use();
-    this._.texture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.spectrogramTexture.copyTo(this._.texture);
         
     return this;
 }
@@ -1604,6 +1602,43 @@ canvas.smoothlife=function(birth_min,birth_max,death_min) {
       birth_max:birth_max,
       death_min:death_min,
       texSize: [this.width, this.height]
+    });
+
+    return this;
+}
+
+canvas.soft_life=function(birth_min,birth_max,death_min) {
+    gl.soft_life = gl.soft_life || new Shader(null, '\
+      uniform sampler2D inner_texture;\
+      uniform sampler2D outer_texture;\
+      varying vec2 texCoord;\
+      uniform float birth_min;\
+      uniform float birth_max;\
+      uniform float death_min;\
+      \
+      void main(void){\
+        vec3 inner=texture2D(inner_texture,texCoord).rgb;\
+        vec3 outer=texture2D(outer_texture,texCoord).rgb-inner/4.;\
+        vec3 birth=smoothstep(birth_min-.05,birth_min+.05,outer)*(vec3(1.)-smoothstep(birth_max-.05,birth_max+.05,outer));\
+        vec3 death=smoothstep(death_min-.05,death_min+.05,outer);\
+        vec3 value=mix(birth,vec3(1.)-death,smoothstep(.45,.55,inner));\
+        value=clamp(value,0.0,1.0);\
+        gl_FragColor = vec4(value, 1.);\
+      }\
+    ');
+
+    this.blur(1.);
+    var inner_texture=this.stack_push();
+    this.blur(2.);
+
+    this.stack_pop();
+        
+    gl.soft_life.textures({inner_texture: inner_texture, outer_texture: this._.texture});
+    
+    this.simpleShader( gl.soft_life, {
+      birth_min:birth_min,
+      birth_max:birth_max,
+      death_min:death_min,
     });
 
     return this;
@@ -1695,14 +1730,9 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
       displacement:displacement
     });             
     var texture=this.stack_pop();
-    texture.use(0);
-    this._.particleTextureB.use(1);
-    gl.particle_update.textures({displacement_texture: 0, texture: 1});
+    gl.particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
         
     this._.particleTextureA.drawTo(function() { gl.particle_update.drawRect(); });
-
-
-
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -1725,24 +1755,19 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     });
     
     // set shader textures    
-    this._.particleTextureA.use(0);
-    this._.texture.use(1);
-
-    gl.particles.textures({particles: 0, texture: 1});
+    gl.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.particles.drawTriangles(gl.POINTS);
+        gl.particles.drawArrays(gl.POINTS);
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture
     this._.spareTexture.swapWith(this._.texture);
  
-    this._.texture.unuse(1);
-     
     return this;
 }
 
@@ -1766,9 +1791,9 @@ canvas.stack_push=function(from_texture)
   }
   
   // copy current frame on top of the stack
-  from_texture.use();
   var nt=this._.stackUnused.pop();
-  nt.drawTo(function() { Shader.getDefaultShader().drawRect(); });
+  nt.ensureFormat(from_texture);
+  from_texture.copyTo(nt);
   this._.stack.push(nt);
 
   return nt;
@@ -1885,24 +1910,19 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     });
     
     // set shader textures
-    this._.texture.use(0); 
-    var texture=this.stack_pop();
-    texture.use(1);
-    gl.patch_displacement.textures({displacement_map: 0, texture: 1});
+    gl.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.patch_displacement.drawTriangles(gl.TRIANGLES);
+        gl.patch_displacement.drawArrays(gl.TRIANGLES);
         gl.disable(gl.DEPTH_TEST);
     },true);
     // replace current texture by spare texture
     this._.spareTexture.swapWith(this._.texture);
  
-    texture.unuse(1);
-     
     return this;
 }
 
@@ -2208,9 +2228,7 @@ canvas.localContrast=function(radius,strength) {
       this.simpleShader( gl.localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
 
   
-    min_image.use(1);
-    max_image.use(2);
-    gl.localContrast.textures({min_texture:1, max_texture:2});
+    gl.localContrast.textures({min_texture:min_image, max_texture:max_image});
     this.simpleShader( gl.localContrast, {strength:strength},original_image);
     
     this.stack_pop();
@@ -2248,117 +2266,6 @@ canvas.erode=function(iterations) {
     return this;
 }
 
-// src/filters/blur/lensblur.js
-/**
- * @filter           Lens Blur
- * @description      Imitates a camera capturing the image out of focus by using a blur that generates
- *                   the large shapes known as bokeh. The polygonal shape of real bokeh is due to the
- *                   blades of the aperture diaphragm when it isn't fully open. This blur renders
- *                   bokeh from a 6-bladed diaphragm because the computation is more efficient. It
- *                   can be separated into three rhombi, each of which is just a skewed box blur.
- *                   This filter makes use of the floating point texture WebGL extension to implement
- *                   the brightness parameter, so there will be severe visual artifacts if brightness
- *                   is non-zero and the floating point texture extension is not available. The
- *                   idea was from John White's SIGGRAPH 2011 talk but this effect has an additional
- *                   brightness parameter that fakes what would otherwise come from a HDR source.
- * @param radius     the radius of the hexagonal disk convolved with the image
- * @param brightness -1 to 1 (the brightness of the bokeh, negative values will create dark bokeh)
- * @param angle      the rotation of the bokeh in radians
- */
-canvas.lensBlur=function(radius, brightness, angle) {
-    // All averaging is done on values raised to a power to make more obvious bokeh
-    // (we will raise the average to the inverse power at the end to compensate).
-    // Without this the image looks almost like a normal blurred image. This hack is
-    // obviously not realistic, but to accurately simulate this we would need a high
-    // dynamic range source photograph which we don't have.
-    gl.lensBlurPrePass = gl.lensBlurPrePass || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform float power;\
-        varying vec2 texCoord;\
-        void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            color = pow(color, vec4(power));\
-            gl_FragColor = vec4(color);\
-        }\
-    ');
-
-    var common = '\
-        uniform sampler2D texture0;\
-        uniform sampler2D texture1;\
-        uniform vec2 delta0;\
-        uniform vec2 delta1;\
-        uniform float power;\
-        varying vec2 texCoord;\
-        ' + randomShaderFunc + '\
-        vec4 sample(vec2 delta) {\
-            /* randomize the lookup values to hide the fixed number of samples */\
-            float offset = random(vec3(delta, 151.7182), 0.0);\
-            \
-            vec4 color = vec4(0.0);\
-            float total = 0.0;\
-            for (float t = 0.0; t <= 30.0; t++) {\
-                float percent = (t + offset) / 30.0;\
-                color += texture2D(texture0, texCoord + delta * percent);\
-                total += 1.0;\
-            }\
-            return color / total;\
-        }\
-    ';
-
-    gl.lensBlur0 = gl.lensBlur0 || new Shader(null, common + '\
-        void main() {\
-            gl_FragColor = sample(delta0);\
-        }\
-    ');
-    gl.lensBlur1 = gl.lensBlur1 || new Shader(null, common + '\
-        void main() {\
-            gl_FragColor = (sample(delta0) + sample(delta1)) * 0.5;\
-        }\
-    ');
-    gl.lensBlur2 = gl.lensBlur2 || new Shader(null, common + '\
-        void main() {\
-            vec4 color = (sample(delta0) + 2.0 * texture2D(texture1, texCoord)) / 3.0;\
-            gl_FragColor = pow(color, vec4(power));\
-        }\
-    ').textures({ texture1: 1 });
-
-    // Generate
-    var dir = [];
-    for (var i = 0; i < 3; i++) {
-        var a = angle + i * Math.PI * 2 / 3;
-        dir.push([radius * Math.sin(a) / this.width, radius * Math.cos(a) / this.height]);
-    }
-    var power = Math.pow(10, clamp(-1, brightness, 1));
-
-    // Remap the texture values, which will help make the bokeh effect
-    this.simpleShader( gl.lensBlurPrePass, {
-        power: power
-    });
-
-    // Blur two rhombi in parallel into extraTexture
-    this._.extraTexture.ensureFormat(this._.texture);
-    this.simpleShader( gl.lensBlur0, {
-        delta0: dir[0]
-    }, this._.texture, this._.extraTexture);
-    this.simpleShader( gl.lensBlur1, {
-        delta0: dir[1],
-        delta1: dir[2]
-    }, this._.extraTexture, this._.extraTexture);
-
-    // Blur the last rhombus and combine with extraTexture
-    this.simpleShader( gl.lensBlur0, {
-        delta0: dir[1]
-    });
-    this._.extraTexture.use(1);
-    this.simpleShader( gl.lensBlur2, {
-        power: 1 / power,
-        delta0: dir[2]
-    });
-
-    return this;
-}
-
-// src/filters/blur/blur.js
 canvas.blur=function(radius) {
     gl.blur = gl.blur || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2384,6 +2291,32 @@ canvas.blur=function(radius) {
 
 canvas.fastBlur=canvas.blur; // legacy name for old filter chains
 
+canvas.blur2=function(radius,exponent) {
+    gl.blur2 = gl.blur2 || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 delta;\
+        uniform float exponent;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = vec4(0.0);\
+            float b=1./4.;\
+            vec4 e=vec4(exponent);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2( .5, .5) ), e);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2(-.5, .5) ), e);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2( .5,-.5) ), e);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2(-.5,-.5) ), e);\
+            gl_FragColor = pow(color,1./e); \
+        }\
+    ');
+
+    for(var d=1.; d<=radius; d*=Math.sqrt(2))
+    {
+      this.simpleShader( gl.blur2, { exponent: exponent, delta: [d/this.width, d/this.height]});
+    }
+    return this;
+}
+
+
 // src/filters/adjust/unsharpmask.js
 /**
  * @filter         Unsharp Mask
@@ -2408,21 +2341,17 @@ canvas.unsharpMask=function(radius, strength) {
 
     // Store a copy of the current texture in the second texture unit
     this._.extraTexture.ensureFormat(this._.texture);
-    this._.texture.use();
-    this._.extraTexture.drawTo(function() {
-        Shader.getDefaultShader().drawRect();
-    });
+    this._.texture.copyTo(this._.extraTexture);
 
     // Blur the current texture, then use the stored texture to detect edges
-    this._.extraTexture.use(1);
     this.blur(radius);
     gl.unsharpMask.textures({
-        originalTexture: 1
+        blurredTexture: this._.texture,
+        originalTexture: this._.extraTexture
     });
     this.simpleShader( gl.unsharpMask, {
         strength: strength
     });
-    this._.extraTexture.unuse(1);
 
     return this;
 }
@@ -2615,7 +2544,6 @@ canvas.curves=function(red, green, blue) {
         array.splice(array.length, 0, red[i], green[i], blue[i], 255);
     }
     this._.extraTexture.initFromBytes(256, 1, array);
-    this._.extraTexture.use(1);
 
     gl.curves = gl.curves || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2631,7 +2559,8 @@ canvas.curves=function(red, green, blue) {
     ');
 
     gl.curves.textures({
-        map: 1
+        texture:this._.texture,
+        map: this._.extraTexture
     });
     this.simpleShader( gl.curves, {});
 
@@ -2912,6 +2841,37 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
 
     return this;
 }
+
+canvas.pixelate=function(x1,y1,x2,y2) {
+    gl.pixelate = gl.pixelate || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 v1;\
+        uniform vec2 v2;\
+        uniform vec2 v3;\
+        varying vec2 texCoord;\
+        vec2 snap(vec2 x, vec2 s)\
+        {\
+          float t=dot(x,s)/dot(s,s);\
+          vec2 x1=s*(floor(t+0.5)-0.5); \
+          vec2 x2=x-s*t; \
+          return x1+x2;\
+        }\
+        void main() {\
+            vec2 x=texCoord;\
+            x=snap(x,v1);\
+            x=snap(x,v2);\
+            gl_FragColor = texture2D(texture, x);\
+        }\
+    ');
+
+    this.simpleShader( gl.pixelate, {
+        v1:[x1,y1],
+        v2:[x2,y2]
+    });
+
+    return this;
+}
+
 
 // src/filters/fun/colorhalftone.js
 /**

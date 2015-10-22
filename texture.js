@@ -100,9 +100,7 @@ var Texture = (function() {
         /*if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
             throw new Error('incomplete framebuffer');
         }*/
-        var base_viewport=gl.current_viewport;
         gl.viewport(0, 0, this.width, this.height);
-        gl.current_viewport=[0, 0, this.width, this.height];
 
         // do the drawing
         callback();
@@ -110,9 +108,16 @@ var Texture = (function() {
         // stop rendering to this texture
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.current_viewport=base_viewport;
     };
+    
 
+    Texture.prototype.copyTo = function(target) {
+        this.use();
+        target.drawTo(function() {
+            Shader.getDefaultShader().drawRect();
+        });
+    };
+    
     var canvas = null;
 
     function getCanvas(texture) {
@@ -123,30 +128,6 @@ var Texture = (function() {
         c.clearRect(0, 0, canvas.width, canvas.height);
         return c;
     }
-
-    Texture.prototype.fillUsingCanvas = function(callback) {
-        callback(getCanvas(this));
-        this.format = gl.RGBA;
-        this.type = gl.UNSIGNED_BYTE;
-        gl.bindTexture(gl.TEXTURE_2D, this.id);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
-        return this;
-    };
-
-    Texture.prototype.toImage = function(image) {
-        this.use();
-        Shader.getDefaultShader().drawRect();
-        var size = this.width * this.height * 4;
-        var pixels = new Uint8Array(size);
-        var c = getCanvas(this);
-        var data = c.createImageData(this.width, this.height);
-        gl.readPixels(0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        for (var i = 0; i < size; i++) {
-            data.data[i] = pixels[i];
-        }
-        c.putImageData(data, 0, 0);
-        image.src = canvas.toDataURL();
-    };
 
     Texture.prototype.swapWith = function(other) {
         var temp;
