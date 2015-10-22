@@ -14,6 +14,76 @@
   ""
  ],
  [
+  "smooth life",
+  {
+   "effect": "sobel",
+   "secondary": 2.849,
+   "coeff": 3.88,
+   "alpha": 0.891,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "soft_life",
+   "birth_min": 0.237,
+   "birth_max": 0.261,
+   "death_min": 0.756
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "colorful reaction",
+  {
+   "effect": "brightnessContrast",
+   "brightness": 0.253,
+   "contrast": 0.512
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.919
+  },
+  {
+   "effect": "reaction",
+   "noise_factor": 0.5,
+   "zoom_speed": 0,
+   "scale1": 10.714,
+   "scale2": 4.33,
+   "scale3": 6.24,
+   "scale4": 19.315
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "analogize",
+   "exposure": 0.134,
+   "gamma": 0.528,
+   "glow": 1.224,
+   "glow_radius": 16
+  }
+ ],
+ [
   "gaston julia",
   {
    "effect": "julia",

@@ -1609,6 +1609,50 @@ canvas.smoothlife=function(birth_min,birth_max,death_min) {
     return this;
 }
 
+canvas.soft_life=function(birth_min,birth_max,death_min) {
+    gl.soft_life = gl.soft_life || new Shader(null, '\
+      uniform sampler2D inner_texture;\
+      uniform sampler2D outer_texture;\
+      varying vec2 texCoord;\
+      uniform float birth_min;\
+      uniform float birth_max;\
+      uniform float death_min;\
+      \
+      void main(void){\
+        vec3 inner=texture2D(inner_texture,texCoord).rgb;\
+        vec3 outer=texture2D(outer_texture,texCoord).rgb-inner/4.;\
+        vec3 birth=smoothstep(birth_min-.05,birth_min+.05,outer)*(vec3(1.)-smoothstep(birth_max-.05,birth_max+.05,outer));\
+        vec3 death=smoothstep(death_min-.05,death_min+.05,outer);\
+        vec3 value=mix(birth,vec3(1.)-death,smoothstep(.45,.55,inner));\
+        value=clamp(value,0.0,1.0);\
+        gl_FragColor = vec4(value, 1.);\
+      }\
+    ');
+
+    this.blur(1.);
+    var inner_texture=this.stack_push();
+    this.blur(2.);
+    var outer_texture=this.stack_push();
+
+    this.stack_pop();
+    this.stack_pop();
+        
+    inner_texture.use(0);
+    outer_texture.use(1);
+    
+    gl.soft_life.textures({inner_texture: 0, outer_texture: 1});
+    
+    this.simpleShader( gl.soft_life, {
+      birth_min:birth_min,
+      birth_max:birth_max,
+      death_min:death_min,
+    });
+
+    outer_texture.unuse(1);
+
+    return this;
+}
+
 
 // src/filters/video/particle_displacement.js
 canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
