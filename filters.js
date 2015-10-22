@@ -2335,7 +2335,6 @@ canvas.erode=function(iterations) {
     return this;
 }
 
-// src/filters/blur/blur.js
 canvas.blur=function(radius) {
     gl.blur = gl.blur || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2360,6 +2359,32 @@ canvas.blur=function(radius) {
 }
 
 canvas.fastBlur=canvas.blur; // legacy name for old filter chains
+
+canvas.blur2=function(radius,exponent) {
+    gl.blur2 = gl.blur2 || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 delta;\
+        uniform float exponent;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = vec4(0.0);\
+            float b=1./4.;\
+            vec4 e=vec4(exponent);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2( .5, .5) ), e);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2(-.5, .5) ), e);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2( .5,-.5) ), e);\
+            color+=b*pow(texture2D(texture, texCoord + delta * vec2(-.5,-.5) ), e);\
+            gl_FragColor = pow(color,1./e); \
+        }\
+    ');
+
+    for(var d=1.; d<=radius; d*=Math.sqrt(2))
+    {
+      this.simpleShader( gl.blur2, { exponent: exponent, delta: [d/this.width, d/this.height]});
+    }
+    return this;
+}
+
 
 // src/filters/adjust/unsharpmask.js
 /**
