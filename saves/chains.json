@@ -14,17 +14,101 @@
  ],
  [],
  [
+  ""
+ ],
+ [
+  "slow reactor",
+  {
+   "effect": "sobel",
+   "secondary": 5.861,
+   "coeff": 5.678,
+   "alpha": 1,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.97
+  },
+  {
+   "effect": "reaction",
+   "noise_factor": 0,
+   "zoom_speed": 0,
+   "scale1": 8,
+   "scale2": 16,
+   "scale3": 32,
+   "scale4": 64
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.435
+  },
+  {
+   "effect": "reaction2",
+   "F": 0.0545,
+   "K": 0.062,
+   "D_a": 0.2,
+   "D_b": 0.1,
+   "speed": 19.87
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "relief",
+   "scale2": 16,
+   "scale4": 64
+  }
+ ],
+ [
   "the glitch",
   {
    "effect": "glitch",
    "scale": 14.908,
-   "detail": 112.627,
-   "strength": 0.834,
-   "speed": 5
+   "detail": {
+    "type": "osc",
+    "f": 5,
+    "a": 3.908,
+    "p": 0,
+    "o": 112.627
+   },
+   "strength": {
+    "type": "osc",
+    "f": 15.915,
+    "a": 0.015,
+    "p": 0,
+    "o": 0.868
+   },
+   "speed": {
+    "type": "osc",
+    "f": 5,
+    "a": 1.6305,
+    "p": 0,
+    "o": 3.261
+   }
   }
  ],
  [
   "slow cells",
+  {
+   "effect": "glitch",
+   "scale": 16,
+   "detail": 25,
+   "strength": 0.82,
+   "speed": 1
+  },
   {
    "effect": "sobel",
    "secondary": 2.849,
@@ -47,7 +131,7 @@
   },
   {
    "effect": "feedbackOut",
-   "blend": 0.96
+   "blend": 0.994
   },
   {
    "effect": "reaction2",
@@ -55,10 +139,18 @@
    "K": 0.049,
    "D_a": 0.2,
    "D_b": 0.1,
-   "speed": 20
+   "speed": 2.303
   },
   {
    "effect": "feedbackIn"
+  },
+  {
+   "effect": "brightnessContrast",
+   "brightness": 0.139,
+   "contrast": 0.801
+  },
+  {
+   "effect": "rainbow"
   }
  ],
  [
@@ -67,7 +159,7 @@
    "effect": "sobel",
    "secondary": 5.861,
    "coeff": 5.678,
-   "alpha": 0.891,
+   "alpha": 1,
    "areas": {
     "type": "rgba",
     "r": 0,
@@ -85,7 +177,7 @@
   },
   {
    "effect": "feedbackOut",
-   "blend": 0.97
+   "blend": 0.988
   },
   {
    "effect": "reaction2",
@@ -93,10 +185,25 @@
    "K": 0.062,
    "D_a": 0.2,
    "D_b": 0.1,
-   "speed": 50
+   "speed": 19.87
   },
   {
    "effect": "feedbackIn"
+  },
+  {
+   "effect": "levels",
+   "min": 0.298,
+   "gamma": 1,
+   "max": 0.223,
+   "r_min": 0.059,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1.059,
+   "g_max": 1.205,
+   "b_max": 3.101
   }
  ],
  [

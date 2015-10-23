@@ -1155,7 +1155,8 @@ canvas.reaction2=function(F,K,D_a,D_b,iterations) {
 	           s = p + vec2(0.0, -1.0)/scale,\n\
 	           w = p + vec2(-1.0, 0.0)/scale;\n\
       \n\
-	      vec2 val = texture2D(texture, p).xy,\n\
+	      vec3 color = texture2D(texture, p).xyz;\n\
+	      vec2 val = color.xy,\n\
 	           laplacian = texture2D(texture, n).xy\n\
 		      + texture2D(texture, e).xy\n\
 		      + texture2D(texture, s).xy\n\
@@ -1165,7 +1166,7 @@ canvas.reaction2=function(F,K,D_a,D_b,iterations) {
 	      vec2 delta = vec2(D_a * laplacian.x - val.x*val.y*val.y + F * (1.0-val.x),\n\
 		      D_b * laplacian.y + val.x*val.y*val.y - (K+F) * val.y);\n\
       \n\
-	      gl_FragColor = vec4(clamp(val + delta,-1.0,1.0), 0.0, 1.0);\n\
+	      gl_FragColor = vec4(clamp(val + delta,-1.0,1.0), color.z, 1.0);\n\
       }\n\
     ');
 
