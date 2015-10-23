@@ -2948,3 +2948,50 @@ canvas.invert=function() {
 
 canvas.invertColor=canvas.invert; // legacy name
 
+canvas.glitch=function(scale,detail,strength,speed) {
+    canvas.glitch_time=(canvas.glitch_time || 0.0)+0.0001*speed;
+    gl.glitch = gl.glitch || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float time;\
+        uniform float strength;\
+        uniform float detail;\
+        uniform vec2 texSize;\
+        varying vec2 texCoord;\
+        vec3 rand(vec3 seed) {\
+            return fract(sin(seed * 43758.5453) + seed);\
+        }\
+        vec3 glitch(vec3 dc, float seed,float scale)\
+        {\
+            vec3 primes=vec3(3.0,17.0,23.0);\
+            vec3 fxs=rand(seed*primes/11.0)*scale;\
+            vec3 fys=rand(seed*primes/13.0)*scale-fxs;\
+            vec3 as=rand(seed*primes/27.0);\
+            vec3 ps=rand(seed*primes/33.0)*scale;\
+            vec2 d=texCoord*scale;\
+            return smoothstep(0.8,0.95,abs(as*strength))*as*cos(fxs*d.x+fys*d.y+ps)*3.0*dc;\
+        }\
+        \
+        void main() {\
+            vec4 dc    = texture2D(texture, floor(texCoord*texSize)/texSize );\
+            vec3 primes=vec3(3.0,17.0,23.0);\
+            float time_seed=sin(floor(dot(time*primes,primes.zxy)));\
+            float seed =dot(floor(texCoord*texSize),vec2(texSize.y,1.0)+time_seed);\
+            float seed2=floor(dot(floor(texCoord*texSize),vec2(0.013,1.0)))+floor(time_seed/17.);\
+            vec3 glitch2=glitch(dc.rgb,seed2,detail/16.0);\
+            vec4 color = texture2D(texture, texCoord+glitch2.xy/texSize.xy*16.0);\
+            color.rgb+=glitch(dc.rgb,seed,detail)+glitch2;\
+            gl_FragColor = color;\
+        }\
+    ');
+
+    this.simpleShader( gl.glitch, {
+        detail:detail,
+        strength: strength,
+        texSize: [this.width/scale, this.height/scale],
+        time: canvas.glitch_time
+    });
+
+    return this;
+}
+
+

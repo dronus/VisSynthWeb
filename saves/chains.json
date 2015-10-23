@@ -14,7 +14,14 @@
  ],
  [],
  [
-  ""
+  "the glitch",
+  {
+   "effect": "glitch",
+   "scale": 14.908,
+   "detail": 112.627,
+   "strength": 0.834,
+   "speed": 5
+  }
  ],
  [
   "slow cells",
