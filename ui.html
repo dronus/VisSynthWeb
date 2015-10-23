@@ -13,7 +13,8 @@
     <h1 style="font-size:100%">VIS SYNTH MCP</h1>
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
-    <button id=undo onclick="undo()">UNDO</button>    
+    <button id=undo onclick="undo()">UNDO</button>
+    <span id=stats></span>
   </div>
 
   <div class="effects container">
@@ -47,7 +48,7 @@
   </div>
 
   <div class="preview container" onclick="toggle_preview()">
-    <button>PREVIEW</button> <span id=stats></span>
+    <button>PREVIEW</button>
     <img id=preview></img>
   </div>
   
@@ -1142,8 +1143,8 @@
         if(json)
 	{
           var data=JSON.parse(json);
-          document.getElementById('preview').src=data.jpeg;
-          document.getElementById('stats').innerHTML='FPS: '+(Math.round(1000./data.frame_time));
+          document.getElementById('preview').src=data.jpeg ? data.jpeg : "";
+          document.getElementById('stats').innerHTML='online, running '+(Math.round(1000./data.frame_time))+' fps';
           clearTimeout(preview_offline_timeout);
         }
         requestAnimationFrame(preview_handler); 

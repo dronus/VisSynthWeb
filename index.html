@@ -44,6 +44,7 @@
 
     var time=0,frame_time=0; // running time
     var preview_cycle=0;
+    var preview_enabled=false;
     var screenshot_cycle=0;
     var preview_canvas=null;
     var chain=null;
@@ -65,7 +66,7 @@
       if(chain) chain(canvas,effect_time);
 
       // provide preview if requested
-      if(preview_cycle==1)
+      if(preview_enabled && preview_cycle==0)
       {      
         if(!preview_canvas)
         {
@@ -74,20 +75,15 @@
         }
         var ctx=preview_canvas.getContext('2d');
         ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
-
-        put('frame_time',""+frame_time);
-
-        preview_cycle=2;
       }
-      else if(preview_cycle==2)
+      else if(preview_cycle==1)
       {          
-        var jpeg=preview_canvas.toDataURL('image/jpeg');
+        var jpeg=preview_enabled ? preview_canvas.toDataURL('image/jpeg') : null;
 	var data={frame_time:frame_time, jpeg:jpeg};
 	var json=JSON.stringify(data);
         put('preview',json);
-      
-        preview_cycle=1;
-      }     
+      }
+      preview_cycle=(preview_cycle+1)%2;
 
       // redraw visible canvas
       canvas.update();
@@ -318,7 +314,8 @@
     function preview(enabled)
     {
       // engage preview process
-      preview_cycle=enabled ? 1 : 0;
+      preview_enabled=enabled;
+      preview_cycle=0;
     }
     
     // receive screenshot request from remote
