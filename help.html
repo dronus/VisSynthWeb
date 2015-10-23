@@ -49,6 +49,12 @@
   <div help_for=".effects .effect">
     Drag this effect to the chain to add it.
   </div>
+  <div help_for=".effect[ui_effect='feedbackIn']">
+    A feedback tap. Insert this effect into the chain to make the current image available at the next frame. Use feedbackOut above this effect to retrieve the image.
+  </div>
+  <div help_for=".effect[ui_effect='feedbackOut']">
+    A feedback output. Insert this effect into the chain to receive the image pushed by feedbackIn on the last frame. Use feedbackIn below this effect to provide an image.
+  </div>
   <div help_for=".effect[ui_effect='preview']">
     A preview tap. Insert this effect into a chain and run preview to view the intermediate image.
   </div>
