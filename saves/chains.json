@@ -14,7 +14,30 @@
  ],
  [],
  [
-  ""
+  "bollo",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 1.048,
+    "g": -0.2,
+    "b": 1,
+    "a": 1
+   }
+  }
+ ],
+ [
+  "yollo",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 0,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  }
  ],
  [
   "slow reactor",
@@ -71,6 +94,9 @@
    "scale2": 16,
    "scale4": 64
   }
+ ],
+ [
+  ""
  ],
  [
   "the glitch",

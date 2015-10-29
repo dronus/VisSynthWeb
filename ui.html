@@ -7,7 +7,7 @@
   <script src="jquery-ui.js"></script>
   <script src="jquery.ui.touch-punch.js"></script>  
 </head>
-<body style="font-size: 20px;">
+<body style="font-size: 20px;" class="chain_layout">
 
   <div class="header container">
     <h1 style="font-size:100%">VIS SYNTH MCP</h1>
@@ -15,6 +15,7 @@
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
     <span id=stats></span>
+    <button id=undo onclick="toggle_timeline()">TIMELINE</button>
   </div>
 
   <div class="effects container">
@@ -45,6 +46,11 @@
   <div class="post_chain container">
     <h2>Setup After</h2>
     <div id="post_chain"></div>
+  </div>
+
+  <div class="timeline container">
+    <h2>Timeline <button onclick="runTimeline()">RUN</button><span>speed: <input id=delay value="60">/m</span></h2>
+    <div id="timeline"></div>
   </div>
 
   <div class="preview container" onclick="toggle_preview()">
@@ -168,7 +174,7 @@
       top:50px;
       bottom: 0px;
     }
-    #chains>*{
+    #chains>*, #timeline>*{
       background-color: #111;
       margin: 2px;
       border-radius: 5px;
@@ -237,6 +243,31 @@
     #chain:empty::before,#pre_chain:empty::before,#post_chain:empty::before{
       content: "drag effects here";
       color: #777;
+    }
+    
+    .timeline{
+      position: fixed;
+      top: 50px;
+      bottom: 250px;
+      left:270px;
+      right:0px;
+      padding: 2px;
+      margin: 0px;      
+    }
+    #timeline:empty::before{
+      content: "drag chains here";
+      color: #777;
+    }
+    .timeline #delay{
+      padding: 4px;
+      width: 40px;
+      overflow:hidden;
+      background-color: transparent;
+      color: #fff;
+    }    
+    .timeline h2 span{
+      margin-left: 20px;
+      font-size: 12px;
     }
     
     .pre_chain{
@@ -483,6 +514,25 @@
       bottom: 10px; left: 10px;
    }
     
+    
+   /* toggle layouts */
+   
+    body>.container{
+      display: none;
+    }
+    body>.preview, body>.header, body>.chains{
+      display: block;
+    }
+    .chain_layout .chain, .chain_layout .effects, .chain_layout .pre_chain, .chain_layout .post_chain
+    {
+      display: block;
+    }
+    .timeline_layout .timeline
+    {
+      display: block;
+    }
+       
+    
   </style>
 
   <script>
@@ -544,6 +594,43 @@
       console.log('Saved.');
       
       savetimeout=false;
+    }
+    
+    
+    var runTimeline=function()
+    {
+      // send out to control server
+      var chains=[];
+      // compile chains with pre- and post chains
+      var pre =$('#pre_chain').data('chain');
+      var post=$('#post_chain').data('chain');
+      $('#timeline .chain_token').each(function(){
+        var chain=$(this).data('chain');
+        chain=pre.concat(chain,post);
+        chains.push(chain);
+      });
+      var delay=60000/parseFloat($('.timeline #delay').val());
+      send('setChains('+JSON.stringify(chains)+','+delay+')');
+    }
+    
+    var save_timeline=function()
+    {
+      var chains=[];
+      $('#timeline .chain_token').each(function(){
+        var chain=$(this).data('chain');
+        chains.push(chain);
+      });
+
+      var json=JSON.stringify(chains,null,' ');
+      put('/saves'+session_url+'timeline.json',json);
+      console.log('Saved timeline.');
+    }
+    
+    
+    var save_timeline_timeout=false;
+    var updateTimeline=function(){
+      if(save_timeline_timeout) clearTimeout(save_timeline_timeout);
+      save_timeline_timeout=setTimeout(save_timeline,1000);
     }
     
     /*  recursively create UI for an effect, callback provides the UI for a signle value */
@@ -791,7 +878,7 @@
       
     };
     
-    savetimeout=false;
+    var savetimeout=false;
     var updateChain=function(event,ui)
     {
       if(savetimeout) clearTimeout(savetimeout);
@@ -880,7 +967,20 @@
       });
             
       $('#chains>*:first-child').click();
-    }    
+    }
+
+    var load_timeline=function(json){
+      if(!json) return;
+      var chains=JSON.parse(json);
+
+      chains.forEach(function(chain)
+      {
+        var chain_token=token.clone();
+        $('#timeline').append(chain_token);
+        chain_token.find('input').val(chain[0]);
+        chain_token.data('chain',chain);
+      });
+    }
 
     /* pop last undo state */    
     function undo(){
@@ -893,6 +993,7 @@
         updateChain();
       }
     }
+     
              
     /* compress and expand values for sliders to enable large adjustments */
     var logify=function(x){
@@ -1037,16 +1138,25 @@
     $("#chains").sortable({
         distance:10,
         delay: 300,
+        appendTo: 'body',
         // allow removal of items by dragging them out
         over: function(){this.is_outside=false},
         out: function(){this.is_outside=true},
-        beforeStop: function(ev,ui){          
+    /*    beforeStop: function(ev,ui){          
           if(this.is_outside) 
           {
             $(ui.item).remove();
             updateChain();
           }
-        }
+        },*/
+        
+       remove: function(e,ui) {
+         ui.item.clone('true').insertAfter(ui.item);
+         $(this).sortable('cancel');
+         updateTimeline();
+         return ui;
+    }   ,
+        connectWith:'#timeline'
     });
  
     // a chain is displayed and activated on click on its token
@@ -1099,7 +1209,30 @@
       else
         load(data);
     });
-    
+
+    get('/saves'+session_url+'timeline.json',function(data){
+      if(!data) // no saved chains in this session 
+        get('/saves/timeline.json',load_timeline); // load default chain instead
+      else
+        load_timeline(data);
+    });
+
+    // the timeline is sortable...
+    $("#timeline").sortable({
+        distance:10,
+        delay: 300,
+        // allow removal of items by dragging them out
+        over: function(){this.is_outside=false},
+        out: function(){this.is_outside=true},
+        beforeStop: function(ev,ui){          
+          if(this.is_outside) 
+          {
+            $(ui.item).remove();
+          }
+          updateTimeline();
+        }
+    });
+
     // add help...
 
     // a tooltip is shown for any item matching certain selector 
@@ -1171,6 +1304,11 @@
         // link.remove();
       });
       send('screenshot()');
+    }
+      
+    function toggle_timeline(){
+      $(document.body).toggleClass('chain_layout');      
+      $(document.body).toggleClass('timeline_layout');
     }
       
     // double tap quirk for touch screens

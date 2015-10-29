@@ -1,0 +1,21 @@
+[
+ [
+  "gaston julia",
+  {
+   "effect": "julia",
+   "cx": -1.205,
+   "cy": -0.313,
+   "center": {
+    "type": "pos",
+    "x": 0.575,
+    "y": 0.575
+   },
+   "size": 0.404,
+   "angle": 0,
+   "iterations": 29.361
+  }
+ ],
+ [
+  ""
+ ]
+]
