@@ -289,6 +289,8 @@
     // set effect chain to render
     function setChain(effects)
     {
+      if(timeline_timeout) clearTimeout(timeline_timeout); // stop timeline effect cycling
+    
       effects.unshift({'effect':'stack_prepare'});    
       var havePreview=false;
       for(var i=0; i<effects.length; i++)
@@ -310,6 +312,29 @@
       chain=eval(src);
     }
     
+    // set several effect chains at once that are then cycled.
+    var timeline_index=0;
+    var timeline_timeout=null;
+    function setChains(chains,delay)
+    {
+      delay=parseInt(delay);
+      delay=delay<100 ? 100 : delay;
+      
+      var cycler=function(){
+        if(timeline_index>=chains.length) 
+          timeline_index=0;
+                
+        var chain=chains[timeline_index];
+        setChain(chain);
+        
+        timeline_index++;
+
+        // install timeout to invoke next cycle
+        timeline_timeout=setTimeout(cycler,delay);
+      };
+      cycler();
+    }
+    
     // receive preview request from remote       
     function preview(enabled)
     {
@@ -327,13 +352,12 @@
     
     // load startup chain (first three of chains.json : setup pre, current, setup after)
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET','saves'+session_url+'chains.json',false);
+    xmlHttp.open('GET','saves'+session_url+'timeline.json',false);
     xmlHttp.send(null);
     if(xmlHttp.responseText)
     { 
       var chains=JSON.parse(xmlHttp.responseText);
-      var full_chain=chains[0].concat(chains[2],chains[1]);
-      setChain(full_chain);
+      setChains(chains,1000);
     }
     
   </script>
