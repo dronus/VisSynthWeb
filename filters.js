@@ -491,6 +491,28 @@ canvas.video=function()
     return this;
 }
 
+canvas.image=function()
+{
+
+    var v=this._.imageFilterElement;
+    if(!v)
+    {
+      var v = document.createElement('img');
+      v.src="test.jpg";
+      this._.imageFilterElement=v;
+    }  
+      
+    // make sure the image has adapted to the image source
+    if(!v.width) return this; 
+    
+    if(!this._.imageTexture) this._.imageTexture=this.texture(v);    
+    this._.imageTexture.loadContentsOf(v);
+    this._.imageTexture.copyTo(this._.texture);
+        
+    return this;
+}
+
+
 // src/filters/video/ripple.js
 canvas.ripple=function(fx,fy,angle,amplitude) {
     gl.ripple = gl.ripple || warpShader('\
