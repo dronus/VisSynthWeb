@@ -503,11 +503,15 @@ canvas.image=function()
     }  
       
     // make sure the image has adapted to the image source
-    if(!v.width) return this; 
+    if(!this._.imageTexture && v.width>0)
+    {
+      this._.imageTexture=this.texture(v);    
+      this._.imageTexture.loadContentsOf(v);
+      this._.imageFilterElement=null;
+    }
     
-    if(!this._.imageTexture) this._.imageTexture=this.texture(v);    
-    this._.imageTexture.loadContentsOf(v);
-    this._.imageTexture.copyTo(this._.texture);
+    if(this._.imageTexture)
+      this._.imageTexture.copyTo(this._.texture);
         
     return this;
 }

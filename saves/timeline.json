@@ -1,27 +1,55 @@
 [
  [
-  "gaston julia",
+  "bulgebeat",
   {
-   "effect": "julia",
-   "cx": -1.205,
-   "cy": -0.313,
+   "effect": "swirl",
    "center": {
     "type": "pos",
-    "x": 0.575,
-    "y": 0.575
+    "x": 0,
+    "y": 0
    },
-   "size": 0.404,
-   "angle": 0,
-   "iterations": 29.361
+   "radius": 500,
+   "strength": 0.18
+  },
+  {
+   "effect": "bulgePinch",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "radius": 600,
+   "strength": {
+    "type": "beat",
+    "pulse": 0,
+    "f": 2,
+    "a": 0.05,
+    "p": 0,
+    "o": 0
+   }
   }
  ],
  [
-  "sobel flash",
+  "smooth life",
   {
    "effect": "sobel",
-   "secondary": 4.61,
-   "coeff": 1.439,
-   "alpha": 1.005,
+   "secondary": {
+    "type": "beat",
+    "pulse": 20.738,
+    "f": 0,
+    "a": 1.4245,
+    "p": 0,
+    "o": 1.4245
+   },
+   "coeff": {
+    "type": "beat",
+    "pulse": 31.122,
+    "f": 0,
+    "a": 1.94,
+    "p": 0,
+    "o": 1.94
+   },
+   "alpha": 0.891,
    "areas": {
     "type": "rgba",
     "r": 0,
@@ -38,20 +66,38 @@
    }
   },
   {
-   "effect": "zoomBlur",
-   "center": {
-    "type": "pos",
-    "x": 0,
-    "y": 0
-   },
-   "size": {
-    "type": "beat",
-    "pulse": 8,
-    "f": 0,
-    "a": 0.092,
+   "effect": "feedbackOut",
+   "blend": 0.298
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.056,
+   "birth_max": 0.237,
+   "death_min": 0.69
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.609
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "rainbow Run",
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 0.402,
+    "a": -0.768,
     "p": 0,
-    "o": 0.092
-   }
+    "o": 0
+   },
+   "saturation": 0
   }
  ]
 ]
