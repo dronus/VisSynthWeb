@@ -2825,6 +2825,30 @@ canvas.posterize=function(steps) {
     return this;
 }
 
+
+canvas.posterize_hue=function(hue,brightness) {
+    gl.posterize_hue = gl.posterize_hue || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float hue;\
+        uniform float brightness;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            vec3 b=vec3(length(color.rgb));\
+            vec3 h=color.rgb-b;\
+            b=floor(b*brightness)/brightness;\
+            h=floor(h*hue       )/hue       ;\
+            gl_FragColor = vec4(b+h, color.a);\
+        }\
+    ');
+
+    this.simpleShader( gl.posterize_hue, { hue: Math.round(hue), brightness: Math.round(brightness) });
+
+    return this;
+}
+
+
+
 // src/filters/fun/hexagonalpixelate.js
 /**
  * @filter        Hexagonal Pixelate

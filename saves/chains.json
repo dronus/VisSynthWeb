@@ -14,7 +14,12 @@
  ],
  [],
  [
-  "bollo"
+  "bollo",
+  {
+   "effect": "posterize_hue",
+   "hue": 1.159,
+   "brightness": 255
+  }
  ],
  [
   "yollo",
@@ -86,6 +91,8 @@
   }
  ],
  [
+  "",
+  "",
   "",
   "",
   "",
