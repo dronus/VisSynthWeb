@@ -427,6 +427,45 @@ canvas.matte=function(r,g,b,a) {
     return this;
 }
 
+
+canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
+
+    gl.polygon_matte = gl.polygon_matte || new Shader(null, '\
+        uniform vec4 color;\
+        uniform vec2 size;\
+        uniform float sides;\
+        uniform float angle;\
+        uniform vec2 center;\
+        varying vec2 texCoord;\
+        float PI=3.14159; \
+        void main() {\
+            vec2 uv=texCoord-vec2(0.5,0.5)-center;\
+            uv/=size;\
+            \
+            float a=atan(uv.x,uv.y)-angle; \
+            float r=length(uv); \
+            \
+            float d = r / (cos(PI/sides)/cos(mod(a,(2.*PI/sides))-(PI/sides))); \
+            \
+            if(d<1.) \
+              gl_FragColor=color; \
+            else \
+              gl_FragColor=vec4(0.); \
+        }\
+    ');
+
+    this.simpleShader( gl.polygon_matte, {
+        color:[r,g,b,a],
+        size:[size*this.height/this.width,size*aspect],
+        sides:Math.floor(sides),
+        angle:angle,
+        center: [x,y]
+    });
+
+    return this;
+}
+
+
 // src/filters/video/video.js
 canvas.video=function()
 {
@@ -451,6 +490,28 @@ canvas.video=function()
         
     return this;
 }
+
+canvas.image=function()
+{
+
+    var v=this._.imageFilterElement;
+    if(!v)
+    {
+      var v = document.createElement('img');
+      v.src="test.jpg";
+      this._.imageFilterElement=v;
+    }  
+      
+    // make sure the image has adapted to the image source
+    if(!v.width) return this; 
+    
+    if(!this._.imageTexture) this._.imageTexture=this.texture(v);    
+    this._.imageTexture.loadContentsOf(v);
+    this._.imageTexture.copyTo(this._.texture);
+        
+    return this;
+}
+
 
 // src/filters/video/ripple.js
 canvas.ripple=function(fx,fy,angle,amplitude) {
@@ -1343,15 +1404,16 @@ canvas.life=function() {
 
 
 // src/filters/video/polygon.js
-canvas.polygon=function(sides,x,y,size,angle) {
+canvas.polygon=function(sides,x,y,size,angle,aspect) {
 
+    aspect=aspect || 1.;
+    
     gl.polygon = gl.polygon || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float sides;\
         uniform float angle;\
         uniform vec2 center;\
-        uniform vec2 aspect;\
         varying vec2 texCoord;\
         float PI=3.14159; \
         void main() {\
@@ -1372,7 +1434,7 @@ canvas.polygon=function(sides,x,y,size,angle) {
     ');
 
     this.simpleShader( gl.polygon, {
-        size:[size*this.height/this.width,size],
+        size:[size*this.height/this.width,size*aspect],
         sides:Math.floor(sides),
         angle:angle,
         center: [x,y]
@@ -2784,6 +2846,30 @@ canvas.posterize=function(steps) {
 
     return this;
 }
+
+
+canvas.posterize_hue=function(hue,brightness) {
+    gl.posterize_hue = gl.posterize_hue || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float hue;\
+        uniform float brightness;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            vec3 b=vec3(length(color.rgb));\
+            vec3 h=color.rgb-b;\
+            b=floor(b*brightness)/brightness;\
+            h=floor(h*hue       )/hue       ;\
+            gl_FragColor = vec4(b+h, color.a);\
+        }\
+    ');
+
+    this.simpleShader( gl.posterize_hue, { hue: Math.round(hue), brightness: Math.round(brightness) });
+
+    return this;
+}
+
+
 
 // src/filters/fun/hexagonalpixelate.js
 /**
