@@ -27,30 +27,73 @@
    "b_max": 1
   }
  ],
+ [],
  [
+  ""
+ ],
+ [
+  "sobel flash",
+  {
+   "effect": "sobel",
+   "secondary": 4.61,
+   "coeff": 1.439,
+   "alpha": 1.005,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "zoomBlur",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "size": {
+    "type": "beat",
+    "pulse": 8,
+    "f": 0,
+    "a": 0.092,
+    "p": 0,
+    "o": 0.092
+   }
+  }
+ ],
+ [
+  "displaced",
+  {
+   "effect": "video"
+  },
   {
    "effect": "stack_push"
   },
   {
-   "effect": "perspective",
-   "perspective": {
-    "type": "perspective",
-    "x1": 0.358,
-    "y1": -0.75,
-    "x2": 0.176,
-    "y2": -0.094,
-    "x3": 0.788,
-    "y3": -0.75,
-    "x4": 0.572,
-    "y4": -0.002
-   }
+   "effect": "fastBlur",
+   "size": 3.184
   },
   {
-   "effect": "blend_alpha"
+   "effect": "mesh_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": 0.666,
+   "anglex": 0,
+   "angley": 0,
+   "anglez": 0
   }
  ],
  [
-  "",
+  "sobel flash",
   {
    "effect": "sobel",
    "secondary": 4.61,
@@ -519,7 +562,7 @@
   },
   {
    "effect": "motion",
-   "threshold": 0.206,
+   "threshold": 0.648,
    "interval": 1,
    "damper": 0.936
   },
@@ -1817,7 +1860,7 @@
   },
   {
    "effect": "fastBlur",
-   "size": 8.379
+   "size": 3.184
   },
   {
    "effect": "mesh_displacement",

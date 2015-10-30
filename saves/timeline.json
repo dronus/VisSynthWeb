@@ -16,6 +16,42 @@
   }
  ],
  [
-  ""
+  "sobel flash",
+  {
+   "effect": "sobel",
+   "secondary": 4.61,
+   "coeff": 1.439,
+   "alpha": 1.005,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "zoomBlur",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "size": {
+    "type": "beat",
+    "pulse": 8,
+    "f": 0,
+    "a": 0.092,
+    "p": 0,
+    "o": 0.092
+   }
+  }
  ]
 ]
