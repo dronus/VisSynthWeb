@@ -427,6 +427,45 @@ canvas.matte=function(r,g,b,a) {
     return this;
 }
 
+
+canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
+
+    gl.polygon_matte = gl.polygon_matte || new Shader(null, '\
+        uniform vec4 color;\
+        uniform vec2 size;\
+        uniform float sides;\
+        uniform float angle;\
+        uniform vec2 center;\
+        varying vec2 texCoord;\
+        float PI=3.14159; \
+        void main() {\
+            vec2 uv=texCoord-vec2(0.5,0.5)-center;\
+            uv/=size;\
+            \
+            float a=atan(uv.x,uv.y)-angle; \
+            float r=length(uv); \
+            \
+            float d = r / (cos(PI/sides)/cos(mod(a,(2.*PI/sides))-(PI/sides))); \
+            \
+            if(d<1.) \
+              gl_FragColor=color; \
+            else \
+              gl_FragColor=vec4(0.); \
+        }\
+    ');
+
+    this.simpleShader( gl.polygon_matte, {
+        color:[r,g,b,a],
+        size:[size*this.height/this.width,size*aspect],
+        sides:Math.floor(sides),
+        angle:angle,
+        center: [x,y]
+    });
+
+    return this;
+}
+
+
 // src/filters/video/video.js
 canvas.video=function()
 {
@@ -1343,15 +1382,16 @@ canvas.life=function() {
 
 
 // src/filters/video/polygon.js
-canvas.polygon=function(sides,x,y,size,angle) {
+canvas.polygon=function(sides,x,y,size,angle,aspect) {
 
+    aspect=aspect || 1.;
+    
     gl.polygon = gl.polygon || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float sides;\
         uniform float angle;\
         uniform vec2 center;\
-        uniform vec2 aspect;\
         varying vec2 texCoord;\
         float PI=3.14159; \
         void main() {\
@@ -1372,7 +1412,7 @@ canvas.polygon=function(sides,x,y,size,angle) {
     ');
 
     this.simpleShader( gl.polygon, {
-        size:[size*this.height/this.width,size],
+        size:[size*this.height/this.width,size*aspect],
         sides:Math.floor(sides),
         angle:angle,
         center: [x,y]

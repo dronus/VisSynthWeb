@@ -1,21 +1,21 @@
 [
  [
-  "gaston julia",
+  "bollo",
   {
-   "effect": "julia",
-   "cx": -1.205,
-   "cy": -0.313,
-   "center": {
-    "type": "pos",
-    "x": 0.575,
-    "y": 0.575
+   "effect": "polygon_matte",
+   "color": {
+    "type": "rgba",
+    "r": 0,
+    "g": 1,
+    "b": 1,
+    "a": 1
    },
-   "size": 0.404,
+   "sides": 6,
+   "x": 0,
+   "y": 0,
+   "size": 0.5,
    "angle": 0,
-   "iterations": 29.361
+   "aspect": 1
   }
- ],
- [
-  ""
  ]
 ]
