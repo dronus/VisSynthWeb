@@ -2,25 +2,10 @@
  [
   {
    "effect": "select_audio",
-   "audio_device": 1.224
+   "audio_device": 0.606
   },
   {
    "effect": "type_byte"
-  },
-  {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 0.497,
-   "max": 1,
-   "r_min": 0,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1,
-   "g_max": 1,
-   "b_max": 1
   },
   {
    "effect": "capture",
@@ -33,33 +18,366 @@
    "effect": "perspective",
    "perspective": {
     "type": "perspective",
-    "x1": -1.112,
-    "y1": -1.812,
-    "x2": -1.149,
-    "y2": 1.419,
-    "x3": 1.379,
-    "y3": -1.652,
-    "x4": 1.095,
-    "y4": 1.281
+    "x1": -0.649,
+    "y1": -0.663,
+    "x2": -0.636,
+    "y2": 0.756,
+    "x3": 0.821,
+    "y3": -0.626,
+    "x4": 0.793,
+    "y4": 0.816
    }
   }
  ],
  [],
  [
-  "rainbow Run",
+  "sobel",
+  {
+   "effect": "sobel",
+   "secondary": 0.5,
+   "coeff": 0.5,
+   "alpha": 0.5,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  }
+ ],
+ [
+  "shimmering displace",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "displacement",
+   "strength": {
+    "type": "osc",
+    "f": 2.057,
+    "a": 0.02,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "ripple",
+   "width": 0.1,
+   "length": 0.205,
+   "angle": 1.124,
+   "strength": {
+    "type": "osc",
+    "f": 1.069,
+    "a": 1.854,
+    "p": 0,
+    "o": 2
+   }
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.5,
+   "coeff": 0.5,
+   "alpha": 0.5,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  }
+ ],
+ [
+  "spectro wave pure",
+  {
+   "effect": "spectrogram"
+  },
+  {
+   "effect": "transform",
+   "x": -0.148,
+   "y": 0,
+   "scale": 1.359,
+   "angle": 1.569
+  },
   {
    "effect": "rainbow"
   },
   {
-   "effect": "hueSaturation",
-   "hue": {
-    "type": "osc",
-    "f": 0.402,
-    "a": -0.768,
+   "effect": "stack_push"
+  },
+  {
+   "effect": "waveform"
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "patch_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": 4.564,
+   "anglex": 0,
+   "angley": 0,
+   "anglez": 0,
+   "scale": 2.887,
+   "pixelate": 0
+  }
+ ],
+ [
+  "kalleido waveblast",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": -0.902
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgb",
+    "r": 1.059,
+    "g": 1.205,
+    "b": 1.131
+   }
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0.736,
+   "scale": 1,
+   "angle": 0
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": -0.45,
+   "scale": 1,
+   "angle": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "waveform"
+  },
+  {
+   "effect": "mesh_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": {
+    "type": "beat",
+    "pulse": 200,
+    "f": 0,
+    "a": 0,
     "p": 0,
     "o": 0
    },
-   "saturation": 0
+   "anglex": 1,
+   "angley": 0.5,
+   "anglez": 0
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "kaleidoscope",
+   "sides": 5,
+   "angle": {
+    "type": "osc",
+    "f": 0.045,
+    "a": 1,
+    "p": 0,
+    "o": 0
+   },
+   "angle2": {
+    "type": "osc",
+    "f": 0.817,
+    "a": 1,
+    "p": 0,
+    "o": 0
+   }
+  }
+ ],
+ [
+  "bulgebeat",
+  {
+   "effect": "sobel",
+   "secondary": 0.5,
+   "coeff": 0.5,
+   "alpha": 0.5,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "bulgePinch",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "radius": 600,
+   "strength": {
+    "type": "beat",
+    "pulse": 3.57,
+    "f": 0,
+    "a": 0.05,
+    "p": 0,
+    "o": 0
+   }
+  }
+ ],
+ [
+  "spectro wave pure",
+  {
+   "effect": "spectrogram"
+  },
+  {
+   "effect": "transform",
+   "x": -0.148,
+   "y": 0,
+   "scale": 1.359,
+   "angle": 1.569
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "waveform"
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "patch_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": 1.031,
+   "anglex": 0,
+   "angley": 0,
+   "anglez": 0,
+   "scale": 1.041,
+   "pixelate": 0
+  }
+ ],
+ [
+  "smooth life swirl",
+  {
+   "effect": "sobel",
+   "secondary": {
+    "type": "beat",
+    "pulse": 20.738,
+    "f": 0,
+    "a": 1.4245,
+    "p": 0,
+    "o": 1.4245
+   },
+   "coeff": {
+    "type": "beat",
+    "pulse": 31.122,
+    "f": 0,
+    "a": 1.94,
+    "p": 0,
+    "o": 1.94
+   },
+   "alpha": 0.891,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "swirl",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "radius": 600,
+   "strength": {
+    "type": "osc",
+    "f": 0.197,
+    "a": 0.46,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.298
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.056,
+   "birth_max": 0.237,
+   "death_min": 0.69
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.609
+  },
+  {
+   "effect": "feedbackIn"
   }
  ],
  [
@@ -87,6 +405,36 @@
     "pulse": 0,
     "f": 2,
     "a": 0.05,
+    "p": 0,
+    "o": 0
+   }
+  }
+ ],
+ [
+  "rainbow Run",
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 0.402,
+    "a": -0.768,
+    "p": 0,
+    "o": 0
+   },
+   "saturation": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "displacement",
+   "strength": {
+    "type": "osc",
+    "f": 0.901,
+    "a": 0.082,
     "p": 0,
     "o": 0
    }
@@ -253,6 +601,16 @@
  [
   "kalleido wave",
   {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": -0.902
+   }
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -286,7 +644,7 @@
   },
   {
    "effect": "displacement",
-   "strength": 1.149
+   "strength": 0.606
   },
   {
    "effect": "blend_alpha"
@@ -308,49 +666,6 @@
     "p": 0,
     "o": 0
    }
-  }
- ],
- [
-  "spectro wave pure",
-  {
-   "effect": "spectrogram"
-  },
-  {
-   "effect": "transform",
-   "x": -0.148,
-   "y": 0,
-   "scale": 1.359,
-   "angle": 1.569
-  },
-  {
-   "effect": "rainbow"
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "waveform"
-  },
-  {
-   "effect": "rainbow"
-  },
-  {
-   "effect": "blend",
-   "alpha": 0.5
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "patch_displacement",
-   "sx": 0,
-   "sy": 0,
-   "sz": 1.031,
-   "anglex": 0,
-   "angley": 0,
-   "anglez": 0,
-   "scale": 1.041,
-   "pixelate": 0
   }
  ],
  [
@@ -404,6 +719,35 @@
     "o": 0
    },
    "saturation": 0.954
+  }
+ ],
+ [
+  "the glitch",
+  {
+   "effect": "glitch",
+   "scale": 2.644,
+   "detail": {
+    "type": "osc",
+    "f": 2.839,
+    "a": 3.908,
+    "p": 0,
+    "o": 112.627
+   },
+   "strength": {
+    "type": "beat",
+    "pulse": 31.648,
+    "f": 0,
+    "a": 0,
+    "p": 1.32,
+    "o": 0.735
+   },
+   "speed": {
+    "type": "osc",
+    "f": 5,
+    "a": 1.6305,
+    "p": 0,
+    "o": 3.261
+   }
   }
  ],
  [
@@ -897,35 +1241,6 @@
   },
   {
    "effect": "feedbackIn"
-  }
- ],
- [
-  "the glitch",
-  {
-   "effect": "glitch",
-   "scale": 14.908,
-   "detail": {
-    "type": "osc",
-    "f": 5,
-    "a": 3.908,
-    "p": 0,
-    "o": 112.627
-   },
-   "strength": {
-    "type": "beat",
-    "pulse": 3.758,
-    "f": 0,
-    "a": 0,
-    "p": 1.32,
-    "o": 0.735
-   },
-   "speed": {
-    "type": "osc",
-    "f": 5,
-    "a": 1.6305,
-    "p": 0,
-    "o": 3.261
-   }
   }
  ],
  [
@@ -3739,6 +4054,36 @@
   }
  ],
  [
+  "pulse punch",
+  {
+   "effect": "zoomBlur",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "size": {
+    "type": "beat",
+    "pulse": 3.139,
+    "f": 0.045,
+    "a": 0.08,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "colorDisplacement",
+   "angle": 0,
+   "strength": {
+    "type": "osc",
+    "f": 220.32,
+    "a": 2.53,
+    "p": 0.09,
+    "o": 2.43
+   }
+  }
+ ],
+ [
   "70's mandelbrot",
   {
    "effect": "localContrast",
@@ -3815,36 +4160,6 @@
   {
    "effect": "feedbackOut",
    "blend": 0.49
-  }
- ],
- [
-  "pulse punch",
-  {
-   "effect": "zoomBlur",
-   "center": {
-    "type": "pos",
-    "x": 0,
-    "y": 0
-   },
-   "size": {
-    "type": "beat",
-    "pulse": 3.139,
-    "f": 0.045,
-    "a": 0.08,
-    "p": 0,
-    "o": 0
-   }
-  },
-  {
-   "effect": "colorDisplacement",
-   "angle": 0,
-   "strength": {
-    "type": "osc",
-    "f": 220.32,
-    "a": 2.53,
-    "p": 0.09,
-    "o": 2.43
-   }
   }
  ],
  [
