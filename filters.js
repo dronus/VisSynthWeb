@@ -491,23 +491,27 @@ canvas.video=function()
     return this;
 }
 
+var image_loaded=false;
 canvas.image=function()
 {
 
     var v=this._.imageFilterElement;
+
     if(!v)
     {
       var v = document.createElement('img');
       v.src="test.jpg";
       this._.imageFilterElement=v;
+      v.onload=function(){
+          image_loaded=true;
+      }
     }  
       
     // make sure the image has adapted to the image source
-    if(!this._.imageTexture && v.width>0)
+    if(!this._.imageTexture && image_loaded)
     {
       this._.imageTexture=this.texture(v);    
       this._.imageTexture.loadContentsOf(v);
-      this._.imageFilterElement=null;
     }
     
     if(this._.imageTexture)
