@@ -12,9 +12,6 @@
    "device": 0
   },
   {
-   "effect": "image"
-  },
-  {
    "effect": "perspective",
    "perspective": {
     "type": "perspective",
@@ -51,6 +48,10 @@
     "b": 1,
     "a": 1
    }
+  },
+  {
+   "effect": "image",
+   "url": "cmy.png"
   }
  ],
  [

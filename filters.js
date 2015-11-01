@@ -467,7 +467,7 @@ canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
 
 // src/filters/video/video.js
-canvas.video=function()
+canvas.video=function(url)
 {
 
     var v=this._.videoFilterElement;
@@ -477,7 +477,7 @@ canvas.video=function()
       v.autoplay = true;
       v.muted=true;
       v.loop=true;
-      v.src="test.mp4";
+      v.src=url;
       this._.videoFilterElement=v;
     }  
       
@@ -492,7 +492,7 @@ canvas.video=function()
 }
 
 var image_loaded=false;
-canvas.image=function()
+canvas.image=function(url)
 {
 
     var v=this._.imageFilterElement;
@@ -500,7 +500,7 @@ canvas.image=function()
     if(!v)
     {
       var v = document.createElement('img');
-      v.src="test.jpg";
+      v.src=url;
       this._.imageFilterElement=v;
       v.onload=function(){
           image_loaded=true;

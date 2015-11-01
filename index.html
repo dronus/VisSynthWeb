@@ -275,6 +275,8 @@
         var value=effect[key];
         if(typeof(value)=='object')
           args=args.concat(generators[value.type](value));
+        else if (typeof(value)=='string')
+          args.push('"'+value+'"');
         else
           args.push(value);
       }

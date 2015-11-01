@@ -476,6 +476,15 @@
       background-color:transparent;
       width: 60px;
     }
+    /* text inputs */
+    .adjust_ui input[type="text"]{
+      width: 550px;
+      padding: 14px;
+      overflow:hidden;
+      font-size: 140%;
+      background-color: #000;
+      color: #fff;
+    }
     /* sliders */
     .adjust_ui input[type="range"]{
       width: 550px;
@@ -756,6 +765,22 @@
       $(container).append(slider);
     }
 
+    var add_input=function(container,value_element)
+    {  
+      var input=$('<input class=value_ui type=text>');
+
+      // initalize slider knob with current value 
+      input.attr('value',value_element.text());
+            
+      // adjust the value_element if text is changed
+      input.on('input',function(){
+        value_element.text(this.value);
+        updateChain();
+      });
+      
+      $(container).append(input);
+    }
+
     // create value adjust UI for a single effect
     var get_adjust_ui=function(effect_element){
     
@@ -782,6 +807,19 @@
         element.empty();
         add_slider(element,value_element);          
       });
+
+      // add input to each string value except first (the effect name)
+      slider_ui.find('.ui_string>.value').slice(1).each(function(){
+        var element=$(this);
+        var key=element.parent().find('.key').text();
+        // get value field of original value_element to manipulate by this UI
+        var value_element=$(element.data('original_value_element'));
+  
+        // if we may adjust a number, add a slider        
+        element.empty();
+        add_input(element,value_element);
+      });
+
 
       // OSC toggle button handler
       var toggle_osc=function(){
@@ -1019,8 +1057,8 @@
       'type_float':{inputs:0,outputs:0},
       'resolution':{inputs:0,outputs:0,args:{x:640,y:480}},
       'capture':{inputs:0,args:{device:0}},
-      'video':{inputs:0,args:{}},      
-      'image':{inputs:0,args:{}},
+      'video':{inputs:0,args:{url:"test.mp4"}},
+      'image':{inputs:0,args:{url:"test.jpg"}},
       'matte':{inputs:0, args:{rgb:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0}}},
       'polygon_matte':{inputs:0, args:{color:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0},sides:6.0,x:0.0,y:0.0,size:0.5,angle:0.0,aspect:1.0}},
       'waveform':{inputs:0},
