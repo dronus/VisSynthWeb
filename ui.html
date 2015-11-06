@@ -6,6 +6,7 @@
   <script src="jquery-2.1.4.js"></script>
   <script src="jquery-ui.js"></script>
   <script src="jquery.ui.touch-punch.js"></script>  
+  <script src="dropzone.js"></script>
 </head>
 <body style="font-size: 20px;">
 
@@ -1014,6 +1015,13 @@
       }
     });
     
+    // files may be dragged to the chain list (video only)
+    var mediaDropzone = new Dropzone("#chain",{url:'/saves'+session_url+'video.mp4',method:"put"});
+    mediaDropzone.on("addedfile", function(file) {
+      // TODO add media to some visible list here... 
+      alert('uploaded: '+file);
+    });
+    
     // the effects may be cicked to add
     $('#effects>*').on('click',function(){
       var current_chain=$('#chains .active .chain');
@@ -1023,7 +1031,7 @@
     });
     
     // the effects in the current chain may be clicked to display adjust UI
-    $('#chain,#pre_chain,#post_chain').on('click','.effect',function(){
+    $(',#pre_chain,#post_chain').on('click','.effect',function(){
       if($(this).parent().data('prevent_click'))
       {
         $(this).parent().data('prevent_click',false);
