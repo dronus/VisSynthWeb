@@ -12,31 +12,95 @@
    "device": 0
   },
   {
-   "effect": "image"
+   "effect": "levels",
+   "min": 0,
+   "gamma": 0.884,
+   "max": 0.988,
+   "r_min": 0,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1,
+   "g_max": 1,
+   "b_max": 1
   },
   {
    "effect": "perspective",
    "perspective": {
     "type": "perspective",
-    "x1": -0.649,
-    "y1": -0.663,
-    "x2": -0.636,
-    "y2": 0.756,
-    "x3": 0.821,
-    "y3": -0.626,
-    "x4": 0.793,
-    "y4": 0.816
+    "x1": -1.419,
+    "y1": -0.97,
+    "x2": -1.46,
+    "y2": 1.931,
+    "x3": 1.359,
+    "y3": -0.954,
+    "x4": 1.379,
+    "y4": 2.058
    }
   }
  ],
  [],
  [
+  "",
+  {
+   "effect": "grid",
+   "size": 0.329,
+   "angle": 0
+  }
+ ],
+ [
+  "rainbow Run",
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 0.402,
+    "a": -0.768,
+    "p": 0,
+    "o": 0
+   },
+   "saturation": 0
+  }
+ ],
+ [
+  "",
+  "",
+  "",
+  {
+   "effect": "levels",
+   "min": 0.03,
+   "gamma": 0.42,
+   "max": 1.005,
+   "r_min": 0,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1,
+   "g_max": 1,
+   "b_max": 1
+  }
+ ],
+ [
   "sobel",
   {
    "effect": "sobel",
-   "secondary": 0.5,
-   "coeff": 0.5,
-   "alpha": 0.5,
+   "secondary": {
+    "type": "beat",
+    "pulse": 17.705,
+    "f": 0,
+    "a": 0.9295,
+    "p": 0,
+    "o": 0
+   },
+   "coeff": 6.097,
+   "alpha": 1.949,
    "areas": {
     "type": "rgba",
     "r": 0,
@@ -62,7 +126,7 @@
    "effect": "displacement",
    "strength": {
     "type": "osc",
-    "f": 2.057,
+    "f": 0.474,
     "a": 0.02,
     "p": 0,
     "o": 0
@@ -70,36 +134,21 @@
   },
   {
    "effect": "ripple",
-   "width": 0.1,
-   "length": 0.205,
+   "width": 0.031,
+   "length": 0.021,
    "angle": 1.124,
    "strength": {
     "type": "osc",
     "f": 1.069,
-    "a": 1.854,
+    "a": 1.399,
     "p": 0,
-    "o": 2
+    "o": 0
    }
   },
   {
-   "effect": "sobel",
-   "secondary": 0.5,
-   "coeff": 0.5,
-   "alpha": 0.5,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
+   "effect": "unsharpMask",
+   "size": 3.538,
+   "strength": 2.419
   }
  ],
  [
@@ -396,14 +445,14 @@
    "effect": "bulgePinch",
    "center": {
     "type": "pos",
-    "x": 0,
+    "x": -0.03,
     "y": 0
    },
    "radius": 600,
    "strength": {
     "type": "beat",
-    "pulse": 0,
-    "f": 2,
+    "pulse": 3.062,
+    "f": 0,
     "a": 0.05,
     "p": 0,
     "o": 0
@@ -433,8 +482,8 @@
    "effect": "displacement",
    "strength": {
     "type": "osc",
-    "f": 0.901,
-    "a": 0.082,
+    "f": 0.768,
+    "a": 0.03,
     "p": 0,
     "o": 0
    }
@@ -536,6 +585,9 @@
  [
   "displaced",
   {
+   "effect": "video"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -548,7 +600,7 @@
    "sy": 0,
    "sz": {
     "type": "beat",
-    "pulse": 1998.999,
+    "pulse": 5.592,
     "f": 0,
     "a": 0.333,
     "p": 0,
@@ -767,7 +819,7 @@
   {
    "effect": "transform",
    "x": 0,
-   "y": 0.851,
+   "y": 0.946,
    "scale": 1,
    "angle": 0
   },
@@ -1288,7 +1340,7 @@
    "angley": 0,
    "anglez": 0,
    "size": 15,
-   "strength": 1.067,
+   "strength": 0.466,
    "homing": 0.086,
    "noise": 1,
    "displacement": 0.116
@@ -2557,7 +2609,7 @@
   },
   {
    "effect": "analogize",
-   "exposure": 0.134,
+   "exposure": 0.884,
    "gamma": 0.528,
    "glow": 1.224,
    "glow_radius": 16
@@ -3501,6 +3553,9 @@
  [
   "point grid",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "colorHalftone",
    "center": {
     "type": "pos",
@@ -3518,10 +3573,7 @@
    }
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "capture"
+   "effect": "stack_swap"
   },
   {
    "effect": "invertColor"
@@ -3575,9 +3627,6 @@
     "o": 0.16
    },
    "contrast": -0.47
-  },
-  {
-   "effect": "preview"
   },
   {
    "effect": "feedbackOut",
