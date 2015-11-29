@@ -135,7 +135,7 @@
     // the consumer may receive a still starting <video> object, so it has to add and handle 'canplay' event before properties like videoWidth are read.
     var videos={};
     var audio_found=false;
-    var get_video=function(source_index)
+    var get_video=function(source_index,width,height)
     {
       source_index = source_index | 0;
 
@@ -158,12 +158,16 @@
       videos[source_index]=video;
     
       var constraints = {
-        video:{
+        video:
+        {
           optional: [{sourceId: source_ids.video[source_index]}]
         },
         audio:false
       };
 
+      // enforce resolution, if asked to
+      if(width && height)
+          constraints.video.mandatory={ minWidth: width, minHeight: height };
       
       // TODO handle audio again, in a more flexible fashion than one device only...
       // for now, we just take the first device queried
