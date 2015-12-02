@@ -9,7 +9,7 @@ var child_process = require('child_process');
 
 //var recorder_cmd="avconv -f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov";
 var recorder_cmd="avconv";
-var recorder_args="-f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov".split(" ");
+var recorder_args="-f x11grab -r 25 -s {RESOLUTION} -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov"
 var recorder=false;
 
 var server=http.createServer(function (req, res) {
@@ -57,6 +57,11 @@ var server=http.createServer(function (req, res) {
   else if(key.match(/recorder\/.*/))
   {
     if(!recorder && key.match(/recorder\/start/)){
+      // TODO how to get w,h? UI need to send it... but it doesn't know.
+      // UI may read it from "resolution" filter, but it is not sure if the capture source actually provided the resolution or the screen matches it.
+      // even worse, the image is already rescaled to the desktop size, so it may be pulled up again...
+      // maybe avconv can adapt the actual screen size by itself?
+      var args=recorder_args.replace("{RESOLUTION}",w+"x"+h).split();
       recorder_args.pop();
       recorder_args.push("recorded/"+Math.random()+".mov");
       recorder=child_process.spawn(recorder_cmd,recorder_args, {stdio:'inherit'});
