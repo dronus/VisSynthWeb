@@ -5,54 +5,84 @@
    "audio_device": 0.606
   },
   {
-   "effect": "resolution",
-   "x": 1920,
-   "y": 1080
+   "effect": "fps",
+   "fps": 25
   },
   {
    "effect": "type_byte"
   },
   {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 0.884,
-   "max": 0.988,
-   "r_min": 0,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1,
-   "g_max": 1,
-   "b_max": 1
-  },
-  {
-   "effect": "perspective",
-   "perspective": {
-    "type": "perspective",
-    "x1": -1.419,
-    "y1": -0.97,
-    "x2": -1.46,
-    "y2": 1.931,
-    "x3": 1.359,
-    "y3": -0.954,
-    "x4": 1.379,
-    "y4": 2.058
-   }
-  },
-  {
    "effect": "capture",
-   "device": 0
+   "device": 1
   }
  ],
  [],
  [
   "",
   {
-   "effect": "grid",
-   "size": 0.329,
-   "angle": 0
+   "effect": "timeshift",
+   "time": 490
+  }
+ ],
+ [
+  "color clash swirl",
+  {
+   "effect": "sobel",
+   "secondary": 1.292,
+   "coeff": 1.292,
+   "alpha": 0.686,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "swirl",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "radius": 453.543,
+   "strength": {
+    "type": "osc",
+    "f": 1.253,
+    "a": 0.192,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.178
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.163,
+   "birth_max": 0.236,
+   "death_min": 0.671
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.389,
+   "saturation": 0.768
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.884
+  },
+  {
+   "effect": "feedbackIn"
   }
  ],
  [
@@ -77,21 +107,9 @@
   "",
   "",
   "",
-  {
-   "effect": "levels",
-   "min": 0.03,
-   "gamma": 0.42,
-   "max": 1.005,
-   "r_min": 0,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1,
-   "g_max": 1,
-   "b_max": 1
-  }
+  "",
+  "",
+  ""
  ],
  [
   "sobel",
@@ -357,7 +375,7 @@
    "effect": "patch_displacement",
    "sx": 0,
    "sy": 0,
-   "sz": 1.031,
+   "sz": 0.298,
    "anglex": 0,
    "angley": 0,
    "anglez": 0,
@@ -591,6 +609,9 @@
  [
   "displaced",
   {
+   "effect": "video"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -603,7 +624,7 @@
    "sy": 0,
    "sz": {
     "type": "beat",
-    "pulse": 5.592,
+    "pulse": -3.562,
     "f": 0,
     "a": 0.333,
     "p": 0,
@@ -3908,7 +3929,7 @@
   },
   {
    "effect": "timeshift",
-   "time": 12.5
+   "time": 499
   },
   {
    "effect": "feedbackIn"
