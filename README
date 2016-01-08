@@ -10,6 +10,7 @@ It runs well in lower resolutions even on minimalistic hardware like the Odroid 
 
 
 Requirements
+
 -A computer with an web browser featuring a reliable WebGL implementation, working camera access, and a working node.js installation. Small EGL-supporting ARM devices like Odroid are feasable. Mobile devices may work, but would require another device to run the control server.
 -A reliable webcam or embedded camera.
 -Another screen or computer with an up-to-date web browser for remote control. No fun without control!
@@ -17,6 +18,7 @@ Requirements
 
 
 Installation
+
 -Clone this repository to the device sporting the camera and screen:
   git clone --recursive https://github.com/dronus/VisSynthWeb.git
 -Run 'node server.js' inside the repository
@@ -24,6 +26,7 @@ Installation
 -Run up a browser on another device or second screen, and enter the IP of the video machine, followed by :8082/ui.html . The user interface should appear. Try to drag effects into the active chain (highlighted green) to see if it works. There is no undo, any change is permanent for now!
 
 Usage
+
 -Open the remote interface ui.html.
 -The upper list consist of "chains", one of them is running at a time. Click on their title to make another one active. The chains may be reordered by dragging on their title. A chain may be deleted by dragging it out of the vertical chain list.
 -The lower list contains effect modules, that can be added to any chain by dragging them into certain position in the chain. The chained effects can be reordered by dragging them to a new position inside the chain. An effect is removed of the chain by dragging it out of the chain.
@@ -50,7 +53,35 @@ Usually you may first try an low "a" and set "o" to the old static value to achi
 --motion, timeshift: These effects keep internal copys of images over some time. 
 -Any change to the active chain (add, order, adjust effects)  takes effect instantly.
 -Any change is saved almost immediately.
--There is NO undo.
+
+Issues / TODO
+
+-The image and video source effects are hardwired to play one file named test.png or test.mp4 respectively, 
+ that has to be uploaded to the server by other means (the UI doesn't include a tool for this).
+
+-The START and STOP RECORDING buttons act on server-side vide capturing dependend on the avconv utility. 
+ This is not applicable to the online version, as it would record the server-side desktop screen.
+
+-The TIMELINE tool is under development and doesn't work reliable. The timeline is currently selected as the default
+ program for a newly started video screen, so this sucks even more.
+
+-Exceptions due to missing WebGL capabilities of the current machine are not caught reliable, so some effects or settings
+ (like type_float color precision and high resolutions) may crash the video screen and require a click on RESTART after fixing.
+ As the error condition is only debuggagle at the video screen machine and no error message is passed to the UI, direct access
+ to the video machine is needed to find out about those problems.
+
+-The audio input mapping done with the select_audio setting effect need a click on RESTART to apply. 
+
+-Video and audio sources are mapped by abitraty enumeration (0, 1, ...) and do not reflect their device names. 
+ It may take some effort to find out which audio source number identifies the built-in microphone of certain camera, 
+ especially if there are several more audio-only devices like internal microphones or inputs on the machine.
+ 
+-There is no way to export the current chains or settings to another instance, except manipulating the files in save/
+ on the server side.
+ 
+-The UI doesn't synchronizes to the server after startup. Using two UIs connected to the same video screen results in 
+ mutual override of the changes made by each other UI. If more then one UIs are used, after every change all other UIs
+ should be reloaded in the browser to adapt the changes made.
 
 
 Troubleshooting
