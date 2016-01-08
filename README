@@ -54,6 +54,25 @@ Usually you may first try an low "a" and set "o" to the old static value to achi
 -Any change to the active chain (add, order, adjust effects)  takes effect instantly.
 -Any change is saved almost immediately.
 
+Best practices
+
+-As camera setups may change or sometimes video clips or images serve as input to test the effect chains, it is advised
+ to never use the capture, image and video source effects directly in the chains. 
+ Better place one of them or more using the stack in the before-setup, and just depend any chain on an initial source and 
+ maybe further ones from the stack.
+
+-As any change is saved immediately, feel free to clone effect chains as often as practical while experimenting, to not lose
+ well made old effects.
+ 
+-Do not use the setup effects in any other place then the "setup before" chain. Using more then one setup of the same kind
+ may degrade the performance, as the setup is changed twice or more on every video frame then.
+ 
+-Always use type_byte setup effect if there is no special need for float color precision. Performance is much better doing so.
+ Only some effects may look substantially different using float, like 'reaction' and 'smoothlife', if used in feedback loops.
+ Float precision may exhibit weird behaviour in feedback loops, as it may store infinite values, that usually appear as bright 
+ or black areas in the image never going away again.
+
+
 Issues / TODO
 
 -The image and video source effects are hardwired to play one file named test.png or test.mp4 respectively, 
