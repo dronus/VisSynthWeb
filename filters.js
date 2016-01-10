@@ -3101,4 +3101,34 @@ canvas.glitch=function(scale,detail,strength,speed) {
     return this;
 }
 
+/* Mirrors the image vertically (useful for webcams) */
+canvas.mirror_y = function() {
+    gl.mirror_y = gl.mirror_y || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float brightness;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, vec2(1.0 - texCoord.x,texCoord.y));\
+            gl_FragColor = color;\
+        }\
+    ');
 
+    this.simpleShader( gl.mirror_y, {});
+    return this;
+}
+
+/* Mirrors the image horizontally */
+canvas.mirror_x = function() {
+    gl.mirror_x = gl.mirror_x || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float brightness;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, vec2(texCoord.x, 1.0-texCoord.y));\
+            gl_FragColor = color;\
+        }\
+    ');
+
+    this.simpleShader( gl.mirror_x, {});
+    return this;
+}
