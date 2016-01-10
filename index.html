@@ -319,6 +319,9 @@
       // compile chain
       var w=canvas.width, h=canvas.height; // provide global values for chain functions
       chain=eval(src);
+      
+      // reset buffer textures (eg. feedback, timeshift, stack)
+      canvas.clearTextures();
     }
     
     // set several effect chains at once that are then cycled.

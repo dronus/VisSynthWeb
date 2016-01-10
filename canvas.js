@@ -84,6 +84,18 @@ canvas = function() {
         });
         this._.spareTexture.swapWith(textureOut || this._.texture);
     };
+    
+    // recursively clear all Texture properties attached to black
+    canvas.clearTextures=function(container)
+    {
+      if(!container) 
+        container=this._;
+      for(key in container)
+        if(container[key] instanceof Texture)
+          container[key].clear();
+        else if (container[key] instanceof Array)
+          canvas.clearTextures(container[key]);
+    }
 
     return canvas;
 };
