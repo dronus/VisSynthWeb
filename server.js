@@ -5,10 +5,16 @@ var pending={};
 
 var fs=require('fs');
 var path=require('path');
+var child_process = require('child_process');
 
+//var recorder_cmd="avconv -f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov";
+var recorder_cmd="avconv";
+var recorder_args="-f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov".split(" ");
+var recorder=false;
 
 var server=http.createServer(function (req, res) {
 
+  
   console.log("Serving "+req.url);
 
   var parts = req.url.split('?');
@@ -48,6 +54,20 @@ var server=http.createServer(function (req, res) {
     if(pending[key]) pending[key].end();
     pending[key]=res;
   }  
+  else if(key.match(/recorder\/.*/))
+  {
+    if(!recorder && key.match(/recorder\/start/)){
+      recorder_args.pop();
+      recorder_args.push("recorded/"+Math.random()+".mov");
+      recorder=child_process.spawn(recorder_cmd,recorder_args, {stdio:'inherit'});
+    }
+    if(recorder && key.match(/recorder\/stop/)) {
+      recorder.kill('SIGTERM');
+      recorder=false;
+    }
+      
+    res.end();
+  }
   else if(path.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     res.setHeader("Content-Type", "text/html");

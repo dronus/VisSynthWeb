@@ -19,6 +19,7 @@ canvas.type_float=function(){
 };
 
 canvas.resolution=function(w,h){
+  this.resolution_w=w; this.resolution_h=h;
   this.for_all_textures(function(texture){
     texture.ensureFormat(w,h,texture.format,texture.type);
   });
@@ -1485,7 +1486,7 @@ canvas.timeshift=function(time)
 canvas.capture=function(source_index)
 {
     source_index=Math.floor(source_index);    
-    var v=this.video_source(source_index);
+    var v=this.video_source(source_index,this.resolution_w,this.resolution_h);
     
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
