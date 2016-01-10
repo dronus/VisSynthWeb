@@ -1,4 +1,5 @@
 var Texture = (function() {
+
     Texture.fromElement = function(element) {
         var texture = new Texture(0, 0, gl.RGB, gl.UNSIGNED_BYTE);
         texture.loadContentsOf(element);
@@ -117,6 +118,12 @@ var Texture = (function() {
             Shader.getDefaultShader().drawRect();
         });
     };
+    
+    // clear this texture to black
+    Texture.prototype.clear = function() {
+        gl.bindTexture(gl.TEXTURE_2D, this.id);
+        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, null);
+    }
     
     var canvas = null;
 
