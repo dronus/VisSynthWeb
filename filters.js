@@ -6,6 +6,10 @@ canvas.for_all_textures=function(callback){
   callback(this._.extraTexture);
 };
 
+canvas.fps=function(fps){
+  this.proposed_fps=fps;
+};
+
 canvas.type_byte=function(){
   this.for_all_textures(function(texture){
     texture.ensureFormat(texture.width,texture.height,texture.format,gl.UNSIGNED_BYTE);
@@ -1458,7 +1462,7 @@ canvas.timeshift=function(time)
 {
     // Store a stream of the last second in a ring buffer
 
-    var max_frames=25;
+    var max_frames=500;
     
     if(!this._.pastTextures) this._.pastTextures=[];
 

@@ -1,3 +1,23 @@
+/*
+ VisSynthWeb server - a long polling server for remote control
+ 
+ This is a simple HTTP file server, with some special features:
+ 
+ -REST-like long-polling pipeline
+  GET requests to any location below the feeds/ path are delayed until information is placed there via a PUT request.
+  A requesting client can idle on a GET request, until some remote control puts commands via PUT there. The requesting
+  client is then answered immediately and the information dropped. Two web clients can send commands and data to each other
+  using two path locations.
+  
+ -REST-like value store
+  PUT requests to any location below the saves/ path store the data given as the request body to disk
+  
+ -Recorder tool
+  the pathes recorder/start and recorder/stop allow to run and stop a hardwired avconv tool process to record the current
+  screen content.
+ 
+*/
+
 var http = require('http');
 
 var data={};
@@ -68,7 +88,7 @@ var server=http.createServer(function (req, res) {
       
     res.end();
   }
-  else if(path.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
+  else if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     res.setHeader("Content-Type", "text/html");
     var instream=fs.createReadStream(key);

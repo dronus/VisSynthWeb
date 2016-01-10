@@ -51,7 +51,15 @@
 
     // main update function, shows video frames via glfx.js canvas
     var update = function()
-    {
+    {    
+      // enqueue next update
+      if(canvas.proposed_fps)
+        setTimeout(function(){
+          requestAnimationFrame(update);
+        },1000/canvas.proposed_fps);
+      else
+        requestAnimationFrame(update);
+    
       // quirk: glfx.js canvas may not be initalized if draw was not called.
       if(!canvas._.isInitialized)
         canvas.initialize(800,600);
@@ -95,9 +103,6 @@
         put('screenshot',pixels);
         screenshot_cycle=0;
       }
-
-      // enqueue next update
-      requestAnimationFrame(update);
     };
 
     // enumerate the available sources at startup and start update loop if found
