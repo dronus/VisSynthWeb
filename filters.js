@@ -926,7 +926,7 @@ canvas.preview=function()
 
 
 // src/filters/video/feedbackOut.js
-canvas.feedbackOut=function(blend) {
+canvas.feedbackOut=function(blend,clear_on_switch) {
     gl.feedbackOut = gl.feedbackOut || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D feedbackTexture;\
@@ -940,6 +940,9 @@ canvas.feedbackOut=function(blend) {
     ');
 
     if(!this._.feedbackTexture) return this;
+    
+    if(clear_on_switch && this.switched)
+      this._.feedbackTexture.clear();
 
     gl.feedbackOut.textures({
         texture: this._.texture,
@@ -1458,13 +1461,17 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 
 
 // src/filters/video/timeshift.js
-canvas.timeshift=function(time)
+canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last second in a ring buffer
 
     var max_frames=500;
     
     if(!this._.pastTextures) this._.pastTextures=[];
+  
+    if(clear_on_switch && this.switched)
+      for(key in this._.pastTextures)
+        this._.pastTextures[key].clear();
 
     var t=this._.texture;
     if(this._.pastTextures.length<max_frames)
