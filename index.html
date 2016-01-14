@@ -12,7 +12,6 @@
   <script src="filters.js"></script>
 </head>
 <body>
-<!--  <canvas id=audiocanvas width=640 height=256 style="position: absolute; width: 640px; height: 256px; border: 1px solid pink;">audio test canvas</canvas> -->
   <style>
     html,body,canvas{
       width: 100%;
@@ -26,7 +25,7 @@
 
   <script>
 
-    // "canvas" is the global glfx.js WebGL effect canvas object, defined by canvas.js
+    // "canvas" is the global WebGL effect canvas object, defined by canvas.js
 
     // append the canvas to the view
     document.body.appendChild(canvas);
@@ -74,6 +73,15 @@
       if(chain) chain(canvas,effect_time);
 
       // provide preview if requested
+      // the preview is a downscaled image provided by the 'preview' effect
+      // we crop the preview pixels of the canvas just BEFORE canvas.update, which will redraw the full resolution canvas.
+      //
+      // in repsect to just downsizing the final image this has two benefits:
+      //
+      // 1) it is much faster, as rescaling is done in WebGL context and not by 2d context drawImage
+      //
+      // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
+      //
       if(preview_enabled && preview_cycle==0)
       {      
         if(!preview_canvas)
@@ -87,8 +95,8 @@
       else if(preview_cycle==1)
       {          
         var jpeg=preview_enabled ? preview_canvas.toDataURL('image/jpeg') : null;
-	var data={frame_time:frame_time, jpeg:jpeg};
-	var json=JSON.stringify(data);
+        var data={frame_time:frame_time, jpeg:jpeg};
+        var json=JSON.stringify(data);
         put('preview',json);
       }
       preview_cycle=(preview_cycle+1)%2;
@@ -96,7 +104,7 @@
       // redraw visible canvas
       canvas.update();
 
-      // reset switched flag
+      // reset switched flag, it is used by some filters to clear buffers on chain switch
       canvas.switched=false; 
       
       // take screenshot if requested
@@ -124,14 +132,22 @@
     else
       onSourcesAcquired([]);
 
-
     // let the remote change the source device mapping
+    // 
+    // this is a global function that is therefore available as a setup function in the filter chain
+    // TODO find a cleaner way to provide this function
+    //
     var device_mapping={};
     function map_video(source,target)
     {
       device_mapping[parseInt(source)]=parseInt(target);
     }
-    
+
+    // let the remote change the audio source
+    // 
+    // this is a global function that is therefore available as a setup function in the filter chain
+    // TODO find a cleaner way to provide this function
+    //    
     var audio_device_index=0;
     function select_audio(device_index)
     {
