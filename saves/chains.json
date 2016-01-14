@@ -109,6 +109,7 @@
   "",
   "",
   "",
+  "",
   ""
  ],
  [
@@ -3227,7 +3228,8 @@
   },
   {
    "effect": "feedbackOut",
-   "blend": 0.988
+   "blend": 0.988,
+   "clear_on_switch": 1
   },
   {
    "effect": "stack_swap"
@@ -3300,7 +3302,8 @@
   },
   {
    "effect": "feedbackOut",
-   "blend": 0.99
+   "blend": 0.99,
+   "clear_on_switch": 1
   },
   {
    "effect": "stack_swap"
@@ -3378,6 +3381,11 @@
   },
   {
    "effect": "blend_alpha"
+  },
+  {
+   "effect": "timeshift",
+   "time": 6.3,
+   "clear_on_switch": 1
   },
   {
    "effect": "hueSaturation",

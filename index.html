@@ -96,6 +96,9 @@
       // redraw visible canvas
       canvas.update();
 
+      // reset switched flag
+      canvas.switched=false; 
+      
       // take screenshot if requested
       if(screenshot_cycle==1)
       {      
@@ -319,6 +322,9 @@
       // compile chain
       var w=canvas.width, h=canvas.height; // provide global values for chain functions
       chain=eval(src);
+      
+      // set canvas 'switched' flag, that can be used by filters to reset buffers
+      canvas.switched=true;
     }
     
     // set several effect chains at once that are then cycled.
