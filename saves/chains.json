@@ -18,13 +18,6 @@
  ],
  [],
  [
-  "",
-  {
-   "effect": "timeshift",
-   "time": 490
-  }
- ],
- [
   "color clash swirl",
   {
    "effect": "sobel",
@@ -86,31 +79,100 @@
   }
  ],
  [
-  "rainbow Run",
+  "chroma tunnel",
   {
-   "effect": "rainbow"
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1.023
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "motion",
+   "threshold": 0.192,
+   "interval": 1,
+   "damper": 0.936
+  },
+  {
+   "effect": "color",
+   "strength": 0.5,
+   "rgb": {
+    "type": "rgb",
+    "r": 1,
+    "g": 0,
+    "b": 0
+   }
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 0.995,
+   "angle": 0
   },
   {
    "effect": "hueSaturation",
-   "hue": {
-    "type": "osc",
-    "f": 0.402,
-    "a": -0.768,
-    "p": 0,
-    "o": 0
-   },
+   "hue": 0.02,
    "saturation": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 1,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   }
+  },
+  {
+   "effect": "transform",
+   "x": -0.46,
+   "y": -1.445,
+   "scale": 1.907,
+   "angle": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": -1.587
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "transform",
+   "x": -0.267,
+   "y": 0,
+   "scale": 1,
+   "angle": 3.131
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "feedbackIn"
   }
- ],
- [
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  ""
  ],
  [
   "sobel",

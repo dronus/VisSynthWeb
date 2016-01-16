@@ -14,7 +14,7 @@
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
-    <button id=timeline_button onclick="toggle_timeline()">TIMELINE</button>
+    <!--<button id=timeline_button onclick="toggle_timeline()">TIMELINE</button>-->
     <button id=recorder_start_button onclick="get('/recorder/start')">START RECORDING</button>
     <button id=recorder_stop_button onclick="get('/recorder/stop')">STOP RECORDING</button>
     <span id=stats></span>
@@ -1151,20 +1151,19 @@
         // allow removal of items by dragging them out
         over: function(){this.is_outside=false},
         out: function(){this.is_outside=true},
-    /*    beforeStop: function(ev,ui){          
+        beforeStop: function(ev,ui){
           if(this.is_outside) 
           {
             $(ui.item).remove();
             updateChain();
           }
-        },*/
-        
-       remove: function(e,ui) {
+        },
+        remove: function(e,ui) {
          ui.item.clone('true').insertAfter(ui.item);
          $(this).sortable('cancel');
          updateTimeline();
          return ui;
-    }   ,
+        },
         connectWith:'#timeline'
     });
  

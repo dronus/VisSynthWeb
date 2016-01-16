@@ -365,6 +365,7 @@
       screenshot_cycle=1;
     }
     
+    /*
     // load startup chain (first three of chains.json : setup pre, current, setup after)
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open('GET','saves'+session_url+'timeline.json',false);
@@ -373,8 +374,19 @@
     { 
       var chains=JSON.parse(xmlHttp.responseText);
       setChains(chains,1000);
-    }
+    }*/
     
+    // load startup chain (first three of chains.json : setup pre, current, setup after)
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET','saves'+session_url+'chains.json',false);
+    xmlHttp.send(null);
+    if(xmlHttp.responseText)
+    { 
+      var chains=JSON.parse(xmlHttp.responseText);
+      var full_chain=chains[0].concat(chains[2],chains[1]);
+      setChain(full_chain);
+    }
+  
   </script>
 
 </body>
