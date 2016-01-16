@@ -247,6 +247,20 @@ canvas.feedbackIn=function()
     return this;
 }
 
+canvas.strobe=function(period)
+{
+    var t=this._.texture;
+    if(!this._.strobeTexture)
+      this._.strobeTexture=new Texture(t.width,t.height,t.format,t.type);
+    this._.strobeTexture.ensureFormat(this._.texture);
+
+    this._.strobePhase=((this._.strobePhase|0)+1.) % period;
+    if(this._.strobePhase==0) this._.texture.copyTo(this._.strobeTexture);
+    else                      this._.strobeTexture.copyTo(this._.texture);
+
+    return this;
+}
+
 // src/filters/video/tile.js
 canvas.tile=function(size,centerx,centery) {
     gl.tile = gl.tile || new Shader(null, '\
