@@ -400,6 +400,54 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
     return this;
 }
 
+
+canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
+    gl.superellipse = gl.superellipse || new Shader(null, '\
+      varying vec2 texCoord;\
+      uniform mat3 transform;\
+      uniform float a;\
+      uniform float b;\
+      uniform float m;\
+      uniform float n1;\
+      uniform float n2;\
+      uniform float n3;\
+      void main() {\
+          vec2 uv=(transform*vec3(texCoord-vec2(0.5,0.5),1.0)).xy;\
+          uv=mod(uv,vec2(1.0,1.0))-vec2(0.5,0.5);\
+          float phi=atan(uv.x,uv.y);\
+          float t1 = cos(m * phi / 4.0);\
+          t1 = t1 / a;\
+          t1 = abs(t1);\
+          t1 = pow(t1, n2);\
+          float t2 = sin(m * phi / 4.0);\
+          t2 = t2 / b;\
+          t2 = abs(t2);\
+          t2 = pow(t2, n3);\
+          float T = t1 + t2;\
+          float Out = pow(T, 1.0 / n1);\
+          if (abs(Out) == 0.0) {\
+              Out = 0.0;\
+          } else {\
+              Out = 1.0 / Out;\
+          }\
+          float r=sqrt(dot(uv,uv));\
+          \
+          gl_FragColor = mix(vec4(0.0,0.0,0.0,1.0),vec4(1.0,1.0,1.0,1.0),(Out-r)+0.5);\
+      }\
+    ');
+
+    var sx=size/this.width, sy=size/this.height;
+    var transform=[
+       Math.sin(angle)/sx,Math.cos(angle)/sx,0,
+      -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
+                        0,                 0,1
+    ];
+    this.simpleShader( gl.superellipse, {transform:transform,a:a,b:b,m:m,n1:n1,n2:n2,n3:n3});
+
+    return this;
+};
+
+
 // src/filters/video/colorDisplacement.js
 canvas.colorDisplacement=function(angle,amplitude) {
     gl.colorDisplacement = gl.colorDisplacement || new Shader(null,'\
@@ -2781,6 +2829,27 @@ canvas.brightnessContrast=function(brightness, contrast) {
 
     return this;
 }
+
+canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
+    gl.threshold = gl.threshold || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float threshold;\
+        uniform float feather;\
+        uniform vec3 c0;\
+        uniform vec3 c1;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            color.rgb=mix(c0,c1,clamp((length(color.rgb)-threshold)/feather,0.0,1.0));\
+            gl_FragColor = color;\
+        }\
+    ');
+    
+    this.simpleShader( gl.threshold, {threshold:threshold,feather:feather,c0:[r0,g0,b0],c1:[r1,g1,b1]});
+
+    return this;
+}
+
 
 // src/filters/fun/sobel.js
 /**

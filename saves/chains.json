@@ -13,10 +13,149 @@
   },
   {
    "effect": "capture",
-   "device": 1
+   "device": 0
   }
  ],
  [],
+ [
+  "mirror",
+  {
+   "effect": "transform",
+   "x": -0.7,
+   "y": 0,
+   "scale": 1,
+   "angle": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "mirror_y"
+  },
+  {
+   "effect": "blend_alpha"
+  }
+ ],
+ [
+  "motion mirror",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "mirror_y"
+  },
+  {
+   "effect": "motion",
+   "threshold": 0.146,
+   "interval": 1,
+   "damper": 0.873
+  },
+  {
+   "effect": "blend_alpha"
+  }
+ ],
+ [
+  "checker lag",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "timeshift",
+   "time": 12.5,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "superellipse",
+   "size": 50,
+   "angle": 0,
+   "a": 1,
+   "b": 1,
+   "m": 4,
+   "n1": 2.218,
+   "n2": 1,
+   "n3": 1
+  },
+  {
+   "effect": "threshold",
+   "threshold": 1.73,
+   "feather": 0.001,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "blend_mask"
+  }
+ ],
+ [
+  "punched strobe",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "strobe",
+   "period": 4
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "superellipse",
+   "size": 30.023,
+   "angle": 0.788,
+   "a": 1,
+   "b": 1,
+   "m": 1,
+   "n1": 0.435,
+   "n2": 0,
+   "n3": 0
+  },
+  {
+   "effect": "threshold",
+   "threshold": 0.5,
+   "feather": 0.071,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "blend_mask"
+  }
+ ],
+ [
+  "flower wallpaper",
+  {
+   "effect": "superellipse",
+   "size": 100,
+   "angle": 0,
+   "a": 1,
+   "b": 1,
+   "m": 18,
+   "n1": 0.9,
+   "n2": -1,
+   "n3": -1
+  },
+  {
+   "effect": "threshold",
+   "threshold": 0.722,
+   "feather": 0.131,
+   "r0": 0.267,
+   "g0": 0.298,
+   "b0": 0.192,
+   "r1": 0.873,
+   "g1": 0.561,
+   "b1": 0.482
+  }
+ ],
  [
   "color clash swirl",
   {
