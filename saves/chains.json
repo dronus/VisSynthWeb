@@ -18,7 +18,67 @@
  ],
  [],
  [
-  ""
+  "pulse slipstream",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "vectorscope",
+   "size": 2,
+   "intensity": 1,
+   "linewidth": 2
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.282,
+   "factor": 1
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": {
+    "type": "beat",
+    "pulse": 5.41,
+    "f": 2,
+    "a": 0.01,
+    "p": 0,
+    "o": 0.45
+   }
+  },
+  {
+   "effect": "colorHalftone",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "angle": -58.3,
+   "size": {
+    "type": "osc",
+    "f": 69.52,
+    "a": 1.48,
+    "p": 0,
+    "o": 2
+   }
+  },
+  {
+   "effect": "zoomBlur",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "size": {
+    "type": "beat",
+    "pulse": 1,
+    "f": 0,
+    "a": 0,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "feedbackIn"
+  }
  ],
  [
   "stripe lag",

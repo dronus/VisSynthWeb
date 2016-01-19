@@ -1411,6 +1411,65 @@ canvas.waveform=function()
     return this;
 }
 
+
+
+canvas.vectorscope=function(size,intensity,linewidth) {
+    gl.vectorscope = gl.vectorscope || new Shader('\
+    attribute vec2 _texCoord;\
+    uniform sampler2D waveform;\
+    uniform float size;\
+    uniform float delta;\
+    void main() {\
+        float locX = texture2D(waveform, _texCoord).x;\
+        float locY = texture2D(waveform, _texCoord+vec2(delta,0.0)).x;\
+        vec4 pos=vec4(size*vec2(locX-0.5,locY-0.5),0.0,1.0);\
+        gl_Position = pos;\
+    }','\
+    uniform float intensity;\
+    void main() {\
+      gl_FragColor = vec4(intensity);\
+    }\
+    ');
+    var values=audio_engine.waveform;
+    if(!values) return;
+    var count=values.length;
+
+    // generate line segments
+    if(!this._.vectorscopeUVs)
+    {
+      this._.vectorscopeUVs=[];
+      for (var t=0;t<=1.0;t+=1.0/count)
+        this._.vectorscopeUVs.push(t);
+      gl.vectorscope.attributes({_texCoord:this._.vectorscopeUVs},{_texCoord:1});
+    }
+            
+    // set shader parameters
+    gl.vectorscope.uniforms({
+      size:size, delta: 20.0/count,intensity:intensity
+    });    
+    // set shader textures    
+    if(!this._.waveformTexture)
+      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);      
+    this._.waveformTexture.load(values);
+    gl.vectorscope.textures({waveform: this._.waveformTexture});
+
+    // render 3d mesh stored in waveform texture,uvs to texture
+    this._.texture.drawTo(function() {
+        //gl.enable(gl.DEPTH_TEST);
+        //gl.depthFunc(gl.LEQUAL);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+        gl.enable(gl.LINE_SMOOTH);
+        gl.lineWidth(linewidth);
+        gl.vectorscope.drawArrays(gl.LINE_STRIP);
+        //gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);        
+    },true);
+ 
+    return this;
+}
+
 // src/filters/video/lumakey.js
 canvas.lumakey=canvas.luma_key=function(threshold,feather) {
     gl.lumakey = gl.lumakey || new Shader(null, '\
