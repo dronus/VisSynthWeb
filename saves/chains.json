@@ -18,6 +18,41 @@
  ],
  [],
  [
+  ""
+ ],
+ [
+  "stripe lag",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "timeshift",
+   "time": {
+    "type": "osc",
+    "f": 200,
+    "a": 12.5,
+    "p": 0,
+    "o": 12.5
+   },
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "grating",
+   "size": 0.206,
+   "angle": 0.722,
+   "ax": 3.275,
+   "fx": 0.041,
+   "ay": 1.495,
+   "fy": 0
+  },
+  {
+   "effect": "blend_mask"
+  }
+ ],
+ [
   "mirror",
   {
    "effect": "transform",

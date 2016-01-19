@@ -448,6 +448,33 @@ canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
 };
 
 
+canvas.grating=function(size,angle,ax,fx,ay,fy) {
+    gl.grating = gl.grating || new Shader(null, '\
+      varying vec2 texCoord;\
+      uniform mat3 transform;\
+      uniform float ax;\
+      uniform float fx;\
+      uniform float ay;\
+      uniform float fy;\
+      void main() {\
+          vec2 uv=(transform*vec3(texCoord-vec2(0.5,0.5),1.0)).xy;\
+          float x=ax*sin(fx*uv.x)*ay*cos(fy*uv.y);\
+          gl_FragColor = vec4(vec3(x+0.5),1.0);\
+      }\
+    ');
+
+    var sx=size/this.width, sy=size/this.height;
+    var transform=[
+       Math.sin(angle)/sx,Math.cos(angle)/sx,0,
+      -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
+                        0,                 0,1
+    ];
+    this.simpleShader( gl.grating, {transform:transform,ax:ax,fx:fx,ay:ay,fy:fy});
+
+    return this;
+};
+
+
 // src/filters/video/colorDisplacement.js
 canvas.colorDisplacement=function(angle,amplitude) {
     gl.colorDisplacement = gl.colorDisplacement || new Shader(null,'\
