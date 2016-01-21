@@ -14,7 +14,7 @@
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
-    <button id=timeline_button onclick="toggle_timeline()">TIMELINE</button>
+    <!--<button id=timeline_button onclick="toggle_timeline()">TIMELINE</button>-->
     <button id=recorder_start_button onclick="get('/recorder/start')">START RECORDING</button>
     <button id=recorder_stop_button onclick="get('/recorder/stop')">STOP RECORDING</button>
     <span id=stats></span>
@@ -1063,11 +1063,14 @@
       'video':{inputs:0,args:{url:"test.mp4"}},
       'image':{inputs:0,args:{url:"test.jpg"}},
       'matte':{inputs:0, args:{rgb:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0}}},
+      'grating':{inputs:0,args:{size:100.0,angle:0.0,ax:1.0,fx:1.0,ay:1.0,fy:1.0}},
+      'superellipse':{inputs:0,args:{size:100.0,angle:0.0,a:1.0,b:1.0,m:18.0,n1:0.9,n2:-1.0,n3:-1.0}},
       'polygon_matte':{inputs:0, args:{color:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0},sides:6.0,x:0.0,y:0.0,size:0.5,angle:0.0,aspect:1.0}},
       'waveform':{inputs:0},
+      'vectorscope':{inputs: 0,args:{size: 2.0, intensity:0.3, linewidth:1.0}},
       'spectrogram':{inputs:0},
       'preview':{},
-      'feedbackOut':{args:{blend:0.7}},
+      'feedbackOut':{args:{blend:0.7,clear_on_switch:0.0}},
       'feedbackIn':{},
       'stack_push':{outputs:2},
       'stack_swap':{inputs: 2,outputs:2},
@@ -1082,9 +1085,11 @@
       'particles':{inputs: 2,args:{anglex:0.0,angley:0.3,anglez:0.0,size: 15.0, strength:0.5,homing:0.01,noise:1.0,displacement:0.0}},
       'transform':{args:{x:0.0,y:0.0,scale:1.0,angle:0.0}},
       'perspective':{args:{perspective:{type:'perspective', x1:-0.75,y1:-0.75, x2:-0.75,y2:0.75,x3:0.75,y3:-0.75,x4:0.75,y4:0.75}}},
-      'timeshift':{args:{time:{type:'osc',f:200.0,a:12.5,p:0.0,o:12.5}}},
+      'strobe':{args:{period:10.0}},
+      'timeshift':{args:{time:{type:'osc',f:200.0,a:12.5,p:0.0,o:12.5},clear_on_switch:0.0}},
       'vibrance':{args:{strength:1.0}},
       'brightnessContrast':{args:{brightness:0.0,contrast:0.0}},
+      'threshold':{args:{threshold:0.5,feather:0.0,r0:0.0,g0:0.0,b0:0.0,r1:1.0,g1:1.0,b1:1.0}},
       'hueSaturation':{args:{hue:0.0,saturation:0.0}},
       'levels':{args:{min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0}},
       'invert':{},
@@ -1094,6 +1099,8 @@
       'color':{args:{strength:0.5,rgb:{type:'rgb', r:0.0,g:1.0,b:1.0}}},
       'posterize':{args:{steps:4.0}},
       'posterize_hue':{args:{hue:4.0,brightness:255.0}},
+      'mirror_x':{},
+      'mirror_y':{},
       'motion':{args:{threshold:0.3,interval:1.,damper:0.99}},
       'polygon':{args:{sides:6.0,x:0.0,y:0.0,size:0.5,angle:0.0,aspect:1.0}},
       'kaleidoscope':{args:{sides:5.0,angle:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0},angle2:{type:'osc',f:2.0,a:1.0,p:0.0,o:0.0}}},
@@ -1187,20 +1194,19 @@
         // allow removal of items by dragging them out
         over: function(){this.is_outside=false},
         out: function(){this.is_outside=true},
-    /*    beforeStop: function(ev,ui){          
+        beforeStop: function(ev,ui){
           if(this.is_outside) 
           {
             $(ui.item).remove();
             updateChain();
           }
-        },*/
-        
-       remove: function(e,ui) {
+        },
+        remove: function(e,ui) {
          ui.item.clone('true').insertAfter(ui.item);
          $(this).sortable('cancel');
          updateTimeline();
          return ui;
-    }   ,
+        },
         connectWith:'#timeline'
     });
  

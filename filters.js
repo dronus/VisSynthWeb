@@ -247,6 +247,20 @@ canvas.feedbackIn=function()
     return this;
 }
 
+canvas.strobe=function(period)
+{
+    var t=this._.texture;
+    if(!this._.strobeTexture)
+      this._.strobeTexture=new Texture(t.width,t.height,t.format,t.type);
+    this._.strobeTexture.ensureFormat(this._.texture);
+
+    this._.strobePhase=((this._.strobePhase|0)+1.) % period;
+    if(this._.strobePhase==0) this._.texture.copyTo(this._.strobeTexture);
+    else                      this._.strobeTexture.copyTo(this._.texture);
+
+    return this;
+}
+
 // src/filters/video/tile.js
 canvas.tile=function(size,centerx,centery) {
     gl.tile = gl.tile || new Shader(null, '\
@@ -385,6 +399,81 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
     
     return this;
 }
+
+
+canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
+    gl.superellipse = gl.superellipse || new Shader(null, '\
+      varying vec2 texCoord;\
+      uniform mat3 transform;\
+      uniform float a;\
+      uniform float b;\
+      uniform float m;\
+      uniform float n1;\
+      uniform float n2;\
+      uniform float n3;\
+      void main() {\
+          vec2 uv=(transform*vec3(texCoord-vec2(0.5,0.5),1.0)).xy;\
+          uv=mod(uv,vec2(1.0,1.0))-vec2(0.5,0.5);\
+          float phi=atan(uv.x,uv.y);\
+          float t1 = cos(m * phi / 4.0);\
+          t1 = t1 / a;\
+          t1 = abs(t1);\
+          t1 = pow(t1, n2);\
+          float t2 = sin(m * phi / 4.0);\
+          t2 = t2 / b;\
+          t2 = abs(t2);\
+          t2 = pow(t2, n3);\
+          float T = t1 + t2;\
+          float Out = pow(T, 1.0 / n1);\
+          if (abs(Out) == 0.0) {\
+              Out = 0.0;\
+          } else {\
+              Out = 1.0 / Out;\
+          }\
+          float r=sqrt(dot(uv,uv));\
+          \
+          gl_FragColor = mix(vec4(0.0,0.0,0.0,1.0),vec4(1.0,1.0,1.0,1.0),(Out-r)+0.5);\
+      }\
+    ');
+
+    var sx=size/this.width, sy=size/this.height;
+    var transform=[
+       Math.sin(angle)/sx,Math.cos(angle)/sx,0,
+      -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
+                        0,                 0,1
+    ];
+    this.simpleShader( gl.superellipse, {transform:transform,a:a,b:b,m:m,n1:n1,n2:n2,n3:n3});
+
+    return this;
+};
+
+
+canvas.grating=function(size,angle,ax,fx,ay,fy) {
+    gl.grating = gl.grating || new Shader(null, '\
+      varying vec2 texCoord;\
+      uniform mat3 transform;\
+      uniform float ax;\
+      uniform float fx;\
+      uniform float ay;\
+      uniform float fy;\
+      void main() {\
+          vec2 uv=(transform*vec3(texCoord-vec2(0.5,0.5),1.0)).xy;\
+          float x=ax*sin(fx*uv.x)*ay*cos(fy*uv.y);\
+          gl_FragColor = vec4(vec3(x+0.5),1.0);\
+      }\
+    ');
+
+    var sx=size/this.width, sy=size/this.height;
+    var transform=[
+       Math.sin(angle)/sx,Math.cos(angle)/sx,0,
+      -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
+                        0,                 0,1
+    ];
+    this.simpleShader( gl.grating, {transform:transform,ax:ax,fx:fx,ay:ay,fy:fy});
+
+    return this;
+};
+
 
 // src/filters/video/colorDisplacement.js
 canvas.colorDisplacement=function(angle,amplitude) {
@@ -926,7 +1015,7 @@ canvas.preview=function()
 
 
 // src/filters/video/feedbackOut.js
-canvas.feedbackOut=function(blend) {
+canvas.feedbackOut=function(blend,clear_on_switch) {
     gl.feedbackOut = gl.feedbackOut || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D feedbackTexture;\
@@ -940,6 +1029,9 @@ canvas.feedbackOut=function(blend) {
     ');
 
     if(!this._.feedbackTexture) return this;
+    
+    if(clear_on_switch && this.switched)
+      this._.feedbackTexture.clear();
 
     gl.feedbackOut.textures({
         texture: this._.texture,
@@ -1319,6 +1411,65 @@ canvas.waveform=function()
     return this;
 }
 
+
+
+canvas.vectorscope=function(size,intensity,linewidth) {
+    gl.vectorscope = gl.vectorscope || new Shader('\
+    attribute vec2 _texCoord;\
+    uniform sampler2D waveform;\
+    uniform float size;\
+    uniform float delta;\
+    void main() {\
+        float locX = texture2D(waveform, _texCoord).x;\
+        float locY = texture2D(waveform, _texCoord+vec2(delta,0.0)).x;\
+        vec4 pos=vec4(size*vec2(locX-0.5,locY-0.5),0.0,1.0);\
+        gl_Position = pos;\
+    }','\
+    uniform float intensity;\
+    void main() {\
+      gl_FragColor = vec4(intensity);\
+    }\
+    ');
+    var values=audio_engine.waveform;
+    if(!values) return;
+    var count=values.length;
+
+    // generate line segments
+    if(!this._.vectorscopeUVs)
+    {
+      this._.vectorscopeUVs=[];
+      for (var t=0;t<=1.0;t+=1.0/count)
+        this._.vectorscopeUVs.push(t);
+      gl.vectorscope.attributes({_texCoord:this._.vectorscopeUVs},{_texCoord:1});
+    }
+            
+    // set shader parameters
+    gl.vectorscope.uniforms({
+      size:size, delta: 20.0/count,intensity:intensity
+    });    
+    // set shader textures    
+    if(!this._.waveformTexture)
+      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);      
+    this._.waveformTexture.load(values);
+    gl.vectorscope.textures({waveform: this._.waveformTexture});
+
+    // render 3d mesh stored in waveform texture,uvs to texture
+    this._.texture.drawTo(function() {
+        //gl.enable(gl.DEPTH_TEST);
+        //gl.depthFunc(gl.LEQUAL);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+        gl.enable(gl.LINE_SMOOTH);
+        gl.lineWidth(linewidth);
+        gl.vectorscope.drawArrays(gl.LINE_STRIP);
+        //gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);        
+    },true);
+ 
+    return this;
+}
+
 // src/filters/video/lumakey.js
 canvas.lumakey=canvas.luma_key=function(threshold,feather) {
     gl.lumakey = gl.lumakey || new Shader(null, '\
@@ -1458,13 +1609,17 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 
 
 // src/filters/video/timeshift.js
-canvas.timeshift=function(time)
+canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last second in a ring buffer
 
     var max_frames=500;
     
     if(!this._.pastTextures) this._.pastTextures=[];
+  
+    if(clear_on_switch && this.switched)
+      for(key in this._.pastTextures)
+        this._.pastTextures[key].clear();
 
     var t=this._.texture;
     if(this._.pastTextures.length<max_frames)
@@ -2761,6 +2916,27 @@ canvas.brightnessContrast=function(brightness, contrast) {
     return this;
 }
 
+canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
+    gl.threshold = gl.threshold || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float threshold;\
+        uniform float feather;\
+        uniform vec3 c0;\
+        uniform vec3 c1;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            color.rgb=mix(c0,c1,clamp((length(color.rgb)-threshold)/feather,0.0,1.0));\
+            gl_FragColor = color;\
+        }\
+    ');
+    
+    this.simpleShader( gl.threshold, {threshold:threshold,feather:feather,c0:[r0,g0,b0],c1:[r1,g1,b1]});
+
+    return this;
+}
+
+
 // src/filters/fun/sobel.js
 /**
  * @description Sobel implementation of image with alpha and line color control
@@ -3094,4 +3270,34 @@ canvas.glitch=function(scale,detail,strength,speed) {
     return this;
 }
 
+/* Mirrors the image vertically (useful for webcams) */
+canvas.mirror_y = function() {
+    gl.mirror_y = gl.mirror_y || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float brightness;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, vec2(1.0 - texCoord.x,texCoord.y));\
+            gl_FragColor = color;\
+        }\
+    ');
 
+    this.simpleShader( gl.mirror_y, {});
+    return this;
+}
+
+/* Mirrors the image horizontally */
+canvas.mirror_x = function() {
+    gl.mirror_x = gl.mirror_x || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float brightness;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, vec2(texCoord.x, 1.0-texCoord.y));\
+            gl_FragColor = color;\
+        }\
+    ');
+
+    this.simpleShader( gl.mirror_x, {});
+    return this;
+}
