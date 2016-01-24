@@ -800,7 +800,7 @@
         else
         { 
           var offset=parseFloat(value_element.text());
-          new_value={type:'osc',f:5.0,a:offset/2,p:0.0,o:offset};
+          new_value={type:'osc',f:5.0,a:offset/2,p:0.0,o:offset,waveform:'sine'};
         }
         var new_ui=get_ui(key,new_value,function(element,value){
          element.html(document.createTextNode(''+value));

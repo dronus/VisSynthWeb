@@ -251,7 +251,8 @@
     // helper functions for chain code generation
 
     // flatten tree-like objects values into single array, dropping keys
-    var flatten=function(o){
+    var flatten=function(o)
+    {
       var a=[];
       for(var key in o) 
         if(key!='type') 
@@ -264,10 +265,18 @@
         }
       return a;
     }
+
     // effect argument value generators...
+    
+    oscillators={
+      sine     : Math.sin,
+      saw      : function(t){return (t % (2*Math.PI))*2.-1.},
+      rectangle: function(t){return (t % (2*Math.PI)<Math.PI) ? 1. : -1.}
+    }
+    
     var generators={
       perspective:function(args){delete args.type; return ["[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],["+flatten(args).join(',')+"],true"]},
-      osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
+      osc:function(args){return [args.a+"*oscillators['"+(args.waveform ? args.waveform : 'sine' )+"'](t*"+args.f+"+"+args.p+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
       beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
       size:flatten,
