@@ -1,6 +1,10 @@
 [
  [
   {
+   "effect": "fps",
+   "fps": 30
+  },
+  {
    "effect": "select_audio",
    "audio_device": 1
   },
@@ -13,6 +17,185 @@
   }
  ],
  [],
+ [
+  "motion contour fire",
+  {
+   "effect": "motion",
+   "threshold": 0.2,
+   "interval": 1,
+   "damper": 0.9
+  },
+  {
+   "effect": "sobel",
+   "secondary": 1.784,
+   "coeff": 1.714,
+   "alpha": 0.5,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "color",
+   "strength": 0.5,
+   "rgb": {
+    "type": "rgb",
+    "r": 0,
+    "g": 0.2,
+    "b": 0
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0.01,
+   "scale": 1.01,
+   "angle": 0
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.03,
+   "saturation": 0.05
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "luma_key",
+   "threshold": 0.1,
+   "feather": 0.05
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "contour fire",
+  {
+   "effect": "sobel",
+   "secondary": 5.564,
+   "coeff": 5.564,
+   "alpha": 0.5,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "color",
+   "strength": 0.5,
+   "rgb": {
+    "type": "rgb",
+    "r": 0,
+    "g": 0.2,
+    "b": 0
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0.01,
+   "scale": 1.01,
+   "angle": 0
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.03,
+   "saturation": 0.05
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "luma_key",
+   "threshold": 0.1,
+   "feather": 0.05
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "slit scan",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "rectangle",
+   "color": {
+    "type": "rgba",
+    "r": 0,
+    "g": 1,
+    "b": 0.206,
+    "a": 1
+   },
+   "x": {
+    "type": "osc",
+    "f": 0.1,
+    "a": 0.66,
+    "p": 0,
+    "o": 0,
+    "waveform": "saw"
+   },
+   "y": 0,
+   "width": 0.005,
+   "height": 1,
+   "angle": 0
+  },
+  {
+   "effect": "invert"
+  },
+  {
+   "effect": "blend_mask"
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
  [
   "vectorscope",
   {
@@ -115,26 +298,18 @@
    "effect": "stack_push"
   },
   {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgb",
-    "r": 1.059,
-    "g": 1.205,
-    "b": 1.131
-   }
-  },
-  {
-   "effect": "transform",
+   "effect": "rectangle",
+   "color": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   },
    "x": 0,
-   "y": 0.736,
-   "scale": 1,
-   "angle": 0
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": -0.45,
-   "scale": 1,
+   "y": 0,
+   "width": 1,
+   "height": 0.05,
    "angle": 0
   },
   {
@@ -1227,26 +1402,18 @@
    "effect": "stack_push"
   },
   {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgb",
-    "r": 1.059,
-    "g": 1.205,
-    "b": 1.131
-   }
-  },
-  {
-   "effect": "transform",
+   "effect": "rectangle",
+   "color": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   },
    "x": 0,
-   "y": 0.946,
-   "scale": 1,
-   "angle": 0
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": -0.45,
-   "scale": 1,
+   "y": 0,
+   "width": 1,
+   "height": 0.01,
    "angle": 0
   },
   {

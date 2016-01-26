@@ -559,6 +559,35 @@ canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
     return this;
 }
 
+canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
+
+    gl.rectangle = gl.rectangle || new Shader(null, '\
+        uniform vec4 color;\
+        uniform vec2 size;\
+        uniform float angle;\
+        uniform vec2 center;\
+        varying vec2 texCoord;\
+        float PI=3.14159; \
+        void main() {\
+            vec2 uv=texCoord-vec2(0.5,0.5)-center;\
+            uv/=size;\
+            if(abs(uv.x)<1. && abs(uv.y)<1.) \
+              gl_FragColor=color; \
+            else \
+              gl_FragColor=vec4(0.); \
+        }\
+    ');
+
+    this.simpleShader( gl.rectangle, {
+        color:[r,g,b,a],
+        size:[width*this.height/this.width,height],
+        angle:angle,
+        center: [x,y]
+    });
+
+    return this;
+}
+
 
 // src/filters/video/video.js
 canvas.video=function(url)
