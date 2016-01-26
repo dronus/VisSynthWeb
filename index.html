@@ -270,7 +270,7 @@
     
     oscillators={
       sine     : Math.sin,
-      saw      : function(t){return (t % (2*Math.PI))*2.-1.},
+      saw      : function(t){return (t % (2*Math.PI))/Math.PI-1.},
       rectangle: function(t){return (t % (2*Math.PI)<Math.PI) ? 1. : -1.}
     }
     
