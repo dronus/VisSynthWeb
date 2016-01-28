@@ -269,9 +269,9 @@
     // effect argument value generators...
     
     oscillators={
-      sine     : Math.sin,
-      saw      : function(t){return (t % (2*Math.PI))/Math.PI-1.},
-      rectangle: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.}
+      sine  : Math.sin,
+      saw   : function(t){return (t % (2*Math.PI))/Math.PI-1.},
+      square: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.}
     }
     
     var generators={

@@ -9,31 +9,20 @@
    "audio_device": 1
   },
   {
+   "effect": "capture",
+   "device": 0
+  },
+  {
    "effect": "type_byte"
   },
   {
    "effect": "image",
    "url": "test.jpg"
-  },
-  {
-   "effect": "capture",
-   "device": 0
   }
  ],
  [],
  [
   "address glitch",
-  {
-   "effect": "noise",
-   "seed": {
-    "type": "osc",
-    "f": 0.02,
-    "a": 1,
-    "p": 0,
-    "o": 0,
-    "waveform": "saw"
-   }
-  },
   {
    "effect": "grid",
    "size": 1,
@@ -44,18 +33,18 @@
    "blend": {
     "type": "osc",
     "f": 5,
-    "a": 0.25,
+    "a": 0.5,
     "p": 0,
     "o": 0.5,
-    "waveform": "rectangle",
+    "waveform": "square",
     "duty": 0.9
    },
    "clear_on_switch": 0
   },
   {
    "effect": "address_glitch",
-   "mask_x": 8.919,
-   "mask_y": 128
+   "mask_x": 0,
+   "mask_y": 0
   },
   {
    "effect": "feedbackIn"
