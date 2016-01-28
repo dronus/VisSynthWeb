@@ -1437,11 +1437,11 @@ canvas.address_glitch=function(mask_x,mask_y) {
           return c;\
         }\
         void main() {\
-            ivec2 address=ivec2(floor(texCoord*texSize));\
-            ivec2 new_address=ivec2(0.);\
+            ivec2 address=ivec2(texCoord*texSize+vec2(0.5001));\
+            ivec2 new_address=address;\
             new_address.x=bitwise_or(address.x,int(mask_x));\
             new_address.y=bitwise_or(address.y,int(mask_y));\
-            vec2 texCoord2=vec2(new_address)/texSize;\
+            vec2 texCoord2=(vec2(new_address)-vec2(0.5))/texSize;\
             gl_FragColor = texture2D(texture,texCoord2);\
         }\
     ');
