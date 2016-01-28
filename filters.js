@@ -522,6 +522,27 @@ canvas.matte=function(r,g,b,a) {
 }
 
 
+canvas.noise=function(seed) {
+    gl.noise = gl.noise || new Shader(null, '\
+        varying vec2 texCoord;\
+        uniform float seed;\
+        vec3 noise3(vec3 t){\
+          vec3 dots=vec3(\
+            dot(t ,vec3(12.9898,78.233,55.9274)),\
+            dot(t ,vec3(22.9898,68.233,65.9274)),\
+            dot(t ,vec3(32.9898,58.233,75.9274))\
+          );\
+          return fract(sin(dots) * 43758.5453);\
+        }\
+        void main() {\
+            gl_FragColor = vec4(noise3(vec3(texCoord,seed)),1.0);\
+        }\
+    ');
+    this.simpleShader( gl.noise, {seed:seed});
+    return this;
+}
+
+
 canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
     gl.polygon_matte = gl.polygon_matte || new Shader(null, '\
@@ -1392,6 +1413,45 @@ canvas.displacement=function(strength) {
 
     return this;
 }
+
+
+canvas.address_glitch=function(mask_x,mask_y) {
+    gl.address_glitch = gl.address_glitch || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float mask_x;\
+        uniform float mask_y;\
+        uniform vec2 texSize;\
+        varying vec2 texCoord;\
+        int bitwise_or(int a, int b){\
+          int c = 0; \
+          for (int x = 0; x <= 31; ++x) {\
+              c += c;\
+              if (a < 0) {\
+                  c += 1;\
+              } else if (b < 0) {\
+                  c += 1;\
+              }\
+              a += a;\
+              b += b;\
+          }\
+          return c;\
+        }\
+        void main() {\
+            ivec2 address=ivec2(floor(texCoord*texSize));\
+            ivec2 new_address=ivec2(0.);\
+            new_address.x=bitwise_or(address.x,int(mask_x));\
+            new_address.y=bitwise_or(address.y,int(mask_y));\
+            vec2 texCoord2=vec2(new_address)/texSize;\
+            gl_FragColor = texture2D(texture,texCoord2);\
+        }\
+    ');
+
+
+    this.simpleShader( gl.address_glitch, { mask_x:mask_x, mask_y:mask_y, texSize: [this.width, this.height]});
+
+    return this;
+}
+
 
 // src/filters/video/gauze.js
 canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
@@ -2614,39 +2674,6 @@ canvas.unsharpMask=function(radius, strength) {
     });
     this.simpleShader( gl.unsharpMask, {
         strength: strength
-    });
-
-    return this;
-}
-
-// src/filters/adjust/noise.js
-/**
- * @filter         Noise
- * @description    Adds black and white noise to the image.
- * @param amount   0 to 1 (0 for no effect, 1 for maximum noise)
- */
-canvas.noise=function(amount) {
-    gl.noise = gl.noise || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform float amount;\
-        varying vec2 texCoord;\
-        float rand(vec2 co) {\
-            return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\
-        }\
-        void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            \
-            float diff = (rand(texCoord) - 0.5) * amount;\
-            color.r += diff;\
-            color.g += diff;\
-            color.b += diff;\
-            \
-            gl_FragColor = color;\
-        }\
-    ');
-
-    this.simpleShader( gl.noise, {
-        amount: clamp(0, amount, 1)
     });
 
     return this;

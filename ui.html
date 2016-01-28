@@ -838,7 +838,7 @@
         else
         { 
           var offset=parseFloat(value_element.text());
-          new_value={type:'osc',f:5.0,a:offset/2,p:0.0,o:offset,waveform:'sine'};
+          new_value={type:'osc',f:5.0,a:offset/2,p:0.0,o:offset,waveform:'sine',duty:0.5};
         }
         var new_ui=get_ui(key,new_value,function(element,value){
          element.html(document.createTextNode(''+value));
@@ -1063,6 +1063,7 @@
       'video':{inputs:0,args:{url:"test.mp4"}},
       'image':{inputs:0,args:{url:"test.jpg"}},
       'matte':{inputs:0, args:{rgb:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0}}},
+      'noise':{inputs:0,args:{seed:{type:'osc',f:0.1,a:1.0,p:0.0,o:0.0,waveform:'saw'}}},
       'grating':{inputs:0,args:{size:100.0,angle:0.0,ax:1.0,fx:1.0,ay:1.0,fy:1.0}},
       'superellipse':{inputs:0,args:{size:100.0,angle:0.0,a:1.0,b:1.0,m:18.0,n1:0.9,n2:-1.0,n3:-1.0}},
       'rectangle':{inputs:0, args:{color:{type:'rgba', r:1.0,g:1.0,b:1.0,a:1.0},x:0.0,y:0.0,width:0.2,height:0.2,angle:0.0}},
@@ -1136,6 +1137,7 @@
       'reaction2':{args:{F:0.0545,K:0.062,D_a:0.2,D_b:0.1,iterations:1.0}},
       'glitch':{args:{scale:16.0,detail: 25.0, strength: 0.9,speed: 1.0}},
       'supershape':{args:{angleX:-0.7,angleY:{type:'osc',f:0.1,a:10.0,p:0.0,o:0.0},a1:1.0,b1:1.0,m1:5.0,n11:1.0,n21:1.0,n31:2.0,a2:1.0,b2:1.0,m2:5.0,n12:1.0,n22:1.0,n32:3.0}},
+      'address_glitch':{args:{mask_x:8.0,mask_y:0.0}},
     };
     
     var new_effects=[];

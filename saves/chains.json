@@ -12,11 +12,114 @@
    "effect": "type_byte"
   },
   {
+   "effect": "image",
+   "url": "test.jpg"
+  },
+  {
    "effect": "capture",
    "device": 0
   }
  ],
  [],
+ [
+  "address glitch",
+  {
+   "effect": "noise",
+   "seed": {
+    "type": "osc",
+    "f": 0.02,
+    "a": 1,
+    "p": 0,
+    "o": 0,
+    "waveform": "saw"
+   }
+  },
+  {
+   "effect": "grid",
+   "size": 1,
+   "angle": 0
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.25,
+    "p": 0,
+    "o": 0.5,
+    "waveform": "rectangle",
+    "duty": 0.9
+   },
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "address_glitch",
+   "mask_x": 8.919,
+   "mask_y": 128
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "audio synth",
+  {
+   "effect": "grating",
+   "size": 100,
+   "angle": 0,
+   "ax": 0.995,
+   "fx": {
+    "type": "osc",
+    "f": 6.342,
+    "a": 3.15,
+    "p": 0,
+    "o": 2.849,
+    "waveform": "sine"
+   },
+   "ay": 0.641,
+   "fy": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "grating",
+   "size": 100,
+   "angle": 0,
+   "ax": 1,
+   "fx": {
+    "type": "osc",
+    "f": 2.742,
+    "a": -17.565,
+    "p": 0,
+    "o": 15.52,
+    "waveform": "saw"
+   },
+   "ay": 1,
+   "fy": 0.086
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 1
+  },
+  {
+   "effect": "strobe",
+   "period": 9
+  },
+  {
+   "effect": "brightnessContrast",
+   "brightness": {
+    "type": "osc",
+    "f": 13.272,
+    "a": 0.788,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine"
+   },
+   "contrast": 0
+  }
+ ],
  [
   "motion contour fire",
   {
@@ -716,6 +819,26 @@
   }
  ],
  [
+  "rainbow run",
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 0.402,
+    "a": -0.768,
+    "p": 0,
+    "o": 0
+   },
+   "saturation": 0
+  }
+ ],
+ [
   "shimmering displace",
   {
    "effect": "stack_push"
@@ -790,26 +913,6 @@
    "anglez": 0,
    "scale": 2.887,
    "pixelate": 0
-  }
- ],
- [
-  "rainbow run",
-  {
-   "effect": "stack_swap"
-  },
-  {
-   "effect": "rainbow"
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": {
-    "type": "osc",
-    "f": 0.402,
-    "a": -0.768,
-    "p": 0,
-    "o": 0
-   },
-   "saturation": 0
   }
  ],
  [
@@ -1262,14 +1365,7 @@
    "effect": "mesh_displacement",
    "sx": 0,
    "sy": 0,
-   "sz": {
-    "type": "beat",
-    "pulse": 5.592,
-    "f": 0,
-    "a": 0.333,
-    "p": 0,
-    "o": 0
-   },
+   "sz": 0.146,
    "anglex": 0,
    "angley": 0,
    "anglez": 0
