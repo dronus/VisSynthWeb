@@ -38,6 +38,7 @@
   <div class="chain container">
     <h2></h2>
     <div id="chain"></div>
+    <button id=chain_code_button onclick="toggle_code()" style="position: absolute; bottom: 2px; right: 2px;">CODE</button>
   </div>
 
   <div class="pre_chain container">
@@ -119,6 +120,9 @@
    input{
     border:none;
    }   
+   textarea{
+    color: #999;
+   }
 
    /* recursive containers */
    .container{
@@ -245,6 +249,11 @@
     #chain:empty::before,#pre_chain:empty::before,#post_chain:empty::before{
       content: "drag effects here";
       color: #777;
+    }
+    
+    .chain_code{
+      width: 500px;
+      height: 500px;
     }
     
     .timeline{
@@ -443,7 +452,7 @@
     }
     
     /* effect parameter adjust UI popup */
-    .adjust_ui{
+    .popup{
       position: fixed;
       width: 750px;
     }
@@ -455,7 +464,7 @@
       max-height: 90vh;
       overflow: auto;
     }
-    .adjust_ui .effect, .effect.ui_target{
+    .adjust_ui .effect, .effect.ui_target, .chain_code{
       border: 2px solid #f94 !important;
       -webkit-box-shadow: 0px 0px 32px 0px #000;
       -moz-box-shadow: 0px 0px 32px 0px #000;
@@ -903,21 +912,35 @@
       });
 
       // add popup container to body
-      var container=$('<div class=adjust_ui>');
-      container.append(slider_ui);
+      var popup=create_popup('adjust_ui',effect_element,slider_ui);
+    };
+    
+    var create_popup=function(classname,anchor,content_element)
+    {
+      var container=$('<div>');
+      container.addClass(classname);
+      container.addClass('popup');
+      container.append(content_element);
       $(document.body).append(container);
-      container.position({my:'top',at:'bottom',of:$(effect_element),collision:'fit'});
-      var close=function(){container.remove();effect_element.removeClass('ui_target');};
+      container.position({my:'top',at:'bottom',of:$(anchor),collision:'fit'});
+      var close=function(){
+        if(document.activeElement) 
+          document.activeElement.blur(); // trigger change events if pending
+        container.remove();
+        anchor.removeClass('ui_target');
+      };
       container.on('mouseleave',close);      
       
       // hide popup on outside click too
       $(document).one('mouseclick',function(ev){
-        if(!$.contains($('.adjust_ui')[0],ev.target))
-          $('.adjust_ui').trigger('mouseleave');
+        if(!$.contains($(classname)[0],ev.target))
+          $(classname).trigger('mouseleave');
       });
       
       container.draggable();
-    };
+      
+      return container;
+    }
     
     var savetimeout=false;
     var updateChain=function(event,ui)
@@ -1228,9 +1251,11 @@
       // send chain to output
       updateChain();
     });
+
     // pressing a number key is like clicking the 0-9 th chain
     $(document).keypress(function(e){
       if ($(e.target).closest("input")[0]) return; // ignore keys if in input field
+      if ($(e.target).closest("textarea")[0]) return; // ignore keys if in textarea field
       var number=parseInt(String.fromCharCode(e.which));
       if(number)
         $('#chains .chain_token:nth-child('+number+')').click();
@@ -1254,6 +1279,29 @@
         $('#chains').prepend(chain_token);
         chain_token.data('chain',[""]);
         chain_token.click();
+    }
+
+    var code_to_chain=function(code){
+      var chain_token=$('#chains .active');
+      var data=JSON.parse(code);
+      chain_token.data('chain',data);
+      chain_token.find('input').val(data[0]); // set name input
+      chain_token.click(); // trigger UI refresh
+    }
+
+    function toggle_code(e){
+      var textarea=$('<textarea class="chain_code container" spellcheck=false></textarea>');
+      var data=$('#chain').data('chain');
+      var json=JSON.stringify(data,' ',2);
+      textarea.val(json);
+      textarea.on('change',function(){
+        code_to_chain(this.value);
+      });
+      
+      var anchor=$('#chain_code_button');
+      create_popup('.code_ui',anchor,textarea);
+      textarea.focus();
+      textarea.select();
     }
 
     // load chains
