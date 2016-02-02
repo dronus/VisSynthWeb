@@ -1,0 +1,86 @@
+[
+ [
+  "bulgebeat",
+  {
+   "effect": "swirl",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "radius": 500,
+   "strength": 0.18
+  },
+  {
+   "effect": "bulgePinch",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "radius": 600,
+   "strength": {
+    "type": "beat",
+    "pulse": 0,
+    "f": 2,
+    "a": 0.05,
+    "p": 0,
+    "o": 0
+   }
+  }
+ ],
+ [
+  "smooth life",
+  {
+   "effect": "sobel",
+   "secondary": {
+    "type": "beat",
+    "pulse": 20.738,
+    "f": 0,
+    "a": 1.4245,
+    "p": 0,
+    "o": 1.4245
+   },
+   "coeff": {
+    "type": "beat",
+    "pulse": 31.122,
+    "f": 0,
+    "a": 1.94,
+    "p": 0,
+    "o": 1.94
+   },
+   "alpha": 0.891,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.298
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.056,
+   "birth_max": 0.237,
+   "death_min": 0.69
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.609
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ]
+]

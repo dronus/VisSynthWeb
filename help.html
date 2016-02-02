@@ -49,6 +49,12 @@
   <div help_for=".effects .effect">
     Drag this effect to the chain to add it.
   </div>
+  <div help_for=".effect[ui_effect='feedbackIn']">
+    A feedback tap. Insert this effect into the chain to make the current image available at the next frame. Use feedbackOut above this effect to retrieve the image.
+  </div>
+  <div help_for=".effect[ui_effect='feedbackOut']">
+    A feedback output. Insert this effect into the chain to receive the image pushed by feedbackIn on the last frame. Use feedbackIn below this effect to provide an image.
+  </div>
   <div help_for=".effect[ui_effect='preview']">
     A preview tap. Insert this effect into a chain and run preview to view the intermediate image.
   </div>
@@ -60,6 +66,9 @@
   </div>
   <div help_for=".effect[ui_inputs='2']">
     A video effect with two inputs, also consumes the topmost image on the stack. Don't forget to add push_stack somewhere above.
+  </div>
+  <div help_for=".effect[ui_effect='stack_swap']">
+    A stack_swap effect, exchanges the current image with the top one on the stack.
   </div>
   <div help_for=".effect[ui_inputs='3']">
     A video effect with three inputs, also consumes two images from the stack. Don't forget to add two push_stack's somewhere above.
@@ -75,7 +84,7 @@
   </div>
 
   <div help_for=".adjust_ui">
-    Use the sliders to adjust the effect's parameters. The center area provides fine grained control, the outer large numbers. Move or click outside to close.
+    Use the sliders to adjust the effect's parameters. The center area provides fine grained control, the outer large numbers. Click the numbers to edit by keyboard. Move or click outside to close.
   </div>
 
   <div help_for=".adjust_ui button">

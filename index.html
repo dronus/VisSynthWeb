@@ -2,8 +2,14 @@
 <html>
 <head>
   <title>NF VisSynth</title>
-  <script src="glfx.js/glfx.js"></script>
+  <script src="OES_texture_float_linear-polyfill.js"></script>  
+  <script src="spline.js"></script>
+  <script src="texture.js"></script>
+  <script src="shader.js"></script>
+  <script src="glmatrix.js"></script>
   <script src="audio.js"></script>
+  <script src="canvas.js"></script>  
+  <script src="filters.js"></script>
 </head>
 <body>
 <!--  <canvas id=audiocanvas width=640 height=256 style="position: absolute; width: 640px; height: 256px; border: 1px solid pink;">audio test canvas</canvas> -->
@@ -20,8 +26,8 @@
 
   <script>
 
-    // glfx.js WebGL effect canvas object
-    var canvas = fx.canvas();
+    // "canvas" is the global glfx.js WebGL effect canvas object, defined by canvas.js
+
     // append the canvas to the view
     document.body.appendChild(canvas);
         
@@ -38,16 +44,25 @@
 
     var time=0,frame_time=0; // running time
     var preview_cycle=0;
+    var preview_enabled=false;
     var screenshot_cycle=0;
     var preview_canvas=null;
     var chain=null;
 
     // main update function, shows video frames via glfx.js canvas
     var update = function()
-    {
+    {    
+      // enqueue next update
+      if(canvas.proposed_fps)
+        setTimeout(function(){
+          requestAnimationFrame(update);
+        },1000/canvas.proposed_fps);
+      else
+        requestAnimationFrame(update);
+    
       // quirk: glfx.js canvas may not be initalized if draw was not called.
       if(!canvas._.isInitialized)
-        canvas.initialize(640,480);
+        canvas.initialize(800,600);
 
       // get animation time
       var current_time=Date.now();
@@ -59,7 +74,7 @@
       if(chain) chain(canvas,effect_time);
 
       // provide preview if requested
-      if(preview_cycle==1)
+      if(preview_enabled && preview_cycle==0)
       {      
         if(!preview_canvas)
         {
@@ -68,22 +83,22 @@
         }
         var ctx=preview_canvas.getContext('2d');
         ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
-
-        put('frame_time',""+frame_time);
-
-        preview_cycle=2;
       }
-      else if(preview_cycle==2)
+      else if(preview_cycle==1)
       {          
-        var pixels=preview_canvas.toDataURL('image/jpeg');    
-        put('preview',pixels);
-      
-        preview_cycle=0;
-      }     
+        var jpeg=preview_enabled ? preview_canvas.toDataURL('image/jpeg') : null;
+	var data={frame_time:frame_time, jpeg:jpeg};
+	var json=JSON.stringify(data);
+        put('preview',json);
+      }
+      preview_cycle=(preview_cycle+1)%2;
 
       // redraw visible canvas
       canvas.update();
 
+      // reset switched flag
+      canvas.switched=false; 
+      
       // take screenshot if requested
       if(screenshot_cycle==1)
       {      
@@ -91,9 +106,6 @@
         put('screenshot',pixels);
         screenshot_cycle=0;
       }
-
-      // enqueue next update
-      requestAnimationFrame(update);
     };
 
     // enumerate the available sources at startup and start update loop if found
@@ -131,7 +143,7 @@
     // the consumer may receive a still starting <video> object, so it has to add and handle 'canplay' event before properties like videoWidth are read.
     var videos={};
     var audio_found=false;
-    var get_video=function(source_index)
+    var get_video=function(source_index,width,height)
     {
       source_index = source_index | 0;
 
@@ -154,12 +166,16 @@
       videos[source_index]=video;
     
       var constraints = {
-        video:{
+        video:
+        {
           optional: [{sourceId: source_ids.video[source_index]}]
         },
         audio:false
       };
 
+      // enforce resolution, if asked to
+      if(width && height)
+          constraints.video.mandatory={ minWidth: width, minHeight: height };
       
       // TODO handle audio again, in a more flexible fashion than one device only...
       // for now, we just take the first device queried
@@ -235,7 +251,8 @@
     // helper functions for chain code generation
 
     // flatten tree-like objects values into single array, dropping keys
-    var flatten=function(o){
+    var flatten=function(o)
+    {
       var a=[];
       for(var key in o) 
         if(key!='type') 
@@ -248,10 +265,18 @@
         }
       return a;
     }
+
     // effect argument value generators...
+    
+    oscillators={
+      sine  : Math.sin,
+      saw   : function(t){return (t % (2*Math.PI))/Math.PI-1.},
+      square: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.}
+    }
+    
     var generators={
       perspective:function(args){delete args.type; return ["[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],["+flatten(args).join(',')+"],true"]},
-      osc:function(args){return [args.a+"*Math.sin(t*"+args.f+"+"+args.p+")+"+args.o]},
+      osc:function(args){return [args.a+"*oscillators['"+(args.waveform ? args.waveform : 'sine' )+"'](t*"+args.f+"+"+args.p+","+(args.duty?args.duty:0.5)+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
       beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
       size:flatten,
@@ -271,6 +296,8 @@
         var value=effect[key];
         if(typeof(value)=='object')
           args=args.concat(generators[value.type](value));
+        else if (typeof(value)=='string')
+          args.push('"'+value+'"');
         else
           args.push(value);
       }
@@ -285,6 +312,8 @@
     // set effect chain to render
     function setChain(effects)
     {
+      if(timeline_timeout) clearTimeout(timeline_timeout); // stop timeline effect cycling
+    
       effects.unshift({'effect':'stack_prepare'});    
       var havePreview=false;
       for(var i=0; i<effects.length; i++)
@@ -304,13 +333,40 @@
       // compile chain
       var w=canvas.width, h=canvas.height; // provide global values for chain functions
       chain=eval(src);
+      
+      // set canvas 'switched' flag, that can be used by filters to reset buffers
+      canvas.switched=true;
+    }
+    
+    // set several effect chains at once that are then cycled.
+    var timeline_index=0;
+    var timeline_timeout=null;
+    function setChains(chains,delay)
+    {
+      delay=parseInt(delay);
+      delay=delay<100 ? 100 : delay;
+      
+      var cycler=function(){
+        if(timeline_index>=chains.length) 
+          timeline_index=0;
+                
+        var chain=chains[timeline_index];
+        setChain(chain);
+        
+        timeline_index++;
+
+        // install timeout to invoke next cycle
+        timeline_timeout=setTimeout(cycler,delay);
+      };
+      cycler();
     }
     
     // receive preview request from remote       
-    function preview()
+    function preview(enabled)
     {
       // engage preview process
-      preview_cycle=1;
+      preview_enabled=enabled;
+      preview_cycle=0;
     }
     
     // receive screenshot request from remote
@@ -319,6 +375,17 @@
       // engage screenshot process
       screenshot_cycle=1;
     }
+    
+    /*
+    // load startup chain (first three of chains.json : setup pre, current, setup after)
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET','saves'+session_url+'timeline.json',false);
+    xmlHttp.send(null);
+    if(xmlHttp.responseText)
+    { 
+      var chains=JSON.parse(xmlHttp.responseText);
+      setChains(chains,1000);
+    }*/
     
     // load startup chain (first three of chains.json : setup pre, current, setup after)
     var xmlHttp = new XMLHttpRequest();
@@ -330,7 +397,7 @@
       var full_chain=chains[0].concat(chains[2],chains[1]);
       setChain(full_chain);
     }
-    
+  
   </script>
 
 </body>

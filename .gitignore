@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .project
 node_modules
 *.dat
@@ -7,3 +8,8 @@ node_modules
 chains.json
 saves/*.json
 *.mp4
+/glfx.js/www/glfx.js/glfx.js
+/glfx.js/www/glfx.js/index.html
+/glfx.js/www/glfx.js/demo/index.html
+/glfx.js/www/glfx.js/docs/index.html
+recorded/*
