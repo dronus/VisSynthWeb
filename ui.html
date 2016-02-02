@@ -7,14 +7,13 @@
   <script src="jquery-ui.js"></script>
   <script src="jquery.ui.touch-punch.js"></script>  
 </head>
-<body style="font-size: 20px;" class="chain_layout">
+<body style="font-size: 20px;">
 
   <div class="header container">
     <h1 style="font-size:100%">VIS SYNTH MCP</h1>
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
-    <!--<button id=timeline_button onclick="toggle_timeline()">TIMELINE</button>-->
     <button id=recorder_start_button onclick="get('/recorder/start')">START RECORDING</button>
     <button id=recorder_stop_button onclick="get('/recorder/stop')">STOP RECORDING</button>
     <span id=stats></span>
@@ -49,11 +48,6 @@
   <div class="post_chain container">
     <h2>Setup After</h2>
     <div id="post_chain"></div>
-  </div>
-
-  <div class="timeline container">
-    <h2>Timeline <button onclick="runTimeline()">RUN</button><span>speed: <input id=delay value="60">/m</span></h2>
-    <div id="timeline"></div>
   </div>
 
   <div class="preview container" onclick="toggle_preview()">
@@ -180,7 +174,7 @@
       top:50px;
       bottom: 0px;
     }
-    #chains>*, #timeline>*{
+    #chains>*{
       background-color: #111;
       margin: 2px;
       border-radius: 5px;
@@ -254,31 +248,6 @@
     .chain_code{
       width: 500px;
       height: 500px;
-    }
-    
-    .timeline{
-      position: fixed;
-      top: 50px;
-      bottom: 250px;
-      left:270px;
-      right:0px;
-      padding: 2px;
-      margin: 0px;      
-    }
-    #timeline:empty::before{
-      content: "drag chains here";
-      color: #777;
-    }
-    .timeline #delay{
-      padding: 4px;
-      width: 40px;
-      overflow:hidden;
-      background-color: transparent;
-      color: #fff;
-    }    
-    .timeline h2 span{
-      margin-left: 20px;
-      font-size: 12px;
     }
     
     .pre_chain{
@@ -533,26 +502,6 @@
       position: absolute; 
       bottom: 10px; left: 10px;
    }
-    
-    
-   /* toggle layouts */
-   
-    body>.container{
-      display: none;
-    }
-    body>.preview, body>.header, body>.chains{
-      display: block;
-    }
-    .chain_layout .chain, .chain_layout .effects, .chain_layout .pre_chain, .chain_layout .post_chain
-    {
-      display: block;
-    }
-    .timeline_layout .timeline
-    {
-      display: block;
-    }
-       
-    
   </style>
 
   <script>
@@ -1246,90 +1195,6 @@
       else
         load(data);
     });
-
-
-    // timeline related
-    
-    // enable / disable timeline overlay
-    function toggle_timeline(){
-      $(document.body).toggleClass('chain_layout');      
-      $(document.body).toggleClass('timeline_layout');
-    }
-
-    // the timeline is sortable...
-    $("#timeline").sortable({
-        distance:10,
-        delay: 300,
-        // allow removal of items by dragging them out
-        over: function(){this.is_outside=false},
-        out: function(){this.is_outside=true},
-        beforeStop: function(ev,ui){          
-          if(this.is_outside) 
-          {
-            $(ui.item).remove();
-          }
-          updateTimeline();
-        }
-    });
-    
-    // the timeline is sent to presentation
-    var runTimeline=function()
-    {
-      // send out to control server
-      var chains=[];
-      // compile chains with pre- and post chains
-      var pre =$('#pre_chain').data('chain');
-      var post=$('#post_chain').data('chain');
-      $('#timeline .chain_token').each(function(){
-        var chain=$(this).data('chain');
-        chain=pre.concat(chain,post);
-        chains.push(chain);
-      });
-      var delay=60000/parseFloat($('.timeline #delay').val());
-      send('setChains('+JSON.stringify(chains)+','+delay+')');
-    }
-    
-    // the timeline is saved
-    var save_timeline=function()
-    {
-      var chains=[];
-      $('#timeline .chain_token').each(function(){
-        var chain=$(this).data('chain');
-        chains.push(chain);
-      });
-
-      var json=JSON.stringify(chains,null,' ');
-      put('/saves'+session_url+'timeline.json',json);
-      console.log('Saved timeline.');
-    }
-        
-    var save_timeline_timeout=false;
-    var updateTimeline=function(){
-      if(save_timeline_timeout) clearTimeout(save_timeline_timeout);
-      save_timeline_timeout=setTimeout(save_timeline,1000);
-    }
-
-    // the timeline gets loaded
-    var load_timeline=function(json){
-      if(!json) return;
-      var chains=JSON.parse(json);
-
-      chains.forEach(function(chain)
-      {
-        var chain_token=token.clone();
-        $('#timeline').append(chain_token);
-        chain_token.find('input').val(chain[0]);
-        chain_token.data('chain',chain);
-      });
-    }
-
-    get('/saves'+session_url+'timeline.json',function(data){
-      if(!data) // no saved chains in this session 
-        get('/saves/timeline.json',load_timeline); // load default chain instead
-      else
-        load_timeline(data);
-    });
-
 
     // add help...
 
