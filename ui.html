@@ -971,33 +971,28 @@
       send('setChain('+JSON.stringify(full_chain)+')');
     }
 
-    var init_chain_list=function(container)
-    {
-      // the chain list items are sortable
-      $(container).sortable({
-        distance:10,
-        delay:300,
-        tolerance: 'pointer',
-        stop: updateChain,
-        receive: function(event,ui){
-          var new_element=$(this).data()['ui-sortable'].currentItem;
-          new_element.removeAttr('style'); // remove obsolete jQuery d&d styles
-          updateChain(event,ui);
-        },
-        // allow removal of items by dragging them out        
-        over: function(){this.is_outside=false},
-        out: function(){this.is_outside=true},
-        beforeStop: function(ev,ui){
-          $(this).data('prevent_click',true); // store to prevent mouseup click handlers (FF fix)
-          if(this.is_outside) 
-          {
-            $(ui.item).remove();
-            updateChain();
-          }          
-        }
-      });
-    }
-    init_chain_list('#chain,#pre_chain,#post_chain');
+    $('#chain,#pre_chain,#post_chain').sortable({
+      distance:10,
+      delay:300,
+      tolerance: 'pointer',
+      stop: updateChain,
+      receive: function(event,ui){
+        var new_element=$(this).data()['ui-sortable'].currentItem;
+        new_element.removeAttr('style'); // remove obsolete jQuery d&d styles
+        updateChain(event,ui);
+      },
+      // allow removal of items by dragging them out        
+      over: function(){this.is_outside=false},
+      out: function(){this.is_outside=true},
+      beforeStop: function(ev,ui){
+        $(this).data('prevent_click',true); // store to prevent mouseup click handlers (FF fix)
+        if(this.is_outside) 
+        {
+          $(ui.item).remove();
+          updateChain();
+        }          
+      }
+    });
         
     var token=$('#chains .chain_token').clone();
     $('#chains .chain_token').addClass('active');
@@ -1177,7 +1172,6 @@
     listEffects(new_effects,'#effects');
         
         
-    var last_draggable=false;
     // the effects may be dragged to the chain list
     $('#effects>*').draggable({
       connectToSortable: "#chain,#pre_chain,#post_chain",
@@ -1189,16 +1183,7 @@
       delay: 300,
       stop: function(){        
         updateChain();
-        last_draggable=false;
       }
-    });
-    
-    // the effects may be cicked to add
-    $('#effects>*').on('click',function(){
-      var current_chain=$('#chains .active .chain');
-      var new_element=$(this).clone();
-      current_chain.append(new_element);
-      updateChain();
     });
     
     // the effects in the current chain may be clicked to display adjust UI
