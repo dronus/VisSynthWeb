@@ -615,44 +615,7 @@
       
       savetimeout=false;
     }
-    
-    
-    var runTimeline=function()
-    {
-      // send out to control server
-      var chains=[];
-      // compile chains with pre- and post chains
-      var pre =$('#pre_chain').data('chain');
-      var post=$('#post_chain').data('chain');
-      $('#timeline .chain_token').each(function(){
-        var chain=$(this).data('chain');
-        chain=pre.concat(chain,post);
-        chains.push(chain);
-      });
-      var delay=60000/parseFloat($('.timeline #delay').val());
-      send('setChains('+JSON.stringify(chains)+','+delay+')');
-    }
-    
-    var save_timeline=function()
-    {
-      var chains=[];
-      $('#timeline .chain_token').each(function(){
-        var chain=$(this).data('chain');
-        chains.push(chain);
-      });
-
-      var json=JSON.stringify(chains,null,' ');
-      put('/saves'+session_url+'timeline.json',json);
-      console.log('Saved timeline.');
-    }
-    
-    
-    var save_timeline_timeout=false;
-    var updateTimeline=function(){
-      if(save_timeline_timeout) clearTimeout(save_timeline_timeout);
-      save_timeline_timeout=setTimeout(save_timeline,1000);
-    }
-    
+          
     /*  recursively create UI for an effect, callback provides the UI for a signle value */
     var get_ui=function(key,node,callback)
     {
@@ -1028,19 +991,6 @@
       $('#chains>*:first-child').click();
     }
 
-    var load_timeline=function(json){
-      if(!json) return;
-      var chains=JSON.parse(json);
-
-      chains.forEach(function(chain)
-      {
-        var chain_token=token.clone();
-        $('#timeline').append(chain_token);
-        chain_token.find('input').val(chain[0]);
-        chain_token.data('chain',chain);
-      });
-    }
-
     /* pop last undo state */    
     function undo(){
       undo_history.pop(); // pop last "same" state
@@ -1297,12 +1247,14 @@
         load(data);
     });
 
-    get('/saves'+session_url+'timeline.json',function(data){
-      if(!data) // no saved chains in this session 
-        get('/saves/timeline.json',load_timeline); // load default chain instead
-      else
-        load_timeline(data);
-    });
+
+    // timeline related
+    
+    // enable / disable timeline overlay
+    function toggle_timeline(){
+      $(document.body).toggleClass('chain_layout');      
+      $(document.body).toggleClass('timeline_layout');
+    }
 
     // the timeline is sortable...
     $("#timeline").sortable({
@@ -1319,6 +1271,65 @@
           updateTimeline();
         }
     });
+    
+    // the timeline is sent to presentation
+    var runTimeline=function()
+    {
+      // send out to control server
+      var chains=[];
+      // compile chains with pre- and post chains
+      var pre =$('#pre_chain').data('chain');
+      var post=$('#post_chain').data('chain');
+      $('#timeline .chain_token').each(function(){
+        var chain=$(this).data('chain');
+        chain=pre.concat(chain,post);
+        chains.push(chain);
+      });
+      var delay=60000/parseFloat($('.timeline #delay').val());
+      send('setChains('+JSON.stringify(chains)+','+delay+')');
+    }
+    
+    // the timeline is saved
+    var save_timeline=function()
+    {
+      var chains=[];
+      $('#timeline .chain_token').each(function(){
+        var chain=$(this).data('chain');
+        chains.push(chain);
+      });
+
+      var json=JSON.stringify(chains,null,' ');
+      put('/saves'+session_url+'timeline.json',json);
+      console.log('Saved timeline.');
+    }
+        
+    var save_timeline_timeout=false;
+    var updateTimeline=function(){
+      if(save_timeline_timeout) clearTimeout(save_timeline_timeout);
+      save_timeline_timeout=setTimeout(save_timeline,1000);
+    }
+
+    // the timeline gets loaded
+    var load_timeline=function(json){
+      if(!json) return;
+      var chains=JSON.parse(json);
+
+      chains.forEach(function(chain)
+      {
+        var chain_token=token.clone();
+        $('#timeline').append(chain_token);
+        chain_token.find('input').val(chain[0]);
+        chain_token.data('chain',chain);
+      });
+    }
+
+    get('/saves'+session_url+'timeline.json',function(data){
+      if(!data) // no saved chains in this session 
+        get('/saves/timeline.json',load_timeline); // load default chain instead
+      else
+        load_timeline(data);
+    });
+
 
     // add help...
 
@@ -1392,12 +1403,7 @@
       });
       send('screenshot()');
     }
-      
-    function toggle_timeline(){
-      $(document.body).toggleClass('chain_layout');      
-      $(document.body).toggleClass('timeline_layout');
-    }
-      
+    
     // double tap quirk for touch screens
     var last_tap;
     $(document.body).on('touchend','*',function(e){
