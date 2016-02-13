@@ -2,25 +2,34 @@
  [
   {
    "effect": "fps",
-   "fps": 30
+   "fps": 25
   },
   {
    "effect": "select_audio",
    "audio_device": 1
   },
   {
-   "effect": "capture",
-   "device": 0
-  },
-  {
    "effect": "type_byte"
   },
   {
-   "effect": "image",
-   "url": "test.jpg"
+   "effect": "capture",
+   "device": 1
   }
  ],
  [],
+ [
+  "",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  }
+ ],
  [
   "address glitch",
   {
@@ -43,8 +52,71 @@
   },
   {
    "effect": "address_glitch",
-   "mask_x": 0,
-   "mask_y": 0
+   "mask_x": 3,
+   "mask_y": 6
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "hokusai luma",
+  {
+   "effect": "invert"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "transform",
+   "x": -0.306,
+   "y": -0.004,
+   "scale": 0.657,
+   "angle": {
+    "type": "osc",
+    "f": 1.14,
+    "a": -0.259,
+    "p": 0,
+    "o": -0.46
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1
+  },
+  {
+   "effect": "transform",
+   "x": 0.131,
+   "y": 0,
+   "scale": 0.577,
+   "angle": {
+    "type": "osc",
+    "f": 1.14,
+    "a": 0.374,
+    "p": 0.722,
+    "o": 0.42
+   }
+  },
+  {
+   "effect": "luma_key",
+   "threshold": 0.7,
+   "feather": 0.05
+  },
+  {
+   "effect": "luma_key",
+   "threshold": 0.722,
+   "feather": 0.05
+  },
+  {
+   "effect": "timeshift",
+   "time": 16.608
   },
   {
    "effect": "feedbackIn"
@@ -2592,9 +2664,9 @@
   },
   {
    "effect": "motion",
-   "threshold": 0.176,
+   "threshold": 0.101,
    "interval": 1,
-   "damper": 0.977
+   "damper": 0.907
   },
   {
    "effect": "fastBlur",
@@ -2938,9 +3010,9 @@
    "effect": "mesh_displacement",
    "sx": 0,
    "sy": 0,
-   "sz": -0.665,
-   "anglex": -0.079,
-   "angley": -0.004,
+   "sz": -0.506,
+   "anglex": 0.161,
+   "angley": 0,
    "anglez": 0
   }
  ],
@@ -4525,7 +4597,7 @@
   },
   {
    "effect": "motion",
-   "threshold": 0.05,
+   "threshold": 0.011,
    "interval": 1,
    "damper": 0.85
   },
