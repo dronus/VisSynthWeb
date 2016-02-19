@@ -132,17 +132,6 @@
     else
       onSourcesAcquired([]);
 
-    // let the remote change the source device mapping
-    // 
-    // this is a global function that is therefore available as a setup function in the filter chain
-    // TODO find a cleaner way to provide this function
-    //
-    var device_mapping={};
-    function map_video(source,target)
-    {
-      device_mapping[parseInt(source)]=parseInt(target);
-    }
-
     // let the remote change the audio source
     // 
     // this is a global function that is therefore available as a setup function in the filter chain
@@ -157,21 +146,20 @@
     // get the video feed from a capture device name by source_index into source_ids
     // opens the capture device and starts streaming on demand
     // the consumer may receive a still starting <video> object, so it has to add and handle 'canplay' event before properties like videoWidth are read.
+    //
+    // TODO this also grabs one audio source, selected by audio_device_index if not already done.
+    // this should be done somewhere else (eg. audio depending filters) but if we don't do it now, 
+    // the user may be asked twice, first for camera, then for microphone.
+    // There is no clean solution to this, as any chain may use any audio / video source... 
+    // maybe we should at least delay device grabbing until the pre_chain is evaluated for the first time,
+    // we can then ask for the sources that will most likely be the only ones for the full session.
     var videos={};
     var audio_found=false;
     var get_video=function(source_index,width,height)
     {
       source_index = source_index | 0;
 
-      /*
-      var device_mapping=document.location.hash.substring(1);
-      if(device_mapping) device_mapping=JSON.parse(device_mapping);
-      */
-      if(device_mapping[source_index]) 
-        source_index=device_mapping[source_index];
-        
-      
-      // jsut return video, if already started
+      // just return video, if already started
       if(videos[source_index]) 
         return videos[source_index];
 
@@ -213,16 +201,6 @@
           video.mozSrcObject = stream;
         else
           video.src = URL.createObjectURL(stream);      
-        // add our startup code to canplay handler of <video> object
-
-        // TODO how to handle multiple devices with different resolutions?
-        // for now, we just keep the inital resolution und don't adapt to devices at all!
-        /*
-        video.addEventListener('canplay',function(e){
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-        },false);
-        */
 
         // TODO handle audio again, in a more flexible fashion than one device only...
         if(stream.getAudioTracks().length) initAudioAnalysers(stream);
