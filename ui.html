@@ -311,6 +311,12 @@
     {
       font-size: 15px;
     }
+    /* OSC / BEAT remove buttons slip in sleekly to preserve screen */
+    .ui_object>.value>button
+     {
+      float:right;
+      margin-top: -10px;
+     }
 
     /* detail display of effects placed in current chain */    
 
@@ -439,12 +445,14 @@
       -moz-box-shadow: 0px 0px 32px 0px #000;
       box-shadow: 0px 0px 32px 0px #000;
     }    
+    /* nestet UI blocks, like multiple slider BEAT or OSC UIs */
     .adjust_ui .ui_object .ui_object{      
       border-radius: 5px;
       margin: 5px;
       padding-left: 15px;
-      background-color: #444;
+      background-color: #333;
     }
+    
     .adjust_ui .ui_object .ui_object .ui_object{
       background-color: #555;
     }    
@@ -458,12 +466,13 @@
     }
     /* text inputs */
     .adjust_ui input[type="text"]{
-      width: 550px;
-      padding: 14px;
+      width: 570px;
+      padding: 10px;
       overflow:hidden;
       font-size: 140%;
-      background-color: #000;
+      background-color: #111;
       color: #fff;
+      border-radius: 5px;
     }
     /* sliders */
     .adjust_ui input[type="range"]{
@@ -743,7 +752,8 @@
         add_input(element,value_element);
       });
 
-
+      var popup;
+      
       // OSC toggle button handler
       var toggle_osc=function(){
         var value_element=$($(this).parent().data('original_value_element'));
@@ -770,7 +780,7 @@
         updateChain();
 
         // refresh UI
-        container.remove();
+        popup.remove();
         effect_element.click();
       }
       // BEAT toggle button handler
@@ -799,7 +809,7 @@
         updateChain();
 
         // refresh UI
-        container.remove();
+        popup.remove();
         effect_element.click();
       }
 
@@ -815,16 +825,19 @@
       // add REMOVE OSC button to each value OSC UI
       slider_ui.find('.ui_object[ui_type="osc"]>.value').each(function(){
         var element=$(this);
-        element.find('.ui_string').after($('<button>REMOVE OSC</button>').click(toggle_osc));
+        element.prepend($('<button>REMOVE OSC</button>').click(toggle_osc));
       });
       // add REMOVE BEAT button to each value BEAT UI
       slider_ui.find('.ui_object[ui_type="beat"]>.value').each(function(){
         var element=$(this);
-        element.find('.ui_string').after($('<button>REMOVE BEAT</button>').click(toggle_beat));
+        element.prepend($('<button>REMOVE BEAT</button>').click(toggle_beat));
       });
+      
+      // the first element in a nested UI block shows it's type, so disable it.
+      slider_ui.find('.ui_object .ui_object input').first().attr('disabled',true);
 
       // add popup container to body
-      var popup=create_popup('adjust_ui',effect_element,slider_ui);
+      popup=create_popup('adjust_ui',effect_element,slider_ui);
     };
     
     var create_popup=function(classname,anchor,content_element)
