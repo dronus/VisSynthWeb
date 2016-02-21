@@ -75,6 +75,27 @@ canvas.blend_alpha=function() {
     return this;
 }
 
+// src/filters/video/blend_alpha.js
+canvas.multiply=function() {
+    gl.multiply = gl.multiply || new Shader(null, '\
+        uniform sampler2D texture1;\
+        uniform sampler2D texture2;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color1 = texture2D(texture1, texCoord);\
+            vec4 color2 = texture2D(texture2, texCoord);\
+            gl_FragColor = color1 * color2;\
+        }\
+    ');
+
+    var texture1=this.stack_pop();
+    gl.multiply.textures({texture2: this._.texture, texture1: texture1});
+    this.simpleShader( gl.multiply, {});
+
+    return this;
+}
+
+
 canvas.blend_mask=function() {
     gl.blend_mask = gl.blend_mask || new Shader(null, '\
         uniform sampler2D texture1;\
