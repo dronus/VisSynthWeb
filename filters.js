@@ -632,7 +632,7 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
 
 // src/filters/video/video.js
-canvas.video=function(url)
+canvas.video=function(url,play_sound)
 {
 
     var v=this._.videoFilterElement;
@@ -640,7 +640,7 @@ canvas.video=function(url)
     {
       var v = document.createElement('video');
       v.autoplay = true;
-      v.muted=true;
+      v.muted=!play_sound;
       v.loop=true;
       v.src=url;
       this._.videoFilterElement=v;
@@ -739,6 +739,11 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
               this._.gridMeshUvs.push(x,y);
               this._.gridMeshUvs.push(x,y-dy);
           }
+          // add zero area 'carriage return' triangles to prevent glitches
+          this._.gridMeshUvs.push(1.0,y-dy);
+          this._.gridMeshUvs.push(1.0,y-dy);
+          this._.gridMeshUvs.push(0.0,y-dy);
+          this._.gridMeshUvs.push(0.0,y-dy);
       }
       gl.mesh_displacement.attributes({_texCoord:this._.gridMeshUvs},{_texCoord:2});
     }
