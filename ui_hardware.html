@@ -131,7 +131,10 @@
       savetimeout=false;
     }
           
-
+    var clone=function(o)
+    {
+      return JSON.parse(JSON.stringify(o));
+    }
 
     var savetimeout=false;
     var updateChain=function(event,ui)
@@ -312,7 +315,7 @@
       if(type == 'press' && id=='#knob_patch')
       {
         // allow edit of names
-        ui_fn=name_ui;
+        ui_fn=chain_ui;
         ui_fn();
         return;
       }
@@ -350,7 +353,7 @@
           var i=effect_ids[value];
           i+=delta;
           if(!i || i>=new_effects.length) i=0;
-          chain[layer_id]=layer=JSON.parse(JSON.stringify(new_effects[i]));
+          chain[layer_id]=layer=clone(new_effects[i]);
         }
         else
         {        
@@ -368,7 +371,7 @@
     }
     
     var cursor=0;
-    var name_ui=function(id,type,delta)
+    var chain_ui=function(id,type,delta)
     {
       var name=chain[0];
 
@@ -388,15 +391,17 @@
         name=name.substring(0,cursor)+letter+name.substring(cursor+1);
         chain[0]=name;
       }
-     if(type=='press')
-     {
+      if(type=='press')
+      {
+        if(id=='#knob_patch') chains.unshift(clone(chain));
+        if(id=='#knob_layer') chains.splice(chain_id,1);
         ui_fn=main_ui;
         ui_fn();
         return;
       }
-      
-      var text='EDIT NAME: '+name+'\n'
-              +'           '+pad_left('^',cursor+1)+pad_left('',10-cursor)+'  &lt; &gt;      LETTER';
+
+      var text='PATCH              |'+name+'\n'
+              +'CLONE    |DELETE   |'+pad_left('^',cursor+1)+pad_left('',10-cursor)+' LETTER';
       $('.display').html(text);
     }
     
