@@ -307,8 +307,16 @@
              if(d> 50) d-=100;
              this.last_value=v;
              console.log(v+" "+this.last_value+" "+d);
-             callback(Math.sign(d));
-           }
+             callback(selector,'change',Math.sign(d));
+           },
+         'release' :
+            function(v)
+            {
+              if(v!=this.last_start_value)
+                this.last_start_value=v;
+              else
+                callback(selector,'press');
+            }
        });
     };
 
@@ -378,28 +386,28 @@
       return x;
     }
 
-    var update_ui=function(dc,dl,dp,dv)
+    var update_ui=function(id,type,delta)
     {
-      if(dc!=0)
+      if(type=='change' && id=='#knob_patch' & delta!=0)
       {
-        chain_id+=dc;
+        chain_id+=delta;
         layer_id=1;
         param_id=0;
       }
-      if(dl!=0)
+      if(type=='change' && id=='#knob_layer' & delta!=0)
       {
-        layer_id+=dl;
+        layer_id+=delta;
         param_id=1;      
       }
-      if(dp!=0)
+      if(type=='change' && id=='#knob_param' & delta!=0)
       {
-        param_id+=dp;
+        param_id+=delta;
       }
-      if(dv!=0)
+      if(type=='change' && id=='#knob_value' & delta!=0)
       {
         // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
         var path =flat[param_id];
-        path.o[path.i]+=dv/100.0;
+        path.o[path.i]+=delta/100.0;
       }
       
       chain_id=clamp(chain_id,0,chains.length);
@@ -423,22 +431,14 @@
       
       updateChain();
     }
-        
-    add_knob('#knob_patch',function(i){
-      update_ui(i,0,0,0);
-    });
-    
-    add_knob('#knob_layer',function(i){
-      update_ui(0,i,0,0);
-    });
-    
-    add_knob('#knob_param',function(i){
-      update_ui(0,0,i,0);
-    });
 
-    add_knob('#knob_value',function(i){
-      update_ui(0,0,0,i);
-    });
+    var ui_fn=update_ui;
+    var knob_handler=function(id,type,value){ui_fn(id,type,value);};
+        
+    add_knob('#knob_patch',knob_handler);
+    add_knob('#knob_layer',knob_handler);
+    add_knob('#knob_param',knob_handler);
+    add_knob('#knob_value',knob_handler);
     
     </script>
 
