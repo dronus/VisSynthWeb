@@ -400,8 +400,8 @@
         return;
       }
 
-      var text='PATCH              |'+name+'\n'
-              +'CLONE    |DELETE   |'+pad_left('^',cursor+1)+pad_left('',10-cursor)+' LETTER';
+      var text='PATCH              |'+pad(name,9)+'\n'
+              +'CLONE    |DELETE   |'+pad_left('^',cursor+1)+pad_left('',9-cursor)+'|RENAME  ';
       $('.display').html(text);
     }
     
