@@ -129,12 +129,6 @@
     /* save all chains to server and undo_history */
     var save=function()
     {
-      var chains=[];
-      chains.push($('#pre_chain').data('chain'));
-      chains.push($('#post_chain').data('chain'));      
-      $('#chains .chain_token').each(function(){
-        chains.push($(this).data('chain'));
-      });      
       var json=JSON.stringify(chains,null,' ');
       put('/saves'+session_url+'chains.json',json);
       undo_history.push(json);
@@ -171,7 +165,7 @@
       pre_chain=chains.shift();
       post_chain=chains.shift();      
       
-      update_ui();
+      update_ui(0,0,0,0);
     }
 
 
@@ -320,21 +314,21 @@
 
     var pad=function(text,n)
     {
-      text=' '+text;
+      text=''+text;
       var d=n-text.length;
       if(d>0) text+=' '.repeat(d);
       return text.substring(0,n);
     }
     var pad_left=function(text,n)
     {
-      text=' '+text;
+      text=''+text;
       var d=n-text.length;
       if(d>0) text=' '.repeat(d)+text;
       return text.substring(0,n);
     }
 
 
-    var patch_id=0,layer_id=1,param_id=1, flat=[];
+    var chain_id=0,layer_id=1,param_id=1, flat=[];
 
 
     var flatten=function()
@@ -384,10 +378,32 @@
       return x;
     }
 
-    var update_ui=function()
+    var update_ui=function(dc,dl,dp,dv)
     {
-      patch_id=clamp(patch_id,0,chains.length);
-      chain=chains[patch_id];
+      if(dc!=0)
+      {
+        chain_id+=dc;
+        layer_id=1;
+        param_id=0;
+      }
+      if(dl!=0)
+      {
+        layer_id+=dl;
+        param_id=1;      
+      }
+      if(dp!=0)
+      {
+        param_id+=dp;
+      }
+      if(dv!=0)
+      {
+        // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
+        var path =flat[param_id];
+        path.o[path.i]+=dv/100.0;
+      }
+      
+      chain_id=clamp(chain_id,0,chains.length);
+      chain=chains[chain_id];
       layer_id=clamp(layer_id,1,chain.length);
       layer=chain[layer_id];
 
@@ -401,38 +417,27 @@
       var value =get_value(param_id);
 
       var text=
-        ' PATCH '+pad_left(patch_id,2)+'| LAYER '+pad_left(layer_id,2)+'| PARAM '+pad_left(param_id,2)+'| VALUE\n'+
+        ' PATCH '+pad_left(chain_id,2)+'| LAYER '+pad_left(layer_id,2)+'| PARAM '+pad_left(param_id,2)+'| VALUE\n'+
         pad(chain[0],9)+'|'+pad(effect,9)+'|'+pad(param,9)+'|'+pad_left(value,10);
       $('.display').html(text);
       
       updateChain();
     }
-    
+        
     add_knob('#knob_patch',function(i){
-      patch_id+=i;
-      layer_id=1;
-      param_id=0;
-      update_ui();
+      update_ui(i,0,0,0);
     });
     
     add_knob('#knob_layer',function(i){
-      layer_id+=i;
-      param_id=1;
-      update_ui();
+      update_ui(0,i,0,0);
     });
     
     add_knob('#knob_param',function(i){
-      param_id+=i;
-      update_ui();
+      update_ui(0,0,i,0);
     });
 
     add_knob('#knob_value',function(i){
-      // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
-
-      var path =flat[param_id];
-      path.o[path.i]+=i/100.0;
-
-      update_ui();
+      update_ui(0,0,0,i);
     });
     
     </script>
