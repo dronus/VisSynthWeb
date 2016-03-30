@@ -210,7 +210,7 @@
           var da=e.a-last_angle;
           if(da> Math.PI) da-=Math.PI;
           if(da<-Math.PI) da+=Math.PI;
-          da=da/Math.PI*16.0; //32 steps / circle
+          da=da/Math.PI*8.0; //16 steps / circle
           da=Math.round(da);
           if(da!=0)
           {
@@ -312,10 +312,10 @@
         param_id=0;
       }
       
-      if(type == 'press' && id=='#knob_patch')
+      if(type == 'press')
       {
-        // allow edit of names
-        ui_fn=chain_ui;
+        if(id=='#knob_patch') ui_fn=chain_ui;
+        if(id=='#knob_layer') ui_fn=layer_ui;
         ui_fn();
         return;
       }
@@ -363,7 +363,7 @@
       }
 
       var text=
-        ' PATCH '+pad_left(chain_id,2)+'| LAYER '+pad_left(layer_id,2)+'| PARAM '+pad_left(param_id,2)+'| VALUE\n'+
+        'PATCH '+pad_left(chain_id,3)+'|LAYER '+pad_left(layer_id,3)+'|PARAM '+pad_left(param_id,3)+'| VALUE\n'+
         pad(chain[0],9)+'|'+pad(effect,9)+'|'+pad(param,9)+'|'+pad_left(value,10);
       $('.display').html(text);
       
@@ -400,10 +400,31 @@
         return;
       }
 
-      var text='PATCH              |'+pad(name,9)+'\n'
-              +'CLONE    |DELETE   |'+pad_left('^',cursor+1)+pad_left('',9-cursor)+'|RENAME  ';
+      var text='PATCH '+pad_left(chain_id,3)+'          |'+pad(name,9)+'\n'
+              +'CLONE    |DELETE   |'+pad_left('^',cursor+1)+pad_left('',9-cursor)+'|RENAME   ';
       $('.display').html(text);
     }
+
+    var clipboard=null;
+    var layer_ui=function(id,type,delta)
+    {
+      var name=chain[0];
+
+      if(type=='press')
+      {
+        if(id=='#knob_patch') clipboard=chain[layer_id];
+        if(id=='#knob_layer') clipboard=chain.splice(layer_id,1)[0];        
+        if(id=='#knob_param') chain.splice(layer_id,0,clone(clipboard));
+        ui_fn=main_ui;
+        ui_fn();
+        return;
+      }
+
+      var text='           LAYER '+pad_left(layer_id,2)+'\n'
+              +'COPY     |CUT      |INSERT   |       ';
+      $('.display').html(text);
+    }
+
     
     var ui_fn=main_ui;
     var knob_handler=function(id,type,value){
