@@ -6,7 +6,6 @@
   <script src="jquery-2.1.4.js"></script>
 <!--  <script src="jquery-ui.js"></script>
   <script src="jquery.ui.touch-punch.js"></script>  -->
-  <script src="jquery.knob.js"></script>
 </head>
 <body style="font-size: 20px;">
 
@@ -66,16 +65,16 @@
   <div>FULLY FLEXIBLE UI WITH SCREEN</div>
   <pre class=display></pre>
   <div class=channel>
-    <div class=knob><input type=number id=knob_patch></div>
+    <div class=knob id=knob_patch></div>
   </div>
   <div class=channel>
-    <div class=knob><input type=number id=knob_layer></div>
+    <div class=knob id=knob_layer></div>
   </div>
   <div class=channel>
-    <div class=knob><input type=number id=knob_param></div>
+    <div class=knob id=knob_param></div>
   </div>
   <div class=channel>
-    <div class=knob><input type=number id=knob_value></div>
+    <div class=knob id=knob_value></div>
   </div>
 </div>
 
@@ -165,7 +164,7 @@
       pre_chain=chains.shift();
       post_chain=chains.shift();      
       
-      update_ui(0,0,0,0);
+      main_ui();
     }
 
 
@@ -291,33 +290,49 @@
     // add knobs
     var add_knob=function(selector,callback)
     {
-      $(selector).knob({
-         'width': 100,
-         'height': 100,
-         'min':0,
-         'max':30,
-         'step':1,
-         'stopper':false,
-         'displayInput':false,
-         'change' :  
-           function (v) {
-             v=parseInt(v);
-             var d=v-(this.last_value|0);
-             if(d<-50) d+=100;
-             if(d> 50) d-=100;
-             this.last_value=v;
-             console.log(v+" "+this.last_value+" "+d);
-             callback(selector,'change',Math.sign(d));
-           },
-         'release' :
-            function(v)
-            {
-              if(v!=this.last_start_value)
-                this.last_start_value=v;
-              else
-                callback(selector,'press');
-            }
-       });
+      var down=false,dragged=false,last_angle=0;
+      
+      var polar=function(e)
+      {
+        var x=e.offsetX, y=e.offsetY;
+        var dx=x-e.target.offsetWidth/2,dy=y-e.target.offsetWidth/2;
+        e.a=Math.atan2(dx,dy);
+        e.r=Math.sqrt(dx*dx+dy*dy);
+        console.log(dx+' '+dy+' '+e.a);
+      }
+      var move_handler=function(e)
+      {
+        polar(e);
+        if(down)
+        {
+          var da=e.a-last_angle;
+          if(da> Math.PI) da-=Math.PI;
+          if(da<-Math.PI) da+=Math.PI;
+          da=da/Math.PI*16.0; //32 steps / circle
+          da=Math.round(da);
+          if(da!=0)
+          {
+            callback(selector,'change',-Math.sign(da));
+            dragged=true;
+            last_angle=e.a;
+          }
+        }else
+          last_angle=e.a; // snap back
+      }
+      var down_handler=function(e)
+      {
+        down   =true;
+        dragged=false;
+      }
+      var up_handler=function(e)
+      {
+        if(!dragged) callback(selector,'press');
+        down=false;
+      }
+      
+      $(selector).on('mousemove',move_handler);
+      $(selector).on('mousedown',down_handler);
+      $(selector).on('mouseup',up_handler);
     };
 
     var pad=function(text,n)
@@ -386,30 +401,33 @@
       return x;
     }
 
-    var update_ui=function(id,type,delta)
+    var main_ui=function(id,type,delta)
     {
-      if(type=='change' && id=='#knob_patch' & delta!=0)
+      if(type=='change' && id=='#knob_patch' && delta!=0)
       {
         chain_id+=delta;
         layer_id=1;
         param_id=0;
       }
-      if(type=='change' && id=='#knob_layer' & delta!=0)
+      
+      if(type == 'press' && id=='#knob_patch')
+      {
+        // allow edit of names
+        ui_fn=name_ui;
+        ui_fn();
+        return;
+      }
+
+      if(type=='change' && id=='#knob_layer' && delta!=0)
       {
         layer_id+=delta;
         param_id=1;      
       }
-      if(type=='change' && id=='#knob_param' & delta!=0)
+      if(type=='change' && id=='#knob_param' && delta!=0)
       {
         param_id+=delta;
       }
-      if(type=='change' && id=='#knob_value' & delta!=0)
-      {
-        // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
-        var path =flat[param_id];
-        path.o[path.i]+=delta/100.0;
-      }
-      
+            
       chain_id=clamp(chain_id,0,chains.length);
       chain=chains[chain_id];
       layer_id=clamp(layer_id,1,chain.length);
@@ -424,6 +442,13 @@
       var param =get_param(param_id);      
       var value =get_value(param_id);
 
+      if(type=='change' && id=='#knob_value' && delta!=0)
+      {
+        // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
+        var path =flat[param_id];
+        path.o[path.i]+=delta/100.0;
+      }
+
       var text=
         ' PATCH '+pad_left(chain_id,2)+'| LAYER '+pad_left(layer_id,2)+'| PARAM '+pad_left(param_id,2)+'| VALUE\n'+
         pad(chain[0],9)+'|'+pad(effect,9)+'|'+pad(param,9)+'|'+pad_left(value,10);
@@ -431,9 +456,45 @@
       
       updateChain();
     }
+    
+    var cursor=0;
+    var name_ui=function(id,type,delta)
+    {
+      var name=chain[0];
 
-    var ui_fn=update_ui;
-    var knob_handler=function(id,type,value){ui_fn(id,type,value);};
+      if(type=='change' && id=='#knob_param' && delta!=0)
+      { 
+        cursor+=delta;
+        if(cursor<0)            cursor=0;
+        if(cursor>=name.length) cursor=name.length-1;
+      }
+
+      if(type=='change' && id=='#knob_value' && delta!=0)
+      {
+        var letter=name.charCodeAt(cursor);
+        if(!letter) letter='a';
+        letter=String.fromCharCode(letter+delta);
+        if(letter<12 || letter>255) letter='';
+        name=name.substring(0,cursor)+letter+name.substring(cursor+1);
+        chain[0]=name;
+      }
+     if(type=='press')
+     {
+        ui_fn=main_ui;
+        ui_fn();
+        return;
+      }
+      
+      var text='EDIT NAME: '+name+'\n'
+              +'           '+pad_left('^',cursor+1)+pad_left('',10-cursor)+'  &lt; &gt;      LETTER';
+      $('.display').html(text);
+    }
+    
+    var ui_fn=main_ui;
+    var knob_handler=function(id,type,value){
+      var last_ui_fn=ui_fn;
+      ui_fn(id,type,value);
+    };
         
     add_knob('#knob_patch',knob_handler);
     add_knob('#knob_layer',knob_handler);
