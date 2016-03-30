@@ -26,8 +26,9 @@
   
 .ui{
   display: inline-block;
-  border: 4px solid #000;
-  margin: 30px;
+  background-color: #444;
+  color: #fff;
+  padding: 12px;
 }
 .channel{
   display: inline-block;
@@ -49,9 +50,10 @@
   font-family: monospace;
   font-size: 22px;
   font-weight: bold;
-  background-color: #f90;
+  background-color: #ddd;
   margin: 5px;
   padding: 5px;
+  color: #000;
 }
 
   </style>
@@ -60,7 +62,7 @@
 
 
 <div class=ui style='width:auto;'>
-  <div>VIS SYNTH BOX MARK I</div>
+  <div>NF VisSynthBox Mark I</div>
   <pre class=display></pre>
   <div class=channel>
     <div class=knob id=knob_patch></div>
@@ -358,7 +360,10 @@
         else
         {        
           var path =flat[param_id];
-          path.o[path.i]+=delta/100.0;
+          var s=Math.abs(path.o[path.i]/64.0);
+          s=Math.max(s,0.001);
+          path.o[path.i]+=s*delta;
+          path.o[path.i]=Math.round(path.o[path.i]*1000.0)/1000.0;
         }
       }
 
