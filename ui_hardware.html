@@ -120,15 +120,11 @@
       setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
     }
 
-    /* the undo history. updated by frequent save() calls */
-    var undo_history=[];
-    
-    /* save all chains to server and undo_history */
+    /* save all chains to server  */
     var save=function()
     {
       var json=JSON.stringify(chains,null,' ');
       put('/saves'+session_url+'chains.json',json);
-      undo_history.push(json);
       
       console.log('Saved.');
       
