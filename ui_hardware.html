@@ -314,7 +314,7 @@
         param_id=0;
       }
       
-      if(type == 'press')
+      if(type == 'press' && id!='#knob_value')
       {
         if(id=='#knob_patch') ui_fn=chain_ui;
         if(id=='#knob_layer') ui_fn=layer_ui;
@@ -341,6 +341,14 @@
       flat=flatten();
       
       param_id=clamp(param_id,0,flat.length);
+
+      // value can be quickly toggled to 0 or 1 by pressing knob
+      if(type=='press' && id=='#knob_value')
+      {
+        var path =flat[param_id];
+        if(path.o[path.i]==0.0) path.o[path.i]=1.0;
+        else                    path.o[path.i]=0.0;
+      }
 
       var effect=layer['effect'];
       var param =get_param(param_id);      
