@@ -4,8 +4,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <title>NF VisSynth MCP</title>
   <script src="jquery-2.1.4.js"></script>
-<!--  <script src="jquery-ui.js"></script>
-  <script src="jquery.ui.touch-punch.js"></script>  -->
 </head>
 <body style="font-size: 20px;">
 
@@ -25,14 +23,13 @@
   }
   
   
-  .ui{
+.ui{
   display: inline-block;
   border: 4px solid #000;
   margin: 30px;
 }
 .channel{
   display: inline-block;
-  border: 2px solid #000;
   text-align: center;
 }
 .knob{
@@ -62,7 +59,7 @@
 
 
 <div class=ui style='width:auto;'>
-  <div>FULLY FLEXIBLE UI WITH SCREEN</div>
+  <div>VIS SYNTH BOX MARK I</div>
   <pre class=display></pre>
   <div class=channel>
     <div class=knob id=knob_patch></div>
@@ -266,6 +263,7 @@
     };
     
     var new_effects=[];
+    var effect_ids={};
     for(key in effects)
     {
       // create flat object with the effect name in 'effect'
@@ -274,6 +272,7 @@
       if(effects[key].args)
         for(var i in effects[key].args)
           new_effect[i]=effects[key].args[i];
+      effect_ids[key]=new_effects.length;
       new_effects.push(new_effect);
     }
     effects=new_effects;
@@ -298,7 +297,6 @@
         var dx=x-e.target.offsetWidth/2,dy=y-e.target.offsetWidth/2;
         e.a=Math.atan2(dx,dy);
         e.r=Math.sqrt(dx*dx+dy*dy);
-        console.log(dx+' '+dy+' '+e.a);
       }
       var move_handler=function(e)
       {
@@ -445,8 +443,19 @@
       if(type=='change' && id=='#knob_value' && delta!=0)
       {
         // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
-        var path =flat[param_id];
-        path.o[path.i]+=delta/100.0;
+        
+        if(param=='effect')
+        {
+          var i=effect_ids[value];
+          i+=delta;
+          if(!i || i>=new_effects.length) i=0;
+          chain[layer_id]=layer=JSON.parse(JSON.stringify(new_effects[i]));
+        }
+        else
+        {        
+          var path =flat[param_id];
+          path.o[path.i]+=delta/100.0;
+        }
       }
 
       var text=
