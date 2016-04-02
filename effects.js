@@ -6,7 +6,7 @@
     // outputs: n  denotes the number of outputs of the effect. It is expected to push n-1 stack items! Defaults to 1 if not defined.
     // feedback_input:1 denotes the effect reads the feedback buffer from the last frame
     // feedback_output:1 denotes the effect writes the feedback buffer for the next frame
-    var effects={
+    effects={
       'select_audio':{inputs:0,outputs:0, args:{audio_device:0.0}},
       'map_video':{inputs:0,outputs:0, args:{source_device:0.0, target_device:0.0}},
       'fps':{inputs:0,outputs:0,args:{fps:25.0}},

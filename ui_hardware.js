@@ -71,7 +71,14 @@
         load(data);
     });
 
-
+    String.prototype.repeat=function(i)
+    {
+      var s='';
+      while(i-->0)
+        s+=this;        
+      return s;
+    }
+    
     var pad=function(text,n)
     {
       text=''+text;
