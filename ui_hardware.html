@@ -335,24 +335,21 @@
       chain_id=clamp(chain_id,0,chains.length);
       chain=chains[chain_id];
       layer_id=clamp(layer_id,1,chain.length);
-      layer=chain[layer_id];
 
       //  update flat view on parameters
       flat=flatten();
       
       param_id=clamp(param_id,0,flat.length);
-
+      var path =flat[param_id];
+      
       // value can be quickly toggled to 0 or 1 by pressing knob
       if(type=='press' && id=='#knob_value')
       {
-        var path =flat[param_id];
         if(path.o[path.i]==0.0) path.o[path.i]=1.0;
         else                    path.o[path.i]=0.0;
       }
 
-      var effect=layer['effect'];
       var param =get_param(param_id);      
-      var value =get_value(param_id);
 
       if(type=='change' && id=='#knob_value' && delta!=0)
       {
@@ -360,10 +357,12 @@
         
         if(param=='effect')
         {
-          var i=effect_ids[value];
+          var i=effect_ids[path.o[path.i]];
           i+=delta;
           if(!i || i>=new_effects.length) i=0;
-          chain[layer_id]=layer=clone(new_effects[i]);
+          chain[layer_id]=clone(new_effects[i]);
+          flat=flatten();
+          path=flat[param_id];
         }
         else
         {        
@@ -377,7 +376,7 @@
 
       var text=
         'PATCH '+pad_left(chain_id,3)+'|LAYER '+pad_left(layer_id,3)+'|PARAM '+pad_left(param_id,3)+'| VALUE\n'+
-        pad(chain[0],9)+'|'+pad(effect,9)+'|'+pad(param,9)+'|'+pad_left(value,10);
+        pad(chain[0],9)+'|'+pad(chain[layer_id]['effect'],9)+'|'+pad(param,9)+'|'+pad_left(path.o[path.i],10);
       $('.display').html(text);
       
       updateChain();
