@@ -115,6 +115,52 @@
     {
       $('.display').html(text);
     }
+
+    add_knob=function(id,callback)
+    {
+      var down=false,dragged=false,last_angle=0;
+      
+      var polar=function(e)
+      {
+        var x=e.offsetX, y=e.offsetY;
+        var dx=x-e.target.offsetWidth/2,dy=y-e.target.offsetWidth/2;
+        e.a=Math.atan2(dx,dy);
+        e.r=Math.sqrt(dx*dx+dy*dy);
+      }
+      var move_handler=function(e)
+      {
+        polar(e);
+        if(down)
+        {
+          var da=e.a-last_angle;
+          if(da> Math.PI) da-=Math.PI;
+          if(da<-Math.PI) da+=Math.PI;
+          da=da/Math.PI*8.0; //16 steps / circle
+          da=Math.round(da);
+          if(da!=0)
+          {
+            callback(id,'change',-Math.sign(da));
+            dragged=true;
+            last_angle=e.a;
+          }
+        }else
+          last_angle=e.a; // snap back
+      }
+      var down_handler=function(e)
+      {
+        down   =true;
+        dragged=false;
+      }
+      var up_handler=function(e)
+      {
+        if(!dragged) callback(id,'press');
+        down=false;
+      }
+      var selector='#knob_'+id;
+      $(selector).on('mousemove',move_handler);
+      $(selector).on('mousedown',down_handler);
+      $(selector).on('mouseup',up_handler);
+    };
   </script>
   
 
@@ -427,64 +473,11 @@
     var knob_handler=function(id,type,value){
       ui_fn(id,type,value);
     };        
-    </script>
-
-
-    <script>
-    // install UI 
-    
-    // add knobs
-    var add_knob=function(id,callback)
-    {
-      var down=false,dragged=false,last_angle=0;
-      
-      var polar=function(e)
-      {
-        var x=e.offsetX, y=e.offsetY;
-        var dx=x-e.target.offsetWidth/2,dy=y-e.target.offsetWidth/2;
-        e.a=Math.atan2(dx,dy);
-        e.r=Math.sqrt(dx*dx+dy*dy);
-      }
-      var move_handler=function(e)
-      {
-        polar(e);
-        if(down)
-        {
-          var da=e.a-last_angle;
-          if(da> Math.PI) da-=Math.PI;
-          if(da<-Math.PI) da+=Math.PI;
-          da=da/Math.PI*8.0; //16 steps / circle
-          da=Math.round(da);
-          if(da!=0)
-          {
-            callback(id,'change',-Math.sign(da));
-            dragged=true;
-            last_angle=e.a;
-          }
-        }else
-          last_angle=e.a; // snap back
-      }
-      var down_handler=function(e)
-      {
-        down   =true;
-        dragged=false;
-      }
-      var up_handler=function(e)
-      {
-        if(!dragged) callback(id,'press');
-        down=false;
-      }
-      var selector='#knob_'+id;
-      $(selector).on('mousemove',move_handler);
-      $(selector).on('mousedown',down_handler);
-      $(selector).on('mouseup',up_handler);
-    };
-    
     add_knob('patch',knob_handler);
     add_knob('layer',knob_handler);
     add_knob('param',knob_handler);
     add_knob('value',knob_handler);
-  </script>
+    </script>
 
 </body>
 </html>
