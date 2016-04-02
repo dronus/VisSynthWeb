@@ -1728,7 +1728,7 @@ canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last second in a ring buffer
 
-    var max_frames=500;
+    var max_frames=100;
     
     if(!this._.pastTextures) this._.pastTextures=[];
   
