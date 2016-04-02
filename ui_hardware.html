@@ -80,16 +80,17 @@
 
 
   <span id=stats></span>
-  
+
 
   <script>
+    // provide functions needed by hardware UI
   
     // get session url, if any
     var session_url='/';
     if(document.location.hash)
       session_url+=document.location.hash.substring(1)+'_';
 
-    var put=function(url,data)
+    put=function(url,data)
     {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
@@ -97,7 +98,7 @@
       xmlHttp.send(data);
     }
     
-    var get=function(url,callback)
+    get=function(url,callback)
     {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
@@ -110,16 +111,19 @@
       xmlHttp.send(null);      
     }
     
+    set_display=function(text)
+    {
+      $('.display').html(text);
+    }
+  </script>
+  
+
+  <script>
+
     // send command to remote server
-    function send(command)
+    var send=function(command)
     {
       put('/feeds'+session_url+'command',command+';\n');
-    }
-
-    function restart()
-    {
-      send('document.location.reload()');
-      setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
     }
 
     /* save all chains to server  */
@@ -132,7 +136,7 @@
       
       savetimeout=false;
     }
-          
+
     var clone=function(o)
     {
       return JSON.parse(JSON.stringify(o));
@@ -150,7 +154,6 @@
       send('setChain('+JSON.stringify(full_chain)+')');
     }
 
-        
     var load=function(json)
     {
       if(!json) return;
@@ -166,8 +169,6 @@
       main_ui();
     }
 
-
-    
     var new_effects=[];
     var effect_ids={};
     for(key in effects) // effects from effects.js
@@ -191,53 +192,6 @@
         load(data);
     });
 
-
-    // add knobs
-    var add_knob=function(selector,callback)
-    {
-      var down=false,dragged=false,last_angle=0;
-      
-      var polar=function(e)
-      {
-        var x=e.offsetX, y=e.offsetY;
-        var dx=x-e.target.offsetWidth/2,dy=y-e.target.offsetWidth/2;
-        e.a=Math.atan2(dx,dy);
-        e.r=Math.sqrt(dx*dx+dy*dy);
-      }
-      var move_handler=function(e)
-      {
-        polar(e);
-        if(down)
-        {
-          var da=e.a-last_angle;
-          if(da> Math.PI) da-=Math.PI;
-          if(da<-Math.PI) da+=Math.PI;
-          da=da/Math.PI*8.0; //16 steps / circle
-          da=Math.round(da);
-          if(da!=0)
-          {
-            callback(selector,'change',-Math.sign(da));
-            dragged=true;
-            last_angle=e.a;
-          }
-        }else
-          last_angle=e.a; // snap back
-      }
-      var down_handler=function(e)
-      {
-        down   =true;
-        dragged=false;
-      }
-      var up_handler=function(e)
-      {
-        if(!dragged) callback(selector,'press');
-        down=false;
-      }
-      
-      $(selector).on('mousemove',move_handler);
-      $(selector).on('mousedown',down_handler);
-      $(selector).on('mouseup',up_handler);
-    };
 
     var pad=function(text,n)
     {
@@ -282,24 +236,6 @@
       
       return flat;
     }
-
-    var get_param=function(i)
-    {
-      var path=flat[i];
-      return path.i;
-    }
-    
-    var get_value=function(i)
-    {
-      var path=flat[i];
-      return path.o[path.i];
-    }
-
-    var set_value=function(i,value)
-    {
-      var path=flat[i];
-      path.o[path.i]=value;
-    }    
 
     var clamp=function(x,left,right)
     {
@@ -372,7 +308,7 @@
         path=flat[param_id];
       }
 
-      var param =get_param(param_id);
+      var param =path.i;
 
       if(type=='change' && id=='#knob_value' && delta!=0)
       {
@@ -407,7 +343,7 @@
       var text=
         'PATCH '+pad_left(chain_id,3)+'|LAYER '+pad_left(layer_id,3)+'|PARAM '+pad_left(param_id,3)+'| VALUE\n'+
         pad(chain[0],9)+'|'+pad(chain[layer_id]['effect'],9)+'|'+pad(param,9)+'|'+pad_left(value_shown,10);
-      $('.display').html(text);
+      set_display(text);
       
       updateChain();
     }
@@ -428,7 +364,7 @@
 
       var text='PATCH '+pad_left(chain_id,3)+'          |'+pad(chain[0],9)+'\n'
               +'RENAME   |NEW      |CUT       |PASTE         ';
-      $('.display').html(text);
+      set_display(text);
     }
 
     cursor=0;
@@ -462,7 +398,7 @@
 
       var text=name+'\n'
               +pad_left('^',cursor+1)+pad_left('',19-cursor)+'    CURSOR|LETTER   ';
-      $('.display').html(text);
+      set_display(text);
     }
 
 
@@ -484,22 +420,71 @@
 
       var text='           LAYER '+pad_left(layer_id,2)+' : '+chain[layer_id]['effect']+'\n'
               +'NEW      |COPY     |CUT      |PASTE   ';
-      $('.display').html(text);
+      set_display(text);
     }
-
     
     var ui_fn=main_ui;
     var knob_handler=function(id,type,value){
-      var last_ui_fn=ui_fn;
       ui_fn(id,type,value);
+    };        
+    </script>
+
+
+    <script>
+    // install UI 
+    
+    // add knobs
+    var add_knob=function(selector,callback)
+    {
+      var down=false,dragged=false,last_angle=0;
+      
+      var polar=function(e)
+      {
+        var x=e.offsetX, y=e.offsetY;
+        var dx=x-e.target.offsetWidth/2,dy=y-e.target.offsetWidth/2;
+        e.a=Math.atan2(dx,dy);
+        e.r=Math.sqrt(dx*dx+dy*dy);
+      }
+      var move_handler=function(e)
+      {
+        polar(e);
+        if(down)
+        {
+          var da=e.a-last_angle;
+          if(da> Math.PI) da-=Math.PI;
+          if(da<-Math.PI) da+=Math.PI;
+          da=da/Math.PI*8.0; //16 steps / circle
+          da=Math.round(da);
+          if(da!=0)
+          {
+            callback(selector,'change',-Math.sign(da));
+            dragged=true;
+            last_angle=e.a;
+          }
+        }else
+          last_angle=e.a; // snap back
+      }
+      var down_handler=function(e)
+      {
+        down   =true;
+        dragged=false;
+      }
+      var up_handler=function(e)
+      {
+        if(!dragged) callback(selector,'press');
+        down=false;
+      }
+      
+      $(selector).on('mousemove',move_handler);
+      $(selector).on('mousedown',down_handler);
+      $(selector).on('mouseup',up_handler);
     };
-        
+    
     add_knob('#knob_patch',knob_handler);
     add_knob('#knob_layer',knob_handler);
     add_knob('#knob_param',knob_handler);
     add_knob('#knob_value',knob_handler);
-    
-    </script>
+  </script>
 
 </body>
 </html>
