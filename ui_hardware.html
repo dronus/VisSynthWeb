@@ -412,8 +412,27 @@
       updateChain();
     }
     
-    var cursor=0;
     var chain_ui=function(id,type,delta)
+    {
+      if(type=='press')
+      {
+        ui_fn=main_ui;
+        if(id=='#knob_patch') ui_fn=rename_ui;
+        else if(id=='#knob_layer') chains.splice(chain_id,0,[' ']);
+        else if(id=='#knob_param') chain_clipboard=chains.splice(chain_id,1)[0];
+        else if(id=='#knob_value') chains.splice(chain_id,0,clone(chain_clipboard));
+
+        ui_fn();
+        return;
+      }
+
+      var text='PATCH '+pad_left(chain_id,3)+'          |'+pad(chain[0],9)+'\n'
+              +'RENAME   |NEW      |CUT       |PASTE         ';
+      $('.display').html(text);
+    }
+
+    cursor=0;
+    var rename_ui=function(id,type,delta)
     {
       var name=chain[0];
 
@@ -423,7 +442,6 @@
         if(cursor<0)            cursor=0;
         if(cursor>=name.length) cursor=name.length-1;
       }
-
       if(type=='change' && id=='#knob_value' && delta!=0)
       {
         var letter=name[cursor];
@@ -437,17 +455,16 @@
       }
       if(type=='press')
       {
-        if(id=='#knob_patch') chains.unshift(clone(chain));
-        if(id=='#knob_layer') chains.splice(chain_id,1);
         ui_fn=main_ui;
         ui_fn();
         return;
       }
 
-      var text='PATCH '+pad_left(chain_id,3)+'          |'+pad(name,9)+'\n'
-              +'CLONE    |DELETE   |'+pad_left('^',cursor+1)+pad_left('',9-cursor)+'|RENAME   ';
+      var text=name+'\n'
+              +pad_left('^',cursor+1)+pad_left('',19-cursor)+'    CURSOR|LETTER   ';
       $('.display').html(text);
     }
+
 
     var clipboard=null;
     var layer_ui=function(id,type,delta)
