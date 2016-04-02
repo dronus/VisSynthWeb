@@ -36,6 +36,9 @@
  ],
  [],
  [
+  ""
+ ],
+ [
   "zoe command",
   {
    "effect": "matte",
@@ -357,6 +360,7 @@
   }
  ],
  [
+  "",
   "",
   {
    "effect": "stack_push"
