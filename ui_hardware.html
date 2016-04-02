@@ -265,17 +265,20 @@
       
       while(stack.length)
       {
-        var path=stack.pop();
+        var path=stack.shift();
         var obj=path.o[path.i];
+        flat.push(path);
         if(obj instanceof Object)
         {
           for(key in obj)
             if(key!='type')// hide 'type' slots
               stack.push({'o':obj,'i':key});
         }
-        else
-          flat.unshift(path);
+//        else
       }
+      
+      // remove root element
+      flat.shift();
       
       return flat;
     }
@@ -300,8 +303,8 @@
 
     var clamp=function(x,left,right)
     {
-      if(x<left  ) x=left;
       if(x>=right) x=right-1;
+      if(x<left  ) x=left;
       return x;
     }
 
@@ -335,6 +338,9 @@
       chain_id=clamp(chain_id,0,chains.length);
       chain=chains[chain_id];
       layer_id=clamp(layer_id,1,chain.length);
+      
+      // create empty layer, if none is present
+      if(!chain[layer_id]) chain[layer_id]={effect:''};
 
       //  update flat view on parameters
       flat=flatten();
@@ -342,20 +348,37 @@
       param_id=clamp(param_id,0,flat.length);
       var path =flat[param_id];
       
-      // value can be quickly toggled to 0 or 1 by pressing knob
-      if(type=='press' && id=='#knob_value')
+      // values may be toggled toggled to OSC and BEAT 
+      if(type=='press' && id=='#knob_value' && path.o['type']!='osc' && path.o['type']!='beat')
       {
-        if(path.o[path.i]==0.0) path.o[path.i]=1.0;
-        else                    path.o[path.i]=0.0;
+        var value=path.o[path.i];
+        if(typeof(value)=='number')
+        {
+          // convert number to OSC
+          value={type:'osc',f:5.0,a:value/2,p:0.0,o:value,waveform:'sine',duty:0.5};          
+        }
+        else if(typeof(value)=='object' && value['type']=='osc')
+        {
+          // convert OSC to BEAT
+          value={type:'beat',pulse:10.0,f:2.0,a:value.a,p:0.0,o:value.o};
+        }
+        else if(typeof(value)=='object' && value['type']=='beat')        
+        {
+          //convert BEAT to number
+          value=Math.abs(value.a)>Math.abs(value.o) ? value.a : value.o;          
+        }
+        path.o[path.i]=value;
+        flat=flatten();
+        path=flat[param_id];
       }
 
-      var param =get_param(param_id);      
+      var param =get_param(param_id);
 
       if(type=='change' && id=='#knob_value' && delta!=0)
       {
         // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
-        
-        if(param=='effect')
+                
+        if(!chain[layer_id] || param=='effect')
         {
           var i=effect_ids[path.o[path.i]];
           i+=delta;
@@ -363,6 +386,10 @@
           chain[layer_id]=clone(new_effects[i]);
           flat=flatten();
           path=flat[param_id];
+        }
+        else if(path.o[path.i] instanceof Object)
+        {
+          // TODO replace object types, eg. OSC, BEAT
         }
         else
         {        
@@ -374,9 +401,12 @@
         }
       }
 
+      var value_shown=path.o[path.i];
+      if(value_shown instanceof Object) value_shown=value_shown['type'].toUpperCase();
+
       var text=
         'PATCH '+pad_left(chain_id,3)+'|LAYER '+pad_left(layer_id,3)+'|PARAM '+pad_left(param_id,3)+'| VALUE\n'+
-        pad(chain[0],9)+'|'+pad(chain[layer_id]['effect'],9)+'|'+pad(param,9)+'|'+pad_left(path.o[path.i],10);
+        pad(chain[0],9)+'|'+pad(chain[layer_id]['effect'],9)+'|'+pad(param,9)+'|'+pad_left(value_shown,10);
       $('.display').html(text);
       
       updateChain();
@@ -396,11 +426,13 @@
 
       if(type=='change' && id=='#knob_value' && delta!=0)
       {
-        var letter=name.charCodeAt(cursor);
+        var letter=name[cursor];
         if(!letter) letter='a';
-        letter=String.fromCharCode(letter+delta);
-        if(letter<12 || letter>255) letter='';
-        name=name.substring(0,cursor)+letter+name.substring(cursor+1);
+        var letters=' _abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        var ord=letters.indexOf(letter);
+        var new_letter=letters[ord+delta];
+        if(!new_letter) new_letter=' ';
+        name=name.substring(0,cursor)+new_letter+name.substring(cursor+1);
         chain[0]=name;
       }
       if(type=='press')
