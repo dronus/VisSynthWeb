@@ -456,16 +456,17 @@
 
       if(type=='press')
       {
-        if(id=='#knob_patch') clipboard=chain[layer_id];
-        if(id=='#knob_layer') clipboard=chain.splice(layer_id,1)[0];        
-        if(id=='#knob_param') chain.splice(layer_id,0,clone(clipboard));
+        if(id=='#knob_patch') chain.splice(layer_id,0,{'effect':''});
+        if(id=='#knob_layer') clipboard=chain[layer_id];
+        if(id=='#knob_param') clipboard=chain.splice(layer_id,1)[0];
+        if(id=='#knob_value') chain.splice(layer_id,0,clone(clipboard));
         ui_fn=main_ui;
         ui_fn();
         return;
       }
 
-      var text='           LAYER '+pad_left(layer_id,2)+'\n'
-              +'COPY     |CUT      |INSERT   |       ';
+      var text='           LAYER '+pad_left(layer_id,2)+' : '+chain[layer_id]['effect']+'\n'
+              +'NEW      |COPY     |CUT      |PASTE   ';
       $('.display').html(text);
     }
 
