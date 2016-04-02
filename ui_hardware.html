@@ -246,27 +246,27 @@
 
     var main_ui=function(id,type,delta)
     {
-      if(type=='change' && id=='#knob_patch' && delta!=0)
+      if(type=='change' && id=='patch' && delta!=0)
       {
         chain_id+=delta;
         layer_id=1;
         param_id=0;
       }
       
-      if(type == 'press' && id!='#knob_value')
+      if(type == 'press' && id!='value')
       {
-        if(id=='#knob_patch') ui_fn=chain_ui;
-        if(id=='#knob_layer') ui_fn=layer_ui;
+        if(id=='patch') ui_fn=chain_ui;
+        if(id=='layer') ui_fn=layer_ui;
         ui_fn();
         return;
       }
 
-      if(type=='change' && id=='#knob_layer' && delta!=0)
+      if(type=='change' && id=='layer' && delta!=0)
       {
         layer_id+=delta;
         param_id=1;      
       }
-      if(type=='change' && id=='#knob_param' && delta!=0)
+      if(type=='change' && id=='param' && delta!=0)
       {
         param_id+=delta;
       }
@@ -285,7 +285,7 @@
       var path =flat[param_id];
       
       // values may be toggled toggled to OSC and BEAT 
-      if(type=='press' && id=='#knob_value' && path.o['type']!='osc' && path.o['type']!='beat')
+      if(type=='press' && id=='value' && path.o['type']!='osc' && path.o['type']!='beat')
       {
         var value=path.o[path.i];
         if(typeof(value)=='number')
@@ -310,7 +310,7 @@
 
       var param =path.i;
 
-      if(type=='change' && id=='#knob_value' && delta!=0)
+      if(type=='change' && id=='value' && delta!=0)
       {
         // TODO handle special case for param 'effect', which replaces the current effect by one of the effects list
                 
@@ -353,10 +353,10 @@
       if(type=='press')
       {
         ui_fn=main_ui;
-        if(id=='#knob_patch') ui_fn=rename_ui;
-        else if(id=='#knob_layer') chains.splice(chain_id,0,[' ']);
-        else if(id=='#knob_param') chain_clipboard=chains.splice(chain_id,1)[0];
-        else if(id=='#knob_value') chains.splice(chain_id,0,clone(chain_clipboard));
+        if(id=='patch') ui_fn=rename_ui;
+        else if(id=='layer') chains.splice(chain_id,0,[' ']);
+        else if(id=='param') chain_clipboard=chains.splice(chain_id,1)[0];
+        else if(id=='value') chains.splice(chain_id,0,clone(chain_clipboard));
 
         ui_fn();
         return;
@@ -372,13 +372,13 @@
     {
       var name=chain[0];
 
-      if(type=='change' && id=='#knob_param' && delta!=0)
+      if(type=='change' && id=='param' && delta!=0)
       { 
         cursor+=delta;
         if(cursor<0)            cursor=0;
         if(cursor>=name.length) cursor=name.length-1;
       }
-      if(type=='change' && id=='#knob_value' && delta!=0)
+      if(type=='change' && id=='value' && delta!=0)
       {
         var letter=name[cursor];
         if(!letter) letter='a';
@@ -409,10 +409,10 @@
 
       if(type=='press')
       {
-        if(id=='#knob_patch') chain.splice(layer_id,0,{'effect':''});
-        if(id=='#knob_layer') clipboard=chain[layer_id];
-        if(id=='#knob_param') clipboard=chain.splice(layer_id,1)[0];
-        if(id=='#knob_value') chain.splice(layer_id,0,clone(clipboard));
+        if(id=='patch') chain.splice(layer_id,0,{'effect':''});
+        if(id=='layer') clipboard=chain[layer_id];
+        if(id=='param') clipboard=chain.splice(layer_id,1)[0];
+        if(id=='value') chain.splice(layer_id,0,clone(clipboard));
         ui_fn=main_ui;
         ui_fn();
         return;
@@ -434,7 +434,7 @@
     // install UI 
     
     // add knobs
-    var add_knob=function(selector,callback)
+    var add_knob=function(id,callback)
     {
       var down=false,dragged=false,last_angle=0;
       
@@ -457,7 +457,7 @@
           da=Math.round(da);
           if(da!=0)
           {
-            callback(selector,'change',-Math.sign(da));
+            callback(id,'change',-Math.sign(da));
             dragged=true;
             last_angle=e.a;
           }
@@ -471,19 +471,19 @@
       }
       var up_handler=function(e)
       {
-        if(!dragged) callback(selector,'press');
+        if(!dragged) callback(id,'press');
         down=false;
       }
-      
+      var selector='#knob_'+id;
       $(selector).on('mousemove',move_handler);
       $(selector).on('mousedown',down_handler);
       $(selector).on('mouseup',up_handler);
     };
     
-    add_knob('#knob_patch',knob_handler);
-    add_knob('#knob_layer',knob_handler);
-    add_knob('#knob_param',knob_handler);
-    add_knob('#knob_value',knob_handler);
+    add_knob('patch',knob_handler);
+    add_knob('layer',knob_handler);
+    add_knob('param',knob_handler);
+    add_knob('value',knob_handler);
   </script>
 
 </body>
