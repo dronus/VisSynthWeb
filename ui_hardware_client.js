@@ -1,5 +1,5 @@
 var http = require('http');
-var lcd  = require('lcd');
+var Lcd  = require('lcd');
 
 // provide functions needed by hardware UI
 
@@ -38,12 +38,30 @@ get=function(url,callback)
   req.end();
 }
 
+try{
+  lcd = new Lcd({rs: 174, e: 192, data: [190,191,18,21], cols: 40, rows: 2});
+  lcd.on('ready', function () {
+    console.log('LCD ready.');
+  });
+}catch(e)
+{
+  lcd=false;
+  console.log(e);
+};
+
 set_display=function(text)
 {
-  // TODO implement
   console.log('DISPLAY:');
   console.log(text);
   console.log('');
+  
+  if(!lcd) return;
+  lcd.setCursor(0, 0);
+  lcd.print(text, function (err) {
+    if (err) {
+      throw err;
+    }
+  });
 }
 
 knobs=[];
