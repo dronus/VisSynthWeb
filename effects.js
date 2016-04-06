@@ -7,6 +7,7 @@
     // feedback_input:1 denotes the effect reads the feedback buffer from the last frame
     // feedback_output:1 denotes the effect writes the feedback buffer for the next frame
     effects={
+      'none':{},
       'select_audio':{inputs:0,outputs:0, args:{audio_device:0.0}},
       'map_video':{inputs:0,outputs:0, args:{source_device:0.0, target_device:0.0}},
       'fps':{inputs:0,outputs:0,args:{fps:25.0}},

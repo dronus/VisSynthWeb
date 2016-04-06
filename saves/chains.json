@@ -18,12 +18,17 @@
   }
  ],
  [
-  "POST"
+  "POST",
+  {
+   "effect": "none"
+  }
  ],
  [
   "",
   {
-   "effect": ""
+   "effect": "brightnessContrast",
+   "brightness": 0,
+   "contrast": 0
   }
  ],
  [
@@ -349,7 +354,9 @@
  ],
  [
   "",
-  "",
+  {
+   "effect": "none"
+  },
   {
    "effect": "stack_push"
   },

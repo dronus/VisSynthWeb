@@ -6,6 +6,8 @@ canvas.for_all_textures=function(callback){
   callback(this._.extraTexture);
 };
 
+canvas.none=function(){};
+
 canvas.fps=function(fps){
   this.proposed_fps=fps;
 };

@@ -27,7 +27,7 @@
       if(savetimeout) clearTimeout(savetimeout);
       savetimeout=setTimeout(save,1000);
             
-      var full_chain=pre_chain.concat(chain,post_chain);                              
+      var full_chain=chains[0].concat(chain,chains[1]);
 
       // send out to control server
       send('setChain('+JSON.stringify(full_chain)+')');
@@ -38,13 +38,6 @@
       if(!json) return;
       chains=JSON.parse(json);
 
-      // add pre- and post chain to legacy chains 
-      if(typeof(chains[0][0])=='string') // if first chain is a named one, we have a legacy save.
-        chains.unshift([{"effect": "capture","device": 0}],[]);
-
-      pre_chain=chains.shift();
-      post_chain=chains.shift();      
-      
       main_ui();
     }
 
@@ -95,7 +88,7 @@
     }
 
 
-    var chain_id=0,layer_id=1,param_id=1, flat=[];
+    var chain_id=2,layer_id=1,param_id=1, flat=[];
 
 
     var flatten=function()
@@ -162,7 +155,7 @@
       layer_id=clamp(layer_id,1,chain.length);
       
       // create empty layer, if none is present
-      if(!chain[layer_id]) chain[layer_id]={effect:''};
+      if(!chain[layer_id]) chain[layer_id]={effect:'none'};
 
       //  update flat view on parameters
       flat=flatten();
@@ -295,7 +288,7 @@
 
       if(type=='press')
       {
-        if(id=='patch') chain.splice(layer_id,0,{'effect':''});
+        if(id=='patch') chain.splice(layer_id,0,{'effect':'none'});
         if(id=='layer') clipboard=chain[layer_id];
         if(id=='param') clipboard=chain.splice(layer_id,1)[0];
         if(id=='value') chain.splice(layer_id,0,clone(clipboard));
