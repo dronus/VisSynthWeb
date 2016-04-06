@@ -69,7 +69,7 @@ set_display=function(text)
      var lines=lcd_text.split('\n');
      lcd.setCursor(0, 0);
      lcd.print(pad(lines[0],40)+lines[1]);
-   },50);
+   },100);
   
 }
 
@@ -82,7 +82,7 @@ add_knob=function(id,callback)
   knobs.push({id:id,callback:callback});
 
   var encoders={
-    patch:function(id,callback){Encoder.add(id,30,22,29,callback); },
+    patch:function(id,callback){Encoder.add(id,22,30,29,callback); },
     layer:function(id,callback){Encoder.add(id,24,25,31,callback); },
     param:function(id,callback){Encoder.add(id,28,19,209,callback); },
     value:function(id,callback){Encoder.add(id,172,171,173,callback); },
