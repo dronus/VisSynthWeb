@@ -310,8 +310,8 @@
     }
     
     var ui_fn=main_ui;
-    var knob_handler=function(id,type,value){
-      ui_fn(id,type,value);
+    var knob_handler=function(id,value){
+      ui_fn(id,value==0 ? 'press' : 'change',value);
     };        
     add_knob('patch',knob_handler);
     add_knob('layer',knob_handler);
