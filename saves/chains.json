@@ -1,8 +1,9 @@
 [
  [
+  "SETUP PRE",
   {
    "effect": "fps",
-   "fps": 20
+   "fps": 30
   },
   {
    "effect": "select_audio",
@@ -14,29 +15,16 @@
   {
    "effect": "capture",
    "device": 0
-  },
-  {
-   "effect": "perspective",
-   "perspective": {
-    "type": "perspective",
-    "x1": -1.528,
-    "y1": -0.97,
-    "x2": -1.444,
-    "y2": 2.03,
-    "x3": 0.977,
-    "y3": -0.97,
-    "x4": 1.121,
-    "y4": 2.03
-   }
-  },
-  {
-   "effect": "vibrance",
-   "strength": 1
   }
  ],
- [],
  [
-  ""
+  "POST"
+ ],
+ [
+  "",
+  {
+   "effect": ""
+  }
  ],
  [
   "zoe command",
