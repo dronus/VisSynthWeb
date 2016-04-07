@@ -848,8 +848,8 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
         uniform vec2 center;\
         uniform float iterations; \
         varying vec2 texCoord;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
         void main() {\
+            mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 c=mat*(texCoord-center);\
             vec2 z; \
             vec2 nz=c; \
@@ -889,8 +889,8 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
         uniform vec2 c;\
         uniform float iterations; \
         varying vec2 texCoord;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
         void main() {\
+            mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 z; \
             vec2 nz=mat*(texCoord-center); \
             for (int iter = 0;iter <= 15; iter++){ \
@@ -2066,10 +2066,14 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
       gl.particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
       
       // generate particle data double buffer
-      if ( !gl.getExtension( 'OES_texture_float' ) ) alert( 'Float textures not supported' );
       if(!this._.particleTextureA) {
-        this._.particleTextureA=new Texture(w,h, gl.RGBA, gl.FLOAT);
-        this._.particleTextureB=new Texture(w,h, gl.RGBA, gl.FLOAT);
+        var type=gl.FLOAT;
+        if (!gl.getExtension( 'OES_texture_float' )) {
+          console.log('particle effect recommends gl.FLOAT textures, falling back to gl.BYTE');
+          type=gl.BYTE;
+        };
+        this._.particleTextureA=new Texture(w,h, gl.RGBA, type);
+        this._.particleTextureB=new Texture(w,h, gl.RGBA, type);
       }
     }
     
