@@ -568,6 +568,10 @@
       });      
       var json=JSON.stringify(chains,null,' ');
       put('/saves'+session_url+'chains.json',json);
+
+      // notify other UI clients
+      put('/feeds'+session_url+'update',json);
+
       undo_history.push(json);
       
       console.log('Saved.');
@@ -879,6 +883,9 @@
       // for all three chains pre, current and post collect the effect data
       ['#pre_chain','#chain','#post_chain'].forEach(function(selector){
         var chain=[];
+        // add name to pre- or post chain. For other chains, it is done by chain token.
+        if(selector=='#pre_chain' || selector=='#post_chain')
+	  chain.push($(selector).parent().find('h2').html());
         $(selector).find('.effect>.ui_object>.value').each(function(){
           var effect=get_data($(this));
           chain.push(effect);

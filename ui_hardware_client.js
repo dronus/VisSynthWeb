@@ -34,6 +34,9 @@ get=function(url,callback)
     res.on('end', function(){
       callback(body);
     })    
+  }).on('error',function(err){
+    console.log('Request failed: '+url+' '+err);
+    callback();
   });
   req.end();
 }
