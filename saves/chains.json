@@ -21,17 +21,20 @@
   "POST",
   {
    "effect": "none"
-  },
-  {
-   "effect": "none"
   }
  ],
  [
   "test",
   {
-   "effect": "brightnessContrast",
-   "brightness": 0.177,
-   "contrast": 0
+   "effect": "threshold",
+   "threshold": 0.488,
+   "feather": 1.006,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0.3,
+   "r1": 0.958,
+   "g1": 1,
+   "b1": 0.144
   }
  ],
  [
@@ -251,7 +254,7 @@
   }
  ],
  [
-  "particlejulia",
+  "dotjulia",
   {
    "effect": "vibrance",
    "strength": 1
@@ -284,7 +287,7 @@
    "effect": "particles",
    "anglex": 0.221,
    "angley": 0,
-   "anglez": 0,
+   "anglez": 0.689,
    "size": 10.466,
    "strength": 0.466,
    "homing": 0.086,
