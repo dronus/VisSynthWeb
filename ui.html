@@ -928,10 +928,6 @@
       if(!json) return;
       var chains=JSON.parse(json);
 
-      // add pre- and post chain to legacy chains 
-      if(typeof(chains[0][0])=='string') // if first chain is a named one, we have a legacy save.
-        chains.unshift([{"effect": "capture","device": 0}],[]);
-
       var pre_chain=chains.shift();
       var post_chain=chains.shift();
       listEffects(pre_chain,'#pre_chain');
