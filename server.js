@@ -64,6 +64,10 @@ var server=http.createServer(function (req, res) {
         delete pending[key];
         delete data[key];
       }
+      else if(key.match(/shutdown/))
+      	child_process.spawn('sh',['shutdown.sh'], {stdio:'inherit'});
+      else if(key.match(/restart/))
+      	child_process.spawn('sh',['run_chrome.sh'], {stdio:'inherit'});
       else
         res.end('Invalid PUT path');
     });

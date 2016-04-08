@@ -136,6 +136,7 @@
       {
         if(id=='patch') ui_fn=chain_ui;
         if(id=='layer') ui_fn=layer_ui;
+        if(id=='param') ui_fn=system_ui;
         ui_fn();
         return;
       }
@@ -301,9 +302,31 @@
               +'NEW      |COPY     |CUT      |PASTE   ';
       set_display(text);
     }
-    
+   
+    var system_ui=function(id,type,delta)
+    {
+      if(type=='press')
+      {
+        if(id=='patch') put('/shutdown','true');
+        if(id=='layer') put('/restart','true');
+        if(id=='value')
+        {
+          // soft restart index.html 
+          send('document.location.reload()');
+          setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
+        }
+        ui_fn=main_ui;
+        ui_fn();
+        return;
+      }
+      var text='SYSTEM MENU                           \n'
+              +'SHUTDOWN |RESTART H|CANCEL   |RESTART S ';
+      set_display(text);
+    }
+ 
     var ui_fn=main_ui;
     var knob_handler=function(id,value){
+      console.log('B '+id+':'+value);
       ui_fn(id,value==0 ? 'press' : 'change',value);
     };        
     add_knob('patch',knob_handler);
