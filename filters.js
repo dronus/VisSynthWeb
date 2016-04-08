@@ -1450,8 +1450,8 @@ canvas.address_glitch=function(mask_x,mask_y) {
         uniform float mask_y;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
-        int bitwise_or(int a, int b){\
-          int c = 0; \
+        double bitwise_or(double a, double b){\
+          double c = 0; \
           for (int x = 0; x <= 31; ++x) {\
               c += c;\
               if (a < 0) {\
@@ -1467,8 +1467,8 @@ canvas.address_glitch=function(mask_x,mask_y) {
         void main() {\
             ivec2 address=ivec2(texCoord*texSize+vec2(0.5001));\
             ivec2 new_address=address;\
-            new_address.x=bitwise_or(address.x,int(mask_x));\
-            new_address.y=bitwise_or(address.y,int(mask_y));\
+            new_address.x=bitwise_or(address.x,floor(mask_x));\
+            new_address.y=bitwise_or(address.y,floor(mask_y));\
             vec2 texCoord2=(vec2(new_address)-vec2(0.5))/texSize;\
             gl_FragColor = texture2D(texture,texCoord2);\
         }\
