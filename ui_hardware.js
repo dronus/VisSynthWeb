@@ -238,7 +238,8 @@
         pad(chain[0],9)+'|'+pad(chain[layer_id]['effect'],9)+'|'+pad(param,9)+'|'+pad_left(value_shown,10);
       set_display(text);
       
-      updateChain();
+      // if any change was made, trigger projection update and chain save
+      if(type) updateChain();
     }
     
     var chain_ui=function(id,type,delta)
