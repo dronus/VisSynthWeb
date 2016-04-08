@@ -19,5 +19,9 @@ fi
 if [ -f /aafirstboot ]; then /aafirstboot start ; fi
 
 chown -R odroid:odroid /sys/class/gpio
+echo 480 >/sys/devices/11800000.mali/dvfs_max_lock
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq ; do echo 1600000 >$cpu; done
+echo 1 20 40 90 > /sys/devices/odroid_fan.14/fan_speeds
+echo 75 80 85 > /sys/devices/odroid_fan.14/temp_levels
 
 exit 0
