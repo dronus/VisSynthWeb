@@ -694,8 +694,8 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
         uniform vec4 xform;\
         uniform float amplitude;\
         uniform vec2 center;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
     ', '\
+        mat2 mat=mat2(xform.xy,xform.zw);\
         coord -= center;\
         coord += amplitude*sin(mat*coord);\
         coord += center;\
@@ -2070,7 +2070,7 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
         var type=gl.FLOAT;
         if (!gl.getExtension( 'OES_texture_float' )) {
           console.log('particle effect recommends gl.FLOAT textures, falling back to gl.BYTE');
-          type=gl.BYTE;
+          type=gl.UNSIGNED_BYTE;
         };
         this._.particleTextureA=new Texture(w,h, gl.RGBA, type);
         this._.particleTextureB=new Texture(w,h, gl.RGBA, type);
