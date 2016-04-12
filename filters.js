@@ -6,6 +6,8 @@ canvas.for_all_textures=function(callback){
   callback(this._.extraTexture);
 };
 
+canvas.none=function(){};
+
 canvas.fps=function(fps){
   this.proposed_fps=fps;
 };
@@ -692,8 +694,8 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
         uniform vec4 xform;\
         uniform float amplitude;\
         uniform vec2 center;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
     ', '\
+        mat2 mat=mat2(xform.xy,xform.zw);\
         coord -= center;\
         coord += amplitude*sin(mat*coord);\
         coord += center;\
@@ -846,8 +848,8 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
         uniform vec2 center;\
         uniform float iterations; \
         varying vec2 texCoord;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
         void main() {\
+            mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 c=mat*(texCoord-center);\
             vec2 z; \
             vec2 nz=c; \
@@ -887,8 +889,8 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
         uniform vec2 c;\
         uniform float iterations; \
         varying vec2 texCoord;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
         void main() {\
+            mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 z; \
             vec2 nz=mat*(texCoord-center); \
             for (int iter = 0;iter <= 15; iter++){ \
@@ -1448,8 +1450,8 @@ canvas.address_glitch=function(mask_x,mask_y) {
         uniform float mask_y;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
-        int bitwise_or(int a, int b){\
-          int c = 0; \
+        double bitwise_or(double a, double b){\
+          double c = 0; \
           for (int x = 0; x <= 31; ++x) {\
               c += c;\
               if (a < 0) {\
@@ -1465,8 +1467,8 @@ canvas.address_glitch=function(mask_x,mask_y) {
         void main() {\
             ivec2 address=ivec2(texCoord*texSize+vec2(0.5001));\
             ivec2 new_address=address;\
-            new_address.x=bitwise_or(address.x,int(mask_x));\
-            new_address.y=bitwise_or(address.y,int(mask_y));\
+            new_address.x=bitwise_or(address.x,floor(mask_x));\
+            new_address.y=bitwise_or(address.y,floor(mask_y));\
             vec2 texCoord2=(vec2(new_address)-vec2(0.5))/texSize;\
             gl_FragColor = texture2D(texture,texCoord2);\
         }\
@@ -1728,7 +1730,7 @@ canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last second in a ring buffer
 
-    var max_frames=500;
+    var max_frames=100;
     
     if(!this._.pastTextures) this._.pastTextures=[];
   
@@ -2064,10 +2066,14 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
       gl.particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
       
       // generate particle data double buffer
-      if ( !gl.getExtension( 'OES_texture_float' ) ) alert( 'Float textures not supported' );
       if(!this._.particleTextureA) {
-        this._.particleTextureA=new Texture(w,h, gl.RGBA, gl.FLOAT);
-        this._.particleTextureB=new Texture(w,h, gl.RGBA, gl.FLOAT);
+        var type=gl.FLOAT;
+        if (!gl.getExtension( 'OES_texture_float' )) {
+          console.log('particle effect recommends gl.FLOAT textures, falling back to gl.BYTE');
+          type=gl.UNSIGNED_BYTE;
+        };
+        this._.particleTextureA=new Texture(w,h, gl.RGBA, type);
+        this._.particleTextureB=new Texture(w,h, gl.RGBA, type);
       }
     }
     

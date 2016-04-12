@@ -59,11 +59,16 @@ var server=http.createServer(function (req, res) {
       }      
       else if(key.match(/feeds\/.*/) && pending[key])
       {
-        // if it denotes a feed in feeds/ answer pending requests for this key
-        pending[key].end(data[key]);        
+        // if it denotes a feed in feeds/ answer all pending requests for this key
+        for(i in pending[key])
+          pending[key][i].end(data[key]);
         delete pending[key];
         delete data[key];
       }
+      else if(key.match(/shutdown/))
+      	child_process.spawn('sh',['shutdown.sh'], {stdio:'inherit'});
+      else if(key.match(/restart/))
+      	child_process.spawn('sh',['run_chrome.sh'], {stdio:'inherit'});
       else
         res.end('Invalid PUT path');
     });
@@ -71,8 +76,8 @@ var server=http.createServer(function (req, res) {
   else if(key.match(/feeds\/.*/))
   {
     // data in feeds/ is delivered by long polling
-    if(pending[key]) pending[key].end();
-    pending[key]=res;
+    if(!pending[key]) pending[key]=[];
+    pending[key].push(res);
   }  
   else if(key.match(/recorder\/.*/))
   {
