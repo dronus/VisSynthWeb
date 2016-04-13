@@ -1,22 +1,14 @@
 [connection]
-id=wifi-wlan0
-uuid=ae7c19db-1ed3-428f-8846-e45ccdb48a86
-type=wifi
-interface-name=wlan0
-permissions=
-secondaries=
-timestamp=1460113385
+id=VisSynthBox II
+uuid=e8623ed8-80be-44bf-a206-422ed17e0f2a
+type=802-11-wireless
 
-[wifi]
-mac-address-blacklist=
-mode=ap
-seen-bssids=
-ssid=VisSynthBox
-
-[ipv4]
-dns-search=
-method=shared
+[802-11-wireless]
+mode=adhoc
+ssid=VisSynthBox II
 
 [ipv6]
-dns-search=
-method=ignore
+method=auto
+
+[ipv4]
+method=shared
