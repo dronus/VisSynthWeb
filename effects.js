@@ -13,6 +13,7 @@
       'fps':{inputs:0,outputs:0,args:{fps:25.0}},
       'type_byte':{inputs:0,outputs:0},
       'type_float':{inputs:0,outputs:0},
+      'filtering':{inputs:0,outputs:0,args:{linear:1}},
       'resolution':{inputs:0,outputs:0,args:{x:640,y:480}},
       'capture':{inputs:0,args:{device:0}},
       'video':{inputs:0,args:{url:"test.mp4",play_sound:0.0}},

@@ -31,6 +31,17 @@ canvas.resolution=function(w,h){
   });
 };
 
+canvas.filtering=function(linear)
+{
+  this.for_all_textures(function(texture){
+    var filter=linear>0 ? gl.LINEAR : gl.NEAREST;
+    gl.bindTexture(gl.TEXTURE_2D, texture.id);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+  });
+}
+
+
 // src/filters/common.js
 var warpShader=function(uniforms, warp) {
     return new Shader(null, uniforms + '\
@@ -1450,8 +1461,8 @@ canvas.address_glitch=function(mask_x,mask_y) {
         uniform float mask_y;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
-        double bitwise_or(double a, double b){\
-          double c = 0; \
+        int bitwise_or(int a, int b){\
+          int c = 0; \
           for (int x = 0; x <= 31; ++x) {\
               c += c;\
               if (a < 0) {\
@@ -1467,8 +1478,8 @@ canvas.address_glitch=function(mask_x,mask_y) {
         void main() {\
             ivec2 address=ivec2(texCoord*texSize+vec2(0.5001));\
             ivec2 new_address=address;\
-            new_address.x=bitwise_or(address.x,floor(mask_x));\
-            new_address.y=bitwise_or(address.y,floor(mask_y));\
+            new_address.x=bitwise_or(address.x,int(mask_x));\
+            new_address.y=bitwise_or(address.y,int(mask_y));\
             vec2 texCoord2=(vec2(new_address)-vec2(0.5))/texSize;\
             gl_FragColor = texture2D(texture,texCoord2);\
         }\
@@ -1730,7 +1741,7 @@ canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last second in a ring buffer
 
-    var max_frames=100;
+    var max_frames=50;
     
     if(!this._.pastTextures) this._.pastTextures=[];
   
