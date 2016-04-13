@@ -642,6 +642,7 @@ canvas.video=function(url,play_sound)
       v.autoplay = true;
       v.muted=!play_sound;
       v.loop=true;
+      v.crossOrigin = "anonymous";
       v.src=url;
       this._.videoFilterElement=v;
     }  
@@ -665,6 +666,7 @@ canvas.image=function(url)
     if(!v)
     {
       var v = document.createElement('img');
+      v.crossOrigin = "anonymous";
       v.src=url;
       this._.imageFilterElement=v;
       v.onload=function(){
