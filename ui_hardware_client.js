@@ -5,11 +5,14 @@ var Encoder = require('./encoder.js');
 
 session_url='/';
 
+var host='tegra-ubuntu.local', port=8082;
+
 put=function(url,data)
 {
   console.log('PUT: '+url);
   var req=http.request({
-    port:8082,
+    host: host,
+    port:port,
     method:'PUT',
     path:url
   });
@@ -22,7 +25,8 @@ get=function(url,callback)
 {
   console.log('GET: '+url);
   var req=http.request({
-    port:8082,
+    host:host,
+    port:port,
     path:url
   },function(res){
     if(!callback) return;
