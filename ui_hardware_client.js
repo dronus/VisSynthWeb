@@ -5,7 +5,7 @@ var Encoder = require('./encoder.js');
 
 session_url='/';
 
-var host='tegra-ubuntu.local', port=8082;
+var host='nf-vissynthbox-ii.local', port=8082;
 
 put=function(url,data)
 {
@@ -15,13 +15,15 @@ put=function(url,data)
     port:port,
     method:'PUT',
     path:url
+  }).on('error',function(){
+    console.log('PUT error: '+url);
   });
   
   req.write(data);
   req.end();
 }
 
-get=function(url,callback)
+get=function(url,callback,error_callback)
 {
   console.log('GET: '+url);
   var req=http.request({
@@ -39,8 +41,9 @@ get=function(url,callback)
       callback(body);
     })    
   }).on('error',function(err){
-    console.log('Request failed: '+url+' '+err);
-    callback();
+    console.log('GET error: '+url+' '+err);
+    // delay callback for 1s as we would otherwise do repeated roundtrips without delay for long polling calls
+    error_callback(url);
   });
   req.end();
 }
