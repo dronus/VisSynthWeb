@@ -34,11 +34,40 @@
     var session_url='/';
     if(document.location.hash)
       session_url+=document.location.hash.substring(1)+'_';
-    
-    var put=function(url,data){
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('PUT','/feeds'+session_url+url,true);  
-      xmlHttp.send(data);
+
+    // establish WebSocket connection to command server
+    var websocket;
+    var open_socket=function()
+    {
+      websocket=new WebSocket('ws://localhost:8082/');
+      websocket.onopen=function(){
+        // opt in for commands
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'command',data:''}));    
+      };
+      // opt-in for command feed from remote control server
+      websocket.onmessage=function(event)
+      {
+        var packet=JSON.parse(event.data);
+        var path=packet.path, message=packet.data;
+        
+        if(path=='/feeds'+session_url+'command')
+        {
+          var js=message;
+          var result= window.eval(js);
+          if(result){
+            put('result',JSON.stringify(result));
+          }
+        }
+      }
+      websocket.onclose=function()
+      {
+        setTimeout(open_socket,1000);
+      }
+    }
+    open_socket();
+
+    var put=function(path,data){
+      websocket.send(JSON.stringify({'method':'put', path:'/feeds'+session_url+path,data:data}));
     }
 
     var time=0,frame_time=0; // running time
@@ -215,31 +244,6 @@
     // returns a <video> Element streaming the selected device.
     // this is used by the 'capture' effect in glfx.js to acquire the camera.
     canvas.video_source=get_video;
-
-
-    // command polling from remote control server
-    var poll_command=function()
-    {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open('GET', '/feeds'+session_url+'command', true);
-      xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4) {
-          setTimeout(function(){
-            poll_command();
-          },100);
-          var js=xmlHttp.responseText;
-          if(js) 
-          {
-            var result=window.eval(js);
-            if(result){
-              put('result',JSON.stringify(result));
-            }
-          }
-        }
-      };
-      xmlHttp.send(null);
-    }
-    poll_command();
 
 
     // helper functions for chain code generation
