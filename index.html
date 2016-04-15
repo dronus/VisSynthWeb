@@ -39,7 +39,7 @@
     var websocket;
     var open_socket=function()
     {
-      websocket=new WebSocket('ws://localhost:8082/');
+      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
       websocket.onopen=function(){
         // opt in for commands
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'command',data:''}));    
