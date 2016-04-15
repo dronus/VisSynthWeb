@@ -15,8 +15,7 @@
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
-    <button id=recorder_start_button onclick="get('/recorder/start')">START RECORDING</button>
-    <button id=recorder_stop_button onclick="get('/recorder/stop')">STOP RECORDING</button>
+    <button id=recorder_button onclick="toggle_recorder()">START RECORDING</button>
     <span id=stats></span>
   </div>
 
@@ -52,7 +51,7 @@
   </div>
 
   <div class="preview container" onclick="toggle_preview()">
-    <button>PREVIEW</button>
+    <button id=preview_button>PREVIEW</button>
     <img id=preview></img>
   </div>
   
@@ -111,6 +110,9 @@
       background-color: #733;
       color: #fff;
       padding: 4px;
+   }
+   button.active{
+      background-color: #c00;
    }
    input{
     border:none;
@@ -552,6 +554,18 @@
     {
       send('document.location.reload()');
       setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
+    }
+
+    var recording=false;
+    function toggle_recorder()
+    {
+      recording=!recording;
+
+      get(recording ? '/recorder/start' : '/recorder/stop');
+
+      $('#recorder_button').html(recording ? 'STOP RECORDING' : 'START RECORDING');
+      if(recording) $('#recorder_button').addClass   ('active');
+      else          $('#recorder_button').removeClass('active');
     }
 
     /* the undo history. updated by frequent save() calls */
@@ -1174,6 +1188,8 @@
     preview_handler();
     function toggle_preview(){
       preview=!preview;
+      if(preview) $('#preview_button').addClass   ('active');
+      else        $('#preview_button').removeClass('active');
       send('preview('+preview+')');
     }
       
