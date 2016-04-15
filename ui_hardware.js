@@ -211,7 +211,7 @@
         {
           var i=effect_ids[path.o[path.i]];
           i+=delta;
-          if(!i || i>=new_effects.length) i=0;
+          if(i<=0 || i>=new_effects.length) i=0;
           chain[layer_id]=clone(new_effects[i]);
           flat=flatten();
           path=flat[param_id];
