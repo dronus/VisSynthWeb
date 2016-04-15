@@ -72,6 +72,12 @@ canvas = function() {
 
     canvas.update=function() {
         this._.texture.use();
+        // update canvas size to texture size...
+        if(this.width!=this._.texture.width || this.height!=this._.texture.width)
+        {
+          this.width =this._.texture.width;
+          this.height=this._.texture.height;
+        }
         gl.viewport(0, 0, this.width, this.height);        
         this._.flippedShader.drawRect();
         return this;
