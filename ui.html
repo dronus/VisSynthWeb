@@ -534,7 +534,7 @@
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
       xmlHttp.open('GET',url,true);
-      xmlHttp.onreadystatechange=function()
+      if(callback) xmlHttp.onreadystatechange=function()
       {
         if(xmlHttp.readyState!=4) return;
         callback(xmlHttp.responseText);      

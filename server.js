@@ -28,8 +28,10 @@ var path=require('path');
 var child_process = require('child_process');
 
 //var recorder_cmd="avconv -f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov";
-var recorder_cmd="avconv";
-var recorder_args="-f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov".split(" ");
+//var recorder_cmd="avconv";
+//var recorder_args="-f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov".split(" ");
+var recorder_cmd="gst-launch-0.10";
+var recorder_args="-e ximagesrc use-damage=0 ! ffmpegcolorspace ! nv_omx_h264enc bitrate=16000000 ! qtmux ! filesink location={FILENAME}";
 var recorder=false;
 
 var server=http.createServer(function (req, res) {
@@ -82,12 +84,11 @@ var server=http.createServer(function (req, res) {
   else if(key.match(/recorder\/.*/))
   {
     if(!recorder && key.match(/recorder\/start/)){
-      recorder_args.pop();
-      recorder_args.push("recorded/"+Math.random()+".mov");
-      recorder=child_process.spawn(recorder_cmd,recorder_args, {stdio:'inherit'});
+      var args=recorder_args.replace('{FILENAME}',"recorded/"+Math.random()+".mov").split(' ');
+      recorder=child_process.spawn(recorder_cmd,args, {stdio:'inherit'});
     }
     if(recorder && key.match(/recorder\/stop/)) {
-      recorder.kill('SIGTERM');
+      recorder.kill('SIGINT');
       recorder=false;
     }
       
