@@ -1,3 +1,4 @@
 #!/bin/sh
 
-nodejs server.js
+
+DISPLAY=:0 nodejs server.js
