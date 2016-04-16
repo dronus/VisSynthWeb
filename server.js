@@ -63,7 +63,7 @@ wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     var packet=JSON.parse(message);
     var method=packet.method, path=packet.path, data=packet.data;
-    console.log('WebSocket: '+method+' '+path);    
+    //console.log('WebSocket: '+method+' '+path);    
     var parts = path.split('?');
     var key=parts[0].substring(1); // strip trailing / 
 
@@ -90,8 +90,6 @@ wss.on('connection', function connection(ws) {
         recorder.kill('SIGINT');
         recorder=false;
       }
-        
-      res.end();
     }
     else if(key.match(/shutdown/))
       child_process.spawn('sh',['shutdown.sh'], {stdio:'inherit'});
@@ -104,7 +102,6 @@ wss.on('connection', function connection(ws) {
       {
         for(var i in pending[key])
         {
-          console.log('deliver '+i);
           var target_ws=pending[key][i];
           if(target_ws.readyState==1) // still open
             target_ws.send(message);
