@@ -72,6 +72,7 @@
       'erode':{args:{iterations:2.0}},
       'dilate':{args:{iterations:2.0}},
       'sobel':{args:{secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgba',r:0,g:0,b:0,a:1},edges:{type:'rgba',r:1,g:1,b:1,a:1}}},
+      'sobel_rgb':{args:{secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgb',r:0,g:0,b:0},edges:{type:'rgb',r:1,g:1,b:1}}},
       'unsharpMask':{args:{size:3.0,strength:{type:'osc',f:5.0,a:2.0,p:0.0,o:2.0}}},
       'localContrast':{args:{size:10.0,strength:0.5}},
       'pixelate':{args:{x1:10.0,y1:10.0, x2:10.0,y2:10.0 }},

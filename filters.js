@@ -1743,7 +1743,7 @@ canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last second in a ring buffer
 
-    var max_frames=10;
+    var max_frames=25;
     
     if(!this._.pastTextures) this._.pastTextures=[];
   
@@ -1982,7 +1982,7 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
       \
       void main(void){\
         vec3 inner=texture2D(inner_texture,texCoord).rgb;\
-        vec3 outer=texture2D(outer_texture,texCoord).rgb-inner/4.;\
+        vec3 outer=texture2D(outer_texture,texCoord).rgb-inner;\
         vec3 birth=smoothstep(birth_min-.05,birth_min+.05,outer)*(vec3(1.)-smoothstep(birth_max-.05,birth_max+.05,outer));\
         vec3 death=smoothstep(death_min-.05,death_min+.05,outer);\
         vec3 value=mix(birth,vec3(1.)-death,smoothstep(.45,.55,inner));\
@@ -1991,9 +1991,9 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
       }\
     ');
 
-    this.blur(1.);
+    this.blur(5.);
     var inner_texture=this.stack_push();
-    this.blur(2.);
+    this.blur(10.);
 
     this.stack_pop();
         
@@ -3119,6 +3119,45 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
     return this;
 }
 
+canvas.sobel_rgb=function(secondary, coef, alpha, r,g,b, r2,g2,b2) {
+    gl.sobel_rgb = gl.sobel_rgb || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        uniform float alpha;\
+        uniform vec3 c_edge;\
+        uniform vec3 c_area;\
+        uniform float secondary;\
+        uniform float coef;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            vec3 bottomLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
+            vec3 topRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, -0.0020833)).rgb;\
+            vec3 topLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
+            vec3 bottomRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0.0020833)).rgb;\
+            vec3 leftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0)).rgb;\
+            vec3 rightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0)).rgb;\
+            vec3 bottomIntensity = texture2D(texture, texCoord + vec2(0, 0.0020833)).rgb;\
+            vec3 topIntensity = texture2D(texture, texCoord + vec2(0, -0.0020833)).rgb;\
+            vec3 h = -secondary * topLeftIntensity - coef * topIntensity - secondary * topRightIntensity + secondary * bottomLeftIntensity + coef * bottomIntensity + secondary * bottomRightIntensity;\
+            vec3 v = -secondary * bottomLeftIntensity - coef * leftIntensity - secondary * topLeftIntensity + secondary * bottomRightIntensity + coef * rightIntensity + secondary * topRightIntensity;\
+\
+            vec3 mag = vec3( length(vec2(h.r, v.r)) , length(vec2(h.g, v.g)) , length(vec2(h.b, v.b)) );\
+            vec3 c = mix(c_edge,c_area,mag);\
+            color.rgb = mix(color.rgb,c,alpha);\
+            gl_FragColor = color;\
+        }\
+    ');
+
+    this.simpleShader( gl.sobel_rgb, {
+        secondary : secondary,
+        coef : coef,
+        alpha : alpha,
+        c_edge : [r,g,b],
+        c_area : [r2,g2,b2]
+    });
+
+    return this;
+}
 // src/filters/fun/posterize.js
 
 canvas.posterize=function(steps) {
