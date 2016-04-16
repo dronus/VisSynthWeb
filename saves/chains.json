@@ -11,8 +11,8 @@
   },
   {
    "effect": "resolution",
-   "x": 1280,
-   "y": 720
+   "x": 1920,
+   "y": 1080
   },
   {
    "effect": "type_byte"
@@ -29,7 +29,21 @@
   }
  ],
  [
-  ""
+  "",
+  {
+   "effect": "none"
+  }
+ ],
+ [
+  "falsecolors",
+  {
+   "effect": "rainbow"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.686,
+   "saturation": 0
+  }
  ],
  [
   "feed in",
@@ -709,6 +723,60 @@
   {
    "effect": "feedbackOut",
    "blend": 0.609
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "zebrazoft",
+  {
+   "effect": "sobel",
+   "secondary": {
+    "type": "beat",
+    "pulse": 280.396,
+    "f": 0,
+    "a": 0.299,
+    "p": 0,
+    "o": 1.4245
+   },
+   "coeff": {
+    "type": "beat",
+    "pulse": 31.122,
+    "f": 0,
+    "a": 1.94,
+    "p": 0,
+    "o": 1.94
+   },
+   "alpha": 0.891,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.701
+  },
+  {
+   "effect": "soft_life",
+   "birth_min": 0.104,
+   "birth_max": 0.34,
+   "death_min": 0.426
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.981
   },
   {
    "effect": "feedbackIn"
@@ -2051,11 +2119,6 @@
  [
   "address glitch",
   {
-   "effect": "grid",
-   "size": 1,
-   "angle": 0
-  },
-  {
    "effect": "feedbackOut",
    "blend": {
     "type": "osc",
@@ -2140,7 +2203,7 @@
   "vectorscope",
   {
    "effect": "vectorscope",
-   "size": 3,
+   "size": 4.344,
    "intensity": 1,
    "linewidth": 1
   }
@@ -2713,7 +2776,7 @@
   },
   {
    "effect": "transform",
-   "x": 0,
+   "x": 1.333,
    "y": {
     "type": "osc",
     "f": 2.007,
@@ -2838,16 +2901,16 @@
   "julia",
   {
    "effect": "julia",
-   "cx": -1.205,
-   "cy": -0.313,
+   "cx": -1.097,
+   "cy": -0.349,
    "center": {
     "type": "pos",
-    "x": 0.575,
+    "x": 0.514,
     "y": 0.575
    },
-   "size": 1.095,
-   "angle": 0,
-   "iterations": 29.361
+   "size": 3.122,
+   "angle": -0.517,
+   "iterations": 18.398
   }
  ],
  [
