@@ -88,7 +88,7 @@
   },
   {
    "effect": "mesh_displacement",
-   "sx": 0,
+   "sx": 0.003,
    "sy": 0,
    "sz": 2,
    "anglex": 1,

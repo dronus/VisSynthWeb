@@ -7,11 +7,10 @@ var WebSocket = require('ws');
 base_host='localhost';
 base_port='8082';
 
-
+var websocket;
 var open_socket=function()
 {
-  websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
-  var websocket = new WebSocket('ws://www.host.com/path');
+  websocket=new WebSocket('ws://'+base_host+':'+base_port);
   
   websocket.on('open',function(){
     // opt in for update feed
@@ -31,6 +30,9 @@ var open_socket=function()
   {
     console.log('WebSocket closed.');  
     setTimeout(open_socket,1000);
+  });
+  websocket.on('error',function()
+  {
   });
 }
 open_socket();
@@ -52,7 +54,7 @@ get=function(url,callback)
 {
   console.log('GET: '+url);
   var req=http.request({
-    port:8082,
+    port:base_port,
     path:url
   },function(res){
     if(!callback) return;
