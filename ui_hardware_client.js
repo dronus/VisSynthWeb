@@ -1,34 +1,66 @@
 var http = require('http');
 var Lcd  = require('lcd');
 var Encoder = require('./encoder.js');
+var WebSocket = require('ws');
+
+
+base_host='nf-vissynthbox-ii.local';
+base_port='8082';
+
+
+var websocket;
+onopen=onupdate=onclose=null;
+var open_socket=function()
+{
+  websocket=new WebSocket('ws://'+base_host+':'+base_port);
+  
+  websocket.on('open',function(){
+    // opt in for update feed
+    websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+    console.log('WebSocket connected.');
+    if(onopen) onopen();
+  });
+  websocket.on('message', function(data)
+  {
+    var packet=JSON.parse(data);
+    var path=packet.path, message=packet.data;        
+    if(path=='/feeds'+session_url+'update')
+    {
+      if(onupdate) onupdate(message);
+    }
+  });
+  websocket.on('close',function()
+  {
+    console.log('WebSocket closed.');  
+    setTimeout(open_socket,1000);
+    if(onclose) onclose();
+  });
+  websocket.on('error',function()
+  {
+  });
+}
+open_socket();
+
+
+
+
 // provide functions needed by hardware UI
 
 session_url='/';
 
-var host='nf-vissynthbox-ii.local', port=8082;
 
 put=function(url,data)
 {
   console.log('PUT: '+url);
-  var req=http.request({
-    host: host,
-    port:port,
-    method:'PUT',
-    path:url
-  }).on('error',function(){
-    console.log('PUT error: '+url);
-  });
-  
-  req.write(data);
-  req.end();
+  websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));  
 }
 
 get=function(url,callback,error_callback)
 {
   console.log('GET: '+url);
   var req=http.request({
-    host:host,
-    port:port,
+    host:base_host,
+    port:base_port,
     path:url
   },function(res){
     if(!callback) return;
@@ -102,6 +134,7 @@ add_knob=function(id,callback)
     encoders[id](id,callback);
 };
 
+
 process.stdin.on('readable', function(){
   process.stdin.setEncoding('utf8');
   var chunk = process.stdin.read();
@@ -120,11 +153,11 @@ process.stdin.on('readable', function(){
 });*/
 
 
-  lcd.on('ready', function () {
-    console.log('LCD ready.');
-    require('./effects.js');
-    require('./ui_hardware.js');
-  });
+lcd.on('ready', function () {
+  console.log('LCD ready.');
+  require('./effects.js');
+  require('./ui_hardware.js');
+});
 
 
 

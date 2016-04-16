@@ -15,9 +15,9 @@
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
-    <button id=recorder_start_button onclick="get('/recorder/start')">START RECORDING</button>
-    <button id=recorder_stop_button onclick="get('/recorder/stop')">STOP RECORDING</button>
-    <span id=stats></span>
+    <button id=recorder_start_button onclick="put('/recorder/start','')">START RECORDING</button>
+    <button id=recorder_stop_button onclick="put('/recorder/stop','')">STOP RECORDING</button>
+    <span id=stats>offline</span>
   </div>
 
   <div class="effects container">
@@ -521,12 +521,12 @@
     if(document.location.hash)
       session_url+=document.location.hash.substring(1)+'_';
 
+    // establish WebSocket connection
+    var websocket;
+
     var put=function(url,data)
     {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.responseType='text';
-      xmlHttp.open('PUT',url,true);
-      xmlHttp.send(data);
+      websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));
     }
     
     var get=function(url,callback)
@@ -1153,25 +1153,50 @@
     // preview pane
     var preview=false;
     var preview_offline_timeout=false;
-    var preview_handler=function(){
-      if(preview_offline_timeout) 
-        clearTimeout(preview_offline_timeout);
-      preview_offline_timeout=setTimeout(function(){
-        document.getElementById('stats').innerHTML='offline';
-      },500);
-      get('/feeds'+session_url+'preview',function(json)
+
+    var open_socket=function()
+    {
+      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+      websocket.onopen=function(){
+        // opt in for preview and screenshot feeds
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'preview',data:''}));
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'screenshot',data:''}));        
+      };
+      websocket.onmessage=function(event)
       {
-        if(json)
-	{
+        var packet=JSON.parse(event.data);
+        var path=packet.path, message=packet.data;
+        
+        if(path=='/feeds'+session_url+'preview')
+        {
+          var json=message;
           var data=JSON.parse(json);
           document.getElementById('preview').src=data.jpeg ? data.jpeg : "";
           document.getElementById('stats').innerHTML='online, running '+(Math.round(1000./data.frame_time))+' fps';
-          clearTimeout(preview_offline_timeout);
+          if(preview_offline_timeout) clearTimeout(preview_offline_timeout);
+          preview_offline_timeout=setTimeout(function(){
+            document.getElementById('stats').innerHTML='offline';
+            preview_offline_timeout=false;
+          },1000);
         }
-        requestAnimationFrame(preview_handler); 
-      });
-    };    
-    preview_handler();
+        else if(path=='/feeds'+session_url+'screenshot'){
+          var link=$('<a>');
+          link.attr('href',message);
+          link.attr('download','screenshot.jpg');
+          $(document.body).append(link);
+          link[0].click();
+          // link.remove();
+        }
+      }     
+      websocket.onclose=function()
+      {
+        setTimeout(open_socket,1000);
+      }
+    }
+    open_socket();
+
+
+    
     function toggle_preview(){
       preview=!preview;
       send('preview('+preview+')');
@@ -1179,14 +1204,6 @@
       
     // screenshot button      
     function screenshot(){
-      get('/feeds'+session_url+'screenshot',function(data){
-        var link=$('<a>');
-        link.attr('href',data);
-        link.attr('download','screenshot.jpg');
-        $(document.body).append(link);
-        link[0].click();
-        // link.remove();
-      });
       send('screenshot()');
     }
     

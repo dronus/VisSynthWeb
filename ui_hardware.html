@@ -90,12 +90,34 @@
     if(document.location.hash)
       session_url+=document.location.hash.substring(1)+'_';
 
-    put=function(url,data)
+    var websocket;
+
+    var open_socket=function()
     {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.responseType='text';
-      xmlHttp.open('PUT',url,true);
-      xmlHttp.send(data);
+      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+      websocket.onopen=function(){
+        // opt in for update feed
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+      };
+      websocket.onmessage=function(event)
+      {
+        var packet=JSON.parse(event.data);
+        var path=packet.path, message=packet.data;        
+        if(path=='/feeds'+session_url+'update')
+        {
+          onupdate(message);
+        }
+      }     
+      websocket.onclose=function()
+      {
+        setTimeout(open_socket,1000);
+      }
+    }
+    open_socket();
+
+    var put=function(url,data)
+    {
+      websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));
     }
     
     get=function(url,callback)
@@ -139,7 +161,7 @@
           da=Math.round(da);
           if(da!=0)
           {
-            callback(id,'change',-Math.sign(da));
+            callback(id,-Math.sign(da));
             dragged=true;
             last_angle=e.a;
           }
@@ -153,7 +175,7 @@
       }
       var up_handler=function(e)
       {
-        if(!dragged) callback(id,'press');
+        if(!dragged) callback(id,0);
         down=false;
       }
       var selector='#knob_'+id;
