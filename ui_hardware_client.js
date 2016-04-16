@@ -1,6 +1,43 @@
 var http = require('http');
 var Lcd  = require('lcd');
 var Encoder = require('./encoder.js');
+var WebSocket = require('ws');
+
+
+base_host='localhost';
+base_port='8082';
+
+
+var open_socket=function()
+{
+  websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+  var websocket = new WebSocket('ws://www.host.com/path');
+  
+  websocket.on('open',function(){
+    // opt in for update feed
+    websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+    console.log('WebSocket connected.');
+  });
+  websocket.on('message', function(data)
+  {
+    var packet=JSON.parse(data);
+    var path=packet.path, message=packet.data;        
+    if(path=='/feeds'+session_url+'update')
+    {
+      onupdate(message);
+    }
+  });
+  websocket.on('close',function()
+  {
+    console.log('WebSocket closed.');  
+    setTimeout(open_socket,1000);
+  });
+}
+open_socket();
+
+
+
+
 // provide functions needed by hardware UI
 
 session_url='/';
@@ -8,14 +45,7 @@ session_url='/';
 put=function(url,data)
 {
   console.log('PUT: '+url);
-  var req=http.request({
-    port:8082,
-    method:'PUT',
-    path:url
-  });
-  
-  req.write(data);
-  req.end();
+  websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));  
 }
 
 get=function(url,callback)

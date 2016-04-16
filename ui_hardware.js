@@ -68,14 +68,13 @@
     }
     load_chains();
 
-    var update_handler=function(data)
+    // onupdate is called by client
+    onupdate=function(data)
     {
       // if we get here, an update was issued. 
       // If it wasn't us, we reload the chains, as some UI may have done it.
       if(data) load(data);      
-      get('/feeds'+session_url+'update',update_handler);
     }
-    update_handler();
 
     String.prototype.repeat=function(i)
     {
