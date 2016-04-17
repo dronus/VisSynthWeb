@@ -3119,7 +3119,7 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
     return this;
 }
 
-canvas.sobel_rgb=function(secondary, coef, alpha, r,g,b, r2,g2,b2) {
+canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
     gl.sobel_rgb = gl.sobel_rgb || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -3128,6 +3128,7 @@ canvas.sobel_rgb=function(secondary, coef, alpha, r,g,b, r2,g2,b2) {
         uniform vec3 c_area;\
         uniform float secondary;\
         uniform float coef;\
+        uniform float smoothness;\
         void main() {\
             vec4 color = texture2D(texture, texCoord);\
             vec3 bottomLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
@@ -3142,7 +3143,7 @@ canvas.sobel_rgb=function(secondary, coef, alpha, r,g,b, r2,g2,b2) {
             vec3 v = -secondary * bottomLeftIntensity - coef * leftIntensity - secondary * topLeftIntensity + secondary * bottomRightIntensity + coef * rightIntensity + secondary * topRightIntensity;\
 \
             vec3 mag = vec3( length(vec2(h.r, v.r)) , length(vec2(h.g, v.g)) , length(vec2(h.b, v.b)) );\
-            vec3 c = mix(c_edge,c_area,mag);\
+            vec3 c = mix(c_edge,c_area,smoothstep(.5-smoothness*.5,.5+smoothness*.5,mag));\
             color.rgb = mix(color.rgb,c,alpha);\
             gl_FragColor = color;\
         }\
@@ -3151,6 +3152,7 @@ canvas.sobel_rgb=function(secondary, coef, alpha, r,g,b, r2,g2,b2) {
     this.simpleShader( gl.sobel_rgb, {
         secondary : secondary,
         coef : coef,
+        smoothness : smoothness,
         alpha : alpha,
         c_edge : [r,g,b],
         c_area : [r2,g2,b2]
@@ -3261,31 +3263,26 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
     return this;
 }
 
-canvas.pixelate=function(x1,y1,x2,y2) {
+canvas.pixelate=function(sx,sy,coverage,lens) {
     gl.pixelate = gl.pixelate || new Shader(null, '\
         uniform sampler2D texture;\
-        uniform vec2 v1;\
-        uniform vec2 v2;\
-        uniform vec2 v3;\
+        uniform vec2 size;\
+        uniform float coverage;\
+        uniform float lens;\
         varying vec2 texCoord;\
-        vec2 snap(vec2 x, vec2 s)\
-        {\
-          float t=dot(x,s)/dot(s,s);\
-          vec2 x1=s*(floor(t+0.5)-0.5); \
-          vec2 x2=x-s*t; \
-          return x1+x2;\
-        }\
         void main() {\
-            vec2 x=texCoord;\
-            x=snap(x,v1);\
-            x=snap(x,v2);\
-            gl_FragColor = texture2D(texture, x);\
+            vec2 tc=(floor((texCoord-0.5)*size+0.5))/size+0.5;\
+            vec2 fc=abs(texCoord-tc)*size;\
+            tc+=(texCoord-tc)*lens;\
+            if(fc.x<coverage && fc.y<coverage) gl_FragColor = texture2D(texture, tc);\
+            else                               gl_FragColor = vec4(0.);\
         }\
     ');
 
     this.simpleShader( gl.pixelate, {
-        v1:[x1,y1],
-        v2:[x2,y2]
+        size:[sx,sy],
+        coverage: coverage/2.0,
+        lens: lens
     });
 
     return this;
