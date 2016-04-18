@@ -35,6 +35,114 @@
   }
  ],
  [
+  "giger eyes",
+  {
+   "effect": "feedbackOut",
+   "blend": 0.95,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "mirror_y"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": 1.718
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.2
+  },
+  {
+   "effect": "reaction",
+   "noise_factor": 0,
+   "zoom_speed": 0.001,
+   "scale1": 8,
+   "scale2": 16,
+   "scale3": 32,
+   "scale4": 64
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": -0.208,
+   "saturation": -0.686
+  },
+  {
+   "effect": "analogize",
+   "exposure": 0.343,
+   "gamma": 2.805,
+   "glow": 5.592,
+   "glow_radius": 19.87
+  }
+ ],
+ [
+  "giger owl",
+  {
+   "effect": "feedbackOut",
+   "blend": 0.95,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "mirror_y"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "transform",
+   "x": 0.298,
+   "y": 0.193,
+   "scale": 0.735,
+   "angle": -1.586
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.2
+  },
+  {
+   "effect": "reaction",
+   "noise_factor": 0,
+   "zoom_speed": 0.001,
+   "scale1": 8,
+   "scale2": 16,
+   "scale3": 32,
+   "scale4": 64
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0,
+   "saturation": -0.784
+  },
+  {
+   "effect": "posterize",
+   "steps": 4
+  },
+  {
+   "effect": "analogize",
+   "exposure": 0.238,
+   "gamma": 2.164,
+   "glow": 5.592,
+   "glow_radius": 19.87
+  }
+ ],
+ [
   "giger 1",
   {
    "effect": "feedbackOut",
