@@ -10,7 +10,12 @@
     var save=function()
     {
       var json=JSON.stringify(chains,null,' ');
+
+      // write to persistent file
       put('/saves'+session_url+'chains.json',json);
+
+      // notify other UI clients
+      put('/feeds'+session_url+'update',json);
       
       console.log('Saved.');
       
@@ -22,16 +27,20 @@
       return JSON.parse(JSON.stringify(o));
     }
 
-    var savetimeout=false;
+    var sendChain=function()
+    {
+      var full_chain=chains[0].concat(chain,chains[1]);
+      // send out to control server
+      send('setChain('+JSON.stringify(full_chain)+')');
+    }
+
+    var savetimeout=false;    
     var updateChain=function(event,ui)
     {
       if(savetimeout) clearTimeout(savetimeout);
       savetimeout=setTimeout(save,1000);
             
-      var full_chain=chains[0].concat(chain,chains[1]);
-
-      // send out to control server
-      send('setChain('+JSON.stringify(full_chain)+')');
+      sendChain();
     }
 
     chains=[];
@@ -40,24 +49,11 @@
       if(!json) return;
       chains=JSON.parse(json);
 
-      main_ui();
+      console.log('chain data loaded.');
+
+      ui_fn();
     }
 
-    var new_effects=[];
-    var effect_ids={};
-    for(key in effects) // effects from effects.js
-    {
-      // create flat object with the effect name in 'effect'
-      // like the ones send to the server
-      var new_effect={effect:key};
-      if(effects[key].args)
-        for(var i in effects[key].args)
-          new_effect[i]=effects[key].args[i];
-      effect_ids[key]=new_effects.length;
-      new_effects.push(new_effect);
-    }
-    effects=new_effects;
-        
     // load chains
     var load_chains=function()
     {
@@ -68,12 +64,33 @@
           load(data);
       });
     }
-    load_chains();
 
+    var effect_ids={};
     // onopen, onclose,  onupdate are called by client to notify external changes
     onopen=function(url)
     {
-      if(chains.length) ui_fn();
+      if(!chains.length) 
+      {
+        load_chains();
+        get('/effects.js',function(data){
+          effects=JSON.parse(data);
+          var new_effects=[];
+          for(key in effects) // effects from effects.js
+          {
+            // create flat object with the effect name in 'effect'
+            // like the ones send to the server
+            var new_effect={effect:key};
+            if(effects[key].args)
+              for(var i in effects[key].args)
+                new_effect[i]=effects[key].args[i];
+            effect_ids[key]=new_effects.length;
+            new_effects.push(new_effect);
+          }
+          effects=new_effects;
+          console.log('effects.js loaded.');
+        });
+      }
+      if(chains.length>=1) ui_fn();
     }
     onclose=function(url)
     {
@@ -220,8 +237,8 @@
         {
           var i=effect_ids[path.o[path.i]];
           i+=delta;
-          if(i<=0 || i>=new_effects.length) i=0;
-          chain[layer_id]=clone(new_effects[i]);
+          if(i<=0 || i>=effects.length) i=0;
+          chain[layer_id]=clone(effects[i]);
           flat=flatten();
           path=flat[param_id];
         }
@@ -239,6 +256,13 @@
         }
       }
 
+      // update projection if chain switches
+      if(id=='patch' && type=='change')
+        sendChain();
+      // update projection and save change if value changed
+      if(id=='value')
+        updateChain();
+
       var value_shown=path.o[path.i];
       if(value_shown instanceof Object) value_shown=value_shown['type'].toUpperCase();
 
@@ -246,9 +270,6 @@
         'PATCH '+pad_left(chain_id,3)+'|LAYER '+pad_left(layer_id,3)+'|PARAM '+pad_left(param_id,3)+'| VALUE\n'+
         pad(chain[0],9)+'|'+pad(chain[layer_id]['effect'],9)+'|'+pad(param,9)+'|'+pad_left(value_shown,10);
       set_display(text);
-      
-      // if any change was made, trigger projection update and chain save
-      if(type) updateChain();
     }
     
     var chain_ui=function(id,type,delta)
@@ -260,6 +281,8 @@
         else if(id=='layer') chains.splice(chain_id,0,[' ']);
         else if(id=='param') chain_clipboard=chains.splice(chain_id,1)[0];
         else if(id=='value') chains.splice(chain_id,0,clone(chain_clipboard));
+
+        if(id!='patch') updateChain();
 
         ui_fn();
         return;
@@ -294,6 +317,7 @@
       }
       if(type=='press')
       {
+        updateChain();
         ui_fn=main_ui;
         ui_fn();
         return;
@@ -316,6 +340,7 @@
         if(id=='layer') clipboard=chain[layer_id];
         if(id=='param') clipboard=chain.splice(layer_id,1)[0];
         if(id=='value') chain.splice(layer_id,0,clone(clipboard));
+        updateChain();
         ui_fn=main_ui;
         ui_fn();
         return;

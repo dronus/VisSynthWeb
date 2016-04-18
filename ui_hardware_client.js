@@ -39,7 +39,6 @@ var open_socket=function()
   {
   });
 }
-open_socket();
 
 
 
@@ -155,9 +154,10 @@ process.stdin.on('readable', function(){
 
 lcd.on('ready', function () {
   console.log('LCD ready.');
-  require('./effects.js');
   require('./ui_hardware.js');
+  open_socket();
 });
+
 
 
 
