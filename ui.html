@@ -977,7 +977,7 @@
       return  Math.round((-2/(x+1)-2/(x-1))*1000)/1000;
     }
       
-    get('/effects.js',function(data){
+    get('/effects.json',function(data){
       effects=JSON.parse(data); 
       var new_effects=[];
       for(key in effects)

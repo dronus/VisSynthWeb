@@ -72,7 +72,7 @@
       if(!chains.length) 
       {
         load_chains();
-        get('/effects.js',function(data){
+        get('/effects.json',function(data){
           effects=JSON.parse(data);
           var new_effects=[];
           for(key in effects) // effects from effects.js
