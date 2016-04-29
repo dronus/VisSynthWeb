@@ -1,5 +1,4 @@
 
-
     // send command to remote server
     var send=function(command)
     {
@@ -69,8 +68,6 @@
     // onopen, onclose,  onupdate are called by client to notify external changes
     onopen=function(url)
     {
-      if(!chains.length) 
-      {
         load_chains();
         get('/effects.json',function(data){
           effects=JSON.parse(data);
@@ -89,7 +86,6 @@
           effects=new_effects;
           console.log('effects.js loaded.');
         });
-      }
       if(chains.length>=1) ui_fn();
     }
     onclose=function(url)
@@ -364,6 +360,7 @@
         {name:'SHUTDOWN',fn:function(){  put('/shutdown','true'); }},
         {name:'RESTART',fn:function(){  put('/restart','true'); }},
         {name:'SOFT RESTART',fn:function(){  send('document.location.reload()'); setTimeout(updateChain,500); }},
+        {name:'SHUTDOWN ME',fn:function(){ require('child_process').spawn('sh',['shutdown.sh'], {stdio:'inherit'});}},
       ];
       if(type=='change')
       {

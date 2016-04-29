@@ -18,7 +18,7 @@ var open_socket=function()
  
   websocket.on('open',function(){
     // opt in for update feed
-    websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+    this.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
     console.log('WebSocket open.');
     if(onopen) onopen();
   });
