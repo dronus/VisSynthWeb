@@ -94,7 +94,9 @@
     }
     onclose=function(url)
     {
-      set_display('ERROR: remote client offline \n');
+      ui_fn=system_ui;
+      ui_fn();
+      set_display('SYSTEM MENU - remote client offline    \n');
     }
     onupdate=function(data)
     {
@@ -350,26 +352,41 @@
               +'NEW      |COPY     |CUT      |PASTE   ';
       set_display(text);
     }
-   
+  
+    var system_command_id=0;
+    var system_host_id=0;
+    var system_hosts=['nf-vissynthbox-ii.local','nf-kiosk.local'];
     var system_ui=function(id,type,delta)
     {
+
+      var system_commands=[
+        {name:'CANCEL',fn:function(){}},
+        {name:'SHUTDOWN',fn:function(){  put('/shutdown','true'); }},
+        {name:'RESTART',fn:function(){  put('/restart','true'); }},
+        {name:'SOFT RESTART',fn:function(){  send('document.location.reload()'); setTimeout(updateChain,500); }},
+      ];
+      if(type=='change')
+      {
+        if(id=='param' || id=='value') system_command_id=clamp(system_command_id+delta,0,system_commands.length);
+        if(id=='patch' || id=='layer') system_host_id   =clamp(system_host_id   +delta,0,system_hosts.length);
+      }
       if(type=='press')
       {
-        if(id=='patch') put('/shutdown','true');
-        if(id=='layer') put('/restart','true');
         if(id=='value')
         {
-          // soft restart index.html 
-          send('document.location.reload()');
-          setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
+          system_commands[system_command_id].fn();
+        }
+        if(id=='patch' || id=='layer')
+        {
+          set_host(system_hosts[system_host_id]);
         }
         ui_fn=main_ui;
         ui_fn();
         return;
       }
       var text='SYSTEM MENU                           \n'
-              +'SHUTDOWN |RESTART H|CANCEL   |RESTART S ';
-      set_display(text);
+              +pad(system_hosts[system_host_id],19)+'|CMD: '+pad(system_commands[system_command_id].name,15);
+              set_display(text);
     }
  
     var ui_fn=main_ui;
