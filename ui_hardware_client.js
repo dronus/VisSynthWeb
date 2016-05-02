@@ -18,7 +18,13 @@ var open_socket=function()
  
   websocket.on('open',function(){
     // opt in for update feed
+try{
     this.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+   }
+catch(e)
+{
+console.log(e);
+}
     console.log('WebSocket open.');
     if(onopen) onopen();
   });
@@ -33,9 +39,12 @@ var open_socket=function()
   });
   websocket.on('close',function()
   {
-    console.log('WebSocket closed.');  
-    setTimeout(open_socket,1000);
-    if(onclose) onclose();
+    console.log('WebSocket closed remotely.');  
+    if(this==websocket) 
+    {
+      setTimeout(open_socket,1000);
+      if(onclose) onclose();
+    }
   });
   websocket.on('error',function(err)
   {
@@ -51,15 +60,21 @@ session_url='/';
 
 set_host=function(host)
 {
-  base_host=host;
   websocket.close();
+  base_host=host;
   open_socket();
 }
 
 put=function(url,data)
 {
   console.log('PUT: '+url);
+  try{
   websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));  
+   }
+catch(e)
+{
+console.log(e);
+}
 }
 
 get=function(url,callback,error_callback)
