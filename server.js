@@ -103,8 +103,8 @@ wss.on('connection', function connection(ws) {
         for(var i in pending[key])
         {
           var target_ws=pending[key][i];
-          if(target_ws.readyState!=1) // still open?
-            delete pending[key][i]; // socket is gone, remove listener
+          if(target_ws.readyState!=1) // still open? 
+            delete pending[key][i]; // socket is gone, remove listener (should not happen)
           else if(target_ws!=ws) // still open and not the sender itself (no echo!)
             target_ws.send(message);
         }
@@ -113,6 +113,16 @@ wss.on('connection', function connection(ws) {
     }
     else
       console.log('Invalid Websocket path:'+path);      
+  });
+  ws.on('close',function(){
+    // remove all opts for this socket
+    for (key in pending)
+      for (i in pending[key])
+        if(pending[key][i]==ws)
+        {
+          console.log('WebSocket opted out for '+key);
+          pending[key].splice(i,1);
+        }
   });
 });
 
