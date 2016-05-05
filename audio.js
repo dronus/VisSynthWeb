@@ -78,14 +78,14 @@ function initAudioAnalysers(stream)
       window.AudioContext = window.webkitAudioContext;
     var context = new AudioContext();
     
-    var samples=1024;
+    var samples=512;
 
     var scriptNode = context.createScriptProcessor(samples, 1, 1);
     scriptNode.connect(context.destination);
 
     var analyser = context.createAnalyser();
     analyser.smoothingTimeConstant = 0.0;
-    analyser.fftSize = 1024;
+    analyser.fftSize = samples;
     analyser.connect(scriptNode);
     
     var source = context.createMediaStreamSource(stream);
