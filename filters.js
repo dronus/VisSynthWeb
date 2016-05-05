@@ -769,8 +769,10 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     if(!this._.gridMeshUvs)
     {
       this._.gridMeshUvs=[];
-      var dx=1./640.;
-      var dy=1./480.;    
+      //var dx=1./640.;
+      //var dy=1./480.;    
+      var dx=2./this.width;
+      var dy=2./this.height;
       for (var y=0;y<=1.0;y+=dy) {
           for (var x=0;x<=1.0;x+=dx) {        
               this._.gridMeshUvs.push(x,y);
@@ -793,8 +795,9 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     mat4.rotate(matrix,anglex,[1.0,0.0,0.0]);
     mat4.rotate(matrix,angley,[0.0,1.0,0.0]);
     mat4.rotate(matrix,anglez,[0.0,0.0,1.0]);
-    mat4.translate(matrix,[-1.,-1.,0]);
     mat4.scale(matrix,[2.0,2.0,2.0]);
+    mat4.scale(matrix,[this.width/this.height,1.0,1.0]);
+    mat4.translate(matrix,[-.5,-.5,0]);
     mat4.multiply(proj,matrix,matrix);
     
     // set shader parameters
