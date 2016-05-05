@@ -1033,7 +1033,7 @@ canvas.relief=function(scale2,scale4) {
 
 
 // src/filters/video/transform.js
-canvas.transform=function(x,y,scale,angle) {
+canvas.transform=function(x,y,scale,angle,sx,sy) {
     gl.transform = gl.transform || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
@@ -1050,11 +1050,13 @@ canvas.transform=function(x,y,scale,angle) {
         }\
     ');
     
+    if(!sx) sx=1.0;
+    if(!sy) sy=1.0;
     this.simpleShader( gl.transform, {
       translation: [x,y],
       xform: [
-         Math.cos(angle)/scale, Math.sin(angle)/scale,
-        -Math.sin(angle)/scale, Math.cos(angle)/scale
+         Math.cos(angle)/scale/sx, Math.sin(angle)/scale/sy,
+        -Math.sin(angle)/scale/sx, Math.cos(angle)/scale/sy
       ],
       aspect:[this.width/this.height,1.]
     });
@@ -1568,6 +1570,31 @@ canvas.waveform=function()
 }
 
 
+// src/filters/video/waveform.js
+canvas.osciloscope=function(amplitude)
+{
+    gl.osciloscope = gl.osciloscope || new Shader(null, '\
+      uniform sampler2D waveform;\
+      uniform float amplitude; \
+      varying vec2 texCoord;\
+      void main() {\
+        float value  = (texture2D(waveform , texCoord).r-0.5)*amplitude+0.5;\
+        float a=1.0-abs(value-texCoord.y)*2.0;\
+        gl_FragColor = vec4(a,a,a,1.0);\
+      }\
+    ');
+
+    var values=audio_engine.waveform;
+    if(!values) return;
+        
+    if(!this._.waveformTexture)
+      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+      
+    this._.waveformTexture.load(values);
+    this.simpleShader( gl.osciloscope, {amplitude:amplitude}, this._.waveformTexture);
+
+    return this;
+}
 
 canvas.vectorscope=function(size,intensity,linewidth) {
     gl.vectorscope = gl.vectorscope || new Shader('\
