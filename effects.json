@@ -41,6 +41,7 @@
       "timeshift":{"args":{"time":{"type":"osc","f":200.0,"a":12.5,"p":0.0,"o":12.5},"clear_on_switch":0.0}},
       "vibrance":{"args":{"strength":1.0}},
       "brightnessContrast":{"args":{"brightness":0.0,"contrast":0.0}},
+      "contrast_s":{"args":{"contrast":0.0}},
       "threshold":{"args":{"threshold":0.5,"feather":0.0,"r0":0.0,"g0":0.0,"b0":0.0,"r1":1.0,"g1":1.0,"b1":1.0}},
       "hueSaturation":{"args":{"hue":0.0,"saturation":0.0}},
       "levels":{"args":{"min":0.0,"gamma":1.0,"max":1.0," r_min":0.0,"g_min":0.0,"b_min":0.0," r_gamma":1.0,"g_gamma":1.0,"b_gamma":1.0," r_max":1.0,"g_max":1.0,"b_max":1.0}},

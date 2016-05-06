@@ -3070,6 +3070,27 @@ canvas.brightnessContrast=function(brightness, contrast) {
     return this;
 }
 
+canvas.contrast_s=function(contrast) {
+    gl.contrast_s = gl.contrast_s || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float contrast;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            vec3 x=(color.rgb-0.5)*2.0;\
+            vec3 xa=abs(x);\
+            vec3 f=(contrast*xa-xa) / (2.0*contrast*xa - contrast - 1.0);\
+            color.rgb=(sign(x)*f+1.0)/2.0;\
+            gl_FragColor = color;\
+        }\
+    ');
+
+    this.simpleShader( gl.contrast_s, {
+        contrast: -clamp(contrast,-1,1)
+    });
+
+    return this;
+}
 canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
     gl.threshold = gl.threshold || new Shader(null, '\
         uniform sampler2D texture;\
