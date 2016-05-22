@@ -1,61 +1,44 @@
 
 /*
-  WiFi UDP Send and Receive String
+  WiFi UDP remote for VisSynthWeb
 
- This sketch wait an UDP packet on localPort using the CC3200 launchpad
- When a packet is received an Acknowledge packet is sent to the client on port remotePort
-
-
- created 30 December 2012
- by dlf (Metodo2 srl)
- 
- modified 1 July 2014
- by Noah Luskey
+  -Use cc3200 WiFi link to connect a VisSynth Box
+  -Use 20x4 character LCD or OLED to display UI
+  -Use 4 pushbutton encoders to navigate and adjust
 
  */
 
-#ifndef __CC3200R1M1RGC__
-// Do not include SPI for CC3200 LaunchPad
-#include <SPI.h>
-#endif
 #include <WiFi.h>
-
-
-
 #include <LiquidCrystal.h>
 
-// initialize the library with the numbers of the interface pins
+// TODO select LCD / OLED pins
 LiquidCrystal lcd(11,12,13,14,15,16);
-
-
 
 
 // your network name also called SSID
 char ssid[] = "VisSynth Box II";
 // your network password
-char password[] = "supersecret";
+// char password[] = "supersecret";
 
-unsigned int localPort = 2390;      // local port to listen on
+unsigned int localPort = 8083;      // local port to listen on
 
 char packetBuffer[255]; //buffer to hold incoming packet
-char  ReplyBuffer[] = "acknowledged";       // a string to send back
+char ReplyBuffer[] = "DEADBEEF";       // a string to send back
 
 WiFiUDP Udp;
 
 void setup() {
   //Initialize serial and wait for port to open:
   Serial.begin(115200);
-  Serial.println("VisSynthRemote");
+  Serial.println("VisSynth Remote");
 
   // init lcd
   lcd.begin(20, 4);
   lcd.println("VisSynth Remote");
 
-  // attempt to connect to Wifi network:
+  // connect WiFi  
   Serial.print("Attempting to connect to Network named: ");
-  // print the network name (SSID);
-  Serial.println(ssid); 
-  // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+  Serial.println(ssid);
   WiFi.begin(ssid);
   while ( WiFi.status() != WL_CONNECTED) {
     // print dots while we wait to connect
