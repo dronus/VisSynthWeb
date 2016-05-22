@@ -356,7 +356,7 @@
   
     var system_command_id=0;
     var system_host_id=0;
-    var system_hosts=['nf-vissynthbox-2.local','nf-vissynthbox-3.local','nf-kiosk.local'];
+    var system_hosts=['localhost','nf-vissynthbox-2.local','nf-vissynthbox-3.local','nf-kiosk.local'];
     var system_ui=function(id,type,delta)
     {
 
