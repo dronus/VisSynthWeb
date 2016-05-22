@@ -10,10 +10,20 @@
 
 #include <WiFi.h>
 #include <LiquidCrystal.h>
+#include "Encoder.h"
+
 
 // TODO select LCD / OLED pins
 LiquidCrystal lcd(11,12,13,14,15,16);
 
+void encoderChange(int,int);
+// TODO select encoder pins
+Encoder encoders[4]={
+  Encoder(1,1,1,&encoderChange),
+  Encoder(1,1,1,&encoderChange),
+  Encoder(1,1,1,&encoderChange),
+  Encoder(1,1,1,&encoderChange)  
+};
 
 // your network name also called SSID
 char ssid[] = "VisSynth Box II";
@@ -62,6 +72,17 @@ void setup() {
 
   Serial.println("\nWaiting for a connection from a client...");
   Udp.begin(localPort);
+}
+
+void encoderChange(int id, int delta)
+{
+    // send button event to the server
+    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+    Udp.print(id);
+    Udp.print(" ");
+    Udp.print(delta);
+    Udp.println();
+    Udp.endPacket();  
 }
 
 void loop() {
