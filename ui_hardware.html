@@ -4,7 +4,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <title>NF VisSynth MCP</title>
   <script src="jquery-2.1.4.js"></script>
-  <script src="effects.js"></script>
 </head>
 <body style="font-size: 20px;">
 
@@ -98,6 +97,7 @@
       websocket.onopen=function(){
         // opt in for update feed
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+        if(onopen) onopen();
       };
       websocket.onmessage=function(event)
       {
@@ -111,6 +111,7 @@
       websocket.onclose=function()
       {
         setTimeout(open_socket,1000);
+        if(onclose) onclose();
       }
     }
     open_socket();
