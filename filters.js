@@ -654,7 +654,15 @@ canvas.video=function(url,play_sound)
       var v = document.createElement('video');
       v.autoplay = true;
       v.muted=!play_sound;
-      v.loop=true;
+
+      //v.loop=true;
+      // loop workaround: loop=true requires HTTP range request capability of the server for some browsers (like seek would do).
+      // so we just start the video anew completely.
+      v.onended = function () {
+        this.load();
+        this.play();
+      };
+
       v.crossOrigin = "anonymous";
       v.src=url;
       this._.videoFilterElement=v;
