@@ -189,13 +189,16 @@ class Encoder
   public: 
     uint8_t p0,p1,pb;
     uint8_t state=0;
+    int delta;
+    bool pressed;
     int id;
+
     Encoder(int _id, uint8_t _p0, uint8_t _p1, uint8_t _pb)
     {
       id=_id; p0=_p0; p1=_p1; pb=_pb;
     };
     
-    void check(void(*callback)(int,int))
+    void update()
     {
       pinMode(p0,INPUT_PULLDOWN);
       pinMode(p1,INPUT_PULLDOWN);
@@ -207,16 +210,31 @@ class Encoder
         uint8_t change=new_state ^ state;
         if(change==4)
         {
-          if(new_state==4) callback(id,0);
+          if(new_state==4) pressed=true;
         }
-        else if(new_state==1 || new_state==2)
+        else if(new_state==1)
         {
           uint8_t pin=change-1;
           int d=pin*2-1;
-          callback(id,d);
+          delta+=d;          
         }
       }  
-      state=new_state;      
+      state=new_state;
+    }
+    
+    void check(void(*callback)(int,int))
+    {
+      if(delta!=0)
+      {
+        int tmp_delta=delta;
+        delta=0;
+        callback(id,tmp_delta);
+      }
+      if(pressed)
+      {
+        pressed=false;
+        callback(id,0);
+      }
     };
 };
 
