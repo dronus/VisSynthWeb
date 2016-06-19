@@ -14,7 +14,7 @@ var WebSocket = require('ws');
 var base_host='localhost';
 var base_port='8082';
 
-var remote_host='localhost',remote_port='8083';
+var remote_host='10.42.0.2',remote_port='8083';
 
 var websocket;
 onopen=onupdate=onclose=null;
@@ -122,9 +122,9 @@ server.on('error', function(err) {
 server.on('message', function(msg, rinfo) {
   console.log("server got: "+msg+" from "+rinfo.address+":"+rinfo.port);
 
-  var parts=(''+msg).split(' ');
-  var knob_nr=parts[0];
-  var delta=parseInt(parts[1]);
+  var data=JSON.parse(''+msg);
+  var knob_nr=data['k'];
+  var delta=data['d'];
 
   var knob=knobs[knob_nr];
   if(!knob) return;
@@ -136,7 +136,7 @@ server.on('listening', function() {
   console.log("server listening"+address.address+":"+address.port);
 });
 
-server.bind(41234);
+server.bind(8083);
 
 
 function pad(text,length)
@@ -160,7 +160,7 @@ set_display=function(text)
      lcd_update=false;
      var lines=lcd_text.split('\n');
      var message=pad(lines[0],40)+lines[1]+'\n';
-     var buffer=new Buffer(message);
+     var buffer=new Buffer('{'+message+'}');
      server.send(buffer,0,buffer.length,remote_port,remote_host,function(err){if(err) console.log("err: "+err)});
    },100);
   
