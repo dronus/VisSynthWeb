@@ -159,7 +159,7 @@ set_display=function(text)
    lcd_update=setTimeout(function(){
      lcd_update=false;
      var lines=lcd_text.split('\n');
-     var message=pad(lines[0],40)+lines[1]+'\n';
+     var message=pad(lines[0],20)+pad(lines[1],20)+pad(lines[2],20)+pad(lines[3],20);
      var buffer=new Buffer('{'+message+'}');
      server.send(buffer,0,buffer.length,remote_port,remote_host,function(err){if(err) console.log("err: "+err)});
    },100);

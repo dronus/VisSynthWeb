@@ -2,9 +2,6 @@
 #include <OLEDFourBit.h>
 #include <stdio.h>
 
-#define pin_e0 53
-#define pin_e1 54
-#define pin_eb 55
 
 
 
@@ -192,12 +189,13 @@ class Encoder
   public: 
     uint8_t p0,p1,pb;
     uint8_t state=0;
-    Encoder(uint8_t _p0, uint8_t _p1, uint8_t _pb)
+    int id;
+    Encoder(int _id, uint8_t _p0, uint8_t _p1, uint8_t _pb)
     {
-      p0=_p0; p1=_p1; pb=_pb;
+      id=_id; p0=_p0; p1=_p1; pb=_pb;
     };
     
-    void check(void(*callback)(int))
+    void check(void(*callback)(int,int))
     {
       pinMode(p0,INPUT_PULLDOWN);
       pinMode(p1,INPUT_PULLDOWN);
@@ -209,13 +207,13 @@ class Encoder
         uint8_t change=new_state ^ state;
         if(change==4)
         {
-          if(new_state==4) callback(0);
+          if(new_state==4) callback(id,0);
         }
         else if(new_state==1 || new_state==2)
         {
           uint8_t pin=change-1;
           int d=pin*2-1;
-          callback(d);
+          callback(id,d);
         }
       }  
       state=new_state;      
@@ -224,14 +222,14 @@ class Encoder
 
 
 int value=0;
-void encoder_callback(int d)
+void encoder_callback(int id, int d)
 {
   value+=d;
   // if(d==0) lcd.println("PRESS");
   // else     lcd.println(value);
 
-  String msg="{\"k\":0,\"d\":";
-  msg+=String(d)+"}\n";
+  String msg="{\"k\":";
+  msg+=String(id)+",\"d\":"+String(d)+"}\n";
   String cmd="AT+RSI_SND=2,";
   cmd+=msg.length();
   cmd+=",8080,192.168.0.2,";
@@ -240,10 +238,23 @@ void encoder_callback(int d)
   redFlySend(cmd.c_str());
 }
 
-Encoder enc(pin_e0,pin_e1,pin_eb);
+
+#define pin_eb 55
+#define pin_e1 54
+#define pin_e0 53
+
+
+Encoder enc0(3,53,54,55);
+Encoder enc1(2,50,51,52);
+Encoder enc2(1,47,48,49);
+Encoder enc3(0,44,45,46);
+
 String buffer;
 void loop() {
-  enc.check(encoder_callback);
+  enc0.check(encoder_callback);
+  enc1.check(encoder_callback);
+  enc2.check(encoder_callback);
+  enc3.check(encoder_callback);      
   
   int i=0;
   buffer="";
