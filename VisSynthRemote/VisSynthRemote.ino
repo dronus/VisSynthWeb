@@ -164,12 +164,12 @@ void setup() {
     if(!redFlyCommandRequired("AT+RSI_AUTHMODE=4")) continue;
     if(!redFlyCommandRequired("AT+RSI_SCAN=0")) continue;
     delay(1000);
-    if(!redFlyCommandRequired("AT+RSI_JOIN=AdHoc,0,0")) continue;
+    if(!redFlyCommandRequired("AT+RSI_JOIN=VisSynthBox II,0,0")) continue;
     delay(1000);
-    if(!redFlyCommandRequired("AT+RSI_IPCONF=0,10.42.0.2,255.255.255.0,10.42.0.1")) continue;
+    if(!redFlyCommandRequired("AT+RSI_IPCONF=0,168.254.20.10,255.255.0.0,168.254.10.10")) continue;
     delay(100);
     if(!redFlyCommandRequired("AT+RSI_LUDP=8083")) continue;
-    if(!redFlyCommandRequired("AT+RSI_UDP=10.42.0.1,8083,9083")) continue;
+    if(!redFlyCommandRequired("AT+RSI_UDP=168.254.10.10,8083,9083")) continue;
 
     success=true;
   }
