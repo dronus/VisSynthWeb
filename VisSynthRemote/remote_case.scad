@@ -2,23 +2,30 @@ $fs=1;
 $fa=1;
 
 
-display_w=85.5;
-display_h=28.5;
+display_w=85.5+.5;
+display_h=28.5+.5;
+display_h_2=33;
 
 border=10;
 w=display_w+2*10;
 l=display_h+2*10+2*14;
 
-mainboard_w=94;
-mainboard_l=58.4;
+mainboard_w=100;
+mainboard_l=59;
+mainboard_h=11;
+mainboard_x=20;
 
-wall=2;
+wall=1.5;
 
 // TODO bei dieser Höhe muss Akku / Mainboard neben den UI-Einheiten liegen?
 h=15;
 
 encoder_d=7;
 
+module aa_box()
+{
+	translate([-35.5/2,0,-22.5/2]) cube([35.5,68.5,22.5],center=true);
+}
 
 module aa_cell()
 {
@@ -38,24 +45,31 @@ module bevel_cube(size,bevel)
 	}
 }
 
-module mainboard()
+module mainboard(inner=true)
 {
-	color([.7,.3,0]) cube([mainboard_w,mainboard_l,2],center=true);
+	translate([mainboard_x,0,-mainboard_h/2]) color([.7,.3,0]) cube([mainboard_w,mainboard_l,mainboard_h],center=true);
+
+	translate([0,43/2,8.5/2]) cube([27,7,8.5],center=true);
+	translate([0,-43/2,8.5/2]) cube([27,7,8.5],center=true);
 }
 
 module knobs_and_display(inner_only)
 {
-	translate([0,0,-2.5+0.1-(inner_only ? wall : 0)]) {
-		color([.4,.4,.4]) cube([display_w,display_h,5],center=true);
+	translate([0,0,-2+0.1-(inner_only ? wall : -1)]) {
+		color([.4,.4,.4]) cube([display_w,display_h,4],center=true);
 		if(!inner_only) color([.2,1.,.2]) translate([0,0,5/2]) cube([display_w*.9,display_h*.9,.1],center=true);
+	if(!inner_only) translate([0,-2,-6]) cube([display_w,display_h_2,10],center=true);
+
 	}
+
+
 	
 	for(x=[-1,1])
 	  for(y=[-1,1])
 	    translate([x*display_w/4,y*(display_h/2+24/2),-wall])
 		   color([.4,.4,.4]) union(){
 				if(!inner_only) cylinder(r=encoder_d/2,h=15);
-				translate([0,0,-3]) cube([14,14,6],center=true);
+				translate([0,0,-7.5]) cube([14,14,15],center=true);
 			}
 }
 
@@ -72,21 +86,22 @@ module meld()
 }
 
 
-module inner_right()
+module inner_right(inner=true)
 {
-   y=-8;
+   y=-12;
 	cell_y=-0;
-	translate([0,0,y-1]) mainboard();
-	knobs_and_display(true);	
+	translate([0,0,y]) mainboard();
+	knobs_and_display(inner);	
 }
 
 
 module inner_left()
 {
    y=-8;
-	cell_y=-0;
-	translate([-w/2-3.1,0,y+cell_y]) aa_cell();
-	translate([-w/2-18,0,y+cell_y]) aa_cell();
+	cell_y=-1;
+	// translate([-mainboard_w/2-8-3.1,0,y+cell_y]) aa_cell();
+	// translate([-mainboard_w/2-8-18,0,y+cell_y]) aa_cell();
+	translate([-mainboard_w/2+mainboard_x-4,0,-wall]) aa_box();
 }
 
 
@@ -109,24 +124,33 @@ module inner()
 }
 
 
-knobs_and_display(false);
+%knobs_and_display(false);
 
-inner();
+%inner();
 
-%difference()
-{	
-	minkowski()
-	{
-		bevel_cube([wall*2,wall*2,wall*2],wall);
-		inner_hull();
+intersection()
+{
+	//translate([0,0,1000/2-11.5]) cube([1000,1000,1000],center=true);
+	translate([0,0,-1000/2-11.5-.5]) cube([1000,1000,1000],center=true);
+
+	difference()
+	{	
+		minkowski()
+		{
+			bevel_cube([wall*2,wall*2,wall*2],wall);
+			inner_hull();
+		}
+		minkowski() 
+		{
+			union(){
+				inner_left();
+				inner_right(false);
+			}
+			cube([.2,.2,.2],center=true);
+		}
 	}
-	minkowski() 
-	{
-		knobs_and_display(false);
-		cube([.2,.2,.2],center=true);
-	}
+
 }
-
 
 
 
