@@ -1,6 +1,5 @@
 
 
-
 void setupEncoder()
 {}
 
@@ -11,3 +10,4 @@ void loopEncoder()
   enc2.update();
   enc3.update();      
 }
+

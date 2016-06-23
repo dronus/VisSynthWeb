@@ -116,6 +116,9 @@ OLEDFourBit lcd(70,69,68,67,66,65,64);
 
 void setup() {
  
+
+  pinMode(71,OUTPUT);
+  digitalWrite(71,LOW);  // disable 5v regulator
  
   pinMode(63,OUTPUT);
   digitalWrite(63,LOW);  // CS
@@ -156,7 +159,7 @@ void setup() {
     if(!redFlyInit())
       die("RedFly init error.");
     else
-      Serial.write("RedFly ready.");
+      Serial.println("RedFly ready.");
 
     if(!redFlyCommandRequired("AT+RSI_BAND=0")) continue;
     if(!redFlyCommandRequired("AT+RSI_INIT")) continue;
