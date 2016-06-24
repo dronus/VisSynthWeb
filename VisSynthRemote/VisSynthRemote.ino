@@ -36,11 +36,12 @@ bool redFlyInit()
   pinMode(redFlyReset,OUTPUT);
 
   digitalWrite(redFlyReset,LOW);
-  delay(50);
+  delay(1);
   digitalWrite(redFlyReset,HIGH);
   delay(110);
   
   Serial1.begin(9600);
+//  Serial1.begin(19200);
   
   //auto baud rate detection
   for(int i=4; i!=0; i--) //try 4 times
@@ -264,12 +265,12 @@ class Encoder
 };
 
 
-int value=0;
+long last_rx=-1000;
+long last_tx=0;
+
 void encoder_callback(int id, int d)
 {
-  value+=d;
-  // if(d==0) lcd.println("PRESS");
-  // else     lcd.println(value);
+//  redFlySend("AT+RSI_PWMODE=0");
 
   String msg="{\"k\":";
   msg+=String(id)+",\"d\":"+String(d)+"}\n";
@@ -279,6 +280,10 @@ void encoder_callback(int id, int d)
   cmd+=msg;
 
   redFlySend(cmd.c_str());
+  
+//  redFlySend("AT+RSI_PWMODE=2");
+  
+  last_tx=millis();
 }
 
 
@@ -293,21 +298,34 @@ Encoder enc2(2,47,48,49);
 Encoder enc3(3,44,45,46);
 
 String buffer;
+
+
+
 void loop() {
-  enc0.check(encoder_callback);
-  enc1.check(encoder_callback);
-  enc2.check(encoder_callback);
-  enc3.check(encoder_callback);      
+  if(millis()-last_tx>10)
+  {
+    enc0.check(encoder_callback);
+    enc1.check(encoder_callback);
+    enc2.check(encoder_callback);
+    enc3.check(encoder_callback); 
+  }
+//  delay(10);
+  
+  if(last_rx<last_tx && millis()-last_rx>500 && millis()-last_tx>500) // timeout, force redisplay
+  {
+    Serial.println("Server timeout.");
+    encoder_callback(4,0);  // use dummy encoder to force the server resending UI
+  }
   
   int i=0;
   buffer="";
-  if(Serial1.available())
+  while(Serial1.available())
   {
     while(Serial1.available()){
       char c=Serial1.read();
-      Serial.print(c);
+      // Serial.print(c);
       if(c>30 && c<128) buffer+=c;
-      if(!Serial1.available()) delay(2);
+      if(!Serial1.available()) delay(3);
     }
     int opening=buffer.lastIndexOf("{");
     int closing=buffer.lastIndexOf("}");
@@ -316,8 +334,7 @@ void loop() {
     while(buffer.length()<40) buffer+=" ";
     lcd.home();
     lcd.print(buffer);
-  }
-  
-  
+    last_rx=millis();
+  }  
 }
 

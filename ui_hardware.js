@@ -451,6 +451,7 @@
     add_knob('layer',knob_handler);
     add_knob('param',knob_handler);
     add_knob('value',knob_handler);
+    add_knob('dummy',knob_handler); // dummy knob to trigger updates
 
     var ui_fn=system_ui;
     ui_fn();
