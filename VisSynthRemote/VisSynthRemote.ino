@@ -174,7 +174,7 @@ void setup() {
   Serial.begin(9600);
 
   lcd.home();
-  lcd.println("INIT");
+  lcd.print("INIT ");
 
   bool success=false;
 
@@ -201,7 +201,7 @@ void setup() {
   
   Serial.println("RedFly init succeed.");
 
-  lcd.println("READY");
+  lcd.print("READY");
 
   pinMode(RED_LED,OUTPUT);
   digitalWrite(RED_LED,HIGH);
@@ -287,10 +287,10 @@ void encoder_callback(int id, int d)
 #define pin_e0 53
 
 
-Encoder enc0(3,53,54,55);
-Encoder enc1(2,50,51,52);
-Encoder enc2(1,47,48,49);
-Encoder enc3(0,44,45,46);
+Encoder enc0(0,53,54,55);
+Encoder enc1(1,50,51,52);
+Encoder enc2(2,47,48,49);
+Encoder enc3(3,44,45,46);
 
 String buffer;
 void loop() {
