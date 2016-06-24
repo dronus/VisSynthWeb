@@ -238,7 +238,7 @@
   "waveblastf",
   {
    "effect": "osciloscope",
-   "amplitude": 1.608
+   "amplitude": 1.627
   },
   {
    "effect": "transform",
@@ -1171,9 +1171,8 @@
  [
   "giger eyes 2",
   {
-   "effect": "feedbackOut",
-   "blend": 0.95,
-   "clear_on_switch": 0
+   "effect": "fps",
+   "fps": 25
   },
   {
    "effect": "mirror_y"
@@ -2291,24 +2290,8 @@
   },
   {
    "effect": "hueSaturation",
-   "hue": 0.686,
+   "hue": 0.603,
    "saturation": 0
-  }
- ],
- [
-  "feed black",
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 0
-   }
-  },
-  {
-   "effect": "feedbackIn"
   }
  ],
  [
@@ -2399,7 +2382,7 @@
  [
   "chromatun",
   {
-   "effect": "stack_push"
+   "effect": "feedbackIn"
   },
   {
    "effect": "feedbackOut",
