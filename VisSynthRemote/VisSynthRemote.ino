@@ -270,7 +270,7 @@ long last_tx=0;
 
 void encoder_callback(int id, int d)
 {
-//  redFlySend("AT+RSI_PWMODE=0");
+  redFlySend("AT+RSI_PWMODE=0");
 
   String msg="{\"k\":";
   msg+=String(id)+",\"d\":"+String(d)+"}\n";
@@ -279,9 +279,8 @@ void encoder_callback(int id, int d)
   cmd+=",8080,192.168.0.2,";
   cmd+=msg;
 
-  redFlySend(cmd.c_str());
-  
-//  redFlySend("AT+RSI_PWMODE=2");
+  redFlySend(cmd.c_str());  
+  redFlySend("AT+RSI_PWMODE=2");
   
   last_tx=millis();
 }
