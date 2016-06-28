@@ -18,7 +18,11 @@ bool redFlyTimeout(int ms)
 {
   int j;
   for(j=0;!Serial1.available() && j<ms; j++) delay(1);
-  if(j==ms) return false;
+  if(j==ms) 
+  {
+    Serial.print("RedFly Timeout!");  
+    return false;
+  } 
   else      return true;
 }
 
@@ -40,24 +44,24 @@ bool redFlyInit()
   digitalWrite(redFlyReset,HIGH);
   delay(110);
   
+//  Serial1.begin(9600);
   Serial1.begin(9600);
-//  Serial1.begin(19200);
   
   //auto baud rate detection
   for(int i=4; i!=0; i--) //try 4 times
   {
     Serial1.write(0x1C); //transmit 0x1C
-    if(!redFlyTimeout(200)) continue;
+    if(!redFlyTimeout(50)) continue;
     if(Serial1.read() == 0x55) //wait for 0x55
     {
       Serial1.write(0x55); //transmit 0x55
-      redFlyTimeout(100);
+      redFlyTimeout(10);
       redFlyFlush();
       //skip firmware upgrade question at power on
       Serial1.write('n');
       Serial1.write('\n');
 
-      redFlyTimeout(1000);  // "Loading..."
+      redFlyTimeout(3000);  // "Loading..."
       redFlyFlush();
       redFlyTimeout(2000);  // "Loaded"
       redFlyFlush();
@@ -151,9 +155,9 @@ void setup() {
   digitalWrite(63,LOW);  // CS
   pinMode(62,OUTPUT);
   digitalWrite(62,LOW); // RESET
-  delay(100);
+  delay(10);
   digitalWrite(62,HIGH); // RESET
-  delay(100);
+  delay(10);
 
   lcd.begin(20, 4);
 
@@ -172,7 +176,7 @@ void setup() {
 
 
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   lcd.home();
   lcd.print("INIT ");
@@ -270,7 +274,7 @@ long last_tx=0;
 
 void encoder_callback(int id, int d)
 {
-  redFlySend("AT+RSI_PWMODE=0");
+  // redFlySend("AT+RSI_PWMODE=0");
 
   String msg="{\"k\":";
   msg+=String(id)+",\"d\":"+String(d)+"}\n";
@@ -280,7 +284,7 @@ void encoder_callback(int id, int d)
   cmd+=msg;
 
   redFlySend(cmd.c_str());  
-  redFlySend("AT+RSI_PWMODE=2");
+  // redFlySend("AT+RSI_PWMODE=2");
   
   last_tx=millis();
 }
@@ -301,7 +305,7 @@ String buffer;
 
 
 void loop() {
-  if(millis()-last_tx>10)
+  if(millis()-last_tx>200)
   {
     enc0.check(encoder_callback);
     enc1.check(encoder_callback);
