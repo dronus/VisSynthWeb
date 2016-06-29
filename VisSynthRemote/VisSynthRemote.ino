@@ -14,52 +14,68 @@ void die(const char* msg)
   Serial.println(msg);
 }
 
-bool redFlyInit()
+bool redFlyTimeout(int ms)
 {
-  pinMode(redFlyReset,OUTPUT);
-
-  digitalWrite(redFlyReset,LOW);
-  delay(400);
-  digitalWrite(redFlyReset,HIGH);
-  delay(300);
-  
-  Serial1.begin(9600);
-  
-  //auto baud rate detection
-  for(int i=4; i!=0; i--) //try 4 times
+  int j;
+  for(j=0;!Serial1.available() && j<ms; j++) delay(1);
+  if(j==ms) 
   {
-    Serial1.write(0x1C); //transmit 0x1C
-    delay(300);
-    if(Serial1.available())
-    {
-      if(Serial1.read() == 0x55) //wait for 0x55
-      {
-        Serial1.write(0x55); //transmit 0x55
-        delay(500);  //wait 100ms
-        //skip firmware upgrade question at power on
-        Serial1.write('n');
-        Serial1.write('\n');
-        // ret = 0xFE;
-        delay(200);
-        return true;
-      }
-    }
-  }
-  delay(200); //wait 200ms for booting
-  return false;
+    Serial.print("RedFly Timeout!");  
+    return false;
+  } 
+  else      return true;
 }
 
 void redFlyFlush()
 {
   while (Serial1.available()) 
   {
-    Serial1.read(); // flush
-    if(!Serial1.available()) delay(2);
+    Serial1.read();
+    if(!Serial1.available()) delay(3);
   }
 }
 
-bool redFlyCommand(const char* cmd, char* response, size_t size)
+bool redFlyInit()
 {
+  pinMode(redFlyReset,OUTPUT);
+
+  digitalWrite(redFlyReset,LOW);
+  delay(1);
+  digitalWrite(redFlyReset,HIGH);
+  delay(110);
+  
+//  Serial1.begin(9600);
+  Serial1.begin(9600);
+  
+  //auto baud rate detection
+  for(int i=4; i!=0; i--) //try 4 times
+  {
+    Serial1.write(0x1C); //transmit 0x1C
+    if(!redFlyTimeout(50)) continue;
+    if(Serial1.read() == 0x55) //wait for 0x55
+    {
+      Serial1.write(0x55); //transmit 0x55
+      redFlyTimeout(10);
+      redFlyFlush();
+      //skip firmware upgrade question at power on
+      Serial1.write('n');
+      Serial1.write('\n');
+
+      redFlyTimeout(3000);  // "Loading..."
+      redFlyFlush();
+      redFlyTimeout(2000);  // "Loaded"
+      redFlyFlush();
+
+      return true;
+    }
+  }
+  return false;
+}
+
+bool redFlyCommand(const char* cmd)
+{
+  char response[256];
+  size_t size=256;
 
   response[0]=='E';  // do not allow OK if no answer
 
@@ -74,37 +90,52 @@ bool redFlyCommand(const char* cmd, char* response, size_t size)
   int i=0;
   for (; i<size && Serial1.available(); i++) {
     response[i]=Serial1.read();
-    if(!Serial1.available()) delay(3);
+    if(response[i]=='\n') break; 
+    for(int j=0; !Serial1.available() && j<333; j++) delay(3);  // wait max. 1000ms acquire response
+  }
+  digitalWrite(BLUE_LED,LOW);  
+
+  if(i==size)
+  {
+    Serial.print("RedFly Response Overflow at: ");
+    Serial.println(cmd);
+    response[i-1]=0;    
+    Serial.println(response);
+    return false;
+  }
+  if(i>0 && response[i]!='\n') 
+  {
+    Serial.print("RedFly Timeout at: ");
+    Serial.println(cmd);
+    Serial.println(response);
+    return false;
   }
   response[i]=0;
-  digitalWrite(BLUE_LED,LOW);  
+
   redFlyFlush();
 
-  if(response[0]=='O') return true;  // OK
-  else                 return false;   // ERROR or something
-}
-
-bool redFlyCommandRequired(const char* cmd)
-{
-  char response[64];
-  
-  if(!redFlyCommand(cmd,response,64))
+  if(response[0]=='O') 
+    return true;  // OK
+  else
   {
     Serial.print("RedFly Error at: ");
     Serial.println(cmd);
     Serial.println(response);
-    
-    return false;
+    return false;   // ERROR or something
   }
-  return true;
 }
+
 
 bool redFlySend(const char* cmd)
 {
-  char response[2];  
-  redFlyCommand(cmd,response,2);
+  redFlyCommand(cmd);
 }
 
+void redFlyWait()
+{
+  while(!Serial1.available()); // wait for response
+  redFlyFlush();
+}
 
 
 // initialize the library with the numbers of the interface pins
@@ -116,14 +147,17 @@ OLEDFourBit lcd(70,69,68,67,66,65,64);
 
 void setup() {
  
+
+  pinMode(71,OUTPUT);
+  digitalWrite(71,LOW);  // disable 5v regulator
  
   pinMode(63,OUTPUT);
   digitalWrite(63,LOW);  // CS
   pinMode(62,OUTPUT);
   digitalWrite(62,LOW); // RESET
-  delay(100);
+  delay(10);
   digitalWrite(62,HIGH); // RESET
-  delay(100);
+  delay(10);
 
   lcd.begin(20, 4);
 
@@ -142,11 +176,10 @@ void setup() {
 
 
 
-  Serial.begin(9600);
-  delay(100);
+  Serial.begin(115200);
 
   lcd.home();
-  lcd.println("INIT");
+  lcd.print("INIT ");
 
   bool success=false;
 
@@ -156,27 +189,24 @@ void setup() {
     if(!redFlyInit())
       die("RedFly init error.");
     else
-      Serial.write("RedFly ready.");
+      Serial.println("RedFly ready.");
 
-    if(!redFlyCommandRequired("AT+RSI_BAND=0")) continue;
-    if(!redFlyCommandRequired("AT+RSI_INIT")) continue;
-    if(!redFlyCommandRequired("AT+RSI_NETWORK=IBSS,0,0")) continue;
-    if(!redFlyCommandRequired("AT+RSI_AUTHMODE=4")) continue;
-    if(!redFlyCommandRequired("AT+RSI_SCAN=0")) continue;
-    delay(1000);
-    if(!redFlyCommandRequired("AT+RSI_JOIN=VisSynthBox II,0,0")) continue;
-    delay(1000);
-    if(!redFlyCommandRequired("AT+RSI_IPCONF=0,169.254.20.10,255.255.0.0,169.254.10.10")) continue;
-    delay(100);
-    if(!redFlyCommandRequired("AT+RSI_LUDP=8083")) continue;
-    if(!redFlyCommandRequired("AT+RSI_UDP=169.254.10.10,8083,9083")) continue;
+    if(!redFlyCommand("AT+RSI_BAND=0")) continue;
+    if(!redFlyCommand("AT+RSI_INIT")) continue;
+    if(!redFlyCommand("AT+RSI_NETWORK=IBSS,0,0")) continue;
+    if(!redFlyCommand("AT+RSI_AUTHMODE=4")) continue;
+    if(!redFlyCommand("AT+RSI_SCAN=0")) continue;
+    if(!redFlyCommand("AT+RSI_JOIN=VisSynthBox II,0,0")) continue;
+    if(!redFlyCommand("AT+RSI_IPCONF=0,169.254.20.10,255.255.0.0,169.254.10.10")) continue;
+    if(!redFlyCommand("AT+RSI_LUDP=8083")) continue;
+    if(!redFlyCommand("AT+RSI_UDP=169.254.10.10,8083,9083")) continue;
 
     success=true;
   }
   
   Serial.println("RedFly init succeed.");
 
-  lcd.println("READY");
+  lcd.print("READY");
 
   pinMode(RED_LED,OUTPUT);
   digitalWrite(RED_LED,HIGH);
@@ -239,12 +269,12 @@ class Encoder
 };
 
 
-int value=0;
+long last_rx=-1000;
+long last_tx=0;
+
 void encoder_callback(int id, int d)
 {
-  value+=d;
-  // if(d==0) lcd.println("PRESS");
-  // else     lcd.println(value);
+  // redFlySend("AT+RSI_PWMODE=0");
 
   String msg="{\"k\":";
   msg+=String(id)+",\"d\":"+String(d)+"}\n";
@@ -253,7 +283,10 @@ void encoder_callback(int id, int d)
   cmd+=",8080,192.168.0.2,";
   cmd+=msg;
 
-  redFlySend(cmd.c_str());
+  redFlySend(cmd.c_str());  
+  // redFlySend("AT+RSI_PWMODE=2");
+  
+  last_tx=millis();
 }
 
 
@@ -262,27 +295,40 @@ void encoder_callback(int id, int d)
 #define pin_e0 53
 
 
-Encoder enc0(3,53,54,55);
-Encoder enc1(2,50,51,52);
-Encoder enc2(1,47,48,49);
-Encoder enc3(0,44,45,46);
+Encoder enc0(0,53,54,55);
+Encoder enc1(1,50,51,52);
+Encoder enc2(2,47,48,49);
+Encoder enc3(3,44,45,46);
 
 String buffer;
+
+
+
 void loop() {
-  enc0.check(encoder_callback);
-  enc1.check(encoder_callback);
-  enc2.check(encoder_callback);
-  enc3.check(encoder_callback);      
+  if(millis()-last_tx>200)
+  {
+    enc0.check(encoder_callback);
+    enc1.check(encoder_callback);
+    enc2.check(encoder_callback);
+    enc3.check(encoder_callback); 
+  }
+//  delay(10);
+  
+  if(last_rx<last_tx && millis()-last_rx>500 && millis()-last_tx>500) // timeout, force redisplay
+  {
+    Serial.println("Server timeout.");
+    encoder_callback(4,0);  // use dummy encoder to force the server resending UI
+  }
   
   int i=0;
   buffer="";
-  if(Serial1.available())
+  while(Serial1.available())
   {
     while(Serial1.available()){
       char c=Serial1.read();
-      Serial.print(c);
+      // Serial.print(c);
       if(c>30 && c<128) buffer+=c;
-      if(!Serial1.available()) delay(2);
+      if(!Serial1.available()) delay(3);
     }
     int opening=buffer.lastIndexOf("{");
     int closing=buffer.lastIndexOf("}");
@@ -291,8 +337,7 @@ void loop() {
     while(buffer.length()<40) buffer+=" ";
     lcd.home();
     lcd.print(buffer);
-  }
-  
-  
+    last_rx=millis();
+  }  
 }
 
