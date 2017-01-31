@@ -208,7 +208,7 @@
 
       // enforce resolution, if asked to
       if(width && height)
-          constraints.video.mandatory={ minWidth: width, minHeight: height };
+          constraints.video={ width: width, height: height };
       
       // TODO handle audio again, in a more flexible fashion than one device only...
       // for now, we just take the first device queried
@@ -222,7 +222,7 @@
       var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;        
       getUserMedia.call(navigator, constraints, function(stream){
       
-        console.log("Got camera for id "+constraints.video.optional[0].sourceId);
+        console.log("Got camera!");
         // capture device was successfully acquired
         video.autoplay = true;
         video.muted=true;
