@@ -2720,6 +2720,42 @@ canvas.blur=function(radius) {
 
 canvas.fastBlur=canvas.blur; // legacy name for old filter chains
 
+canvas.blur_alpha=function(radius) {
+    gl.blur_alpha = gl.blur_alpha || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 delta;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            float b=1./4.;\
+            float alpha=0.0;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) ).a;\
+            gl_FragColor = vec4(color.rgb, alpha); \
+        }\
+    ');
+
+    gl.blur_alpha_post = gl.blur_alpha_post || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            gl_FragColor = vec4(color.rgb, 2.*color.a-1.); \
+        }\
+    ');
+
+    for(var d=1.; d<=radius; d*=Math.sqrt(2.))
+    {
+      this.simpleShader( gl.blur_alpha, { delta: [d/this.width, d/this.height]});
+    }
+    this.simpleShader(gl.blur_alpha_post);
+    return this;
+}
+
+
+
 canvas.blur2=function(radius,exponent) {
     gl.blur2 = gl.blur2 || new Shader(null, '\
         uniform sampler2D texture;\

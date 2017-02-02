@@ -60,6 +60,7 @@
       "tile":{"args":{"divisions":2.0,"center":{"type":"pos","x":0.0,"y":0.0}}},
       "blur":{"args":{"radius":20.0}},
       "blur2":{"args":{"radius":20.0,"exponent": 1.0}},
+      "blur_alpha":{"args":{"radius":20.0}},
       "zoomBlur":{"args":{"center":{"type":"pos","x":0,"y":0}," size": 0.1}},
       "denoise":{"args":{"strength":10.0}},
       "denoisefast":{"args":{"strength":30.0}},
