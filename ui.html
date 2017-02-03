@@ -9,10 +9,10 @@
   <link rel="stylesheet" type="text/css" href="ui.css">
   <link rel="stylesheet" type="text/css" href="ui_material.css">  
 </head>
-<body style="font-size: 20px;">
+<body>
 
   <div class="header container">
-    <h1 style="font-size:100%">VIS SYNTH MCP</h1>
+    <h1>VIS SYNTH MCP</h1>
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
@@ -27,7 +27,7 @@
   </div>
 
   <div class="chains container">
-    <h2>Chains <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button></h2>
+    <h2>Chains</h2> <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button>
     <div id="chains">
       <div class="chain_token">
         <input placeholder="enter name" value="">
@@ -38,7 +38,7 @@
   <div class="chain container">
     <h2></h2>
     <div id="chain"></div>
-    <button id=chain_code_button onclick="toggle_code()" style="position: absolute; bottom: 2px; right: 2px;">CODE</button>
+    <button id=chain_code_button onclick="toggle_code()">CODE</button>
   </div>
 
   <div class="pre_chain container">

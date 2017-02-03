@@ -4,6 +4,7 @@
       background-color: #000;
       color: #aaa;
       font-family: sans-serif;    
+			font-size: 20px;
       height: 100%;
       margin: 0px;
       padding: 0px;
@@ -20,7 +21,7 @@
     outline: 2px solid #000;
   }
   ::-webkit-scrollbar-track {
-    background-color: #222;
+    background-color: transparent;
   }
   ::-webkit-scrollbar-thumb {
     width: 5px;
@@ -29,9 +30,10 @@
  
    h1{
     display: inline;
+    font-size: 20px;
    }
    h2, .chain_token input{
-    display: block;
+    display: inline-block;
     color: #fff;
     background-color: transparent;
     margin: 2px;
@@ -170,6 +172,11 @@
       width:280px;
       padding: 2px;
       margin: 0px;
+    }
+    #chain_code_button{
+/*	    position: absolute; 
+	    top: 2px; 
+	    right: 2px;*/
     }
     #chain, #pre_chain, #post_chain
     {
