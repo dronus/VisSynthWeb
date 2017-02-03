@@ -233,8 +233,11 @@
     .effect *{
       vertical-align: top;
     }
+    /* allow several parameters show on the same line, while ensure the whole line always respects the parent container */
     .effect div, .effect span{
       display: inline-block;
+			word-wrap: break-word;
+			max-width: 100%;
     }
     .effect .ui_object{
       display: block;
