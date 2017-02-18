@@ -151,13 +151,20 @@
     {
       for (var i = 0; i != sources.length; ++i) {      
         var source = sources[i];
-        source_ids[source.kind].push(source.id);
+        var kind=source.kind;
+
+        // on the newer navigator.mediaDevices.enumerateDevices interface, kind is "audioinput" or "videoinput" and so on..
+        kind=kind.replace('input','');
+
+				if(kind=='audio' || kind=='video')
+	        source_ids[kind].push(source.id || source.deviceId);
       }      
       // start frequent canvas updates
       update();
     }
-    if(MediaStreamTrack.getSources)
-      MediaStreamTrack.getSources(onSourcesAcquired);
+
+    if(navigator.mediaDevices.enumerateDevices)
+    	navigator.mediaDevices.enumerateDevices().then(onSourcesAcquired);
     else
       onSourcesAcquired([]);
 
@@ -201,7 +208,8 @@
       var constraints = {
         video:
         {
-          optional: [{sourceId: source_ids.video[source_index]}]
+          deviceId: source_ids.video[source_index],
+          width:{}, height:{}
         },
         audio:false
       };
@@ -209,21 +217,18 @@
       // enforce resolution, if asked to
       if(width && height)
       {
-          constraints.video.optional.width=width;  constraints.video.optional.height=height;
+          constraints.video.width.min=width;  constraints.video.height.min=height;
       }
       
       // TODO handle audio again, in a more flexible fashion than one device only...
       // for now, we just take the first device queried
       if(!audio_found)
       {
-        constraints.audio={optional:[{sourceId:source_ids.audio[audio_device_index]}]};
+        constraints.audio={deviceId:source_ids.audio[audio_device_index]};
         audio_found=true;
       }
 
-      // initalize getUserMedia() camera capture
-      var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;        
-      getUserMedia.call(navigator, constraints, function(stream){
-      
+      navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
         console.log("Got camera!");
         // capture device was successfully acquired
         video.autoplay = true;
@@ -234,10 +239,7 @@
           video.src = URL.createObjectURL(stream);      
 
         // TODO handle audio again, in a more flexible fashion than one device only...
-        if(stream.getAudioTracks().length) initAudioAnalysers(stream);
-        
-      }, function(err){
-        console.log(err);
+        if(stream.getAudioTracks().length) initAudioAnalysers(stream);        
       });
     }
     
