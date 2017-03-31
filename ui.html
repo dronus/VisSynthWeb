@@ -21,10 +21,18 @@
   </div>
 
   <div class="effects container">
-    <h2>Effects</h2>
+    <h2>Effects</h2> <button id=show_files onclick="show_files()">FILES</button>
     <div id=effects>
     </div>
   </div>
+
+  <div class="files container">
+    <h2>Files</h2> <button id=show_effects onclick="show_effects()">EFFECTS</button>
+    <div id=files>
+    </div>
+  </div>
+
+
 
   <div class="chains container">
     <h2>Chains</h2> <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button>
@@ -566,10 +574,57 @@
         stop: function(){        
           updateChain();
         }
-      });  
+      });
+
+      // list the files now, we have to postpone it until now 
+      // otherwise the "image" and "video" effects won't show up properly 
+      // as metadata like the number of inputs is fetched from the effects definition
+      listFiles();
     });
-        
-        
+
+
+    var listFiles=function()
+    {
+      get('/files',function(data){
+        var files=JSON.parse(data); 
+        var new_effects=[];
+        for(key in files)
+        {
+          // create flat object with the effect name in 'effect'
+          // like the ones send to the server
+          var file=files[key];
+          var new_effect={effect:'image',"url":"files/"+file};
+          new_effects.push(new_effect);
+        }
+        listEffects(new_effects,'#files');
+        // the effects may be dragged to the chain list
+        $('#files>*').draggable({
+          connectToSortable: "#chain,#pre_chain,#post_chain",
+          appendTo:'body',
+          helper: "clone",
+          revert: "invalid",
+          scroll: false,
+          distance: 10,
+          delay: 300,
+          stop: function(){        
+            updateChain();
+          }
+        });  
+      });
+    }
+
+    show_files=function()
+    {
+      listFiles();
+      $('.effects').hide();
+      $('.files'  ).show();
+    };
+    show_effects=function()
+    {
+      $('.files'  ).hide();
+      $('.effects').show();
+    };
+   
     // the effects in the current chain may be clicked to display adjust UI
     $('#chain,#pre_chain,#post_chain').on('click','.effect',function(){
       if($(this).parent().data('prevent_click'))
@@ -789,5 +844,64 @@
     
     </script>
 
+		<script>
+		// media manager
+		
+		var post=function(data)
+		{
+			var formData = new FormData();
+			for(key in data)
+				formData.append(key, data[key]);
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', 'save.php');
+			xhr.send(formData);
+			return xhr;
+		}
+
+		function addUpload(elementSelector)
+		{
+			var doc = document.querySelector(elementSelector);
+			doc.ondragover = function () { this.className = 'hover'; return false; };
+			doc.ondragend = function () { this.className = ''; return false; };
+			doc.ondrop = function (event) {
+				event.preventDefault && event.preventDefault();
+				this.className = '';
+
+				// now do something with:
+				var files = event.dataTransfer.files;  
+
+				 var formData = new FormData();
+				       formData.append('action','upload');
+					for (var i = 0; i < files.length; i++) {
+					  formData.append('file', files[i]);
+					}
+
+//				 var progress=document.getElementById('progress');
+					// now post a new XHR request
+					  var xhr = new XMLHttpRequest();
+					  xhr.open('POST', 'upload');
+					  xhr.onload = function() {
+	//			progress.value = progress.innerHTML = 100;
+				alert('upload complete, response: '+xhr.responseText);
+              listFiles();			
+					  };
+
+
+/*				xhr.upload.onprogress = function (event) {
+					if (event.lengthComputable) {
+						var complete = (event.loaded / event.total * 100 | 0);
+						progress.value = progress.innerHTML = complete;
+					}
+				}*/
+
+					  xhr.send(formData);
+
+				return false;
+			};
+		}
+		
+		addUpload('body');
+		</script>
+		
 </body>
 </html>

@@ -23,8 +23,10 @@ var ws = require('ws');
 var fs=require('fs');
 var path=require('path');
 var child_process = require('child_process');
+var multiparty = require('multiparty');
 
-
+//debug:
+var util = require('util');
 
 var mime_types={
 	'.html' : 'text/html',
@@ -61,6 +63,31 @@ var server=http.createServer(function (req, res) {
     res.setHeader("Content-Type", mime_types[suffix]);
     var instream=fs.createReadStream(key);
     instream.pipe(res);
+  }
+  else if(key=='upload')
+	{
+	
+		// var writeStream = fs.createWriteStream('./testfile');
+	
+		var form = new multiparty.Form();
+		form.uploadDir='tmp/';
+		form.on('file',function(name,file){
+			console.log('file: '+util.inspect(file));		
+			res.writeHead(200, {'content-type': 'text/plain'});
+			res.write('File received: '+file.path);
+			fs.rename(file.path,'files/'+file.originalFilename)
+		});
+		form.parse(req, function(err, fields, files) {
+			console.log('parse: '+util.inspect({fields: fields, files: files}));
+      res.end();
+    });
+	}
+  else if(key=='files')
+  {
+    fs.readdir("files", (err, files) => {
+      res.write(JSON.stringify(files));
+      res.end();
+    })
   }
   else
     res.end();
