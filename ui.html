@@ -593,10 +593,23 @@
           // create flat object with the effect name in 'effect'
           // like the ones send to the server
           var file=files[key];
-          var new_effect={effect:'image',"url":"files/"+file};
+          var suffix=file.split('.').pop().toLowerCase();
+          var types={'mov':'video','mp4':'video','webm':'video','jpg':'image','jpeg':'image','png':'image','svg':'image','gif':'image'};
+          var type=types[suffix];
+          if(!type) continue;
+
+          // create flat object with the effect name in 'effect'
+          // like the ones send to the server
+          var new_effect={effect:type};
+          if(effects[type].args)
+            for(i in effects[type].args)
+              new_effect[i]=effects[type].args[i];
+
+          new_effect.url="files/"+file;
           new_effects.push(new_effect);
         }
         listEffects(new_effects,'#files');
+
         // the effects may be dragged to the chain list
         $('#files>*').draggable({
           connectToSortable: "#chain,#pre_chain,#post_chain",
@@ -624,6 +637,7 @@
       $('.files'  ).hide();
       $('.effects').show();
     };
+    show_effects();
    
     // the effects in the current chain may be clicked to display adjust UI
     $('#chain,#pre_chain,#post_chain').on('click','.effect',function(){

@@ -29,13 +29,17 @@ var multiparty = require('multiparty');
 var util = require('util');
 
 var mime_types={
-	'.html' : 'text/html',
-	'.js'   : 'application/javascript',
-	'.json' : 'application/json',
-	'.svg'  : 'image/svg+xml',
-	'.css'  : 'text/css',
-	'.png'  : 'image/png',
-	'.jpg'  : 'image/jpg'
+	html : 'text/html',
+	js   : 'application/javascript',
+	json : 'application/json',
+	svg  : 'image/svg+xml',
+	css  : 'text/css',
+	png  : 'image/png',
+	jpg  : 'image/jpg',
+	jpeg : 'image/jpg',
+  mov  : "video/quicktime",
+  mp4  : "video/mp4",
+  webm : "video/webm"
 };
 var data={};
 var pending={};
@@ -59,7 +63,7 @@ var server=http.createServer(function (req, res) {
   if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     var n = key.lastIndexOf('.');
-    var suffix = key.substring(n);
+    var suffix = key.substring(n+1);
     res.setHeader("Content-Type", mime_types[suffix]);
     var instream=fs.createReadStream(key);
     instream.pipe(res);
