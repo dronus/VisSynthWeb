@@ -167,7 +167,6 @@
 /*      height: 25px;*/
     }
 
-
     /* current chain effect list */
     .chain{
       position: fixed;
@@ -468,3 +467,7 @@
       position: absolute; 
       bottom: 10px; left: 10px;
    }
+  .screens
+  {
+    width: 400px;
+  }

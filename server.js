@@ -93,6 +93,21 @@ var server=http.createServer(function (req, res) {
       res.end();
     })
   }
+  else if(key=='screens')
+  {
+    child_process.exec('DISPLAY=:0 xrandr |grep -E -o  "[0-9]+x[0-9]+ "',(err,stdout,stderr)=>{
+      var modes_text=stdout.split('\n');
+      var modes=[];
+      for(var key in modes_text)
+      {
+        var mode_text=modes_text[key];
+        if(!mode_text) continue;
+        modes.push(mode_text.trim());
+      }
+      res.write(JSON.stringify(modes));
+      res.end();
+    });
+  }
   else
     res.end();
 });
@@ -133,6 +148,12 @@ wss.on('connection', function connection(ws) {
         recorder.kill('SIGINT');
         recorder=false;
       }
+    }
+    else if(key.match(/screens\/.*/))
+    {      
+      var mode=key.split('/')[1];
+      console.log('/screens: try to set mode '+mode);
+      child_process.spawn('sh',['set_mode.sh',mode], {stdio:'inherit'});
     }
     else if(key.match(/shutdown/))
       child_process.spawn('sh',['shutdown.sh'], {stdio:'inherit'});
