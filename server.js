@@ -23,17 +23,23 @@ var ws = require('ws');
 var fs=require('fs');
 var path=require('path');
 var child_process = require('child_process');
+var multiparty = require('multiparty');
 
-
+//debug:
+var util = require('util');
 
 var mime_types={
-	'.html' : 'text/html',
-	'.js'   : 'application/javascript',
-	'.json' : 'application/json',
-	'.svg'  : 'image/svg+xml',
-	'.css'  : 'text/css',
-	'.png'  : 'image/png',
-	'.jpg'  : 'image/jpg'
+	html : 'text/html',
+	js   : 'application/javascript',
+	json : 'application/json',
+	svg  : 'image/svg+xml',
+	css  : 'text/css',
+	png  : 'image/png',
+	jpg  : 'image/jpg',
+	jpeg : 'image/jpg',
+  mov  : "video/quicktime",
+  mp4  : "video/mp4",
+  webm : "video/webm"
 };
 var data={};
 var pending={};
@@ -57,10 +63,50 @@ var server=http.createServer(function (req, res) {
   if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     var n = key.lastIndexOf('.');
-    var suffix = key.substring(n);
+    var suffix = key.substring(n+1);
     res.setHeader("Content-Type", mime_types[suffix]);
     var instream=fs.createReadStream(key);
     instream.pipe(res);
+  }
+  else if(key=='upload')
+	{
+	
+		// var writeStream = fs.createWriteStream('./testfile');
+	
+		var form = new multiparty.Form();
+		form.uploadDir='tmp/';
+		form.on('file',function(name,file){
+			console.log('file: '+util.inspect(file));		
+			res.writeHead(200, {'content-type': 'text/plain'});
+			res.write('File received: '+file.path);
+			fs.rename(file.path,'files/'+file.originalFilename)
+		});
+		form.parse(req, function(err, fields, files) {
+			console.log('parse: '+util.inspect({fields: fields, files: files}));
+      res.end();
+    });
+	}
+  else if(key=='files')
+  {
+    fs.readdir("files", (err, files) => {
+      res.write(JSON.stringify(files));
+      res.end();
+    })
+  }
+  else if(key=='screens')
+  {
+    child_process.exec('DISPLAY=:0 xrandr |grep -E -o  "[0-9]+x[0-9]+ "',(err,stdout,stderr)=>{
+      var modes_text=stdout.split('\n');
+      var modes=[];
+      for(var key in modes_text)
+      {
+        var mode_text=modes_text[key];
+        if(!mode_text) continue;
+        modes.push(mode_text.trim());
+      }
+      res.write(JSON.stringify(modes));
+      res.end();
+    });
   }
   else
     res.end();
@@ -102,6 +148,12 @@ wss.on('connection', function connection(ws) {
         recorder.kill('SIGINT');
         recorder=false;
       }
+    }
+    else if(key.match(/screens\/.*/))
+    {      
+      var mode=key.split('/')[1];
+      console.log('/screens: try to set mode '+mode);
+      child_process.spawn('sh',['set_mode.sh',mode], {stdio:'inherit'});
     }
     else if(key.match(/shutdown/))
       child_process.spawn('sh',['shutdown.sh'], {stdio:'inherit'});
