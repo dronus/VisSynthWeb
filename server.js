@@ -88,14 +88,14 @@ var server=http.createServer(function (req, res) {
 	}
   else if(key=='files')
   {
-    fs.readdir("files", (err, files) => {
+    fs.readdir("files", function(err, files) {
       res.write(JSON.stringify(files));
       res.end();
     })
   }
   else if(key=='screens')
   {
-    child_process.exec('DISPLAY=:0 xrandr |grep -E -o  "[0-9]+x[0-9]+ "',(err,stdout,stderr)=>{
+    child_process.exec('DISPLAY=:0 xrandr |grep -E -o  "[0-9]+x[0-9]+ "',function(err,stdout,stderr){
       var modes_text=stdout.split('\n');
       var modes=[];
       for(var key in modes_text)
