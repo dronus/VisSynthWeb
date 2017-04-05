@@ -100,6 +100,7 @@
       var effect_time=time*0.001; // 1 units per second      
 
       // run effect chain
+      random_index=0; // used by effect chain to distinguish all random invocations in a single frame
       if(chain) chain(canvas,effect_time);
 
       // provide preview if requested
@@ -273,12 +274,26 @@
       return a;
     }
 
-    // effect argument value generators...
-    
+    // effect argument value generators...    
+    var random_index=0;
     oscillators={
       sine  : Math.sin,
       saw   : function(t){return (t % (2*Math.PI))/Math.PI-1.},
-      square: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.}
+      square: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.},
+      random: function(t){
+        t=t/Math.PI;
+        var i0=Math.floor(t);
+        var i1=i0+1;
+        t=t-i0;
+        var p1=42841, p2=99991;
+        var r0=Math.sin(i0*p1+random_index*p2)+1.0;
+        r0=(p1*r0) % 2.0 - 1.0;
+        var r1=Math.sin(i1*p1+random_index*p2)+1.0;
+        r1=(p1*r1) % 2.0 - 1.0;
+        random_index++;
+        t=(Math.sin((t-0.5)*Math.PI)+1.0)/2.0;
+        return r0*(1.-t)+r1*t;
+      }
     }
     
     var generators={
