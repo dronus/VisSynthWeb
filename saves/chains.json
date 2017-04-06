@@ -23,19 +23,32 @@
   },
   {
    "effect": "capture",
-   "device": 0
-  },
-  {
-   "effect": "image",
-   "url": "files/test.jpg"
+   "device": 1
   }
  ],
  [
   "POST"
  ],
  [
-  "",
-  ""
+  "matte grid 2",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    " r": 0.919,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "grid",
+   "size": 1,
+   "angle": 0
+  }
+ ],
+ [
+  "passthru"
  ],
  [
   "grid fever",
@@ -226,24 +239,6 @@
   }
  ],
  [
-  "matte",
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgba",
-    " r": 0.919,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "grid",
-   "size": 1,
-   "angle": 0
-  }
- ],
- [
   "waveblast",
   {
    "effect": "rectangle",
@@ -291,6 +286,58 @@
     "a": 1,
     "p": 0,
     "o": 0
+   }
+  }
+ ],
+ [
+  "mandel wave",
+  {
+   "effect": "osciloscope",
+   "amplitude": 1
+  },
+  {
+   "effect": "threshold",
+   "threshold": {
+    "type": "beat",
+    "pulse": -2.948,
+    "f": -11.836,
+    "a": 0.72,
+    "p": 0,
+    "o": 1.379
+   },
+   "feather": 0,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "vibrance",
+   "strength": 1
+  },
+  {
+   "effect": "mandelbrot",
+   "center": {
+    "type": "pos",
+    "x": 0.884,
+    "y": 0.374
+   },
+   "size": 10.202,
+   "angle": {
+    "type": "osc",
+    "f": 1.399,
+    "a": 0.82,
+    "p": 0,
+    "o": 0
+   },
+   "iterations": {
+    "type": "osc",
+    "f": 1.112,
+    "a": 3.06,
+    "p": 0,
+    "o": 3.06
    }
   }
  ],
