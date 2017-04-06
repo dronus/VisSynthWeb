@@ -20,21 +20,6 @@
   {
    "effect": "capture",
    "device": 0
-  },
-  {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 1,
-   "max": 1,
-   " r_min": 0.343,
-   "g_min": 0,
-   "b_min": 0.343,
-   " r_gamma": 1.112,
-   "g_gamma": 0.988,
-   "b_gamma": 1.149,
-   " r_max": 1,
-   "g_max": 1,
-   "b_max": 1
   }
  ],
  [
@@ -59,7 +44,247 @@
   }
  ],
  [
+  "mandel waveform",
+  {
+   "effect": "osciloscope",
+   "amplitude": 1
+  },
+  {
+   "effect": "threshold",
+   "threshold": {
+    "type": "beat",
+    "pulse": -2.948,
+    "f": -11.836,
+    "a": 0.72,
+    "p": 0,
+    "o": 1.379
+   },
+   "feather": 0,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "vibrance",
+   "strength": 1
+  },
+  {
+   "effect": "mandelbrot",
+   "center": {
+    "type": "pos",
+    "x": 0.884,
+    "y": 0.374
+   },
+   "size": 10.202,
+   "angle": {
+    "type": "osc",
+    "f": 1.399,
+    "a": 0.82,
+    "p": 0,
+    "o": 0
+   },
+   "iterations": {
+    "type": "osc",
+    "f": 1.112,
+    "a": 3.06,
+    "p": 0,
+    "o": 3.06
+   }
+  }
+ ],
+ [
   "passthru"
+ ],
+ [
+  "grid fever",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgb",
+    "r": 1,
+    "g": 1,
+    "b": 1
+   }
+  },
+  {
+   "effect": "grid",
+   "size": 2.805,
+   "angle": 0
+  },
+  {
+   "effect": "invert"
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "osc",
+    "f": 7.065,
+    "a": 0.5,
+    "p": 0,
+    "o": -0.3,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 7.326,
+    "a": 0.1115,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "scale": {
+    "type": "osc",
+    "f": 4.674,
+    "a": 0,
+    "p": 0,
+    "o": 2.083,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 5.027,
+    "a": 1.243,
+    "p": 0,
+    "o": 0.71,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "sx": 0.6
+  }
+ ],
+ [
+  "spot fever",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgb",
+    "r": 1,
+    "g": 1,
+    "b": 1
+   }
+  },
+  {
+   "effect": "polygon",
+   "sides": 6,
+   "x": 0,
+   "y": 0,
+   "size": 0.5,
+   "angle": 0
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.5,
+    "p": 0,
+    "o": -0.3,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.1115,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "scale": 0.21,
+   "angle": {
+    "type": "osc",
+    "f": 2.246,
+    "a": 0.71,
+    "p": 0,
+    "o": 0
+   }
+  }
+ ],
+ [
+  "color zone runner",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "vibrance",
+   "strength": 1
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 14.459,
+    "a": 1,
+    "p": 0,
+    "o": 0,
+    "waveform": "saw",
+    "duty": 0.5
+   },
+   "saturation": 0.5
+  },
+  {
+   "effect": "levels",
+   "min": 0,
+   "gamma": 1,
+   "max": 1,
+   " r_min": 0,
+   "g_min": 1,
+   "b_min": 1,
+   " r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   " r_max": 1,
+   "g_max": 1,
+   "b_max": 1
+  },
+  {
+   "effect": "threshold",
+   "threshold": 0.801,
+   "feather": 0.2,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "multiply"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    " r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   }
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "chroma_key",
+   "color": {
+    "type": "rgb",
+    "r": 1,
+    "g": 1,
+    "b": 1
+   },
+   "threshold": 0.044,
+   "feather": 0
+  }
  ],
  [
   "shimmerbow mult",
@@ -259,7 +484,7 @@
   "staffblast",
   {
    "effect": "osciloscope",
-   "amplitude": 0.606
+   "amplitude": 0.528
   },
   {
    "effect": "absolute"
@@ -312,14 +537,14 @@
   },
   {
    "effect": "threshold",
-   "threshold": 1.696,
+   "threshold": 1.523,
    "feather": 0,
    "r0": 0,
    "g0": 0,
    "b0": 0,
    "r1": 1,
    "g1": 1,
-   "b1": 1
+   "b1": 0.764
   },
   {
    "effect": "levels",
@@ -349,8 +574,8 @@
   },
   {
    "effect": "sobel_rgb",
-   "secondary": 0.954,
-   "coeff": 0.768,
+   "secondary": 1.998,
+   "coeff": 1.964,
    "smoothness": 0.3,
    " alpha": 1,
    "areas": {
@@ -4958,7 +5183,7 @@
   "scopeblast",
   {
    "effect": "vectorscope",
-   "size": 6,
+   "size": 2.218,
    "intensity": 1,
    "linewidth": 3
   },
