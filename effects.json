@@ -32,7 +32,7 @@
       "chroma_key":{"inputs": 2,"args":{"color":{"type":"rgb","r":0.2,"g":0.7,"b":0.4},"threshold":0.2,"feather": 0.1}},
       "luma_key":{"inputs": 2,"args":{"threshold":0.5,"feather": 0.05}},
       "displacement":{"inputs": 2,"args":{"strength":0.05}},
-      "mesh_displacement":{"inputs": 2,"args":{"sx":0.0,"sy":0.0,"sz":0.1,"anglex":1.0,"angley":0.5,"anglez":0.0}},
+      "mesh_displacement":{"inputs": 2,"args":{"sx":0.0,"sy":0.0,"sz":0.1,"anglex":1.0,"angley":0.5,"anglez":0.0,"mesh":"plane"}},
       "patch_displacement":{"inputs": 2,"args":{"sx":0.0,"sy":0.0,"sz":0.1,"anglex":0.0,"angley":0.3,"anglez":0.0,"scale":2.0,"pixelate":0.0}},
       "particles":{"inputs": 2,"args":{"anglex":0.0,"angley":0.3,"anglez":0.0,"size": 15.0," strength":0.5,"homing":0.01,"noise":1.0,"displacement":0.0}},
       "transform":{"args":{"x":0.0,"y":0.0,"scale":1.0,"angle":0.0,"sx":1.0,"sy":1.0}},

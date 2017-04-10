@@ -760,9 +760,33 @@ canvas.spherical=function(radius,scale) {
     return this;
 }
 
-// src/filters/video/mesh_displacement.js
-canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
-    gl.mesh_displacement = gl.mesh_displacement || new Shader('\
+
+var mesh_transforms={
+  'plane':'pos.xy=pos.xy+vec2(-0.5,-0.5);',
+  'cylinder':"\
+    vec4 p=pos;\
+    float a=3.14159 * 2.0 * p.x;\
+    pos.xy=vec2(sin(a)*(pos.z+1.0),-cos(a)*(pos.z+1.0));\
+    pos.z = p.y * 6.0;\
+    pos.xyz=pos.xyz*.2;\
+  ",
+  'sphere':"\
+    vec4 p=pos;\
+    float a=3.14159 * 2.0 * p.x;\
+    float b=3.14159 * 1.0 * p.y;\
+    pos.xyz=vec3(sin(a)*sin(b),-cos(a),sin(a)*-cos(b)) * (pos.z+1.0);\
+    pos.z = p.y * 6.0;\
+    pos.xyz=pos.xyz*.2;\
+  ",
+};
+
+canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
+
+    if(!mesh_transforms[mesh_type]) mesh_type="plane";
+
+    if(!gl.mesh_displacement) gl.mesh_displacement={};
+    if(!gl.mesh_displacement[mesh_type])
+    gl.mesh_displacement[mesh_type] = new Shader('\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
     uniform mat4 matrix;\
@@ -771,9 +795,13 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     void main() {\
         texCoord = _texCoord;\
         vec3 dis = texture2D(displacement_map, _texCoord).xyz-0.5;\
-        vec4 pos=matrix * (vec4(vec3(_texCoord,0.0)+dis*strength,1.0));\
+        vec4 pos= (vec4(vec3(_texCoord,0.0)+dis*strength,1.0));\
+        '+mesh_transforms[mesh_type]+' \
+        pos=matrix * pos;\
         gl_Position = pos/pos.w;\
     }');
+
+    var mesh_shader=gl.mesh_displacement[mesh_type];
 
     // generate grid mesh
     if(!this._.gridMeshUvs)
@@ -781,10 +809,10 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
       this._.gridMeshUvs=[];
       //var dx=1./640.;
       //var dy=1./480.;    
-      var dx=2./this.width;
-      var dy=2./this.height;
-      for (var y=0;y<=1.0;y+=dy) {
-          for (var x=0;x<=1.0;x+=dx) {        
+      var dx=4./this.width;
+      var dy=4./this.height;
+      for (var y=0.0;y<=1.0;y+=dy) {
+          for (var x=0.0;x<=1.0;x+=dx) {        
               this._.gridMeshUvs.push(x,y);
               this._.gridMeshUvs.push(x,y-dy);
           }
@@ -794,8 +822,9 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
           this._.gridMeshUvs.push(0.0,y-dy);
           this._.gridMeshUvs.push(0.0,y-dy);
       }
-      gl.mesh_displacement.attributes({_texCoord:this._.gridMeshUvs},{_texCoord:2});
+
     }
+    mesh_shader.attributes({_texCoord:this._.gridMeshUvs},{_texCoord:2});
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -807,28 +836,28 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     mat4.rotate(matrix,anglez,[0.0,0.0,1.0]);
     mat4.scale(matrix,[2.0,2.0,2.0]);
     mat4.scale(matrix,[this.width/this.height,1.0,1.0]);
-    mat4.translate(matrix,[-.5,-.5,0]);
+//    mat4.translate(matrix,[-.5,-.5,0]);
     mat4.multiply(proj,matrix,matrix);
     
     // set shader parameters
-    gl.mesh_displacement.uniforms({
+    mesh_shader.uniforms({
       matrix:matrix,
       strength: [sx,sy,sz]
     });
     
     // set shader textures
-    gl.mesh_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    mesh_shader.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
+//        gl.enable(gl.CULL_FACE);
         gl.frontFace(gl.CCW);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.mesh_displacement.drawArrays(gl.TRIANGLE_STRIP);
+        mesh_shader.drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
+//        gl.disable(gl.CULL_FACE);
     },true);
     // replace current texture by spare texture
     this._.spareTexture.swapWith(this._.texture);
