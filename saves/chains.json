@@ -51,6 +51,489 @@
   }
  ],
  [
+  "draw zoom",
+  {
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "polygon_matte",
+   "color": {
+    "type": "rgba",
+    " r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "sides": {
+    "type": "osc",
+    "f": 141.85,
+    "a": 3,
+    "p": 0,
+    "o": 5,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "x": {
+    "type": "osc",
+    "f": 195.073,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "size": {
+    "type": "osc",
+    "f": 48.98,
+    "a": 0.2,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 3.1415,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "aspect": 1
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "polygon_matte",
+   "color": {
+    "type": "rgba",
+    " r": 1,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "sides": {
+    "type": "osc",
+    "f": 141.85,
+    "a": 3,
+    "p": 0,
+    "o": 5,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "x": {
+    "type": "osc",
+    "f": 195.073,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "size": {
+    "type": "osc",
+    "f": 48.98,
+    "a": 0.05,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 3.1415,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "aspect": 1
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "polygon_matte",
+   "color": {
+    "type": "rgba",
+    " r": 1,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "sides": {
+    "type": "osc",
+    "f": 3.962,
+    "a": 3,
+    "p": 0,
+    "o": 5,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "x": {
+    "type": "osc",
+    "f": 3.565,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 2.542,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "size": {
+    "type": "osc",
+    "f": 4.124,
+    "a": 0.05,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 2.331,
+    "a": 3.1415,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "aspect": 1
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 1,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "saturation": 0
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1.001,
+   "angle": 0,
+   "sx": 1,
+   "sy": 1
+  },
+  {
+   "effect": "contrast_s",
+   "contrast": 0.037
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "draw",
+  {
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "polygon_matte",
+   "color": {
+    "type": "rgba",
+    " r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "sides": {
+    "type": "osc",
+    "f": 141.85,
+    "a": 3,
+    "p": 0,
+    "o": 5,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "x": {
+    "type": "osc",
+    "f": 195.073,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "size": {
+    "type": "osc",
+    "f": 48.98,
+    "a": 0.2,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 3.1415,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "aspect": 1
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "polygon_matte",
+   "color": {
+    "type": "rgba",
+    " r": 1,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "sides": {
+    "type": "osc",
+    "f": 141.85,
+    "a": 3,
+    "p": 0,
+    "o": 5,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "x": {
+    "type": "osc",
+    "f": 195.073,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "size": {
+    "type": "osc",
+    "f": 48.98,
+    "a": 0.05,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 3.1415,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "aspect": 1
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "polygon_matte",
+   "color": {
+    "type": "rgba",
+    " r": 1,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "sides": {
+    "type": "osc",
+    "f": 3.962,
+    "a": 3,
+    "p": 0,
+    "o": 5,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "x": {
+    "type": "osc",
+    "f": 3.565,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 2.542,
+    "a": 0.5,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "size": {
+    "type": "osc",
+    "f": 4.124,
+    "a": 0.05,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 2.331,
+    "a": 3.1415,
+    "p": 0,
+    "o": 0,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "aspect": 1
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 1998.999,
+    "a": 1,
+    "p": 0,
+    "o": 0,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "saturation": 0
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "shimmer clash",
+  {
+   "effect": "displacement",
+   "strength": {
+    "type": "osc",
+    "f": 0.591,
+    "a": 0.03,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "ripple",
+   "width": 0.031,
+   "length": 0.021,
+   "angle": 1.124,
+   "strength": {
+    "type": "osc",
+    "f": 1.069,
+    "a": 2.48,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.178
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.163,
+   "birth_max": 0.236,
+   "death_min": 0.671
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.389,
+   "saturation": 0.768
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.884
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
   "spot fever strobe",
   {
    "effect": "matte",
@@ -405,7 +888,7 @@
     "g": 1,
     "b": 1
    },
-   "threshold": 0.044,
+   "threshold": 0.059,
    "feather": 0
   }
  ],
@@ -773,6 +1256,65 @@
    "anglex": 1,
    "angley": 0.5,
    "anglez": 0
+  },
+  {
+   "effect": "kaleidoscope",
+   "sides": 7.166,
+   "angle": {
+    "type": "osc",
+    "f": 0.045,
+    "a": 1,
+    "p": 0,
+    "o": 0
+   },
+   "angle2": {
+    "type": "osc",
+    "f": 0.817,
+    "a": 1,
+    "p": 0,
+    "o": 0
+   }
+  }
+ ],
+ [
+  "waveblastf",
+  {
+   "effect": "osciloscope",
+   "amplitude": 2.847
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": -0.059,
+   "sx": 1.565,
+   "sy": 1.281
+  },
+  {
+   "effect": "perspective",
+   "perspective": {
+    "type": "perspective",
+    " x1": -0.638,
+    "y1": -1.301,
+    " x2": -1.023,
+    "y2": 0.404,
+    "x3": 0.163,
+    "y3": -0.654,
+    "x4": 0.528,
+    "y4": 1.243
+   }
+  },
+  {
+   "effect": "threshold",
+   "threshold": 1.586,
+   "feather": 0,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
   },
   {
    "effect": "kaleidoscope",
@@ -1746,65 +2288,6 @@
     "a": 0,
     "p": 0,
     "o": -0.011
-   }
-  }
- ],
- [
-  "waveblastf",
-  {
-   "effect": "osciloscope",
-   "amplitude": 2.847
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 1,
-   "angle": -0.059,
-   "sx": 1.565,
-   "sy": 1.281
-  },
-  {
-   "effect": "perspective",
-   "perspective": {
-    "type": "perspective",
-    " x1": -0.638,
-    "y1": -1.301,
-    " x2": -1.023,
-    "y2": 0.404,
-    "x3": 0.163,
-    "y3": -0.654,
-    "x4": 0.528,
-    "y4": 1.243
-   }
-  },
-  {
-   "effect": "threshold",
-   "threshold": 1.275,
-   "feather": 0,
-   "r0": 0,
-   "g0": 0,
-   "b0": 0,
-   "r1": 1,
-   "g1": 1,
-   "b1": 1
-  },
-  {
-   "effect": "kaleidoscope",
-   "sides": 7.166,
-   "angle": {
-    "type": "osc",
-    "f": 0.045,
-    "a": 1,
-    "p": 0,
-    "o": 0
-   },
-   "angle2": {
-    "type": "osc",
-    "f": 0.817,
-    "a": 1,
-    "p": 0,
-    "o": 0
    }
   }
  ],
