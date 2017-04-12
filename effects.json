@@ -26,7 +26,7 @@
       "stack_push":{"outputs":2},
       "stack_swap":{"inputs": 2,"outputs":2},
       "blend":{"inputs": 2,"args":{"alpha":0.5,"factor": 1.0, "offset":0.0}},
-      "blend_alpha":{"inputs": 2},
+      "blend_alpha":{"inputs": 2,"args":{"alpha":1.0}},
       "multiply":{"inputs": 2},
       "blend_mask":{"inputs": 3},
       "chroma_key":{"inputs": 2,"args":{"color":{"type":"rgb","r":0.2,"g":0.7,"b":0.4},"threshold":0.2,"feather": 0.1}},

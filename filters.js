@@ -69,21 +69,25 @@ var randomShaderFunc = '\
 ';
 
 // src/filters/video/blend_alpha.js
-canvas.blend_alpha=function() {
+canvas.blend_alpha=function(alpha) {
+
+    alpha=alpha||1.0;
+
     gl.blend_alpha = gl.blend_alpha || new Shader(null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
+        uniform float alpha;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color1 = texture2D(texture1, texCoord);\
             vec4 color2 = texture2D(texture2, texCoord);\
-            gl_FragColor = mix(color1, color2, color2.a);\
+            gl_FragColor = mix(color1, color2, color2.a*alpha);\
         }\
     ');
 
     var texture1=this.stack_pop();
     gl.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
-    this.simpleShader( gl.blend_alpha, {});
+    this.simpleShader( gl.blend_alpha, {alpha:clamp(0.,alpha,1.)});
 
     return this;
 }
