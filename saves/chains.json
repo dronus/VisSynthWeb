@@ -23,12 +23,12 @@
   },
   {
    "effect": "image",
-   "url": "files/test4.jpg"
+   "url": "files/test5.jpg"
   },
   {
    "effect": "transform",
-   "x": 0.005,
-   "y": 0,
+   "x": 0,
+   "y": 0.003,
    "scale": 1,
    "angle": 0,
    "sx": 1,
@@ -41,6 +41,11 @@
  [
   "matte grid 6",
   {
+   "effect": "grid",
+   "size": 1,
+   "angle": 0
+  },
+  {
    "effect": "matte",
    "rgb": {
     "type": "rgba",
@@ -49,12 +54,10 @@
     "b": 1,
     "a": 1
    }
-  },
-  {
-   "effect": "grid",
-   "size": 1,
-   "angle": 0
   }
+ ],
+ [
+  "passthru"
  ],
  [
   "color zone runner",
@@ -133,9 +136,6 @@
    "threshold": 0.044,
    "feather": 0
   }
- ],
- [
-  "passthru"
  ],
  [
   "waveblast",
@@ -444,15 +444,6 @@
     "g": 1,
     "b": 1
    }
-  },
-  {
-   "effect": "transform",
-   "x": 0.058,
-   "y": 0.134,
-   "scale": 1,
-   "angle": 0,
-   "sx": 1,
-   "sy": 1
   }
  ],
  [
