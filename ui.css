@@ -208,14 +208,14 @@
       top: 50px;
       right: 0px;
       width: 320px;
-      height: 200px;      
+      height: 300px;      
     }
 
     .post_chain{
       position: absolute;    
       right: 0px;
       width: 320px;
-      top: 260px;
+      top: 360px;
       bottom:250px;
     }
 

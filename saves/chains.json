@@ -2,24 +2,16 @@
  [
   "SETUP",
   {
-   "effect": "fps",
-   "fps": 60
-  },
-  {
-   "effect": "filtering",
-   "linear": 1
+   "effect": "resolution",
+   "x": 320,
+   "y": 200,
+   "filtering": "linear",
+   "precision": "byte",
+   "fps_limit": 25
   },
   {
    "effect": "select_audio",
    "audio_device": 2
-  },
-  {
-   "effect": "resolution",
-   "x": 1920,
-   "y": 1080
-  },
-  {
-   "effect": "type_byte"
   },
   {
    "effect": "capture",
@@ -35,14 +27,21 @@
  ],
  [
   "",
-  "",
-  "",
   {
    "effect": "grid",
    "size": 1,
    "angle": 0,
    "x": 0,
    "y": 0
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 5.504,
+   "angle": 0,
+   "sx": 1,
+   "sy": 1
   }
  ],
  [

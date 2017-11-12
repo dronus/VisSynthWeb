@@ -24,11 +24,14 @@ canvas.type_float=function(){
   });
 };
 
-canvas.resolution=function(w,h){
+canvas.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
+  this.proposed_fps=fps_limit;
+  var type=(precision=="float" ? gl.FLOAT : gl.UNSIGNED_BYTE);
   this.for_all_textures(function(texture){
-    texture.ensureFormat(w,h,texture.format,texture.type);
+    texture.ensureFormat(w,h,texture.format,type);
   });
+  this.filtering(filtering=="linear" ? 1 : 0);
 };
 
 canvas.filtering=function(linear)
