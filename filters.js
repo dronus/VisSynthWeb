@@ -793,6 +793,7 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 
     if(!gl.mesh_displacement) gl.mesh_displacement={};
     if(!gl.mesh_displacement[mesh_type])
+    {
     gl.mesh_displacement[mesh_type] = new Shader('\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -807,31 +808,27 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
         pos=matrix * pos;\
         gl_Position = pos/pos.w;\
     }');
-
-    var mesh_shader=gl.mesh_displacement[mesh_type];
-
     // generate grid mesh
-    if(!this._.gridMeshUvs)
-    {
-      this._.gridMeshUvs=[];
-      //var dx=1./640.;
-      //var dy=1./480.;    
-      var dx=4./this.width;
-      var dy=4./this.height;
-      for (var y=0.0;y<=1.0;y+=dy) {
-          for (var x=0.0;x<=1.0;x+=dx) {        
-              this._.gridMeshUvs.push(x,y);
-              this._.gridMeshUvs.push(x,y-dy);
-          }
-          // add zero area 'carriage return' triangles to prevent glitches
-          this._.gridMeshUvs.push(1.0,y-dy);
-          this._.gridMeshUvs.push(1.0,y-dy);
-          this._.gridMeshUvs.push(0.0,y-dy);
-          this._.gridMeshUvs.push(0.0,y-dy);
-      }
-
+    // TODO resolve cache rot, the resolution of the mesh is baked on first use and doesn't adapt the screen
+    var gridMeshUvs=[];
+    //var dx=1./640.;
+    //var dy=1./480.;    
+    var dx=4./this.width;
+    var dy=4./this.height;
+    for (var y=0.0;y<=1.0;y+=dy) {
+        for (var x=0.0;x<=1.0;x+=dx) {        
+            gridMeshUvs.push(x,y);
+            gridMeshUvs.push(x,y-dy);
+        }
+        // add zero area 'carriage return' triangles to prevent glitches
+        gridMeshUvs.push(1.0,y-dy);
+        gridMeshUvs.push(1.0,y-dy);
+        gridMeshUvs.push(0.0,y-dy);
+        gridMeshUvs.push(0.0,y-dy);
     }
-    mesh_shader.attributes({_texCoord:this._.gridMeshUvs},{_texCoord:2});
+    gl.mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
+    }
+    var mesh_shader=gl.mesh_displacement[mesh_type];
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
