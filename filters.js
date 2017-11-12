@@ -1840,17 +1840,21 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 // src/filters/video/timeshift.js
 canvas.timeshift=function(time,clear_on_switch)
 {
-    // Store a stream of the last second in a ring buffer
+    // Store a stream of the last seconds in a ring buffer
 
-    var max_frames=25;
-    
+    // calculate a sane frame limit by estimating it's memory needs.
+    //
+    var t=this._.texture;
+    var frame_bytes = t.width * t.height * 4 * (t.type==gl.FLOAT ? 2 : 1);
+    var max_buffer_bytes=256000000;
+    var max_frames=Math.floor(max_buffer_bytes / frame_bytes);
+
     if(!this._.pastTextures) this._.pastTextures=[];
   
     if(clear_on_switch && this.switched)
       for(key in this._.pastTextures)
         this._.pastTextures[key].clear();
 
-    var t=this._.texture;
     if(this._.pastTextures.length<max_frames)
       this._.pastTextures.push(new Texture(t.width,t.height,t.format,t.type));
     
