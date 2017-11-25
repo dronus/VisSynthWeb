@@ -6,6 +6,8 @@ canvas.for_all_textures=function(callback){
   callback(this._.extraTexture);
 };
 
+canvas.none=function(){};
+
 canvas.fps=function(fps){
   this.proposed_fps=fps;
 };
@@ -22,12 +24,26 @@ canvas.type_float=function(){
   });
 };
 
-canvas.resolution=function(w,h){
+canvas.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
+  this.proposed_fps=fps_limit;
+  var type=(precision=="float" ? gl.FLOAT : gl.UNSIGNED_BYTE);
   this.for_all_textures(function(texture){
-    texture.ensureFormat(w,h,texture.format,texture.type);
+    texture.ensureFormat(w,h,texture.format,type);
   });
+  this.filtering(filtering=="linear" ? 1 : 0);
 };
+
+canvas.filtering=function(linear)
+{
+  this.for_all_textures(function(texture){
+    var filter=linear>0 ? gl.LINEAR : gl.NEAREST;
+    gl.bindTexture(gl.TEXTURE_2D, texture.id);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+  });
+}
+
 
 // src/filters/common.js
 var warpShader=function(uniforms, warp) {
@@ -56,24 +72,49 @@ var randomShaderFunc = '\
 ';
 
 // src/filters/video/blend_alpha.js
-canvas.blend_alpha=function() {
+canvas.blend_alpha=function(alpha) {
+
+    alpha=alpha||1.0;
+
     gl.blend_alpha = gl.blend_alpha || new Shader(null, '\
+        uniform sampler2D texture1;\
+        uniform sampler2D texture2;\
+        uniform float alpha;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color1 = texture2D(texture1, texCoord);\
+            vec4 color2 = texture2D(texture2, texCoord);\
+            gl_FragColor = mix(color1, color2, color2.a*alpha);\
+        }\
+    ');
+
+    var texture1=this.stack_pop();
+    gl.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
+    this.simpleShader( gl.blend_alpha, {alpha:clamp(0.,alpha,1.)});
+
+    return this;
+}
+
+// src/filters/video/blend_alpha.js
+canvas.multiply=function() {
+    gl.multiply = gl.multiply || new Shader(null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color1 = texture2D(texture1, texCoord);\
             vec4 color2 = texture2D(texture2, texCoord);\
-            gl_FragColor = mix(color1, color2, color2.a);\
+            gl_FragColor = color1 * color2;\
         }\
     ');
 
     var texture1=this.stack_pop();
-    gl.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
-    this.simpleShader( gl.blend_alpha, {});
+    gl.multiply.textures({texture2: this._.texture, texture1: texture1});
+    this.simpleShader( gl.multiply, {});
 
     return this;
 }
+
 
 canvas.blend_mask=function() {
     gl.blend_mask = gl.blend_mask || new Shader(null, '\
@@ -611,18 +652,27 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
 
 // src/filters/video/video.js
-canvas.video=function(url)
+canvas.video=function(url,play_sound)
 {
-
-    var v=this._.videoFilterElement;
+    if(!this._.videoFilterElement) this._.videoFilterElement={};
+    var v=this._.videoFilterElement[url];
     if(!v)
     {
       var v = document.createElement('video');
       v.autoplay = true;
-      v.muted=true;
-      v.loop=true;
+      v.muted=!play_sound;
+
+      //v.loop=true;
+      // loop workaround: loop=true requires HTTP range request capability of the server for some browsers (like seek would do).
+      // so we just start the video anew completely.
+      v.onended = function () {
+        this.load();
+        this.play();
+      };
+
+      v.crossOrigin = "anonymous";
       v.src=url;
-      this._.videoFilterElement=v;
+      this._.videoFilterElement[url]=v;
     }  
       
     // make sure the video has adapted to the video source
@@ -635,31 +685,34 @@ canvas.video=function(url)
     return this;
 }
 
-var image_loaded=false;
+var image_loaded=[];
 canvas.image=function(url)
 {
 
-    var v=this._.imageFilterElement;
+    if(!this._.imageFilterElement) this._.imageFilterElement=[];
+    var v=this._.imageFilterElement[url];
 
     if(!v)
     {
       var v = document.createElement('img');
+      v.crossOrigin = "anonymous";
       v.src=url;
-      this._.imageFilterElement=v;
+      this._.imageFilterElement[url]=v;
       v.onload=function(){
-          image_loaded=true;
+          image_loaded[url]=true;
       }
     }  
       
     // make sure the image has adapted to the image source
-    if(!this._.imageTexture && image_loaded)
+    if(!this._.imageTexture) this._.imageTexture=[];
+    if(!this._.imageTexture[url] && image_loaded[url])
     {
-      this._.imageTexture=this.texture(v);    
-      this._.imageTexture.loadContentsOf(v);
+      this._.imageTexture[url]=this.texture(v);    
+      this._.imageTexture[url].loadContentsOf(v);
     }
     
-    if(this._.imageTexture)
-      this._.imageTexture.copyTo(this._.texture);
+    if(this._.imageTexture[url])
+      this._.imageTexture[url].copyTo(this._.texture);
         
     return this;
 }
@@ -671,8 +724,8 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
         uniform vec4 xform;\
         uniform float amplitude;\
         uniform vec2 center;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
     ', '\
+        mat2 mat=mat2(xform.xy,xform.zw);\
         coord -= center;\
         coord += amplitude*sin(mat*coord);\
         coord += center;\
@@ -691,10 +744,57 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
     return this;
 }
 
+// src/filters/video/ripple.js
+canvas.spherical=function(radius,scale) {
+    gl.spherical = gl.spherical || warpShader('\
+        uniform float radius;\
+        uniform float scale;\
+    ', '\
+        coord=coord-0.5;\
+        float l=length(coord);\
+        /* float l2=l-radius; */ \
+        float l2=-1.0/(l/radius-1.0)-1.0;\
+        coord*=(l2/l/scale);\
+        coord=coord+0.5;\
+    ');
 
-// src/filters/video/mesh_displacement.js
-canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
-    gl.mesh_displacement = gl.mesh_displacement || new Shader('\
+    this.simpleShader( gl.spherical, {
+        radius: radius,
+        scale : scale,
+        texSize:[1.0,1.0]
+    });
+
+    return this;
+}
+
+
+var mesh_transforms={
+  'plane':'pos.xy=pos.xy+vec2(-0.5,-0.5);',
+  'cylinder':"\
+    vec4 p=pos;\
+    float a=3.14159 * 2.0 * p.x;\
+    pos.xy=vec2(sin(a)*(pos.z+1.0),-cos(a)*(pos.z+1.0));\
+    pos.z = p.y * 6.0;\
+    pos.xyz=pos.xyz*.2;\
+  ",
+  'sphere':"\
+    vec4 p=pos;\
+    float a=3.14159 * 2.0 * p.x;\
+    float b=3.14159 * 1.0 * p.y;\
+    pos.xyz=vec3(sin(a)*sin(b),-cos(a),sin(a)*-cos(b)) * (pos.z+1.0);\
+    pos.z = p.y * 6.0;\
+    pos.xyz=pos.xyz*.2;\
+  ",
+};
+
+canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
+
+    if(!mesh_transforms[mesh_type]) mesh_type="plane";
+
+    if(!gl.mesh_displacement) gl.mesh_displacement={};
+    if(!gl.mesh_displacement[mesh_type])
+    {
+    gl.mesh_displacement[mesh_type] = new Shader('\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
     uniform mat4 matrix;\
@@ -703,24 +803,32 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     void main() {\
         texCoord = _texCoord;\
         vec3 dis = texture2D(displacement_map, _texCoord).xyz-0.5;\
-        vec4 pos=matrix * (vec4(vec3(_texCoord,0.0)+dis*strength,1.0));\
+        vec4 pos= (vec4(vec3(_texCoord,0.0)+dis*strength,1.0));\
+        '+mesh_transforms[mesh_type]+' \
+        pos=matrix * pos;\
         gl_Position = pos/pos.w;\
     }');
-
     // generate grid mesh
-    if(!this._.gridMeshUvs)
-    {
-      this._.gridMeshUvs=[];
-      var dx=1./640.;
-      var dy=1./480.;    
-      for (var y=0;y<=1.0;y+=dy) {
-          for (var x=0;x<=1.0;x+=dx) {        
-              this._.gridMeshUvs.push(x,y);
-              this._.gridMeshUvs.push(x,y-dy);
-          }
-      }
-      gl.mesh_displacement.attributes({_texCoord:this._.gridMeshUvs},{_texCoord:2});
+    // TODO resolve cache rot, the resolution of the mesh is baked on first use and doesn't adapt the screen
+    var gridMeshUvs=[];
+    //var dx=1./640.;
+    //var dy=1./480.;    
+    var dx=4./this.width;
+    var dy=4./this.height;
+    for (var y=0.0;y<=1.0;y+=dy) {
+        for (var x=0.0;x<=1.0;x+=dx) {        
+            gridMeshUvs.push(x,y);
+            gridMeshUvs.push(x,y-dy);
+        }
+        // add zero area 'carriage return' triangles to prevent glitches
+        gridMeshUvs.push(1.0,y-dy);
+        gridMeshUvs.push(1.0,y-dy);
+        gridMeshUvs.push(0.0,y-dy);
+        gridMeshUvs.push(0.0,y-dy);
     }
+    gl.mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
+    }
+    var mesh_shader=gl.mesh_displacement[mesh_type];
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -730,29 +838,30 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
     mat4.rotate(matrix,anglex,[1.0,0.0,0.0]);
     mat4.rotate(matrix,angley,[0.0,1.0,0.0]);
     mat4.rotate(matrix,anglez,[0.0,0.0,1.0]);
-    mat4.translate(matrix,[-1.,-1.,0]);
     mat4.scale(matrix,[2.0,2.0,2.0]);
+    mat4.scale(matrix,[this.width/this.height,1.0,1.0]);
+//    mat4.translate(matrix,[-.5,-.5,0]);
     mat4.multiply(proj,matrix,matrix);
     
     // set shader parameters
-    gl.mesh_displacement.uniforms({
+    mesh_shader.uniforms({
       matrix:matrix,
       strength: [sx,sy,sz]
     });
     
     // set shader textures
-    gl.mesh_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    mesh_shader.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
+//        gl.enable(gl.CULL_FACE);
         gl.frontFace(gl.CCW);
         gl.depthFunc(gl.LEQUAL);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.mesh_displacement.drawArrays(gl.TRIANGLE_STRIP);
+        mesh_shader.drawArrays(gl.TRIANGLE_STRIP);
         gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
+//        gl.disable(gl.CULL_FACE);
     },true);
     // replace current texture by spare texture
     this._.spareTexture.swapWith(this._.texture);
@@ -761,22 +870,23 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez) {
 }
 
 // src/filters/video/blend.js
-canvas.blend=function(alpha,factor) {
+canvas.blend=function(alpha,factor,offset) {
     gl.blend = gl.blend || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D texture1;\
         uniform float alpha;\
         uniform float factor;\
+        uniform float offset;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color  = texture2D(texture , texCoord);\
             vec4 color1 = texture2D(texture1, texCoord);\
-            gl_FragColor = mix(color, color1, alpha) * factor;\
+            gl_FragColor = mix(color, color1, alpha) * factor + vec4(offset,offset,offset,0.0);\
         }\
     ');
 
     gl.blend.textures({texture: this._.texture, texture1: this.stack_pop()});
-    this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 });
+    this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
 
     return this;
 }
@@ -820,8 +930,8 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
         uniform vec2 center;\
         uniform float iterations; \
         varying vec2 texCoord;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
         void main() {\
+            mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 c=mat*(texCoord-center);\
             vec2 z; \
             vec2 nz=c; \
@@ -861,8 +971,8 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
         uniform vec2 c;\
         uniform float iterations; \
         varying vec2 texCoord;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
         void main() {\
+            mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 z; \
             vec2 nz=mat*(texCoord-center); \
             for (int iter = 0;iter <= 15; iter++){ \
@@ -966,7 +1076,7 @@ canvas.relief=function(scale2,scale4) {
 
 
 // src/filters/video/transform.js
-canvas.transform=function(x,y,scale,angle) {
+canvas.transform=function(x,y,scale,angle,sx,sy) {
     gl.transform = gl.transform || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
@@ -983,11 +1093,13 @@ canvas.transform=function(x,y,scale,angle) {
         }\
     ');
     
+    if(!sx) sx=1.0;
+    if(!sy) sy=1.0;
     this.simpleShader( gl.transform, {
       translation: [x,y],
       xform: [
-         Math.cos(angle)/scale, Math.sin(angle)/scale,
-        -Math.sin(angle)/scale, Math.cos(angle)/scale
+         Math.cos(angle)/scale/sx, Math.sin(angle)/scale/sy,
+        -Math.sin(angle)/scale/sx, Math.cos(angle)/scale/sy
       ],
       aspect:[this.width/this.height,1.]
     });
@@ -1501,6 +1613,31 @@ canvas.waveform=function()
 }
 
 
+// src/filters/video/waveform.js
+canvas.osciloscope=function(amplitude)
+{
+    gl.osciloscope = gl.osciloscope || new Shader(null, '\
+      uniform sampler2D waveform;\
+      uniform float amplitude; \
+      varying vec2 texCoord;\
+      void main() {\
+        float value  = (texture2D(waveform , texCoord).r-0.5)*amplitude+0.5;\
+        float a=1.0-abs(value-texCoord.y)*2.0;\
+        gl_FragColor = vec4(a,a,a,1.0);\
+      }\
+    ');
+
+    var values=audio_engine.waveform;
+    if(!values) return;
+        
+    if(!this._.waveformTexture)
+      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+      
+    this._.waveformTexture.load(values);
+    this.simpleShader( gl.osciloscope, {amplitude:amplitude}, this._.waveformTexture);
+
+    return this;
+}
 
 canvas.vectorscope=function(size,intensity,linewidth) {
     gl.vectorscope = gl.vectorscope || new Shader('\
@@ -1700,17 +1837,21 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 // src/filters/video/timeshift.js
 canvas.timeshift=function(time,clear_on_switch)
 {
-    // Store a stream of the last second in a ring buffer
+    // Store a stream of the last seconds in a ring buffer
 
-    var max_frames=500;
-    
+    // calculate a sane frame limit by estimating it's memory needs.
+    //
+    var t=this._.texture;
+    var frame_bytes = t.width * t.height * 4 * (t.type==gl.FLOAT ? 2 : 1);
+    var max_buffer_bytes=256000000;
+    var max_frames=Math.floor(max_buffer_bytes / frame_bytes);
+
     if(!this._.pastTextures) this._.pastTextures=[];
   
     if(clear_on_switch && this.switched)
       for(key in this._.pastTextures)
         this._.pastTextures[key].clear();
 
-    var t=this._.texture;
     if(this._.pastTextures.length<max_frames)
       this._.pastTextures.push(new Texture(t.width,t.height,t.format,t.type));
     
@@ -1774,27 +1915,28 @@ canvas.rainbow=function(size, angle) {
  * @filter         Grid
  * @description    Adds a grid to the image
  */
-canvas.grid=function(size, angle) {
+canvas.grid=function(size, angle, x, y, width) {
+    if(!width) width=0.05;
     gl.grid = gl.grid || new Shader(null, '\
         uniform sampler2D texture;\
-      	uniform float size;\
-      	uniform float angle;\
+        uniform vec2 size;\
+        uniform float angle;\
+        uniform vec2 offset;\
+        uniform float width;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color = texture2D(texture, texCoord);\
-            vec2 uv=texCoord*vec2(size,size);\
-            uv=vec2(cos(angle)*uv.x+sin(angle)*uv.y,-sin(angle)*uv.x+cos(angle)*uv.y);\
+            vec2 uv=(texCoord-vec2(0.5,0.5))*size;\
+            uv=vec2(cos(angle)*uv.x+sin(angle)*uv.y,-sin(angle)*uv.x+cos(angle)*uv.y)+offset;\
             \
-            if     (fract(uv.x*8.+.02)<.04 || fract(uv.y*8.+.02)<.04)\
-	            gl_FragColor = vec4(0.0,0.0,0.0,1.0);\
-            else if(fract(uv.x*8.+.05)<.1 || fract(uv.y*8.+.05)<.1)\
-	            gl_FragColor = vec4(1.0,1.0,1.0,1.0);\
+            if(fract(uv.x+width/2.)<width || fract(uv.y+width/2.)<width)\
+                    gl_FragColor = vec4(0.0,0.0,0.0,1.0);\
             else\
-	            gl_FragColor = color;\
+                    gl_FragColor = color;\
         }\
     ');
 
-    this.simpleShader( gl.grid, {size: size, angle:angle
+    this.simpleShader( gl.grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
     });
 
     return this;
@@ -1941,7 +2083,7 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
       \
       void main(void){\
         vec3 inner=texture2D(inner_texture,texCoord).rgb;\
-        vec3 outer=texture2D(outer_texture,texCoord).rgb-inner/4.;\
+        vec3 outer=texture2D(outer_texture,texCoord).rgb-inner;\
         vec3 birth=smoothstep(birth_min-.05,birth_min+.05,outer)*(vec3(1.)-smoothstep(birth_max-.05,birth_max+.05,outer));\
         vec3 death=smoothstep(death_min-.05,death_min+.05,outer);\
         vec3 value=mix(birth,vec3(1.)-death,smoothstep(.45,.55,inner));\
@@ -1950,9 +2092,9 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
       }\
     ');
 
-    this.blur(1.);
+    this.blur(5.);
     var inner_texture=this.stack_push();
-    this.blur(2.);
+    this.blur(10.);
 
     this.stack_pop();
         
@@ -2038,10 +2180,14 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
       gl.particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
       
       // generate particle data double buffer
-      if ( !gl.getExtension( 'OES_texture_float' ) ) alert( 'Float textures not supported' );
       if(!this._.particleTextureA) {
-        this._.particleTextureA=new Texture(w,h, gl.RGBA, gl.FLOAT);
-        this._.particleTextureB=new Texture(w,h, gl.RGBA, gl.FLOAT);
+        var type=gl.FLOAT;
+        if (!gl.getExtension( 'OES_texture_float' )) {
+          console.log('particle effect recommends gl.FLOAT textures, falling back to gl.BYTE');
+          type=gl.UNSIGNED_BYTE;
+        };
+        this._.particleTextureA=new Texture(w,h, gl.RGBA, type);
+        this._.particleTextureB=new Texture(w,h, gl.RGBA, type);
       }
     }
     
@@ -2614,6 +2760,42 @@ canvas.blur=function(radius) {
 
 canvas.fastBlur=canvas.blur; // legacy name for old filter chains
 
+canvas.blur_alpha=function(radius) {
+    gl.blur_alpha = gl.blur_alpha || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform vec2 delta;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            float b=1./4.;\
+            float alpha=0.0;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) ).a;\
+            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) ).a;\
+            gl_FragColor = vec4(color.rgb, alpha); \
+        }\
+    ');
+
+    gl.blur_alpha_post = gl.blur_alpha_post || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            gl_FragColor = vec4(color.rgb, 2.*color.a-1.); \
+        }\
+    ');
+
+    for(var d=1.; d<=radius; d*=Math.sqrt(2.))
+    {
+      this.simpleShader( gl.blur_alpha, { delta: [d/this.width, d/this.height]});
+    }
+    this.simpleShader(gl.blur_alpha_post);
+    return this;
+}
+
+
+
 canvas.blur2=function(radius,exponent) {
     gl.blur2 = gl.blur2 || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2972,6 +3154,27 @@ canvas.brightnessContrast=function(brightness, contrast) {
     return this;
 }
 
+canvas.contrast_s=function(contrast) {
+    gl.contrast_s = gl.contrast_s || new Shader(null, '\
+        uniform sampler2D texture;\
+        uniform float contrast;\
+        varying vec2 texCoord;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            vec3 x=(color.rgb-0.5)*2.0;\
+            vec3 xa=abs(x);\
+            vec3 f=(contrast*xa-xa) / (2.0*contrast*xa - contrast - 1.0);\
+            color.rgb=(sign(x)*f+1.0)/2.0;\
+            gl_FragColor = color;\
+        }\
+    ');
+
+    this.simpleShader( gl.contrast_s, {
+        contrast: -clamp(contrast,-1,1)
+    });
+
+    return this;
+}
 canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
     gl.threshold = gl.threshold || new Shader(null, '\
         uniform sampler2D texture;\
@@ -3074,6 +3277,47 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
     return this;
 }
 
+canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
+    gl.sobel_rgb = gl.sobel_rgb || new Shader(null, '\
+        uniform sampler2D texture;\
+        varying vec2 texCoord;\
+        uniform float alpha;\
+        uniform vec3 c_edge;\
+        uniform vec3 c_area;\
+        uniform float secondary;\
+        uniform float coef;\
+        uniform float smoothness;\
+        void main() {\
+            vec4 color = texture2D(texture, texCoord);\
+            vec3 bottomLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
+            vec3 topRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, -0.0020833)).rgb;\
+            vec3 topLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
+            vec3 bottomRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0.0020833)).rgb;\
+            vec3 leftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0)).rgb;\
+            vec3 rightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0)).rgb;\
+            vec3 bottomIntensity = texture2D(texture, texCoord + vec2(0, 0.0020833)).rgb;\
+            vec3 topIntensity = texture2D(texture, texCoord + vec2(0, -0.0020833)).rgb;\
+            vec3 h = -secondary * topLeftIntensity - coef * topIntensity - secondary * topRightIntensity + secondary * bottomLeftIntensity + coef * bottomIntensity + secondary * bottomRightIntensity;\
+            vec3 v = -secondary * bottomLeftIntensity - coef * leftIntensity - secondary * topLeftIntensity + secondary * bottomRightIntensity + coef * rightIntensity + secondary * topRightIntensity;\
+\
+            vec3 mag = vec3( length(vec2(h.r, v.r)) , length(vec2(h.g, v.g)) , length(vec2(h.b, v.b)) );\
+            vec3 c = mix(c_edge,c_area,smoothstep(.5-smoothness*.5,.5+smoothness*.5,mag));\
+            color.rgb = mix(color.rgb,c,alpha);\
+            gl_FragColor = color;\
+        }\
+    ');
+
+    this.simpleShader( gl.sobel_rgb, {
+        secondary : secondary,
+        coef : coef,
+        smoothness : smoothness,
+        alpha : alpha,
+        c_edge : [r,g,b],
+        c_area : [r2,g2,b2]
+    });
+
+    return this;
+}
 // src/filters/fun/posterize.js
 
 canvas.posterize=function(steps) {
@@ -3177,31 +3421,26 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
     return this;
 }
 
-canvas.pixelate=function(x1,y1,x2,y2) {
+canvas.pixelate=function(sx,sy,coverage,lens) {
     gl.pixelate = gl.pixelate || new Shader(null, '\
         uniform sampler2D texture;\
-        uniform vec2 v1;\
-        uniform vec2 v2;\
-        uniform vec2 v3;\
+        uniform vec2 size;\
+        uniform float coverage;\
+        uniform float lens;\
         varying vec2 texCoord;\
-        vec2 snap(vec2 x, vec2 s)\
-        {\
-          float t=dot(x,s)/dot(s,s);\
-          vec2 x1=s*(floor(t+0.5)-0.5); \
-          vec2 x2=x-s*t; \
-          return x1+x2;\
-        }\
         void main() {\
-            vec2 x=texCoord;\
-            x=snap(x,v1);\
-            x=snap(x,v2);\
-            gl_FragColor = texture2D(texture, x);\
+            vec2 tc=(floor((texCoord-0.5)*size+0.5))/size+0.5;\
+            vec2 fc=abs(texCoord-tc)*size;\
+            tc+=(texCoord-tc)*lens;\
+            if(fc.x<coverage && fc.y<coverage) gl_FragColor = texture2D(texture, tc);\
+            else                               gl_FragColor = vec4(0.);\
         }\
     ');
 
     this.simpleShader( gl.pixelate, {
-        v1:[x1,y1],
-        v2:[x2,y2]
+        size:[sx,sy],
+        coverage: coverage/2.0,
+        lens: lens
     });
 
     return this;

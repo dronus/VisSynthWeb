@@ -12,6 +12,8 @@ var Shader = (function() {
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            document.body.innerHTML=gl.getShaderInfoLog(shader);
+            document.body.style.fontSize='100px';
             throw 'compile error: ' + gl.getShaderInfoLog(shader);
         }
         return shader;

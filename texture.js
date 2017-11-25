@@ -1,7 +1,7 @@
 var Texture = (function() {
 
     Texture.fromElement = function(element) {
-        var texture = new Texture(0, 0, gl.RGB, gl.UNSIGNED_BYTE);
+        var texture = new Texture(0, 0, gl.RGBA, gl.UNSIGNED_BYTE);
         texture.loadContentsOf(element);
         return texture;
     };
@@ -17,6 +17,8 @@ var Texture = (function() {
         gl.bindTexture(gl.TEXTURE_2D, this.id);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+//        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+//        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);

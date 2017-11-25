@@ -1,0 +1,473 @@
+   /* general element styles */
+
+   body,html{   
+      background-color: #000;
+      color: #aaa;
+      font-family: sans-serif;    
+			font-size: 20px;
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+      width: 100%;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none; 
+  }
+
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    outline: 2px solid #000;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    width: 5px;
+    background-color: #888;
+  }
+ 
+   h1{
+    display: inline;
+    font-size: 20px;
+   }
+   h2, .chain_token input{
+    display: inline-block;
+    color: #fff;
+    background-color: transparent;
+    margin: 2px;
+    font-size: 110%;
+   }
+   h3{
+    display: block;
+    color: #fff;
+    margin: 2px;
+    font-size: 80%;
+   }
+
+   button{
+      border-radius: 5px;
+      background-color: #733;
+      color: #fff;
+      padding: 4px;
+   }
+   button.active{
+      background-color: #c00;
+   }
+   input{
+    border:none;
+   }   
+   textarea{
+    color: #999;
+   }
+
+   /* recursive containers */
+   .container{
+    padding: 5px;
+    margin: 2px;
+    border-radius: 5px;
+    background-color: #000;
+   }
+   
+   .header{
+     position: fixed;
+     top: 0px;
+     left: 0px;
+     right: 0px;
+     height: 40px;
+   }
+
+   /* help tooltip */
+   #help{
+     position: fixed;     
+     background-color: rgba(0,0,0,.9);
+     color: #aaa;
+     font-size: 12px;
+     padding: 2px;
+     max-width: 400px;
+     border-radius: 5px;
+     z-index: 100;
+     /* allow click-trough to not disturb work flow on touch screens */
+     pointer-events:none;
+   }
+   #help:empty{
+     display: none;
+   }
+
+    /* outline top level containers */
+    body>.container{
+      border: 1px solid #555;
+      border-radius: 10px;
+      padding: 2px;
+      margin: 2px;
+    }
+    
+    /* chain selector pane */
+    .chains{
+      position: fixed;
+      top: 50px;
+      bottom: 0px;
+      left: 0px;
+      width: 260px;      
+    }
+    #chains{
+      overflow-x: hidden;
+      overflow-y: auto;
+      position: absolute;
+      top:50px;
+      bottom: 0px;
+    }
+    #chains>*{
+      background-color: #111;
+      margin: 2px;
+      border-radius: 5px;
+      display:inline-block;
+      vertical-align: top;
+      width:200px;
+      height: 40px;      
+    }    
+    #chains .active{
+      background-color: #030;
+    }
+    #chains>* input{
+      /* block chain name input on first click  */
+      width: 99%;
+      pointer-events: none;
+    }
+    #chains>*.active input{
+      /* allow another click after activation to focus chain name input */
+      pointer-events: auto;
+    }
+    
+    /* effects template pane */
+    .effects, .files{
+      position: fixed;
+      top: 50px;
+      left:560px;
+      bottom: 0px;
+      right: 330px;
+    }
+    #effects, #files{
+      position: absolute;
+      top: 50px;
+      bottom: 0px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      list-style: none;
+      margin: 0px;
+      padding: 0px;
+    }
+    #effects .effect{
+      width: 150px;
+      height: 25px;
+    }
+    #files .effect{
+      width: 90%;
+/*      height: 25px;*/
+    }
+
+    /* current chain effect list */
+    .chain{
+      position: fixed;
+      top: 50px;
+      bottom: 0px;
+      left:270px;
+      width:280px;
+      padding: 2px;
+      margin: 0px;
+    }
+    #chain_code_button{
+/*	    position: absolute; 
+	    top: 2px; 
+	    right: 2px;*/
+    }
+    #chain, #pre_chain, #post_chain
+    {
+      position: absolute;
+      top: 50px;
+      bottom: 0px;
+      left: 10px;
+      /*padding-bottom: 50px;*/
+      overflow-x: hidden;
+      overflow-y: auto;
+      min-height: 50px;
+    }
+    #chain:empty::before,#pre_chain:empty::before,#post_chain:empty::before{
+      content: "drag effects here";
+      color: #777;
+    }
+    
+    .chain_code{
+      width: 500px;
+      height: 500px;
+    }
+    
+    .pre_chain{
+      position: absolute;    
+      top: 50px;
+      right: 0px;
+      width: 320px;
+      height: 300px;      
+    }
+
+    .post_chain{
+      position: absolute;    
+      right: 0px;
+      width: 320px;
+      top: 360px;
+      bottom:250px;
+    }
+
+    /* effect in effect template pane or current chain pane */
+    .effect{
+      cursor: pointer;
+      display: inline-block;
+      vertical-align: top;
+      list-style: none;    
+      background-color: #222;
+      color: #fff;
+      margin: 2px;
+      padding: 3px;
+      border-radius: 5px;
+      border: 2px solid transparent;
+      width: 220px;
+      font-size: 10px;
+    }
+    .effect *{
+      vertical-align: top;
+    }
+    /* allow several parameters show on the same line, while ensure the whole line always respects the parent container */
+    .effect div, .effect span{
+      display: inline-block;
+			word-wrap: break-word;
+			max-width: 100%;
+    }
+    .effect .ui_object{
+      display: block;
+    }
+    .effects .key>*, .effects .value>*{
+      display: none;
+    }
+    .effect>.ui_object>.value{
+      margin-left: 0px;
+    }
+    .effect>.ui_object>.key
+    {
+      display: none;
+    }
+    .effect>.ui_object>.value>:first-child{
+      display: block;
+    }    
+    .effect>.ui_object>.value>:first-child>.key
+    {
+      display: none;
+    }
+    .effect>.ui_object>.value>:first-child>.value
+    {
+      font-size: 15px;
+    }
+    /* OSC / BEAT remove buttons slip in sleekly to preserve screen */
+    .ui_object>.value>button
+     {
+      float:right;
+      margin-top: -10px;
+     }
+
+    /* detail display of effects placed in current chain */    
+
+    /* show chain flow arrows */
+    .chain .effect{
+      position:relative;
+    }
+    /* every effect shows an input arrow be default*/
+    .chain .effect::before{
+      display: block;
+      position:absolute;
+      top: -10px;
+      left: 50%;
+      content: '▾';
+    }
+    /* effects with more inputs show additional stack input arrows.*/
+    .chain .effect[ui_inputs="2"]>.ui_object::before{
+      display: block;
+      position:absolute;
+      top: -3px;
+      right: 10px;
+      content: '◂▤';
+      color: #f00;
+    }
+    .chain .effect[ui_inputs="3"]>.ui_object::before{
+      display: block;
+      position:absolute;
+      top: -3px;
+      right: 10px;
+      content: '◂◂▤';
+      color: #f00;
+    }    
+    /* effects with no inputs show no arrows*/
+    .chain .effect[ui_inputs="0"]::before{
+      display: none;
+    }
+    /* effects with additional outputs show stack output arrows*/
+    .chain .effect[ui_outputs]>.ui_object::before{
+      display: block;
+      position:absolute;
+      bottom: -3px;
+      right: 10px;
+      content: '▸▤';
+      color: #f00;
+    }
+    /* an effect with no input (source)*/
+    .effect[ui_inputs="0"]
+    {
+      background-color: #242;
+    }
+    .chain .effect[ui_inputs="0"]
+    {
+      margin-top: 10px;
+    }
+    /* an effect sporting additional inputs, pops stack */
+    .effect[ui_inputs="2"]
+    {
+      background: linear-gradient(#522,#222);
+    }
+    .effect[ui_inputs="3"]
+    {
+      background: linear-gradient(#622,#222);
+    }
+    .effect[ui_outputs]
+    {
+      background: linear-gradient(#222,#522);
+    }
+    /* an effect manipulating the topmost stack elements */
+    .effect[ui_inputs="2"][ui_outputs]
+    {
+      background: linear-gradient(#522,#222,#522);
+    }
+    .effect[ui_effect^="feedbackOut"]
+    {
+      background: linear-gradient(#552,#222);
+    }
+    .effect[ui_effect^="feedbackIn"]
+    {
+      background: linear-gradient(#222,#552);
+    }
+    .effect[ui_effect="preview"]
+    {
+      background: #531;
+    }
+    /* an effect without in and outputs (setup) */
+    .effect[ui_inputs="0"][ui_outputs="0"]
+    {
+      background: #112;
+    }
+
+    /* effect key and value details */
+    .key{
+      display: inline-block;
+      background-color:#333;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      margin-right: 5px;
+      margin-left: 5px;
+    }
+    .key::after{
+      content: ': '
+    }
+    .value{
+      vertical-align: top;
+      color: #fff;
+      font-size: 10px;
+    }
+    
+    /* effect parameter adjust UI popup */
+    .popup{
+      position: fixed;
+      width: 750px;
+    }
+    .adjust_ui .effect{
+      width: calc(100% - 20px);
+      border-radius: 10px;
+      padding: 10px;
+      border: 2px solid #999;
+      max-height: 90vh;
+      overflow: auto;
+    }
+    .adjust_ui .effect, .effect.ui_target, .chain_code{
+      border: 2px solid #f94 !important;
+      -webkit-box-shadow: 0px 0px 32px 0px #000;
+      -moz-box-shadow: 0px 0px 32px 0px #000;
+      box-shadow: 0px 0px 32px 0px #000;
+    }    
+    /* nestet UI blocks, like multiple slider BEAT or OSC UIs */
+    .adjust_ui .ui_object .ui_object{      
+      border-radius: 5px;
+      margin: 5px;
+      padding-left: 15px;
+      background-color: #333;
+    }
+    
+    .adjust_ui .ui_object .ui_object .ui_object{
+      background-color: #555;
+    }    
+    .adjust_ui .ui_number{
+      display: block !important;
+    }
+    .adjust_ui .key{
+      color: #fff;
+      background-color:transparent;
+      width: 60px;
+    }
+    /* text inputs */
+    .adjust_ui input[type="text"]{
+      width: 570px;
+      padding: 10px;
+      overflow:hidden;
+      font-size: 140%;
+      background-color: #111;
+      color: #fff;
+      border-radius: 5px;
+    }
+    /* sliders */
+    .adjust_ui input[type="range"]{
+      width: 550px;
+      height: 40px;
+    }
+    /* slider numerical value display */
+    .adjust_ui .slider_value{
+      padding-top: 14px;
+      padding-bottom: 14px;
+      width: 40px;
+      overflow:hidden;
+      font-size: 120%;
+      background-color: transparent;
+      color: #fff;
+    }    
+    .adjust_ui .slider_value:focus{
+      background-color: #000;
+    }
+    .adjust_ui button{
+      margin: 2px;
+    }
+
+   /* video preview pane */
+   .preview{
+      position: fixed;
+      bottom: 0px;
+      right: 0px;
+      width: 320px;
+      height: 240px;
+   }
+   .preview img{
+      width: 100%;
+   }
+   .preview .stats{
+      position: absolute; 
+      bottom: 10px; left: 10px;
+   }
+  .screens
+  {
+    width: 400px;
+  }

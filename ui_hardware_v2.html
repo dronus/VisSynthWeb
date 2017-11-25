@@ -1,0 +1,194 @@
+<!DOCTYPE  html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" convent="text/html; charset=UTF-8" />
+  <title>NF VisSynth Remote Emulator v2</title>
+  <script src="jquery-2.1.4.js"></script>
+</head>
+<body style="font-size: 20px;">
+
+
+  <style>
+  
+   /* general element styles */
+
+   body,html{   
+      font-family: sans-serif;    
+      margin: 0px;
+      padding: 0px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none; 
+  }
+  
+  
+.ui{
+  display: inline-block;
+  background-color: #444;
+  color: #fff;
+  padding: 12px;
+}
+.channel{
+  display: inline-block;
+  text-align: center;
+}
+.knob{
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
+  border: 5px dashed #888;
+  color: #fff;
+  background-color: #000;
+  margin: 10px;
+  text-align:center;
+  font-size: 15px;
+}
+.display
+{
+  font-family: monospace;
+  font-size: 22px;
+  font-weight: bold;
+  background-color: #ddd;
+  margin: 5px;
+  padding: 5px;
+  color: #000;
+}
+
+  </style>
+
+
+
+
+<div class=ui style='width:auto;'>
+  <div>NF VisSynthBox Remote Mark II</div>
+  <div class=channel>
+    <div class=knob id=knob_patch></div>
+  </div>
+  <div class=channel>
+    <div class=knob id=knob_layer></div>
+  </div>
+  <pre class=display></pre>
+  <div class=channel>
+    <div class=knob id=knob_param></div>
+  </div>
+  <div class=channel>
+    <div class=knob id=knob_value></div>
+  </div>
+</div>
+
+
+  <span id=stats></span>
+
+
+  <script>
+    // provide functions needed by hardware UI
+  
+    // get session url, if any
+    var session_url='/';
+    if(document.location.hash)
+      session_url+=document.location.hash.substring(1)+'_';
+
+    var websocket;
+
+    var open_socket=function()
+    {
+      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+      websocket.onopen=function(){
+        // opt in for update feed
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''}));
+        if(onopen) onopen();
+      };
+      websocket.onmessage=function(event)
+      {
+        var packet=JSON.parse(event.data);
+        var path=packet.path, message=packet.data;        
+        if(path=='/feeds'+session_url+'update')
+        {
+          onupdate(message);
+        }
+      }     
+      websocket.onclose=function()
+      {
+        setTimeout(open_socket,1000);
+        if(onclose) onclose();
+      }
+    }
+    open_socket();
+
+    var put=function(url,data)
+    {
+      websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));
+    }
+    
+    get=function(url,callback)
+    {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.responseType='text';
+      xmlHttp.open('GET',url,true);
+      xmlHttp.onreadystatechange=function()
+      {
+        if(xmlHttp.readyState!=4) return;
+        callback(xmlHttp.responseText);      
+      }
+      xmlHttp.send(null);      
+    }
+    
+    set_display=function(text)
+    {
+      $('.display').html(text);
+    }
+
+    add_knob=function(id,callback)
+    {
+      var down=false,dragged=false,last_angle=0;
+      
+      var polar=function(e)
+      {
+        var x=e.offsetX, y=e.offsetY;
+        var dx=x-e.target.offsetWidth/2,dy=y-e.target.offsetWidth/2;
+        e.a=Math.atan2(dx,dy);
+        e.r=Math.sqrt(dx*dx+dy*dy);
+      }
+      var move_handler=function(e)
+      {
+        polar(e);
+        if(down)
+        {
+          var da=e.a-last_angle;
+          if(da> Math.PI) da-=Math.PI;
+          if(da<-Math.PI) da+=Math.PI;
+          da=da/Math.PI*8.0; //16 steps / circle
+          da=Math.round(da);
+          if(da!=0)
+          {
+            callback(id,-Math.sign(da));
+            dragged=true;
+            last_angle=e.a;
+          }
+        }else
+          last_angle=e.a; // snap back
+      }
+      var down_handler=function(e)
+      {
+        down   =true;
+        dragged=false;
+      }
+      var up_handler=function(e)
+      {
+        if(!dragged) callback(id,0);
+        down=false;
+      }
+      var selector='#knob_'+id;
+      $(selector).on('mousemove',move_handler);
+      $(selector).on('mousedown',down_handler);
+      $(selector).on('mouseup',up_handler);
+    };
+  </script>
+  
+
+  <script src="ui_hardware_v2.js"></script>
+
+</body>
+</html>
+

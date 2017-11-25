@@ -1,0 +1,118 @@
+h1
+{
+	color: #fff;
+	font-size: 25px;
+}
+
+.container
+{
+	box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
+}
+body>.container
+{
+	background-color: #191919;
+	border: 0px;
+	border-radius: 3px;
+}
+body>.container button
+{
+	float: right;
+	
+}
+body>.header
+{
+	background-color: transparent;
+	
+}
+body>.header button
+{
+	padding: 7px;
+	margin: 7px;
+}
+
+#chains>*
+{
+	background-color: #222;
+	box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
+}
+.effect
+{
+	border: 0px;
+	padding: 6px;
+	background-color: #272727;
+	box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
+}
+.key
+{
+	color: #fc0;
+	background-color: transparent;
+}
+button
+{
+	border: 0px;
+	margin:2px;	
+	box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
+}
+h1 
+{
+	display:inline-block;
+	margin: 6px;
+}
+
+.effect>.ui_object>.value>:first-child>.value
+{
+  font-size: 16px;
+}
+
+.ui_object .ui_object
+{
+	background-color: #373737;
+	margin: 2px;
+	border-radius:2px;	
+	box-shadow: 2px 2px 2px 0px rgba(0,0,0,.3);
+}
+
+.adjust_ui
+{
+	border: 0px !important;
+}
+
+.adjust_ui .effect, .effect.ui_target, .chain_code
+{
+	box-shadow: 2px 2px 32px 0px rgba(0,0,0,1);
+	border: 0px !important;
+}
+
+.adjust_ui .ui_object .ui_object
+{
+	box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
+}
+.adjust_ui input[type=range]
+{
+	height: 25px;
+}
+.adjust_ui input[type=text]
+{
+	padding: 6px;
+	width: 50%;
+	background-color: #444;
+}
+
+.adjust_ui .slider_value
+{
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.ui_object>.value>button
+{
+	margin-top: 0px;
+	margin-right: 0px;	
+}
+
+/* an effect without in and outputs (setup) */
+.effect[ui_inputs="0"][ui_outputs="0"]
+{
+  background: #113;
+}
+

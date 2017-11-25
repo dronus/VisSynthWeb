@@ -5,29 +5,38 @@
   <title>NF VisSynth MCP</title>
   <script src="jquery-2.1.4.js"></script>
   <script src="jquery-ui.js"></script>
-  <script src="jquery.ui.touch-punch.js"></script>  
+  <script src="jquery.ui.touch-punch.js"></script>
+  <link rel="stylesheet" type="text/css" href="ui.css">
+  <link rel="stylesheet" type="text/css" href="ui_material.css">  
 </head>
-<body style="font-size: 20px;" class="chain_layout">
+<body>
 
   <div class="header container">
-    <h1 style="font-size:100%">VIS SYNTH MCP</h1>
+    <h1>VIS SYNTH MCP</h1>
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
-    <!--<button id=timeline_button onclick="toggle_timeline()">TIMELINE</button>-->
-    <button id=recorder_start_button onclick="get('/recorder/start')">START RECORDING</button>
-    <button id=recorder_stop_button onclick="get('/recorder/stop')">STOP RECORDING</button>
-    <span id=stats></span>
+    <button id=recorder_button onclick="toggle_recorder()">START RECORDING</button>
+    <button id=screens_button onclick="show_screens()">SCREEN</button>
+    <span id=stats>offline</span>
   </div>
 
   <div class="effects container">
-    <h2>Effects</h2>
+    <h2>Effects</h2> <button id=show_files onclick="show_files()">FILES</button>
     <div id=effects>
     </div>
   </div>
 
+  <div class="files container">
+    <h2>Files</h2> <button id=show_effects onclick="show_effects()">EFFECTS</button>
+    <div id=files>
+    </div>
+  </div>
+
+
+
   <div class="chains container">
-    <h2>Chains <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button></h2>
+    <h2>Chains</h2> <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button>
     <div id="chains">
       <div class="chain_token">
         <input placeholder="enter name" value="">
@@ -38,7 +47,7 @@
   <div class="chain container">
     <h2></h2>
     <div id="chain"></div>
-    <button id=chain_code_button onclick="toggle_code()" style="position: absolute; bottom: 2px; right: 2px;">CODE</button>
+    <button id=chain_code_button onclick="toggle_code()">CODE</button>
   </div>
 
   <div class="pre_chain container">
@@ -51,509 +60,12 @@
     <div id="post_chain"></div>
   </div>
 
-  <div class="timeline container">
-    <h2>Timeline <button onclick="runTimeline()">RUN</button><span>speed: <input id=delay value="60">/m</span></h2>
-    <div id="timeline"></div>
-  </div>
-
   <div class="preview container" onclick="toggle_preview()">
-    <button>PREVIEW</button>
+    <button id=preview_button>PREVIEW</button>
     <img id=preview></img>
   </div>
   
   <div id=help></div>
-
-  <style>
-  
-   /* general element styles */
-
-   body,html{   
-      background-color: #000;
-      color: #aaa;
-      font-family: sans-serif;    
-      height: 100%;
-      margin: 0px;
-      padding: 0px;
-      width: 100%;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none; 
-  }
-
-  ::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-    outline: 2px solid #000;
-  }
-  ::-webkit-scrollbar-track {
-    background-color: #222;
-  }
-  ::-webkit-scrollbar-thumb {
-    width: 5px;
-    background-color: #888;
-  }
- 
-   h1{
-    display: inline;
-   }
-   h2, .chain_token input{
-    display: block;
-    color: #fff;
-    background-color: transparent;
-    margin: 2px;
-    font-size: 110%;
-   }
-   h3{
-    display: block;
-    color: #fff;
-    margin: 2px;
-    font-size: 80%;
-   }
-
-   button{
-      border-radius: 5px;
-      background-color: #733;
-      color: #fff;
-      padding: 4px;
-   }
-   input{
-    border:none;
-   }   
-   textarea{
-    color: #999;
-   }
-
-   /* recursive containers */
-   .container{
-    padding: 5px;
-    margin: 2px;
-    border-radius: 5px;
-    background-color: #000;
-   }
-   
-   .header{
-     position: fixed;
-     top: 0px;
-     left: 0px;
-     right: 0px;
-     height: 40px;
-   }
-
-   /* help tooltip */
-   #help{
-     position: fixed;     
-     background-color: rgba(0,0,0,.9);
-     color: #aaa;
-     font-size: 12px;
-     padding: 2px;
-     max-width: 400px;
-     border-radius: 5px;
-     z-index: 100;
-     /* allow click-trough to not disturb work flow on touch screens */
-     pointer-events:none;
-   }
-   #help:empty{
-     display: none;
-   }
-
-    /* outline top level containers */
-    body>.container{
-      border: 1px solid #555;
-      border-radius: 10px;
-      padding: 2px;
-      margin: 2px;
-    }
-    
-    /* chain selector pane */
-    .chains{
-      position: fixed;
-      top: 50px;
-      bottom: 0px;
-      left: 0px;
-      width: 260px;      
-    }
-    #chains{
-      overflow-x: hidden;
-      overflow-y: auto;
-      position: absolute;
-      top:50px;
-      bottom: 0px;
-    }
-    #chains>*, #timeline>*{
-      background-color: #111;
-      margin: 2px;
-      border-radius: 5px;
-      display:inline-block;
-      vertical-align: top;
-      width:200px;
-      height: 40px;      
-    }    
-    #chains .active{
-      background-color: #030;
-    }
-    #chains>* input{
-      /* block chain name input on first click  */
-      width: 99%;
-      pointer-events: none;
-    }
-    #chains>*.active input{
-      /* allow another click after activation to focus chain name input */
-      pointer-events: auto;
-    }
-    
-    /* effects template pane */
-    .effects{
-      position: fixed;
-      top: 50px;
-      left:560px;
-      bottom: 0px;
-      right: 330px;
-    }
-    #effects{
-      position: absolute;
-      top: 50px;
-      bottom: 0px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      list-style: none;
-      margin: 0px;
-      padding: 0px;
-    }
-    #effects .effect{
-      width: 150px;
-      height: 25px;
-    }
-
-    /* current chain effect list */
-    .chain{
-      position: fixed;
-      top: 50px;
-      bottom: 0px;
-      left:270px;
-      width:280px;
-      padding: 2px;
-      margin: 0px;
-    }
-    #chain, #pre_chain, #post_chain
-    {
-      position: absolute;
-      top: 50px;
-      bottom: 0px;
-      left: 10px;
-      /*padding-bottom: 50px;*/
-      overflow-x: hidden;
-      overflow-y: auto;
-      min-height: 50px;
-    }
-    #chain:empty::before,#pre_chain:empty::before,#post_chain:empty::before{
-      content: "drag effects here";
-      color: #777;
-    }
-    
-    .chain_code{
-      width: 500px;
-      height: 500px;
-    }
-    
-    .timeline{
-      position: fixed;
-      top: 50px;
-      bottom: 250px;
-      left:270px;
-      right:0px;
-      padding: 2px;
-      margin: 0px;      
-    }
-    #timeline:empty::before{
-      content: "drag chains here";
-      color: #777;
-    }
-    .timeline #delay{
-      padding: 4px;
-      width: 40px;
-      overflow:hidden;
-      background-color: transparent;
-      color: #fff;
-    }    
-    .timeline h2 span{
-      margin-left: 20px;
-      font-size: 12px;
-    }
-    
-    .pre_chain{
-      position: absolute;    
-      top: 50px;
-      right: 0px;
-      width: 320px;
-      height: 200px;      
-    }
-
-    .post_chain{
-      position: absolute;    
-      right: 0px;
-      width: 320px;
-      top: 260px;
-      bottom:250px;
-    }
-
-    /* effect in effect template pane or current chain pane */
-    .effect{
-      cursor: pointer;
-      display: inline-block;
-      vertical-align: top;
-      list-style: none;    
-      background-color: #222;
-      color: #fff;
-      margin: 2px;
-      padding: 3px;
-      border-radius: 5px;
-      border: 2px solid transparent;
-      width: 220px;
-      font-size: 10px;
-    }
-    .effect *{
-      vertical-align: top;
-    }
-    .effect div, .effect span{
-      display: inline-block;
-    }
-    .effect .ui_object{
-      display: block;
-    }
-    .effects .key>*, .effects .value>*{
-      display: none;
-    }
-    .effect>.ui_object>.value{
-      margin-left: 0px;
-    }
-    .effect>.ui_object>.key
-    {
-      display: none;
-    }
-    .effect>.ui_object>.value>:first-child{
-      display: block;
-    }    
-    .effect>.ui_object>.value>:first-child>.key
-    {
-      display: none;
-    }
-    .effect>.ui_object>.value>:first-child>.value
-    {
-      font-size: 15px;
-    }
-
-    /* detail display of effects placed in current chain */    
-
-    /* show chain flow arrows */
-    .chain .effect{
-      position:relative;
-    }
-    /* every effect shows an input arrow be default*/
-    .chain .effect::before{
-      display: block;
-      position:absolute;
-      top: -10px;
-      left: 50%;
-      content: '▾';
-    }
-    /* effects with more inputs show additional stack input arrows.*/
-    .chain .effect[ui_inputs="2"]>.ui_object::before{
-      display: block;
-      position:absolute;
-      top: -3px;
-      right: 10px;
-      content: '◂▤';
-      color: #f00;
-    }
-    .chain .effect[ui_inputs="3"]>.ui_object::before{
-      display: block;
-      position:absolute;
-      top: -3px;
-      right: 10px;
-      content: '◂◂▤';
-      color: #f00;
-    }    
-    /* effects with no inputs show no arrows*/
-    .chain .effect[ui_inputs="0"]::before{
-      display: none;
-    }
-    /* effects with additional outputs show stack output arrows*/
-    .chain .effect[ui_outputs]>.ui_object::before{
-      display: block;
-      position:absolute;
-      bottom: -3px;
-      right: 10px;
-      content: '▸▤';
-      color: #f00;
-    }
-    /* an effect with no input (source)*/
-    .effect[ui_inputs="0"]
-    {
-      background-color: #242;
-    }
-    .chain .effect[ui_inputs="0"]
-    {
-      margin-top: 10px;
-    }
-    /* an effect sporting additional inputs, pops stack */
-    .effect[ui_inputs="2"]
-    {
-      background: linear-gradient(#522,#222);
-    }
-    .effect[ui_inputs="3"]
-    {
-      background: linear-gradient(#622,#222);
-    }
-    .effect[ui_outputs]
-    {
-      background: linear-gradient(#222,#522);
-    }
-    /* an effect manipulating the topmost stack elements */
-    .effect[ui_inputs="2"][ui_outputs]
-    {
-      background: linear-gradient(#522,#222,#522);
-    }
-    .effect[ui_effect^="feedbackOut"]
-    {
-      background: linear-gradient(#552,#222);
-    }
-    .effect[ui_effect^="feedbackIn"]
-    {
-      background: linear-gradient(#222,#552);
-    }
-    .effect[ui_effect="preview"]
-    {
-      background: #531;
-    }
-    /* an effect without in and outputs (setup) */
-    .effect[ui_inputs="0"][ui_outputs="0"]
-    {
-      background: #112;
-    }
-
-    /* effect key and value details */
-    .key{
-      display: inline-block;
-      background-color:#333;
-      color: #fff;
-      font-size: 10px;
-      font-weight: bold;
-      margin-right: 5px;
-      margin-left: 5px;
-    }
-    .key::after{
-      content: ': '
-    }
-    .value{
-      vertical-align: top;
-      color: #fff;
-      font-size: 10px;
-    }
-    
-    /* effect parameter adjust UI popup */
-    .popup{
-      position: fixed;
-      width: 750px;
-    }
-    .adjust_ui .effect{
-      width: calc(100% - 20px);
-      border-radius: 10px;
-      padding: 10px;
-      border: 2px solid #999;
-      max-height: 90vh;
-      overflow: auto;
-    }
-    .adjust_ui .effect, .effect.ui_target, .chain_code{
-      border: 2px solid #f94 !important;
-      -webkit-box-shadow: 0px 0px 32px 0px #000;
-      -moz-box-shadow: 0px 0px 32px 0px #000;
-      box-shadow: 0px 0px 32px 0px #000;
-    }    
-    .adjust_ui .ui_object .ui_object{      
-      border-radius: 5px;
-      margin: 5px;
-      padding-left: 15px;
-      background-color: #444;
-    }
-    .adjust_ui .ui_object .ui_object .ui_object{
-      background-color: #555;
-    }    
-    .adjust_ui .ui_number{
-      display: block !important;
-    }
-    .adjust_ui .key{
-      color: #fff;
-      background-color:transparent;
-      width: 60px;
-    }
-    /* text inputs */
-    .adjust_ui input[type="text"]{
-      width: 550px;
-      padding: 14px;
-      overflow:hidden;
-      font-size: 140%;
-      background-color: #000;
-      color: #fff;
-    }
-    /* sliders */
-    .adjust_ui input[type="range"]{
-      width: 550px;
-      height: 40px;
-    }
-    /* slider numerical value display */
-    .adjust_ui .slider_value{
-      padding-top: 14px;
-      padding-bottom: 14px;
-      width: 40px;
-      overflow:hidden;
-      font-size: 120%;
-      background-color: transparent;
-      color: #fff;
-    }    
-    .adjust_ui .slider_value:focus{
-      background-color: #000;
-    }
-    .adjust_ui button{
-      margin: 2px;
-    }
-
-   /* video preview pane */
-   .preview{
-      position: fixed;
-      bottom: 0px;
-      right: 0px;
-      width: 320px;
-      height: 240px;
-   }
-   .preview img{
-      width: 100%;
-   }
-   .preview .stats{
-      position: absolute; 
-      bottom: 10px; left: 10px;
-   }
-    
-    
-   /* toggle layouts */
-   
-    body>.container{
-      display: none;
-    }
-    body>.preview, body>.header, body>.chains{
-      display: block;
-    }
-    .chain_layout .chain, .chain_layout .effects, .chain_layout .pre_chain, .chain_layout .post_chain
-    {
-      display: block;
-    }
-    .timeline_layout .timeline
-    {
-      display: block;
-    }
-       
-    
-  </style>
 
   <script>
   
@@ -562,12 +74,12 @@
     if(document.location.hash)
       session_url+=document.location.hash.substring(1)+'_';
 
+    // establish WebSocket connection
+    var websocket;
+
     var put=function(url,data)
     {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.responseType='text';
-      xmlHttp.open('PUT',url,true);
-      xmlHttp.send(data);
+      websocket.send(JSON.stringify({'method':'put','path':url,'data':data}));
     }
     
     var get=function(url,callback)
@@ -575,7 +87,7 @@
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
       xmlHttp.open('GET',url,true);
-      xmlHttp.onreadystatechange=function()
+      if(callback) xmlHttp.onreadystatechange=function()
       {
         if(xmlHttp.readyState!=4) return;
         callback(xmlHttp.responseText);      
@@ -595,6 +107,18 @@
       setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
     }
 
+    var recording=false;
+    function toggle_recorder()
+    {
+      recording=!recording;
+
+      put(recording ? '/recorder/start' : '/recorder/stop' , '');
+
+      $('#recorder_button').html(recording ? 'STOP RECORDING' : 'START RECORDING');
+      if(recording) $('#recorder_button').addClass   ('active');
+      else          $('#recorder_button').removeClass('active');
+    }
+
     /* the undo history. updated by frequent save() calls */
     var undo_history=[];
     
@@ -609,50 +133,17 @@
       });      
       var json=JSON.stringify(chains,null,' ');
       put('/saves'+session_url+'chains.json',json);
+
+      // notify other UI clients
+      put('/feeds'+session_url+'update',json);
+
       undo_history.push(json);
       
       console.log('Saved.');
       
       savetimeout=false;
     }
-    
-    
-    var runTimeline=function()
-    {
-      // send out to control server
-      var chains=[];
-      // compile chains with pre- and post chains
-      var pre =$('#pre_chain').data('chain');
-      var post=$('#post_chain').data('chain');
-      $('#timeline .chain_token').each(function(){
-        var chain=$(this).data('chain');
-        chain=pre.concat(chain,post);
-        chains.push(chain);
-      });
-      var delay=60000/parseFloat($('.timeline #delay').val());
-      send('setChains('+JSON.stringify(chains)+','+delay+')');
-    }
-    
-    var save_timeline=function()
-    {
-      var chains=[];
-      $('#timeline .chain_token').each(function(){
-        var chain=$(this).data('chain');
-        chains.push(chain);
-      });
-
-      var json=JSON.stringify(chains,null,' ');
-      put('/saves'+session_url+'timeline.json',json);
-      console.log('Saved timeline.');
-    }
-    
-    
-    var save_timeline_timeout=false;
-    var updateTimeline=function(){
-      if(save_timeline_timeout) clearTimeout(save_timeline_timeout);
-      save_timeline_timeout=setTimeout(save_timeline,1000);
-    }
-    
+          
     /*  recursively create UI for an effect, callback provides the UI for a signle value */
     var get_ui=function(key,node,callback)
     {
@@ -831,7 +322,8 @@
         add_input(element,value_element);
       });
 
-
+      var popup;
+      
       // OSC toggle button handler
       var toggle_osc=function(){
         var value_element=$($(this).parent().data('original_value_element'));
@@ -858,7 +350,7 @@
         updateChain();
 
         // refresh UI
-        container.remove();
+        popup.remove();
         effect_element.click();
       }
       // BEAT toggle button handler
@@ -887,7 +379,7 @@
         updateChain();
 
         // refresh UI
-        container.remove();
+        popup.remove();
         effect_element.click();
       }
 
@@ -903,16 +395,19 @@
       // add REMOVE OSC button to each value OSC UI
       slider_ui.find('.ui_object[ui_type="osc"]>.value').each(function(){
         var element=$(this);
-        element.find('.ui_string').after($('<button>REMOVE OSC</button>').click(toggle_osc));
+        element.prepend($('<button>REMOVE OSC</button>').click(toggle_osc));
       });
       // add REMOVE BEAT button to each value BEAT UI
       slider_ui.find('.ui_object[ui_type="beat"]>.value').each(function(){
         var element=$(this);
-        element.find('.ui_string').after($('<button>REMOVE BEAT</button>').click(toggle_beat));
+        element.prepend($('<button>REMOVE BEAT</button>').click(toggle_beat));
       });
+      
+      // the first element in a nested UI block shows it's type, so disable it.
+      slider_ui.find('.ui_object .ui_object input').first().attr('disabled',true);
 
       // add popup container to body
-      var popup=create_popup('adjust_ui',effect_element,slider_ui);
+      popup=create_popup('adjust_ui',effect_element,slider_ui);
     };
     
     var create_popup=function(classname,anchor,content_element)
@@ -953,6 +448,9 @@
       // for all three chains pre, current and post collect the effect data
       ['#pre_chain','#chain','#post_chain'].forEach(function(selector){
         var chain=[];
+        // add name to pre- or post chain. For other chains, it is done by chain token.
+        if(selector=='#pre_chain' || selector=='#post_chain')
+	  chain.push($(selector).parent().find('h2').html());
         $(selector).find('.effect>.ui_object>.value').each(function(){
           var effect=get_data($(this));
           chain.push(effect);
@@ -971,33 +469,28 @@
       send('setChain('+JSON.stringify(full_chain)+')');
     }
 
-    var init_chain_list=function(container)
-    {
-      // the chain list items are sortable
-      $(container).sortable({
-        distance:10,
-        delay:300,
-        tolerance: 'pointer',
-        stop: updateChain,
-        receive: function(event,ui){
-          var new_element=$(this).data()['ui-sortable'].currentItem;
-          new_element.removeAttr('style'); // remove obsolete jQuery d&d styles
-          updateChain(event,ui);
-        },
-        // allow removal of items by dragging them out        
-        over: function(){this.is_outside=false},
-        out: function(){this.is_outside=true},
-        beforeStop: function(ev,ui){
-          $(this).data('prevent_click',true); // store to prevent mouseup click handlers (FF fix)
-          if(this.is_outside) 
-          {
-            $(ui.item).remove();
-            updateChain();
-          }          
-        }
-      });
-    }
-    init_chain_list('#chain,#pre_chain,#post_chain');
+    $('#chain,#pre_chain,#post_chain').sortable({
+      distance:10,
+      delay:300,
+      tolerance: 'pointer',
+      stop: updateChain,
+      receive: function(event,ui){
+        var new_element=$(this).data()['ui-sortable'].currentItem;
+        new_element.removeAttr('style'); // remove obsolete jQuery d&d styles
+        updateChain(event,ui);
+      },
+      // allow removal of items by dragging them out        
+      over: function(){this.is_outside=false},
+      out: function(){this.is_outside=true},
+      beforeStop: function(ev,ui){
+        $(this).data('prevent_click',true); // store to prevent mouseup click handlers (FF fix)
+        if(this.is_outside) 
+        {
+          $(ui.item).remove();
+          updateChain();
+        }          
+      }
+    });
         
     var token=$('#chains .chain_token').clone();
     $('#chains .chain_token').addClass('active');
@@ -1006,10 +499,6 @@
     {
       if(!json) return;
       var chains=JSON.parse(json);
-
-      // add pre- and post chain to legacy chains 
-      if(typeof(chains[0][0])=='string') // if first chain is a named one, we have a legacy save.
-        chains.unshift([{"effect": "capture","device": 0}],[]);
 
       var pre_chain=chains.shift();
       var post_chain=chains.shift();
@@ -1030,20 +519,13 @@
         chain_token.data('chain',chain);
       });
             
-      $('#chains>*:first-child').click();
-    }
-
-    var load_timeline=function(json){
-      if(!json) return;
-      var chains=JSON.parse(json);
-
-      chains.forEach(function(chain)
-      {
-        var chain_token=token.clone();
-        $('#timeline').append(chain_token);
-        chain_token.find('input').val(chain[0]);
-        chain_token.data('chain',chain);
-      });
+      // TODO refresh active chain view
+      //$('#chains .chain_token').removeClass('active');
+      //$(this).addClass('active');
+      // load chain to editor
+      var list=$('#chain');
+      var chain=$('#chains .chain_token').first().addClass('active').data('chain'); 
+      listEffects(chain,list);
     }
 
     /* pop last undo state */    
@@ -1066,141 +548,128 @@
     var expify=function(x){    
       return  Math.round((-2/(x+1)-2/(x-1))*1000)/1000;
     }
-       
-    // build list of effects
-    // an effect defines all parameters the UI will show and their default values.
-    // the parameters must match the filter functions arguments in order, as they do not take named parameters.
-    // additional attributes can be defined for the UI:
-    // inputs: n  denotes the number of inputs of the effect. It is expected to pop n-1 stack items! Defaults to 1 if not defined.
-    // outputs: n  denotes the number of outputs of the effect. It is expected to push n-1 stack items! Defaults to 1 if not defined.
-    // feedback_input:1 denotes the effect reads the feedback buffer from the last frame
-    // feedback_output:1 denotes the effect writes the feedback buffer for the next frame
-    var effects={
-      'select_audio':{inputs:0,outputs:0, args:{audio_device:0.0}},
-      'map_video':{inputs:0,outputs:0, args:{source_device:0.0, target_device:0.0}},
-      'fps':{inputs:0,outputs:0,args:{fps:25.0}},
-      'type_byte':{inputs:0,outputs:0},
-      'type_float':{inputs:0,outputs:0},
-      'resolution':{inputs:0,outputs:0,args:{x:640,y:480}},
-      'capture':{inputs:0,args:{device:0}},
-      'video':{inputs:0,args:{url:"test.mp4"}},
-      'image':{inputs:0,args:{url:"test.jpg"}},
-      'matte':{inputs:0, args:{rgb:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0}}},
-      'noise':{inputs:0,args:{seed:{type:'osc',f:0.1,a:1.0,p:0.0,o:0.0,waveform:'saw'}}},
-      'grating':{inputs:0,args:{size:100.0,angle:0.0,ax:1.0,fx:1.0,ay:1.0,fy:1.0}},
-      'superellipse':{inputs:0,args:{size:100.0,angle:0.0,a:1.0,b:1.0,m:18.0,n1:0.9,n2:-1.0,n3:-1.0}},
-      'rectangle':{inputs:0, args:{color:{type:'rgba', r:1.0,g:1.0,b:1.0,a:1.0},x:0.0,y:0.0,width:0.2,height:0.2,angle:0.0}},
-      'polygon_matte':{inputs:0, args:{color:{type:'rgba', r:0.0,g:1.0,b:1.0,a:1.0},sides:6.0,x:0.0,y:0.0,size:0.5,angle:0.0,aspect:1.0}},
-      'waveform':{inputs:0},
-      'vectorscope':{inputs: 0,args:{size: 2.0, intensity:0.3, linewidth:1.0}},
-      'spectrogram':{inputs:0},
-      'preview':{},
-      'feedbackOut':{args:{blend:0.7,clear_on_switch:0.0}},
-      'feedbackIn':{},
-      'stack_push':{outputs:2},
-      'stack_swap':{inputs: 2,outputs:2},
-      'blend':{inputs: 2,args:{alpha:0.5, factor: 1.0}},
-      'blend_alpha':{inputs: 2},
-      'blend_mask':{inputs: 3},
-      'chroma_key':{inputs: 2,args:{color:{type:'rgb',r:0.2,g:0.7,b:0.4},threshold:0.2,feather: 0.1}},
-      'luma_key':{inputs: 2,args:{threshold:0.5,feather: 0.05}},
-      'displacement':{inputs: 2,args:{strength:0.05}},
-      'mesh_displacement':{inputs: 2,args:{sx:0.0,sy:0.0,sz:0.1,anglex:1.0,angley:0.5,anglez:0.0}},
-      'patch_displacement':{inputs: 2,args:{sx:0.0,sy:0.0,sz:0.1,anglex:0.0,angley:0.3,anglez:0.0,scale:2.0,pixelate:0.0}},
-      'particles':{inputs: 2,args:{anglex:0.0,angley:0.3,anglez:0.0,size: 15.0, strength:0.5,homing:0.01,noise:1.0,displacement:0.0}},
-      'transform':{args:{x:0.0,y:0.0,scale:1.0,angle:0.0}},
-      'perspective':{args:{perspective:{type:'perspective', x1:-0.75,y1:-0.75, x2:-0.75,y2:0.75,x3:0.75,y3:-0.75,x4:0.75,y4:0.75}}},
-      'strobe':{args:{period:10.0}},
-      'timeshift':{args:{time:{type:'osc',f:200.0,a:12.5,p:0.0,o:12.5},clear_on_switch:0.0}},
-      'vibrance':{args:{strength:1.0}},
-      'brightnessContrast':{args:{brightness:0.0,contrast:0.0}},
-      'threshold':{args:{threshold:0.5,feather:0.0,r0:0.0,g0:0.0,b0:0.0,r1:1.0,g1:1.0,b1:1.0}},
-      'hueSaturation':{args:{hue:0.0,saturation:0.0}},
-      'levels':{args:{min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0}},
-      'invert':{},
-      'absolute':{},
-      'rainbow':{},      
-      'noalpha':{},
-      'color':{args:{strength:0.5,rgb:{type:'rgb', r:0.0,g:1.0,b:1.0}}},
-      'posterize':{args:{steps:4.0}},
-      'posterize_hue':{args:{hue:4.0,brightness:255.0}},
-      'mirror_x':{},
-      'mirror_y':{},
-      'motion':{args:{threshold:0.3,interval:1.,damper:0.99}},
-      'polygon':{args:{sides:6.0,x:0.0,y:0.0,size:0.5,angle:0.0,aspect:1.0}},
-      'kaleidoscope':{args:{sides:5.0,angle:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0},angle2:{type:'osc',f:2.0,a:1.0,p:0.0,o:0.0}}},
-      'tile':{args:{divisions:2.0,center:{type:'pos',x:0.0,y:0.0}}},
-      'blur':{args:{radius:20.0}},
-      'blur2':{args:{radius:20.0,exponent: 1.0}},
-      'zoomBlur':{args:{center:{type:'pos',x:0,y:0}, size: 0.1}},
-      'denoise':{args:{strength:10.0}},
-      'denoisefast':{args:{strength:30.0}},
-      'erode':{args:{iterations:2.0}},
-      'dilate':{args:{iterations:2.0}},
-      'sobel':{args:{secondary:0.5,coeff:0.5,alpha:0.5,areas:{type:'rgba',r:0,g:0,b:0,a:1},edges:{type:'rgba',r:1,g:1,b:1,a:1}}},
-      'unsharpMask':{args:{size:3.0,strength:{type:'osc',f:5.0,a:2.0,p:0.0,o:2.0}}},
-      'localContrast':{args:{size:10.0,strength:0.5}},
-      'pixelate':{args:{x1:10.0,y1:10.0, x2:10.0,y2:10.0 }},
-      'hexagonalPixelate':{args:{center:{type:'pos',x:0,y:0}, size: 10.0}},
-      'ripple':{args:{width:0.3,length:0.3,angle:0.0,strength:2.0}},
-      'bulgePinch':{args:{center:{type:'pos',x:0,y:0},radius:600,strength:0.2}},
-      'swirl':{args:{center:{type:'pos',x:0,y:0},radius:250.0,strength:{type:'osc',f:5.0,a:1.0,p:0.0,o:0.0}}},
-      'colorDisplacement':{args:{angle:0.0,strength:3.0}},
-      'grid':{args:{size:1.0,angle:0.0}},
-      'gauze':{args:{width:300,length:200,angle:0.0,strength:0.5,center:{type:'pos',x:0.0,y:0.0}}},
-      'life':{},
-      'colorHalftone':{args:{center:{type:'pos',x:0,y:0},angle:30.0,size:{type:'osc',f:5.0,a:1.0,p:0.0,o:2.0}}},
-      'analogize':{args:{exposure:2.0,gamma:1.5,glow:1.0,glow_radius:16.0}},
-      'relief':{args:{scale2:16.0,scale4:64.0}},
-      'mandelbrot':{args:{center:{type:'pos',x:0.7,y:0.5},size:3.0,angle:0.0,iterations:10.0}},
-      'julia':{args:{cx:-0.8, cy:0.2, center:{type:'pos',x:0.7,y:0.5},size:3.0,angle:0.0,iterations:10.0}},
-      'smoothlife':{args:{birth_min:7.0,birth_max:10.0,death_min:15.0}},
-      'soft_life':{args:{birth_min:7.0,birth_max:10.0,death_min:15.0}},      
-      'reaction':{args:{noise_factor:0.5,zoom_speed:0.005,scale1:8.0,scale2:16.0,scale3:32.0,scale4:64.0}},
-      'reaction2':{args:{F:0.0545,K:0.062,D_a:0.2,D_b:0.1,iterations:1.0}},
-      'glitch':{args:{scale:16.0,detail: 25.0, strength: 0.9,speed: 1.0}},
-      'supershape':{args:{angleX:-0.7,angleY:{type:'osc',f:0.1,a:10.0,p:0.0,o:0.0},a1:1.0,b1:1.0,m1:5.0,n11:1.0,n21:1.0,n31:2.0,a2:1.0,b2:1.0,m2:5.0,n12:1.0,n22:1.0,n32:3.0}},
-      'address_glitch':{args:{mask_x:8.0,mask_y:0.0}},
-    };
-    
-    var new_effects=[];
-    for(key in effects)
+      
+    get('/effects.json',function(data){
+      effects=JSON.parse(data); 
+      var new_effects=[];
+      for(key in effects)
+      {
+        // create flat object with the effect name in 'effect'
+        // like the ones send to the server
+        var new_effect={effect:key};
+        if(effects[key].args)
+          for(i in effects[key].args)
+            new_effect[i]=effects[key].args[i];
+        new_effects.push(new_effect);
+      }
+      listEffects(new_effects,'#effects');
+      // the effects may be dragged to the chain list
+      $('#effects>*').draggable({
+        connectToSortable: "#chain,#pre_chain,#post_chain",
+        appendTo:'body',
+        helper: "clone",
+        revert: "invalid",
+        scroll: false,
+        distance: 10,
+        delay: 300,
+        stop: function(){        
+          updateChain();
+        }
+      });
+
+      // list the files now, we have to postpone it until now 
+      // otherwise the "image" and "video" effects won't show up properly 
+      // as metadata like the number of inputs is fetched from the effects definition
+      listFiles();
+    });
+
+
+    var listFiles=function()
     {
-      // create flat object with the effect name in 'effect'
-      // like the ones send to the server
-      var new_effect={effect:key};
-      if(effects[key].args)
-        for(i in effects[key].args)
-          new_effect[i]=effects[key].args[i];
-      new_effects.push(new_effect);
+      get('/files',function(data){
+        var files=JSON.parse(data); 
+        var new_effects=[];
+        for(key in files)
+        {
+          // create flat object with the effect name in 'effect'
+          // like the ones send to the server
+          var file=files[key];
+          var suffix=file.split('.').pop().toLowerCase();
+          var types={'mov':'video','mp4':'video','webm':'video','jpg':'image','jpeg':'image','png':'image','svg':'image','gif':'image'};
+          var type=types[suffix];
+          if(!type) continue;
+
+          // create flat object with the effect name in 'effect'
+          // like the ones send to the server
+          var new_effect={effect:type};
+          if(effects[type].args)
+            for(i in effects[type].args)
+              new_effect[i]=effects[type].args[i];
+
+          new_effect.url="files/"+file;
+          new_effects.push(new_effect);
+        }
+        listEffects(new_effects,'#files');
+
+        // the effects may be dragged to the chain list
+        $('#files>*').draggable({
+          connectToSortable: "#chain,#pre_chain,#post_chain",
+          appendTo:'body',
+          helper: "clone",
+          revert: "invalid",
+          scroll: false,
+          distance: 10,
+          delay: 300,
+          stop: function(){        
+            updateChain();
+          }
+        });  
+      });
     }
-    listEffects(new_effects,'#effects');
-        
-        
-    var last_draggable=false;
-    // the effects may be dragged to the chain list
-    $('#effects>*').draggable({
-      connectToSortable: "#chain,#pre_chain,#post_chain",
-      appendTo:'body',
-      helper: "clone",
-      revert: "invalid",
-      scroll: false,
-      distance: 10,
-      delay: 300,
-      stop: function(){        
-        updateChain();
-        last_draggable=false;
+
+    show_files=function()
+    {
+      listFiles();
+      $('.effects').hide();
+      $('.files'  ).show();
+    };
+    show_effects=function()
+    {
+      $('.files'  ).hide();
+      $('.effects').show();
+    };
+    show_effects();
+
+    // create list of possible screen modes
+    get('/screens',function(data){
+      var modes=JSON.parse(data);
+      var screens_popup;
+
+      show_screens=function()
+      {
+        var screens_container=$('<div id=screens class="screens container">');
+
+        for(key in modes)
+        {
+          var mode=modes[key];
+          var button=$('<button>'+mode+'</button>');
+          button.on('click',function(){
+            screens_popup.remove();
+            set_mode($(this).html());
+          });
+          screens_container.append(button);        
+        }
+
+        screens_popup=create_popup('screens',$('#screens_button'),screens_container);
       }
     });
     
-    // the effects may be cicked to add
-    $('#effects>*').on('click',function(){
-      var current_chain=$('#chains .active .chain');
-      var new_element=$(this).clone();
-      current_chain.append(new_element);
-      updateChain();
-    });
-    
+    set_mode=function(mode)
+    {
+      console.log("set_mode: "+mode);
+      put('/screens/'+mode,'');
+    }
+
     // the effects in the current chain may be clicked to display adjust UI
     $('#chain,#pre_chain,#post_chain').on('click','.effect',function(){
       if($(this).parent().data('prevent_click'))
@@ -1312,29 +781,6 @@
         load(data);
     });
 
-    get('/saves'+session_url+'timeline.json',function(data){
-      if(!data) // no saved chains in this session 
-        get('/saves/timeline.json',load_timeline); // load default chain instead
-      else
-        load_timeline(data);
-    });
-
-    // the timeline is sortable...
-    $("#timeline").sortable({
-        distance:10,
-        delay: 300,
-        // allow removal of items by dragging them out
-        over: function(){this.is_outside=false},
-        out: function(){this.is_outside=true},
-        beforeStop: function(ev,ui){          
-          if(this.is_outside) 
-          {
-            $(ui.item).remove();
-          }
-          updateTimeline();
-        }
-    });
-
     // add help...
 
     // a tooltip is shown for any item matching certain selector 
@@ -1371,48 +817,67 @@
     // preview pane
     var preview=false;
     var preview_offline_timeout=false;
-    var preview_handler=function(){
-      if(preview_offline_timeout) 
-        clearTimeout(preview_offline_timeout);
-      preview_offline_timeout=setTimeout(function(){
-        document.getElementById('stats').innerHTML='offline';
-      },500);
-      get('/feeds'+session_url+'preview',function(json)
+
+    var open_socket=function()
+    {
+      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+      websocket.onopen=function(){
+        // opt in for preview and screenshot feeds
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'preview',data:''}));
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'screenshot',data:''}));       
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''})); 
+      };
+      websocket.onmessage=function(event)
       {
-        if(json)
-	{
+        var packet=JSON.parse(event.data);
+        var path=packet.path, message=packet.data;
+        
+        if(path=='/feeds'+session_url+'preview')
+        {
+          var json=message;
           var data=JSON.parse(json);
           document.getElementById('preview').src=data.jpeg ? data.jpeg : "";
           document.getElementById('stats').innerHTML='online, running '+(Math.round(1000./data.frame_time))+' fps';
-          clearTimeout(preview_offline_timeout);
+          if(preview_offline_timeout) clearTimeout(preview_offline_timeout);
+          preview_offline_timeout=setTimeout(function(){
+            document.getElementById('stats').innerHTML='offline';
+            preview_offline_timeout=false;
+          },1000);
         }
-        requestAnimationFrame(preview_handler); 
-      });
-    };    
-    preview_handler();
+        else if(path=='/feeds'+session_url+'screenshot'){
+          var link=$('<a>');
+          link.attr('href',message);
+          link.attr('download','screenshot.jpg');
+          $(document.body).append(link);
+          link[0].click();
+          // link.remove();
+        }
+        else if(path=='/feeds'+session_url+'update'){
+          console.log('Update by external data');
+          load(message);
+        }
+      }     
+      websocket.onclose=function()
+      {
+        setTimeout(open_socket,1000);
+      }
+    }
+    open_socket();
+
+
+    
     function toggle_preview(){
       preview=!preview;
+      if(preview) $('#preview_button').addClass   ('active');
+      else        $('#preview_button').removeClass('active');
       send('preview('+preview+')');
     }
       
     // screenshot button      
     function screenshot(){
-      get('/feeds'+session_url+'screenshot',function(data){
-        var link=$('<a>');
-        link.attr('href',data);
-        link.attr('download','screenshot.jpg');
-        $(document.body).append(link);
-        link[0].click();
-        // link.remove();
-      });
       send('screenshot()');
     }
-      
-    function toggle_timeline(){
-      $(document.body).toggleClass('chain_layout');      
-      $(document.body).toggleClass('timeline_layout');
-    }
-      
+    
     // double tap quirk for touch screens
     var last_tap;
     $(document.body).on('touchend','*',function(e){
@@ -1424,5 +889,64 @@
     
     </script>
 
+		<script>
+		// media manager
+		
+		var post=function(data)
+		{
+			var formData = new FormData();
+			for(key in data)
+				formData.append(key, data[key]);
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', 'save.php');
+			xhr.send(formData);
+			return xhr;
+		}
+
+		function addUpload(elementSelector)
+		{
+			var doc = document.querySelector(elementSelector);
+			doc.ondragover = function () { this.className = 'hover'; return false; };
+			doc.ondragend = function () { this.className = ''; return false; };
+			doc.ondrop = function (event) {
+				event.preventDefault && event.preventDefault();
+				this.className = '';
+
+				// now do something with:
+				var files = event.dataTransfer.files;  
+
+				 var formData = new FormData();
+				       formData.append('action','upload');
+					for (var i = 0; i < files.length; i++) {
+					  formData.append('file', files[i]);
+					}
+
+//				 var progress=document.getElementById('progress');
+					// now post a new XHR request
+					  var xhr = new XMLHttpRequest();
+					  xhr.open('POST', 'upload');
+					  xhr.onload = function() {
+	//			progress.value = progress.innerHTML = 100;
+				alert('upload complete, response: '+xhr.responseText);
+              listFiles();			
+					  };
+
+
+/*				xhr.upload.onprogress = function (event) {
+					if (event.lengthComputable) {
+						var complete = (event.loaded / event.total * 100 | 0);
+						progress.value = progress.innerHTML = complete;
+					}
+				}*/
+
+					  xhr.send(formData);
+
+				return false;
+			};
+		}
+		
+		addUpload('body');
+		</script>
+		
 </body>
 </html>

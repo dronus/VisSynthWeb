@@ -1,6 +1,5 @@
 <<<<<<< HEAD
 .project
-node_modules
 *.dat
 *.njsproj
 *.suo
@@ -13,3 +12,5 @@ saves/*.json
 /glfx.js/www/glfx.js/demo/index.html
 /glfx.js/www/glfx.js/docs/index.html
 recorded/*
+*.stl
+*.gcode

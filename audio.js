@@ -78,14 +78,14 @@ function initAudioAnalysers(stream)
       window.AudioContext = window.webkitAudioContext;
     var context = new AudioContext();
     
-    var samples=1024;
+    var samples=512;
 
     var scriptNode = context.createScriptProcessor(samples, 1, 1);
     scriptNode.connect(context.destination);
 
     var analyser = context.createAnalyser();
     analyser.smoothingTimeConstant = 0.0;
-    analyser.fftSize = 1024;
+    analyser.fftSize = samples;
     analyser.connect(scriptNode);
     
     var source = context.createMediaStreamSource(stream);
@@ -131,8 +131,9 @@ function initAudioAnalysers(stream)
             audio_canvas_ctx.fillStyle='#fff';
             audio_canvas_ctx.fillRect(i*5,255-spectrogram[i],3,2);
           }
-          
-          pulse+=Math.max(0,value);
+          var attenuation=(spectrogram.length-i)/spectrogram.length;
+          attenuation*=attenuation;
+          pulse+=Math.max(0,value*attenuation);
         }
         pulse/=spectrogram.length;
         pulse/=256.;
