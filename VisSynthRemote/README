@@ -1,0 +1,13 @@
+A minimal VisSynth remote
+
+Requires an Launchpad MSP432 board connected to a RedPine WiFi module.
+
+Four encoder knobs and one 2x20 character LCD or OLED display must be wired to the GPIO pins as defined by VisSynthRemote.ino
+
+ui_hardware_thin_client_adapter.js must be run with nodejs in addition to the VisSynthWeb server to provide the UDP interface for the remote.
+
+A simulation for the browser for evaluating the remote UI without hardware is provided by the VisSynthWeb server at http://SERVER/VisSynthRemote/ui_hardware_v2.html .
+
+
+
+

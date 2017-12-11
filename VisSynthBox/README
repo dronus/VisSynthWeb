@@ -1,0 +1,8 @@
+A minimal standalone VisSynth system
+
+Requires a WebGL-capable computer sporting some GPIOs. 
+Currently adjusted to run on an Odroid XU4 ARM single board computer.
+
+Four encoder knobs and one 2x40 character LCD display must be wired to the GPIO pins as defined by ui_hardware_client.js. 
+
+A simulation for the browser for evaluating the remote UI without hardware is provided by the VisSynthWeb server at http://SERVER/VisSynthBox/ui_hardware.html .
