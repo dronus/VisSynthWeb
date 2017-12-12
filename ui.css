@@ -29,9 +29,12 @@
   }
  
    h1{
-    display: inline;
-    font-size: 20px;
+    display:inline-block;
+    margin: 6px;
+    color: #fff;
+    font-size: 25px;
    }
+
    h2, .chain_token input{
     display: inline-block;
     color: #fff;
@@ -51,6 +54,9 @@
       background-color: #733;
       color: #fff;
       padding: 4px;
+      border: 0px;
+      margin:2px;
+      box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
    }
    button.active{
       background-color: #c00;
@@ -68,6 +74,7 @@
     margin: 2px;
     border-radius: 5px;
     background-color: #000;
+  	box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
    }
    
    .header{
@@ -76,8 +83,13 @@
      left: 0px;
      right: 0px;
      height: 40px;
+    background-color: transparent;
    }
-
+    .header button
+    {
+      padding: 7px;
+      margin: 7px;
+    }
    /* help tooltip */
    #help{
      position: fixed;     
@@ -97,10 +109,15 @@
 
     /* outline top level containers */
     body>.container{
-      border: 1px solid #555;
-      border-radius: 10px;
       padding: 2px;
       margin: 2px;
+      background-color: #191919;
+      border: 0px;
+      border-radius: 3px;
+    }
+    body>.container button
+    {
+      float: right;
     }
     
     /* chain selector pane */
@@ -119,13 +136,14 @@
       bottom: 0px;
     }
     #chains>*{
-      background-color: #111;
       margin: 2px;
       border-radius: 5px;
       display:inline-block;
       vertical-align: top;
       width:200px;
       height: 40px;      
+      background-color: #222;
+      box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
     }    
     #chains .active{
       background-color: #030;
@@ -225,14 +243,15 @@
       display: inline-block;
       vertical-align: top;
       list-style: none;    
-      background-color: #222;
       color: #fff;
       margin: 2px;
-      padding: 3px;
       border-radius: 5px;
-      border: 2px solid transparent;
       width: 220px;
       font-size: 10px;
+      border: 0px;
+      padding: 6px;
+      background-color: #272727;
+      box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
     }
     .effect *{
       vertical-align: top;
@@ -265,13 +284,15 @@
     }
     .effect>.ui_object>.value>:first-child>.value
     {
-      font-size: 15px;
+      font-size: 16px;
     }
+
     /* OSC / BEAT remove buttons slip in sleekly to preserve screen */
     .ui_object>.value>button
      {
       float:right;
-      margin-top: -10px;
+	    margin-top: 0px;
+	    margin-right: 0px;
      }
 
     /* detail display of effects placed in current chain */    
@@ -360,14 +381,14 @@
     /* an effect without in and outputs (setup) */
     .effect[ui_inputs="0"][ui_outputs="0"]
     {
-      background: #112;
+      background: #113;
     }
 
     /* effect key and value details */
     .key{
       display: inline-block;
-      background-color:#333;
-      color: #fff;
+	    color: #fc0;
+	    background-color: transparent;
       font-size: 10px;
       font-weight: bold;
       margin-right: 5px;
@@ -396,19 +417,27 @@
       overflow: auto;
     }
     .adjust_ui .effect, .effect.ui_target, .chain_code{
-      border: 2px solid #f94 !important;
       -webkit-box-shadow: 0px 0px 32px 0px #000;
       -moz-box-shadow: 0px 0px 32px 0px #000;
-      box-shadow: 0px 0px 32px 0px #000;
+	    box-shadow: 2px 2px 32px 0px rgba(0,0,0,1);
+      border: 0px !important;
     }    
+
     /* nestet UI blocks, like multiple slider BEAT or OSC UIs */
+    .ui_object .ui_object
+    {
+	    background-color: #373737;
+	    margin: 2px;
+	    border-radius:2px;
+	    box-shadow: 2px 2px 2px 0px rgba(0,0,0,.3);
+    }
     .adjust_ui .ui_object .ui_object{      
       border-radius: 5px;
       margin: 5px;
       padding-left: 15px;
       background-color: #333;
+      box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
     }
-    
     .adjust_ui .ui_object .ui_object .ui_object{
       background-color: #555;
     }    
@@ -422,23 +451,23 @@
     }
     /* text inputs */
     .adjust_ui input[type="text"]{
-      width: 570px;
-      padding: 10px;
+      width: 50%;
+      padding: 6px;
       overflow:hidden;
       font-size: 140%;
-      background-color: #111;
+      background-color: #444;
       color: #fff;
       border-radius: 5px;
     }
     /* sliders */
     .adjust_ui input[type="range"]{
       width: 550px;
-      height: 40px;
+      height: 25px;
     }
     /* slider numerical value display */
     .adjust_ui .slider_value{
-      padding-top: 14px;
-      padding-bottom: 14px;
+	    padding-top: 10px;
+	    padding-bottom: 10px;
       width: 40px;
       overflow:hidden;
       font-size: 120%;
