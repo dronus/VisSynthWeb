@@ -86,7 +86,7 @@
     {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.responseType='text';
-      xmlHttp.open('GET',url,true);
+      xmlHttp.open('GET',url.replace(/^\//,''),true);
       if(callback) xmlHttp.onreadystatechange=function()
       {
         if(xmlHttp.readyState!=4) return;
@@ -820,7 +820,7 @@
 
     var open_socket=function()
     {
-      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+      websocket=new WebSocket((document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('ui.html',''));
       websocket.onopen=function(){
         // opt in for preview and screenshot feeds
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'preview',data:''}));

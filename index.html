@@ -37,7 +37,7 @@
     var websocket;
     var open_socket=function()
     {
-      websocket=new WebSocket('ws://'+document.location.hostname+':'+document.location.port);
+      websocket=new WebSocket((document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html',''));
       websocket.onopen=function(){
         // opt in for commands
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'command',data:''}));    
