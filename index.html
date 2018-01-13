@@ -178,9 +178,22 @@
     // TODO find a cleaner way to provide this function
     //    
     var audio_device_index=0;
+    var audio_found=-1;
     function select_audio(device_index)
     {
       audio_device_index=parseInt(device_index);
+      if(audio_found==audio_device_index) return;
+      audio_found=audio_device_index;
+
+      var constraints = {
+        video: false,
+        audio:{deviceId:source_ids.audio[audio_device_index]}
+      };
+      navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+        console.log("Got audio!");
+        // capture device was successfully acquired
+        if(stream.getAudioTracks().length) initAudioAnalysers(stream);
+      });
     }
 
     // get the video feed from a capture device name by source_index into source_ids
@@ -194,7 +207,6 @@
     // maybe we should at least delay device grabbing until the pre_chain is evaluated for the first time,
     // we can then ask for the sources that will most likely be the only ones for the full session.
     var videos={};
-    var audio_found=false;
     var get_video=function(source_index,width,height)
     {
       source_index = source_index | 0;
@@ -224,14 +236,6 @@
           constraints.video.width.min=width;  constraints.video.height.min=height;
       }
       
-      // TODO handle audio again, in a more flexible fashion than one device only...
-      // for now, we just take the first device queried
-      if(!audio_found)
-      {
-        constraints.audio={deviceId:source_ids.audio[audio_device_index]};
-        audio_found=true;
-      }
-
       navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
         console.log("Got camera!");
         // capture device was successfully acquired
@@ -241,9 +245,6 @@
           video.mozSrcObject = stream;
         else
           video.src = URL.createObjectURL(stream);      
-
-        // TODO handle audio again, in a more flexible fashion than one device only...
-        if(stream.getAudioTracks().length) initAudioAnalysers(stream);        
       });
     }
     
