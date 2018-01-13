@@ -151,6 +151,7 @@
 
     // enumerate the available sources at startup and start update loop if found
     var source_ids={audio:[],video:[]};
+    var running=false;
     function onSourcesAcquired(sources) 
     {
       source_ids={audio:[],video:[]};
@@ -168,9 +169,16 @@
       }      
       // send out device data to UI
       put('devices',JSON.stringify(sources));
-    }
 
-    // fetch available capture devices for use and report them to UI
+      // start frequent canvas updates
+      if(!running)
+      {
+        running=true;
+        update();
+      }
+    }
+    // fetch available capture devices for the first time and report them to UI. 
+    // Also starts the rendering engine after device enumeration.
     devices();
 
     // let the remote change the audio source
@@ -191,7 +199,7 @@
         audio:{deviceId:source_ids.audio[audio_device_index]}
       };
       navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
-        console.log("Got audio!");
+        console.log("Got audio: "+constraints.audio.deviceId);
         // capture device was successfully acquired
         if(stream.getAudioTracks().length) initAudioAnalysers(stream);
       });
@@ -392,9 +400,6 @@
       setChain(full_chain);
     }
   
-
-    // start frequent canvas updates
-    update();
   </script>
 
 </body>
