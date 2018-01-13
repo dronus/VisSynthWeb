@@ -165,6 +165,8 @@
       }      
       // start frequent canvas updates
       update();
+      // send out device data to UI
+      put('devices',JSON.stringify(sources));
     }
 
     if(navigator.mediaDevices.enumerateDevices)
