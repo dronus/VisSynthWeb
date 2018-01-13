@@ -208,7 +208,7 @@
     }
     
     /* create UI DOM for an array of effects into container  */
-    var listEffects=function(effects,container)
+    var listEffects=function(effects,container,mode)
     {
       $(container).empty();          
       effects.forEach(function(effect){
@@ -222,6 +222,21 @@
         });
         $(container).append(li);
       });
+
+      // the effects may be dragged to the chain list
+      if(mode=='draggable')
+        $(container+'>*').draggable({
+          connectToSortable: "#chain,#pre_chain,#post_chain",
+          appendTo:'body',
+          helper: "clone",
+          revert: "invalid",
+          scroll: false,
+          distance: 10,
+          delay: 300,
+          stop: function(){ 
+            updateChain();
+          }
+        });
     }
       
     // callback for creating a slider manipulating a single value
@@ -561,20 +576,7 @@
             new_effect[i]=effects[key].args[i];
         new_effects.push(new_effect);
       }
-      listEffects(new_effects,'#effects');
-      // the effects may be dragged to the chain list
-      $('#effects>*').draggable({
-        connectToSortable: "#chain,#pre_chain,#post_chain",
-        appendTo:'body',
-        helper: "clone",
-        revert: "invalid",
-        scroll: false,
-        distance: 10,
-        delay: 300,
-        stop: function(){        
-          updateChain();
-        }
-      });
+      listEffects(new_effects,'#effects','draggable');
 
       // list the files now, we have to postpone it until now 
       // otherwise the "image" and "video" effects won't show up properly 
@@ -608,21 +610,8 @@
           new_effect.url="files/"+file;
           new_effects.push(new_effect);
         }
-        listEffects(new_effects,'#files');
+        listEffects(new_effects,'#files','draggable');
 
-        // the effects may be dragged to the chain list
-        $('#files>*').draggable({
-          connectToSortable: "#chain,#pre_chain,#post_chain",
-          appendTo:'body',
-          helper: "clone",
-          revert: "invalid",
-          scroll: false,
-          distance: 10,
-          delay: 300,
-          stop: function(){        
-            updateChain();
-          }
-        });  
       });
     }
 
@@ -648,21 +637,8 @@
         add_effect('select_audio',index,device);
       });
 
-        listEffects(new_effects,'#devices');
+        listEffects(new_effects,'#devices','draggable');
 
-        // the effects may be dragged to the chain list
-        $('#devices>*').draggable({
-          connectToSortable: "#chain,#pre_chain,#post_chain",
-          appendTo:'body',
-          helper: "clone",
-          revert: "invalid",
-          scroll: false,
-          distance: 10,
-          delay: 300,
-          stop: function(){        
-            updateChain();
-          }
-        });  
         
     }
 
