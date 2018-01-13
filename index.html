@@ -160,13 +160,16 @@
         // on the newer navigator.mediaDevices.enumerateDevices interface, kind is "audioinput" or "videoinput" and so on..
         kind=kind.replace('input','');
 
-				if(kind=='audio' || kind=='video')
-	        source_ids[kind].push(source.id || source.deviceId);
+        if(kind=='audio' || kind=='video')
+        {
+          source_ids[kind].push(source.id || source.deviceId);
+        }
       }      
-      // start frequent canvas updates
-      update();
       // send out device data to UI
       put('devices',JSON.stringify(sources));
+
+      // start frequent canvas updates
+      update();
     }
 
     if(navigator.mediaDevices.enumerateDevices)

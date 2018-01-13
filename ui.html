@@ -22,18 +22,17 @@
   </div>
 
   <div class="effects container">
-    <h2>Effects</h2> <button id=show_files onclick="show_files()">FILES</button>
+    <h2>Effects</h2>
+    <button id=show_files onclick="show_panel('files')">FILES</button>
+    <button id=show_devices onclick="show_panel('devices')">DEVICES</button>
+    <button id=show_effects onclick="show_panel('effects')">EFFECTS</button>
     <div id=effects>
     </div>
-  </div>
-
-  <div class="files container">
-    <h2>Files</h2> <button id=show_effects onclick="show_effects()">EFFECTS</button>
     <div id=files>
     </div>
+    <div id=devices>
+    </div>
   </div>
-
-
 
   <div class="chains container">
     <h2>Chains</h2> <button id=new_chain onclick="new_chain()">ADD EMPTY</button><button id=clone_chain onclick="clone_chain()">CLONE</button>
@@ -627,18 +626,55 @@
       });
     }
 
-    show_files=function()
+    // provide list of device names for convenient selection
+    var device_list={video:[],audio:[]};
+    var listDevices=function(){
+      var new_effects=[];
+      var add_effect=function(type,device_id,name){
+          // create flat object with the effect name in 'effect'
+          // like the ones send to the server
+          var new_effect={effect:type};
+          if(effects[type].args)
+            for(i in effects[type].args)
+              new_effect[i]=effects[type].args[i];
+          new_effect.name  =name;
+          new_effect.device=device_id;
+          new_effects.push(new_effect);
+      }
+      device_list.video.forEach(function(device,index){
+        add_effect('capture',index,device);
+      });
+      device_list.audio.forEach(function(device,index){
+        add_effect('select_audio',index,device);
+      });
+
+        listEffects(new_effects,'#devices');
+
+        // the effects may be dragged to the chain list
+        $('#devices>*').draggable({
+          connectToSortable: "#chain,#pre_chain,#post_chain",
+          appendTo:'body',
+          helper: "clone",
+          revert: "invalid",
+          scroll: false,
+          distance: 10,
+          delay: 300,
+          stop: function(){        
+            updateChain();
+          }
+        });  
+        
+    }
+
+    show_panel=function(panel)
     {
-      listFiles();
-      $('.effects').hide();
-      $('.files'  ).show();
+      if(panel=='files') listFiles();
+      if(panel=='devices') listDevices();
+      $('.effects>div').hide();
+      $('.effects>div#'+panel).show();
+      $('.effects>h2').html(panel);
     };
-    show_effects=function()
-    {
-      $('.files'  ).hide();
-      $('.effects').show();
-    };
-    show_effects();
+    show_panel('effects');
 
     // create list of possible screen modes
     get('/screens',function(data){
@@ -835,7 +871,13 @@
         
         if(path=='/feeds'+session_url+'devices')
         {
-          console.log("Devices: "+message);
+          device_list={video:[],audio:[]};
+          var devices=JSON.parse(message);
+          for(var i=0; i<devices.length; i++)
+            if     (devices[i].kind=='videoinput') device_list.video.push(devices[i].label);
+            else if(devices[i].kind=='audioinput') device_list.audio.push(devices[i].label);
+          console.log("Devices:",device_list);
+          listDevices();
         }
         else if(path=='/feeds'+session_url+'preview')
         {
