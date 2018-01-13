@@ -666,10 +666,15 @@
         
     }
 
+    // tell server to rescan devices and report to us
+    var fetchDevices=function(){
+      send('devices()');
+    }
+
     show_panel=function(panel)
     {
       if(panel=='files') listFiles();
-      if(panel=='devices') listDevices();
+      if(panel=='devices') fetchDevices();
       $('.effects>div').hide();
       $('.effects>div#'+panel).show();
       $('.effects>h2').html(panel);
@@ -876,7 +881,7 @@
           for(var i=0; i<devices.length; i++)
             if     (devices[i].kind=='videoinput') device_list.video.push(devices[i].label);
             else if(devices[i].kind=='audioinput') device_list.audio.push(devices[i].label);
-          console.log("Devices:",device_list);
+          // refresh visible device list 
           listDevices();
         }
         else if(path=='/feeds'+session_url+'preview')

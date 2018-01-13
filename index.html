@@ -153,6 +153,7 @@
     var source_ids={audio:[],video:[]};
     function onSourcesAcquired(sources) 
     {
+      source_ids={audio:[],video:[]};
       for (var i = 0; i != sources.length; ++i) {      
         var source = sources[i];
         var kind=source.kind;
@@ -167,15 +168,10 @@
       }      
       // send out device data to UI
       put('devices',JSON.stringify(sources));
-
-      // start frequent canvas updates
-      update();
     }
 
-    if(navigator.mediaDevices.enumerateDevices)
-    	navigator.mediaDevices.enumerateDevices().then(onSourcesAcquired);
-    else
-      onSourcesAcquired([]);
+    // fetch available capture devices for use and report them to UI
+    devices();
 
     // let the remote change the audio source
     // 
@@ -256,9 +252,8 @@
     // set video handler. 
     // the video devices are started on demand.
     // returns a <video> Element streaming the selected device.
-    // this is used by the 'capture' effect in glfx.js to acquire the camera.
+    // this is used by the 'capture' effect to acquire the camera.
     canvas.video_source=get_video;
-
 
     // helper functions for chain code generation
 
@@ -361,6 +356,15 @@
       // set canvas 'switched' flag, that can be used by filters to reset buffers
       canvas.switched=true;
     }
+
+    // receive device list request from remote
+    function devices()
+    {
+      if(navigator.mediaDevices.enumerateDevices)
+        navigator.mediaDevices.enumerateDevices().then(onSourcesAcquired);
+      else
+        onSourcesAcquired([]);      
+    }
         
     // receive preview request from remote       
     function preview(enabled)
@@ -388,6 +392,9 @@
       setChain(full_chain);
     }
   
+
+    // start frequent canvas updates
+    update();
   </script>
 
 </body>
