@@ -194,17 +194,17 @@
       return data;
     }
   
-    /* create a effect DOM, value_renderer provides the UI for a single value */
+    /* create an effect DOM, value_renderer provides the UI for a single value */
     var create_effect_element=function(effect,value_renderer)
     {
-        var li=$('<div class=effect>');
+        var li=get_ui('',effect,value_renderer).find('>span.value');
+        li.addClass('effect');
         var effect_template=effects[effect.effect];
         li.attr('ui_effect',effect.effect);
         for(key in effect_template)
           if(key!='args')
             li.attr('ui_'+key, effect_template[key]);
-        li.append(get_ui('',effect,value_renderer));
-        return li;    
+        return li;
     }
     
     /* create UI DOM for an array of effects into container  */
@@ -398,7 +398,7 @@
       }
 
       // add OSC and BEAT button to each value
-      slider_ui.find('.ui_object:not([ui_type])>.value>.ui_number>.value').each(function(){
+      slider_ui.find('>.ui_number>.value').each(function(){
         var element=$(this);
         // get value field of original value_element to manipulate by this UI
         var value_element=$(element.data('original_value_element'));
@@ -418,7 +418,7 @@
       });
       
       // the first element in a nested UI block shows it's type, so disable it.
-      slider_ui.find('.ui_object .ui_object input').first().attr('disabled',true);
+      slider_ui.find('.ui_object input').first().attr('disabled',true);
 
       // add popup container to body
       popup=create_popup('adjust_ui',effect_element,slider_ui);
@@ -465,7 +465,7 @@
         // add name to pre- or post chain. For other chains, it is done by chain token.
         if(selector=='#pre_chain' || selector=='#post_chain')
 	  chain.push($(selector).parent().find('h2').html());
-        $(selector).find('.effect>.ui_object>.value').each(function(){
+        $(selector).find('.effect').each(function(){
           var effect=get_data($(this));
           chain.push(effect);
           full_chain.push(effect);
