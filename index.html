@@ -93,7 +93,7 @@
 
       // get animation time
       var current_time=Date.now();
-      frame_time=frame_time*0.9 + (current_time-time)*0.1;
+      frame_time=frame_time*0.8 + (current_time-time)*0.2;
       time=current_time;
       var effect_time=time*0.001; // 1 units per second      
 
@@ -130,7 +130,7 @@
 
         // only provide data every other frame if a preview image is send.
         // if only frame rate data is send, we keep the network calm.
-        preview_cycle=preview_enabled ? 2 : 15; 
+        preview_cycle=preview_enabled ? 2 : 5; 
       }
       preview_cycle--;
 
@@ -242,7 +242,7 @@
       // enforce resolution, if asked to
       if(width && height)
       {
-          constraints.video.width.min=width;  constraints.video.height.min=height;
+          constraints.video.width=width;  constraints.video.height=height;
       }
       
       navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
