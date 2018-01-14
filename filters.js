@@ -1165,7 +1165,7 @@ canvas.noalpha=function() {
 // src/filters/video/preview.js
 canvas.preview=function()
 {
-    this.preview_width=320; this.preview_height=200;
+    this.preview_width=640; this.preview_height=400;
     this._.texture.use();
     gl.viewport(0,0,this.preview_width,this.preview_height);
     this._.flippedShader.drawRect();
