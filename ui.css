@@ -272,10 +272,10 @@
     .effect{
       margin-left: 0px;
     }
-    .effect>.ui_object>.key
+/*    .effect>.ui_object>.key
     {
       display: none;
-    }
+    }*/
     .effect>:first-child{
       display: block;
     }    
