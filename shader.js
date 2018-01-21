@@ -20,18 +20,18 @@ var Shader = (function() {
     }
 
     var defaultVertexSource = '\
-    attribute vec2 vertex;\
-    varying vec2 texCoord;\
+    in vec2 vertex;\
+    out vec2 texCoord;\
     void main() {\
         texCoord = vertex;\
         gl_Position = vec4(vertex * 2.0 - 1.0, 0.0, 1.0);\
     }';
 
     var defaultFragmentSource = '\
-    uniform sampler2D texture;\
-    varying vec2 texCoord;\
+    uniform sampler2D input0;\
+    in vec2 texCoord;\
     void main() {\
-        gl_FragColor = texture2D(texture, texCoord);\
+        output0 = texture(input0, texCoord);\
     }';
 
     function Shader(vertexSource, fragmentSource) {
@@ -42,7 +42,8 @@ var Shader = (function() {
         this.program = gl.createProgram();
         vertexSource = vertexSource || defaultVertexSource;
         fragmentSource = fragmentSource || defaultFragmentSource;
-        fragmentSource = 'precision mediump float;' + fragmentSource; // annoying requirement is annoying
+        vertexSource='#version 300 es\n'+vertexSource;
+        fragmentSource = '#version 300 es\nprecision mediump float;\nout vec4 output0;\n' + fragmentSource; // annoying requirement is annoying
         gl.attachShader(this.program, compileSource(gl.VERTEX_SHADER, vertexSource));
         gl.attachShader(this.program, compileSource(gl.FRAGMENT_SHADER, fragmentSource));
         gl.linkProgram(this.program);

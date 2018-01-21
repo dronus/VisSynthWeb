@@ -17,7 +17,7 @@ function clamp(lo, value, hi) {
 canvas = function() {
     var canvas = document.createElement('canvas');
     try {
-        gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
+        gl = canvas.getContext('webgl2', { alpha: false, premultipliedAlpha: false });
     } catch (e) {
         gl = null;
     }
@@ -41,8 +41,7 @@ canvas = function() {
 
         // ready extensions to enable switch to float textures, if wanted.
         // if not supported, it should be fine as long as type UNSIGNED_BYTE is used as by default.
-  	if (gl.getExtension('OES_texture_float')) gl.getExtension('OES_texture_float_linear');
-
+  	if (gl.getExtension('EXT_color_buffer_float')) gl.getExtension('OES_texture_float_linear');
         if (this._.texture) this._.texture.destroy();
         if (this._.spareTexture) this._.spareTexture.destroy();
         this.width = width;
@@ -51,10 +50,10 @@ canvas = function() {
         this._.spareTexture = new Texture(width, height, gl.RGBA, type);
         this._.extraTexture = this._.extraTexture || new Texture(0, 0, gl.RGBA, type);
         this._.flippedShader = this._.flippedShader || new Shader(null, '\
-            uniform sampler2D texture;\
-            varying vec2 texCoord;\
+            uniform sampler2D input0;\
+            in vec2 texCoord;\
             void main() {\
-                gl_FragColor = texture2D(texture, vec2(texCoord.x, 1.0 - texCoord.y));\
+                output0 = texture(input0, vec2(texCoord.x, 1.0 - texCoord.y));\
             }\
         ');
         this._.isInitialized = true;

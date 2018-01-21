@@ -48,17 +48,17 @@ canvas.filtering=function(linear)
 // src/filters/common.js
 var warpShader=function(uniforms, warp) {
     return new Shader(null, uniforms + '\
-    uniform sampler2D texture;\
+    uniform sampler2D input0;\
     uniform vec2 texSize;\
-    varying vec2 texCoord;\
+    in vec2 texCoord;\
     void main() {\
         vec2 coord = texCoord * texSize;\
         ' + warp + '\
-        gl_FragColor = texture2D(texture, coord / texSize);\
+        output0 = texture(input0, coord / texSize);\
         vec2 clampedCoord = clamp(coord, vec2(0.0), texSize);\
         if (coord != clampedCoord) {\
             /* fade to transparent black if we are outside the image */\
-            gl_FragColor *= max(0.0, 1.0 - length(coord - clampedCoord));\
+            output0 *= max(0.0, 1.0 - length(coord - clampedCoord));\
         }\
     }');
 }
@@ -77,19 +77,19 @@ canvas.blend_alpha=function(alpha) {
     alpha=alpha||1.0;
 
     gl.blend_alpha = gl.blend_alpha || new Shader(null, '\
-        uniform sampler2D texture1;\
-        uniform sampler2D texture2;\
+        uniform sampler2D input1;\
+        uniform sampler2D input2;\
         uniform float alpha;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color1 = texture2D(texture1, texCoord);\
-            vec4 color2 = texture2D(texture2, texCoord);\
-            gl_FragColor = mix(color1, color2, color2.a*alpha);\
+            vec4 color1 = texture(input1, texCoord);\
+            vec4 color2 = texture(input2, texCoord);\
+            output0 = mix(color1, color2, color2.a*alpha);\
         }\
     ');
 
-    var texture1=this.stack_pop();
-    gl.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
+    var input1=this.stack_pop();
+    gl.blend_alpha.textures({input2: this._.texture, input1: input1});
     this.simpleShader( gl.blend_alpha, {alpha:clamp(0.,alpha,1.)});
 
     return this;
@@ -98,18 +98,18 @@ canvas.blend_alpha=function(alpha) {
 // src/filters/video/blend_alpha.js
 canvas.multiply=function() {
     gl.multiply = gl.multiply || new Shader(null, '\
-        uniform sampler2D texture1;\
-        uniform sampler2D texture2;\
-        varying vec2 texCoord;\
+        uniform sampler2D input1;\
+        uniform sampler2D input2;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color1 = texture2D(texture1, texCoord);\
-            vec4 color2 = texture2D(texture2, texCoord);\
-            gl_FragColor = color1 * color2;\
+            vec4 color1 = texture(input1, texCoord);\
+            vec4 color2 = texture(input2, texCoord);\
+            output0 = color1 * color2;\
         }\
     ');
 
-    var texture1=this.stack_pop();
-    gl.multiply.textures({texture2: this._.texture, texture1: texture1});
+    var input1=this.stack_pop();
+    gl.multiply.textures({input2: this._.texture, input1: input1});
     this.simpleShader( gl.multiply, {});
 
     return this;
@@ -118,21 +118,21 @@ canvas.multiply=function() {
 
 canvas.blend_mask=function() {
     gl.blend_mask = gl.blend_mask || new Shader(null, '\
-        uniform sampler2D texture1;\
-        uniform sampler2D texture2;\
+        uniform sampler2D input1;\
+        uniform sampler2D input2;\
         uniform sampler2D mask;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color1 = texture2D(texture1, texCoord);\
-            vec4 color2 = texture2D(texture2, texCoord);\
-            float alpha = dot(texture2D(mask, texCoord).rgb,vec3(1./3.));\
-            gl_FragColor = mix(color1, color2, alpha);\
+            vec4 color1 = texture(input1, texCoord);\
+            vec4 color2 = texture(input2, texCoord);\
+            float alpha = dot(texture(mask, texCoord).rgb,vec3(1./3.));\
+            output0 = mix(color1, color2, alpha);\
         }\
     ');
 
-    var texture2=this.stack_pop();
-    var texture1=this.stack_pop();
-    gl.blend_mask.textures({mask: this._.texture, texture1: texture1, texture2: texture2});
+    var input2=this.stack_pop();
+    var input1=this.stack_pop();
+    gl.blend_mask.textures({mask: this._.texture, input1: input1, input2: input2});
     this.simpleShader( gl.blend_mask, {});
 
     return this;
@@ -142,20 +142,21 @@ canvas.blend_mask=function() {
 // src/filters/video/superquadric.js
 canvas.superquadric=function(A,B,C,r,s,t,angle) {
     gl.superquadric = gl.superquadric || new Shader('\
-    attribute vec3 vertex;\
-    attribute vec2 _texCoord;\
-    varying vec2 texCoord;\
+    in vec3 vertex;\
+    in vec2 _texCoord;\
+    out vec2 texCoord;\
+    out vec2 position;\
     uniform mat4 matrix;\
     void main() {\
         texCoord = _texCoord;\
         vec4 pos=matrix * (vec4(vertex,1.0));  \
-        gl_Position = pos/pos.w; \
+        position = pos/pos.w; \
     }','\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         void main() {\
-          vec4 rgba = texture2D(texture, texCoord);\
-          gl_FragColor = rgba;\
+          vec4 rgba = texture(input0, texCoord);\
+          output0 = rgba;\
         }\
     ');
 
@@ -305,13 +306,13 @@ canvas.strobe=function(period)
 // src/filters/video/tile.js
 canvas.tile=function(size,centerx,centery) {
     gl.tile = gl.tile || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 center;\
       	uniform float size;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-          vec4 color = texture2D(texture, fract((texCoord-center)*size));\
-          gl_FragColor = color;\
+          vec4 color = texture(input0, fract((texCoord-center)*size));\
+          output0 = color;\
         }\
     ');
 
@@ -363,8 +364,8 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
       uniform float n2b;\
       uniform float n3b;\
       \
-      attribute vec2 _texCoord;\
-      varying vec2 texCoord;\
+      in vec2 _texCoord;\
+      out vec2 texCoord;\
       uniform mat4 matrix;\
       \
       float PI=3.14159;\
@@ -390,11 +391,11 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
           pos=matrix*pos;\
           gl_Position = pos/pos.w;\
       }','\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         void main() {\
-          vec4 rgba = texture2D(texture, texCoord);\
-          gl_FragColor = rgba;\
+          vec4 rgba = texture(input0, texCoord);\
+          output0 = rgba;\
         }\
       ');
       var uvs=[];
@@ -444,7 +445,7 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
 
 canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
     gl.superellipse = gl.superellipse || new Shader(null, '\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
       uniform mat3 transform;\
       uniform float a;\
       uniform float b;\
@@ -473,7 +474,7 @@ canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
           }\
           float r=sqrt(dot(uv,uv));\
           \
-          gl_FragColor = mix(vec4(0.0,0.0,0.0,1.0),vec4(1.0,1.0,1.0,1.0),(Out-r)+0.5);\
+          output0 = mix(vec4(0.0,0.0,0.0,1.0),vec4(1.0,1.0,1.0,1.0),(Out-r)+0.5);\
       }\
     ');
 
@@ -491,7 +492,7 @@ canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
 
 canvas.grating=function(size,angle,ax,fx,ay,fy) {
     gl.grating = gl.grating || new Shader(null, '\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
       uniform mat3 transform;\
       uniform float ax;\
       uniform float fx;\
@@ -500,7 +501,7 @@ canvas.grating=function(size,angle,ax,fx,ay,fy) {
       void main() {\
           vec2 uv=(transform*vec3(texCoord-vec2(0.5,0.5),1.0)).xy;\
           float x=ax*sin(fx*uv.x)*ay*cos(fy*uv.y);\
-          gl_FragColor = vec4(vec3(x+0.5),1.0);\
+          output0 = vec4(vec3(x+0.5),1.0);\
       }\
     ');
 
@@ -520,8 +521,8 @@ canvas.grating=function(size,angle,ax,fx,ay,fy) {
 canvas.colorDisplacement=function(angle,amplitude) {
     gl.colorDisplacement = gl.colorDisplacement || new Shader(null,'\
     \
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         uniform vec2 texSize;\
         uniform float angle;\
         uniform float amplitude;\
@@ -532,10 +533,10 @@ canvas.colorDisplacement=function(angle,amplitude) {
         vec2 or=sin(angles+0.*p3)/texSize*amplitude; \
         vec2 og=sin(angles+1.*p3)/texSize*amplitude; \
         vec2 ob=sin(angles+2.*p3)/texSize*amplitude; \
-        gl_FragColor=vec4( \
-            texture2D(texture,texCoord+or).r, \
-            texture2D(texture,texCoord+og).g, \
-            texture2D(texture,texCoord+ob).b, \
+        output0=vec4( \
+            texture(input0,texCoord+or).r, \
+            texture(input0,texCoord+og).g, \
+            texture(input0,texCoord+ob).b, \
         1.0); \
         } \
     ');
@@ -554,7 +555,7 @@ canvas.matte=function(r,g,b,a) {
     gl.matte = gl.matte || new Shader(null, '\
         uniform vec4 color;\
         void main() {\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
     if(typeof(a)=='undefined') a=1.; // legacy
@@ -565,7 +566,7 @@ canvas.matte=function(r,g,b,a) {
 
 canvas.noise=function(seed) {
     gl.noise = gl.noise || new Shader(null, '\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         uniform float seed;\
         vec3 noise3(vec3 t){\
           vec3 dots=vec3(\
@@ -576,7 +577,7 @@ canvas.noise=function(seed) {
           return fract(sin(dots) * 43758.5453);\
         }\
         void main() {\
-            gl_FragColor = vec4(noise3(vec3(texCoord,seed)),1.0);\
+            output0 = vec4(noise3(vec3(texCoord,seed)),1.0);\
         }\
     ');
     this.simpleShader( gl.noise, {seed:seed});
@@ -592,7 +593,7 @@ canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
         uniform float sides;\
         uniform float angle;\
         uniform vec2 center;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         float PI=3.14159; \
         void main() {\
             vec2 uv=texCoord-vec2(0.5,0.5)-center;\
@@ -604,9 +605,9 @@ canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
             float d = r / (cos(PI/sides)/cos(mod(a,(2.*PI/sides))-(PI/sides))); \
             \
             if(d<1.) \
-              gl_FragColor=color; \
+              output0=color; \
             else \
-              gl_FragColor=vec4(0.); \
+              output0=vec4(0.); \
         }\
     ');
 
@@ -628,15 +629,15 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
         uniform vec2 size;\
         uniform float angle;\
         uniform vec2 center;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         float PI=3.14159; \
         void main() {\
             vec2 uv=texCoord-vec2(0.5,0.5)-center;\
             uv/=size;\
             if(abs(uv.x)<1. && abs(uv.y)<1.) \
-              gl_FragColor=color; \
+              output0=color; \
             else \
-              gl_FragColor=vec4(0.); \
+              output0=vec4(0.); \
         }\
     ');
 
@@ -795,14 +796,14 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     if(!gl.mesh_displacement[mesh_type])
     {
     gl.mesh_displacement[mesh_type] = new Shader('\
-    attribute vec2 _texCoord;\
-    varying vec2 texCoord;\
+    in vec2 _texCoord;\
+    out vec2 texCoord;\
     uniform mat4 matrix;\
     uniform sampler2D displacement_map;\
     uniform vec3 strength;\
     void main() {\
         texCoord = _texCoord;\
-        vec3 dis = texture2D(displacement_map, _texCoord).xyz-0.5;\
+        vec3 dis = texture(displacement_map, _texCoord).xyz-0.5;\
         vec4 pos= (vec4(vec3(_texCoord,0.0)+dis*strength,1.0));\
         '+mesh_transforms[mesh_type]+' \
         pos=matrix * pos;\
@@ -850,7 +851,7 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     });
     
     // set shader textures
-    mesh_shader.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    mesh_shader.textures({displacement_map: this._.texture, input0: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
@@ -872,20 +873,20 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 // src/filters/video/blend.js
 canvas.blend=function(alpha,factor,offset) {
     gl.blend = gl.blend || new Shader(null, '\
-        uniform sampler2D texture;\
-        uniform sampler2D texture1;\
+        uniform sampler2D input0;\
+        uniform sampler2D input1;\
         uniform float alpha;\
         uniform float factor;\
         uniform float offset;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color  = texture2D(texture , texCoord);\
-            vec4 color1 = texture2D(texture1, texCoord);\
-            gl_FragColor = mix(color, color1, alpha) * factor + vec4(offset,offset,offset,0.0);\
+            vec4 color  = texture(input0 , texCoord);\
+            vec4 color1 = texture(input1, texCoord);\
+            output0 = mix(color, color1, alpha) * factor + vec4(offset,offset,offset,0.0);\
         }\
     ');
 
-    gl.blend.textures({texture: this._.texture, texture1: this.stack_pop()});
+    gl.blend.textures({input0: this._.texture, input1: this.stack_pop()});
     this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
 
     return this;
@@ -894,11 +895,11 @@ canvas.blend=function(alpha,factor,offset) {
 // src/filters/video/kaleidoscope.js
 canvas.kaleidoscope=function(sides,angle,angle2) {
     gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
 	uniform float angle;\
 	uniform float angle2;\
 	uniform float sides;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
 	void main() {\
 		vec2 p = texCoord - 0.5;\
 		float r = length(p);\
@@ -907,8 +908,8 @@ canvas.kaleidoscope=function(sides,angle,angle2) {
 		a = mod(a, tau/sides);\
 		a = abs(a - tau/sides/2.) * 1.5 ;\
 		p = r * 2. * vec2(cos(a+angle2), sin(a+angle2));\
-		vec4 color = texture2D(texture, mod(p + 0.5,vec2(1.,1.)));\
-		gl_FragColor = color;\
+		vec4 color = texture(input0, mod(p + 0.5,vec2(1.,1.)));\
+		output0 = color;\
 	}\
     ');
 
@@ -925,11 +926,11 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
     gl.mandelbrot = gl.mandelbrot || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec4 xform;\
         uniform vec2 center;\
         uniform float iterations; \
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 c=mat*(texCoord-center);\
@@ -941,7 +942,7 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
               nz = vec2(z.x*z.x-z.y*z.y, 2.0*z.x*z.y) + c ; \
             } \
             vec2 pos=mix(z,nz,fract(iterations));\
-            gl_FragColor = texture2D(texture, pos/8.0+vec2(0.5,0.5));\
+            output0 = texture(input0, pos/8.0+vec2(0.5,0.5));\
         }\
     ');
 
@@ -965,12 +966,12 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
     gl.julia = gl.julia || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec4 xform;\
         uniform vec2 center;\
         uniform vec2 c;\
         uniform float iterations; \
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 z; \
@@ -981,7 +982,7 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
               nz = vec2(z.x*z.x-z.y*z.y, 2.0*z.x*z.y) + c ; \
             } \
             vec2 pos=mix(z,nz,fract(iterations));\
-            gl_FragColor = texture2D(texture, pos/8.0+vec2(0.5,0.5));\
+            output0 = texture(input0, pos/8.0+vec2(0.5,0.5));\
         }\
     ');
 
@@ -1002,47 +1003,45 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
 // src/filters/video/relief.js
 canvas.relief=function(scale2,scale4) {
-      gl.getExtension('OES_standard_derivatives');
       gl.relief = gl.relief || new Shader(null,'\n\
-      #extension GL_OES_standard_derivatives : enable\n\
-      uniform sampler2D texture;\n\
+      uniform sampler2D input0;\n\
       uniform sampler2D texture_blur2;\n\
       uniform sampler2D texture_blur4;\n\
-      varying vec2 texCoord;\n\
+      in vec2 texCoord;\n\
       uniform vec2 texSize;\n\
          \n\
       void main(void) {\n\
-        gl_FragColor = vec4(1.-abs(texture2D(texture, texCoord).y*2.-1.)); \n\
+        output0 = vec4(1.-abs(texture(input0, texCoord).y*2.-1.)); \n\
        \n\
         vec2 d = texSize*1.; \n\
         vec2 gy; // green texCoord gradient vector \n\
-        gy.x = dFdx(texture2D(texture, texCoord).y); \n\
-        gy.y = dFdy(texture2D(texture, texCoord).y); \n\
+        gy.x = dFdx(texture(input0, texCoord).y); \n\
+        gy.y = dFdy(texture(input0, texCoord).y); \n\
        \n\
         d = texSize*4.; \n\
        \n\
         vec2 gz; // blue blur2 gradient vector \n\
-        gz.x = dFdx(texture2D(texture_blur2, texCoord).z)*4.0; \n\
-        gz.y = dFdy(texture2D(texture_blur2, texCoord).z)*4.0; \n\
+        gz.x = dFdx(texture(texture_blur2, texCoord).z)*4.0; \n\
+        gz.y = dFdy(texture(texture_blur2, texCoord).z)*4.0; \n\
        \n\
-        gl_FragColor = vec4(0.); \n\
+        output0 = vec4(0.); \n\
        \n\
-        gl_FragColor.y = texture2D(texture, texCoord + gz*texSize*64.).y*0.4 - (gz.x + gz.y)*0.4 + 0.4; // gradient enhancement and refraction \n\
-        gl_FragColor.z = texture2D(texture_blur4, texCoord + 4.*gy - gz ).z*1.75 -0.0; // scatter/refract \n\
+        output0.y = texture(input0, texCoord + gz*texSize*64.).y*0.4 - (gz.x + gz.y)*0.4 + 0.4; // gradient enhancement and refraction \n\
+        output0.z = texture(texture_blur4, texCoord + 4.*gy - gz ).z*1.75 -0.0; // scatter/refract \n\
        \n\
-        gl_FragColor.yz *= 1.- texture2D(texture_blur4, texCoord).x*2.5; // box shadow \n\
-        gl_FragColor.x = texture2D(texture, texCoord).x*1.+0.25; // repaint over shadow \n\
+        output0.yz *= 1.- texture(texture_blur4, texCoord).x*2.5; // box shadow \n\
+        output0.x = texture(input0, texCoord).x*1.+0.25; // repaint over shadow \n\
          \n\
-        gl_FragColor.y += gl_FragColor.x; // red -> yellow \n\
+        output0.y += output0.x; // red -> yellow \n\
        \n\
-        gl_FragColor.yz *= vec2(0.75,1.)- texture2D(texture_blur4, texCoord).z*1.5; // shadow \n\
-        gl_FragColor.z += texture2D(texture, texCoord).z*1.5; // repaint over shadow \n\
-        gl_FragColor.y += gl_FragColor.z*0.5 - 0.1; // blue -> cyan \n\
+        output0.yz *= vec2(0.75,1.)- texture(texture_blur4, texCoord).z*1.5; // shadow \n\
+        output0.z += texture(input0, texCoord).z*1.5; // repaint over shadow \n\
+        output0.y += output0.z*0.5 - 0.1; // blue -> cyan \n\
          \n\
          \n\
-        gl_FragColor = clamp(gl_FragColor,0.0,1.0);\n\
+        output0 = clamp(output0,0.0,1.0);\n\
          \n\
-        gl_FragColor.a = 1.;\n\
+        output0.a = 1.;\n\
       } \n\
     ');
 
@@ -1062,7 +1061,7 @@ canvas.relief=function(scale2,scale4) {
       this.stack_pop();
       
     gl.relief.textures({
-        texture: texture,
+        input0: texture,
         texture_blur2: textures[0],
         texture_blur4: textures[1]
     });    
@@ -1078,18 +1077,18 @@ canvas.relief=function(scale2,scale4) {
 // src/filters/video/transform.js
 canvas.transform=function(x,y,scale,angle,sx,sy) {
     gl.transform = gl.transform || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 translation;\
         uniform vec4 xform;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         uniform vec2 aspect;\
         void main() {\
           mat2 mat=mat2(xform.xy,xform.zw);\
           vec2 uv=(mat*(texCoord*aspect+translation-vec2(0.5,0.5))+vec2(0.5,0.5))/aspect; \
           if(uv.x>=0. && uv.y>=0. && uv.x<=1. && uv.y<=1.) \
-            gl_FragColor = texture2D(texture,uv);\
+            output0 = texture(input0,uv);\
           else \
-            gl_FragColor = vec4(0.,0.,0.,0.); \
+            output0 = vec4(0.,0.,0.,0.); \
         }\
     ');
     
@@ -1112,19 +1111,19 @@ canvas.transform=function(x,y,scale,angle,sx,sy) {
 canvas.analogize=function(exposure,gamma,glow,radius) {
     gl.analogize = gl.analogize || new Shader(null,'\
     \
-      uniform sampler2D texture;\
+      uniform sampler2D input0;\
       uniform sampler2D glow_texture;\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
 		  uniform float Glow; \
 		  uniform float Exposure;\
 		  uniform float Gamma;\
 		  void main(void){\
-		     vec3 color  = texture2D(glow_texture,vec2(texCoord)).rgb*Glow;\
-		     color  += 	texture2D(texture,texCoord).rgb;\
+		     vec3 color  = texture(glow_texture,vec2(texCoord)).rgb*Glow;\
+		     color  += 	texture(input0,texCoord).rgb;\
 		     color=1.0-exp(-Exposure*color);\
 		     color=pow(color, vec3(Gamma,Gamma,Gamma));\
-		     gl_FragColor.rgb = color;\
-		     gl_FragColor.a = 1.0;\
+		     output0.rgb = color;\
+		     output0.a = 1.0;\
 		  } \
     ');
 
@@ -1136,7 +1135,7 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 
     gl.analogize.textures({
         glow_texture: this._.texture,
-        texture: this._.extraTexture
+        input0: this._.extraTexture
     });
     this.simpleShader( gl.analogize, {
         Glow: glow,
@@ -1151,11 +1150,11 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 // src/filters/video/noalpha.js
 canvas.noalpha=function() {
     gl.noalpha = gl.noalpha || new Shader(null, '\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            gl_FragColor = vec4(color.rgb,1.);\
+            vec4 color = texture(input0, texCoord);\
+            output0 = vec4(color.rgb,1.);\
         }\
     ');
     this.simpleShader( gl.noalpha, {});
@@ -1179,14 +1178,14 @@ canvas.preview=function()
 // src/filters/video/feedbackOut.js
 canvas.feedbackOut=function(blend,clear_on_switch) {
     gl.feedbackOut = gl.feedbackOut || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform sampler2D feedbackTexture;\
         uniform float blend;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 original = texture2D(texture, texCoord);\
-            vec4 feedback = texture2D(feedbackTexture, texCoord);\
-            gl_FragColor = mix(original, feedback, blend);\
+            vec4 original = texture(input0, texCoord);\
+            vec4 feedback = texture(feedbackTexture, texCoord);\
+            output0 = mix(original, feedback, blend);\
         }\
     ');
 
@@ -1196,7 +1195,7 @@ canvas.feedbackOut=function(blend,clear_on_switch) {
       this._.feedbackTexture.clear();
 
     gl.feedbackOut.textures({
-        texture: this._.texture,
+        input0: this._.texture,
         feedbackTexture: this._.feedbackTexture
     });
     this.simpleShader( gl.feedbackOut, {
@@ -1209,27 +1208,27 @@ canvas.feedbackOut=function(blend,clear_on_switch) {
 // src/filters/video/motion.js
 canvas.motion=function(threshold,interval,damper) {
     gl.motionBlend = gl.motionBlend || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform sampler2D motionTexture;\
         uniform float blend;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 original = texture2D(texture, texCoord);\
-            vec4 feedback = texture2D(motionTexture, texCoord);\
-            gl_FragColor = mix(original, feedback, blend);\
+            vec4 original = texture(input0, texCoord);\
+            vec4 feedback = texture(motionTexture, texCoord);\
+            output0 = mix(original, feedback, blend);\
         }\
     ');
 
     gl.motion = gl.motion || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform sampler2D motionTexture;\
         uniform float threshold;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 original = texture2D(texture, texCoord);\
-            vec4 background = texture2D(motionTexture, texCoord);\
+            vec4 original = texture(input0, texCoord);\
+            vec4 background = texture(motionTexture, texCoord);\
             float d=length(original.rgb-background.rgb);\
-            gl_FragColor = d>threshold ? original : vec4(0.0,0.0,0.0,0.0);  \
+            output0 = d>threshold ? original : vec4(0.0,0.0,0.0,0.0);  \
         }\
     ');
 
@@ -1242,7 +1241,7 @@ canvas.motion=function(threshold,interval,damper) {
     {
       // blend current image into mean motion texture
       gl.motionBlend.textures({
-          texture: this._.texture,
+          input0: this._.texture,
           motionTexture: this._.motionTexture
       });
       this.simpleShader( gl.motionBlend, {
@@ -1255,7 +1254,7 @@ canvas.motion=function(threshold,interval,damper) {
 
     // rebind, motionTexture was exchanged by simpleShader
     gl.motion.textures({
-        texture: this._.texture,
+        input0: this._.texture,
         motionTexture: this._.motionTexture
     });
     this.simpleShader( gl.motion, {
@@ -1268,33 +1267,30 @@ canvas.motion=function(threshold,interval,damper) {
 // src/filters/video/reaction.js
 canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
-    gl.getExtension('OES_standard_derivatives');
-
     gl.reaction_blur = gl.reaction_blur || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 delta;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             vec4 color = vec4(0.0);\
             float b=1./4.;\
-            color+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
-            gl_FragColor = color; \
+            color+=b*texture(input0, texCoord + delta * vec2( .5, .5) );\
+            color+=b*texture(input0, texCoord + delta * vec2(-.5, .5) );\
+            color+=b*texture(input0, texCoord + delta * vec2( .5,-.5) );\
+            color+=b*texture(input0, texCoord + delta * vec2(-.5,-.5) );\
+            output0 = color; \
         }\
     ');
     
     gl.reaction = gl.reaction || new Shader(null,'\n\
-      #extension GL_OES_standard_derivatives : enable\n\
-      uniform sampler2D texture;\n\
+      uniform sampler2D input0;\n\
       uniform sampler2D texture_blur;\n\
       uniform sampler2D texture_blur2;\n\
       uniform sampler2D texture_blur3;\n\
       uniform sampler2D texture_blur4;\n\
       uniform float noise_factor;\n\
       uniform float zoom_speed;\n\
-      varying vec2 texCoord;\n\
+      in vec2 texCoord;\n\
       uniform vec2 texSize;\n\
       uniform vec4 rnd;\n\
       \
@@ -1377,8 +1373,8 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
        \n\
         // green: very soft reaction-diffusion (skin dot synthesis simulation)\n\
        \n\
-        gl_FragColor.y = texture2D(texture, uv).y + noise.y*0.0066; // a dash of error diffusion;\n\
-        gl_FragColor.y += (texture2D(texture, uv).y-texture2D(texture_blur4, uv).y)*0.0166; // sort of a Laplacian\n\
+        output0.y = texture(input0, uv).y + noise.y*0.0066; // a dash of error diffusion;\n\
+        output0.y += (texture(input0, uv).y-texture(texture_blur4, uv).y)*0.0166; // sort of a Laplacian\n\
         \n\
         // ^^ yes, that is all the magic for green.\n\
         \n\
@@ -1386,44 +1382,44 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         \n\
         vec2 d = texSize*8.;\n\
         vec2 gy; // gradient in green\n\
-        gy.x = dFdx(texture2D(texture_blur2, texCoord).y);\n\
-        gy.y = dFdy(texture2D(texture_blur2, texCoord).y);\n\
+        gy.x = dFdx(texture(texture_blur2, texCoord).y);\n\
+        gy.y = dFdy(texture(texture_blur2, texCoord).y);\n\
         gy*=8.;\n\
       \n\
         d = texSize*4.;\n\
         vec2 gz; // gradient in blue\n\
-        gz.x = dFdx(texture2D(texture_blur, texCoord).z);\n\
-        gz.y = dFdy(texture2D(texture_blur, texCoord).z);\n\
+        gz.x = dFdx(texture(texture_blur, texCoord).z);\n\
+        gz.y = dFdy(texture(texture_blur, texCoord).z);\n\
         gz*=4.;\n\
       \n\
         uv += gy.yx*vec2(1.,-1.)*texSize*4. //gradient in green rotated by 90 degree\n\
           - gy*texSize*16. // gradient in green\n\
           - gz*texSize*0.25 // gradient of blue - makes the "traveling wave fronts" usually\n\
           + gz.yx*vec2(-1.,1.)*texSize*4.; // rotated gradient of blue - makes the painterly effect here\n\
-        gl_FragColor.z = texture2D(texture, uv).z + noise.z*0.12; // error diffusion\n\
-        gl_FragColor.z += (texture2D(texture, uv).z-texture2D(texture_blur3, uv).z)*0.11; // teh magic :P\n\
+        output0.z = texture(input0, uv).z + noise.z*0.12; // error diffusion\n\
+        output0.z += (texture(input0, uv).z-texture(texture_blur3, uv).z)*0.11; // teh magic :P\n\
       \n\
-        gl_FragColor.z +=  - (gl_FragColor.y-0.02)*.025;\n\
+        output0.z +=  - (output0.y-0.02)*.025;\n\
       \n\
         // that\'s all for blue ^^\n\
         // since this became such a beauty, the code for red is mostly a copy, but the inhibitor is inverted to the absence of green\n\
       \n\
         vec2 gx; // gradient in blue\n\
-        gx.x = dFdx(texture2D(texture_blur, texCoord).x);\n\
-        gx.y = dFdy(texture2D(texture_blur, texCoord).x);\n\
+        gx.x = dFdx(texture(texture_blur, texCoord).x);\n\
+        gx.y = dFdy(texture(texture_blur, texCoord).x);\n\
         gx*=4.;\n\
       \n\
         uv += - gy.yx*vec2(1.,-1.)*texSize*8. //gradient in green rotated by 90 degree\n\
           + gy*texSize*32. // gradient in green\n\
           - gx*texSize*0.25 // gradient of red - makes the "traveling wave fronts" usually\n\
           - gx.yx*vec2(-1.,1.)*texSize*4.; // rotated gradient of red - makes the painterly effect here\n\
-        gl_FragColor.x = texture2D(texture, uv).x + noise.x*0.12; // error diffusion\n\
-        gl_FragColor.x += (texture2D(texture, uv).x-texture2D(texture_blur3, uv).x)*0.11; // reaction diffusion\n\
+        output0.x = texture(input0, uv).x + noise.x*0.12; // error diffusion\n\
+        output0.x += (texture(input0, uv).x-texture(texture_blur3, uv).x)*0.11; // reaction diffusion\n\
       \n\
-        gl_FragColor.x +=  - ((1.-gl_FragColor.y)-0.02)*.025;\n\
+        output0.x +=  - ((1.-output0.y)-0.02)*.025;\n\
       \n\
-        gl_FragColor.a = 1.;\n\
-        gl_FragColor=clamp(gl_FragColor,-1.0,1.0); \n\
+        output0.a = 1.;\n\
+        output0=clamp(output0,-1.0,1.0); \n\
       }\n\
     ');
 
@@ -1445,7 +1441,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
       this.stack_pop();
       
     gl.reaction.textures({
-        texture: texture,
+        input0: texture,
         texture_blur: textures[0],
         texture_blur2: textures[1],
         texture_blur3: textures[2],
@@ -1468,13 +1464,13 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 canvas.reaction2=function(F,K,D_a,D_b,iterations) {
     iterations=Math.floor(Math.min(iterations,100.));
     gl.reaction2 = gl.reaction2 || new Shader(null, '\
-      uniform sampler2D texture;\n\
+      uniform sampler2D input0;\n\
       uniform float F;\n\
       uniform float K;\n\
       uniform float D_a;\n\
       uniform float D_b;\n\
       uniform vec2 scale;\n\
-      varying vec2 texCoord;\n\
+      in vec2 texCoord;\n\
       \n\
       void main() {\n\
 	      vec2 p = texCoord.xy,\n\
@@ -1483,18 +1479,18 @@ canvas.reaction2=function(F,K,D_a,D_b,iterations) {
 	           s = p + vec2(0.0, -1.0)/scale,\n\
 	           w = p + vec2(-1.0, 0.0)/scale;\n\
       \n\
-	      vec3 color = texture2D(texture, p).xyz;\n\
+	      vec3 color = texture(input0, p).xyz;\n\
 	      vec2 val = color.xy,\n\
-	           laplacian = texture2D(texture, n).xy\n\
-		      + texture2D(texture, e).xy\n\
-		      + texture2D(texture, s).xy\n\
-		      + texture2D(texture, w).xy\n\
+	           laplacian = texture(input0, n).xy\n\
+		      + texture(input0, e).xy\n\
+		      + texture(input0, s).xy\n\
+		      + texture(input0, w).xy\n\
 		      - 4.0 * val;\n\
       \n\
 	      vec2 delta = vec2(D_a * laplacian.x - val.x*val.y*val.y + F * (1.0-val.x),\n\
 		      D_b * laplacian.y + val.x*val.y*val.y - (K+F) * val.y);\n\
       \n\
-	      gl_FragColor = vec4(clamp(val + delta,-1.0,1.0), color.z, 1.0);\n\
+	      output0 = vec4(clamp(val + delta,-1.0,1.0), color.z, 1.0);\n\
       }\n\
     ');
 
@@ -1510,17 +1506,17 @@ canvas.reaction2=function(F,K,D_a,D_b,iterations) {
 canvas.displacement=function(strength) {
     gl.displacement = gl.displacement || new Shader(null, '\
         uniform sampler2D displacement_map;\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float strength;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec2 data = texture2D(displacement_map, texCoord).rg;\
+            vec2 data = texture(displacement_map, texCoord).rg;\
             vec2 pos=texCoord + (data - vec2(0.5,0.5)) * strength; \
-            gl_FragColor = texture2D(texture,pos);\
+            output0 = texture(input0,pos);\
         }\
     ');
 
-    gl.displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    gl.displacement.textures({displacement_map: this._.texture, input0: this.stack_pop()});
     this.simpleShader( gl.displacement, { strength: strength });
 
     return this;
@@ -1529,11 +1525,11 @@ canvas.displacement=function(strength) {
 
 canvas.address_glitch=function(mask_x,mask_y) {
     gl.address_glitch = gl.address_glitch || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float mask_x;\
         uniform float mask_y;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         int bitwise_or(int a, int b){\
           int c = 0; \
           for (int x = 0; x <= 31; ++x) {\
@@ -1554,7 +1550,7 @@ canvas.address_glitch=function(mask_x,mask_y) {
             new_address.x=bitwise_or(address.x,int(mask_x));\
             new_address.y=bitwise_or(address.y,int(mask_y));\
             vec2 texCoord2=(vec2(new_address)-vec2(0.5))/texSize;\
-            gl_FragColor = texture2D(texture,texCoord2);\
+            output0 = texture(input0,texCoord2);\
         }\
     ');
 
@@ -1569,17 +1565,17 @@ canvas.address_glitch=function(mask_x,mask_y) {
 canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
 
     gl.gauze = gl.gauze || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float amplitude;\
         uniform vec4 xform;\
         uniform vec2 center;\
-        varying vec2 texCoord;\
-        mat2 mat=mat2(xform.xy,xform.zw);\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
+            mat2 mat=mat2(xform.xy,xform.zw);\
             vec2 sines=sin(mat*(texCoord-center));\
             float a=1.+amplitude*(sines.x+sines.y);\
-            gl_FragColor = color*a;\
+            output0 = color*a;\
         }\
     ');
 
@@ -1619,11 +1615,11 @@ canvas.osciloscope=function(amplitude)
     gl.osciloscope = gl.osciloscope || new Shader(null, '\
       uniform sampler2D waveform;\
       uniform float amplitude; \
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
       void main() {\
-        float value  = (texture2D(waveform , texCoord).r-0.5)*amplitude+0.5;\
+        float value  = (texture(waveform , texCoord).r-0.5)*amplitude+0.5;\
         float a=1.0-abs(value-texCoord.y)*2.0;\
-        gl_FragColor = vec4(a,a,a,1.0);\
+        output0 = vec4(a,a,a,1.0);\
       }\
     ');
 
@@ -1641,19 +1637,19 @@ canvas.osciloscope=function(amplitude)
 
 canvas.vectorscope=function(size,intensity,linewidth) {
     gl.vectorscope = gl.vectorscope || new Shader('\
-    attribute vec2 _texCoord;\
+    in vec2 _texCoord;\
     uniform sampler2D waveform;\
     uniform float size;\
     uniform float delta;\
     void main() {\
-        float locX = texture2D(waveform, _texCoord).x;\
-        float locY = texture2D(waveform, _texCoord+vec2(delta,0.0)).x;\
+        float locX = texture(waveform, _texCoord).x;\
+        float locY = texture(waveform, _texCoord+vec2(delta,0.0)).x;\
         vec4 pos=vec4(size*vec2(locX-0.5,locY-0.5),0.0,1.0);\
         gl_Position = pos;\
     }','\
     uniform float intensity;\
     void main() {\
-      gl_FragColor = vec4(intensity);\
+      output0 = vec4(intensity);\
     }\
     ');
     var values=audio_engine.waveform;
@@ -1699,21 +1695,21 @@ canvas.vectorscope=function(size,intensity,linewidth) {
 // src/filters/video/lumakey.js
 canvas.lumakey=canvas.luma_key=function(threshold,feather) {
     gl.lumakey = gl.lumakey || new Shader(null, '\
-      uniform sampler2D texture;\
-      uniform sampler2D texture1;\
+      uniform sampler2D input0;\
+      uniform sampler2D input1;\
       uniform float threshold;\
       uniform float feather;\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
       void main() {\
-        vec4 color  = texture2D(texture , texCoord);\
-        vec4 color1 = texture2D(texture1, texCoord);\
+        vec4 color  = texture(input0, texCoord);\
+        vec4 color1 = texture(input1, texCoord);\
         float luma=dot(color.rgb,vec3(1./3.)); \
         float alpha=clamp((luma - threshold) / feather, 0.0, 1.0); \
-        gl_FragColor = mix(color1, color, alpha);\
+        output0 = mix(color1, color, alpha);\
       }\
     ');
 
-    gl.lumakey.textures({texture: this._.texture, texture1: this.stack_pop()});
+    gl.lumakey.textures({input0: this._.texture, input1: this.stack_pop()});
     this.simpleShader( gl.lumakey, { threshold: threshold, feather: feather });
 
     return this;
@@ -1722,28 +1718,28 @@ canvas.lumakey=canvas.luma_key=function(threshold,feather) {
 // src/filters/video/colorkey.js
 canvas.colorkey=canvas.chroma_key=function(r,g,b,threshold,feather) {
     gl.colorkey = gl.colorkey || new Shader(null, '\
-      uniform sampler2D texture;\
-      uniform sampler2D texture1;\
+      uniform sampler2D input0;\
+      uniform sampler2D input1;\
       uniform vec3 key_color;\
       uniform float threshold;\
       uniform float feather;\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
       vec3 coeffY=vec3(0.2989,0.5866,0.1145);\
       vec2 coeff =vec2(0.7132,0.5647); \
       void main() {\
-        vec4 color  = texture2D(texture , texCoord);\
-        vec4 color1 = texture2D(texture1, texCoord);\
+        vec4 color  = texture(input0, texCoord);\
+        vec4 color1 = texture(input1, texCoord);\
         float kY=dot(key_color,coeffY);\
         float Y =dot(color.rgb,coeffY);\
         vec2  k=coeff * (key_color.rb-vec2(kY,kY)); \
         vec2  c=coeff * (color.rb-vec2(Y,Y)); \
         float d=distance(c,k); \
         float alpha=clamp((d - threshold) / feather, 0.0, 1.0); \
-        gl_FragColor = mix(color1, color, alpha);\
+        output0 = mix(color1, color, alpha);\
       }\
     ');
 
-    gl.colorkey.textures({texture: this._.texture, texture1: this.stack_pop()});
+    gl.colorkey.textures({input0: this._.texture, input1: this.stack_pop()});
     this.simpleShader( gl.colorkey, { key_color:[r,g,b], threshold: threshold, feather: feather });
 
     return this;
@@ -1752,12 +1748,12 @@ canvas.colorkey=canvas.chroma_key=function(r,g,b,threshold,feather) {
 // src/filters/video/life.js
 canvas.life=function() {
     gl.life = gl.life || new Shader(null, '\
-      uniform sampler2D texture;\
+      uniform sampler2D input0;\
       uniform vec2 texSize;\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
 \
       float cell(float x, float y){\
-	      float f=dot(texture2D(texture,vec2(x,y)),vec4(.33,.33,.33,0.));\
+	      float f=dot(texture(input0,vec2(x,y)),vec4(.33,.33,.33,0.));\
 	      return floor(f+0.5);\
       }\
 \
@@ -1783,7 +1779,7 @@ canvas.life=function() {
 		      if(num<2.) outp=0.;\
 		      if(num>3.) outp=0.;\
 	      } else if (num>2. && num<4.) outp=1.;\
-         gl_FragColor = vec4(outp, outp, outp, 1.);\
+         output0 = vec4(outp, outp, outp, 1.);\
       }\
     ');
 
@@ -1799,15 +1795,15 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
     aspect=aspect || 1.;
     
     gl.polygon = gl.polygon || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 size;\
         uniform float sides;\
         uniform float angle;\
         uniform vec2 center;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         float PI=3.14159; \
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             vec2 uv=texCoord-vec2(0.5,0.5)-center;\
             uv/=size;\
             \
@@ -1817,9 +1813,9 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
             float d = r / (cos(PI/sides)/cos(mod(a,(2.*PI/sides))-(PI/sides))); \
             \
             if(d<1.) \
-              gl_FragColor=color; \
+              output0=color; \
             else \
-              gl_FragColor=vec4(0.); \
+              output0=vec4(0.); \
         }\
     ');
 
@@ -1891,17 +1887,17 @@ canvas.capture=function(source_index)
 // src/filters/video/rainbow.js
 canvas.rainbow=function(size, angle) {
     gl.rainbow = gl.rainbow || new Shader(null, '\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         void main() {\
-          vec4 rgba = texture2D(texture, texCoord);\
+          vec4 rgba = texture(input0, texCoord);\
           float l=dot(rgba,vec4(1.,1.,1.,0.)/3.0); \
           vec3 hsv=vec3(l,1.,1.); \
           vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0); \
           vec3 p = abs(fract(hsv.xxx + K.xyz) * 6.0 - K.www); \
           vec3 rgb=hsv.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), hsv.y); \
           \
-          gl_FragColor = vec4(rgb,rgba.a);\
+          output0 = vec4(rgb,rgba.a);\
         }\
     ');
 
@@ -1918,24 +1914,24 @@ canvas.rainbow=function(size, angle) {
 canvas.grid=function(size, angle, x, y, width) {
     if(!width) width=0.05;
     gl.grid = gl.grid || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 size;\
         uniform float angle;\
         uniform vec2 offset;\
         uniform float width;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             vec2 uv=(texCoord-vec2(0.5,0.5))*size;\
             uv=vec2(cos(angle)*uv.x+sin(angle)*uv.y,-sin(angle)*uv.x+cos(angle)*uv.y)+offset;\
             \
             if(fract(uv.x+width/2.)<width || fract(uv.y+width/2.)<width)\
-                    gl_FragColor = vec4(0.0,0.0,0.0,1.0);\
+                    output0 = vec4(0.0,0.0,0.0,1.0);\
             else\
-                    gl_FragColor = color;\
+                    output0 = color;\
         }\
     ');
-
+    gl.grid.textures({input0:this._.texture});
     this.simpleShader( gl.grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
     });
 
@@ -1945,12 +1941,12 @@ canvas.grid=function(size, angle, x, y, width) {
 // src/filters/video/absolute.js
 canvas.absolute=function(size, angle) {
     gl.absolute = gl.absolute || new Shader(null, '\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         void main() {\
-          vec4 rgba = texture2D(texture, texCoord);\
+          vec4 rgba = texture(input0, texCoord);\
           vec3 abs_rgb  = abs(rgba.rgb-vec3(0.5))*2.0; \
-          gl_FragColor = vec4(abs_rgb,rgba.a);\
+          output0 = vec4(abs_rgb,rgba.a);\
         }\
     ');
 
@@ -1971,25 +1967,25 @@ canvas.absolute=function(size, angle) {
 canvas.denoisefast=function(exponent) {
     // Do a 3x3 bilateral box filter
     gl.denoisefast = gl.denoisefast || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float exponent;\
         uniform float strength;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 center = texture2D(texture, texCoord);\
+            vec4 center = texture(input0, texCoord);\
             vec4 color = vec4(0.0);\
             float total = 0.0;\
             for (float x = -1.0; x <= 1.0; x += 1.0) {\
                 for (float y = -1.0; y <= 1.0; y += 1.0) {\
-                    vec4 sample = texture2D(texture, texCoord + vec2(x, y) / texSize);\
-                    float weight = 1.0 - abs(dot(sample.rgb - center.rgb, vec3(0.25)));\
+                    vec4 _sample = texture(input0, texCoord + vec2(x, y) / texSize);\
+                    float weight = 1.0 - abs(dot(_sample.rgb - center.rgb, vec3(0.25)));\
                     weight = pow(weight, exponent);\
-                    color += sample * weight;\
+                    color += _sample * weight;\
                     total += weight;\
                 }\
             }\
-            gl_FragColor = color / total;\
+            output0 = color / total;\
         }\
     ');
 
@@ -2022,15 +2018,15 @@ canvas.spectrogram=function()
 // src/filters/video/smoothlife.js
 canvas.smoothlife=function(birth_min,birth_max,death_min) {
     gl.smoothlife = gl.smoothlife || new Shader(null, '\
-      uniform sampler2D texture;\
+      uniform sampler2D input0;\
       uniform vec2 texSize;\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
       uniform float birth_min;\
       uniform float birth_max;\
       uniform float death_min;\
       \
       vec3 cell(float x, float y){\
-        return texture2D(texture,vec2(x,y)).rgb;\
+        return texture(input0,vec2(x,y)).rgb;\
       }\
       \
       void main(void){\
@@ -2058,7 +2054,7 @@ canvas.smoothlife=function(birth_min,birth_max,death_min) {
         vec3 death=smoothstep(death_min-.05,death_min+.05,outer);\
         value=mix(birth,vec3(1.)-death,smoothstep(.45,.55,inner));\
         value=clamp(value,0.0,1.0);\
-        gl_FragColor = vec4(value, 1.);\
+        output0 = vec4(value, 1.);\
       }\
     ');
 
@@ -2076,19 +2072,19 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
     gl.soft_life = gl.soft_life || new Shader(null, '\
       uniform sampler2D inner_texture;\
       uniform sampler2D outer_texture;\
-      varying vec2 texCoord;\
+      in vec2 texCoord;\
       uniform float birth_min;\
       uniform float birth_max;\
       uniform float death_min;\
       \
       void main(void){\
-        vec3 inner=texture2D(inner_texture,texCoord).rgb;\
-        vec3 outer=texture2D(outer_texture,texCoord).rgb-inner;\
+        vec3 inner=texture(inner_texture,texCoord).rgb;\
+        vec3 outer=texture(outer_texture,texCoord).rgb-inner;\
         vec3 birth=smoothstep(birth_min-.05,birth_min+.05,outer)*(vec3(1.)-smoothstep(birth_max-.05,birth_max+.05,outer));\
         vec3 death=smoothstep(death_min-.05,death_min+.05,outer);\
         vec3 value=mix(birth,vec3(1.)-death,smoothstep(.45,.55,inner));\
         value=clamp(value,0.0,1.0);\
-        gl_FragColor = vec4(value, 1.);\
+        output0 = vec4(value, 1.);\
       }\
     ');
 
@@ -2113,37 +2109,37 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
 // src/filters/video/particle_displacement.js
 canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
     gl.particles = gl.particles || new Shader('\
-    attribute vec2 _texCoord;\
-    uniform sampler2D texture;\
+    in vec2 _texCoord;\
+    uniform sampler2D input0;\
     uniform mat4 matrix;\
     uniform sampler2D particles;\
     uniform float strength;\
     uniform float size;\
-    varying vec4 rgba;\
+    out vec4 rgba;\
     void main() {\
-        vec3 loc = texture2D(particles, _texCoord).xyz-0.5;\
+        vec3 loc = texture(particles, _texCoord).xyz-0.5;\
         loc=mix(vec3(_texCoord,0.0),loc,strength);\
         vec4 pos=matrix * vec4(loc,1.0);\
         gl_Position = pos/pos.w;\
         gl_PointSize=size/pos.w;\
-        rgba = texture2D(texture, _texCoord);\
+        rgba = texture(input0, _texCoord);\
     }','\
-    varying vec4 rgba;\
+    in vec4 rgba;\
     void main() {\
       vec2 uv=gl_PointCoord;\
       float d=2.*max(0.,0.5-length(uv-vec2(0.5)));\
-      gl_FragColor = rgba*2.*d;\
+      output0 = rgba*2.*d;\
       if(rgba.a*d<.1) discard; \
     }\
     ');
 
     gl.particle_update = gl.particle_update || new Shader(null,'\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform sampler2D displacement_texture;\
         uniform float homing; \
         uniform float noise; \
         uniform float displacement; \
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         vec3 noise3(vec3 t){\
           vec3 dots=vec3(\
             dot(t.xy ,vec2(12.9898,78.233)),\
@@ -2153,15 +2149,15 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
           return fract(sin(dots) * 43758.5453);\
         }\
         void main() {\
-            vec3 pos = texture2D(texture, texCoord).xyz-0.5;\
-            vec3 disp = texture2D(displacement_texture, texCoord).xyz-0.5;\
+            vec3 pos = texture(input0, texCoord).xyz-0.5;\
+            vec3 disp = texture(displacement_texture, texCoord).xyz-0.5;\
             vec3 home=vec3(texCoord,0.0);\
             vec3 uvw=(pos+disp)+home;\
             vec3 n=noise3(uvw)-0.5;\
             pos+=noise*n/100.;\
             pos=mix(pos,home,homing);\
             pos+=displacement*disp;\
-            gl_FragColor = vec4(pos+0.5,1.0);\
+            output0 = vec4(pos+0.5,1.0);\
         }\
     ');
 
@@ -2199,7 +2195,7 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
       displacement:displacement
     });             
     var texture=this.stack_pop();
-    gl.particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
+    gl.particle_update.textures({displacement_texture: texture, input0: this._.particleTextureB});
         
     this._.particleTextureA.drawTo(function() { gl.particle_update.drawRect(); });
 
@@ -2224,7 +2220,7 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     });
     
     // set shader textures    
-    gl.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
+    gl.particles.textures({particles: this._.particleTextureA, input0: this._.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
@@ -2316,9 +2312,9 @@ canvas.stack_prepare=function()
 // src/filters/video/patch_displacement.js
 canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     gl.patch_displacement = gl.patch_displacement || new Shader('\
-    attribute vec3 vertex;\
-    attribute vec2 _texCoord;\
-    varying vec2 texCoord;\
+    in vec3 vertex;\
+    in vec2 _texCoord;\
+    out vec2 texCoord;\
     uniform mat4 matrix;\
     uniform sampler2D displacement_map;\
     uniform vec3 strength;\
@@ -2326,7 +2322,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     uniform float pixelate;\
     void main() {\
         texCoord = mix(vertex.xy,_texCoord,pixelate)*scale;\
-        vec3 dis = texture2D(displacement_map, _texCoord).xyz-0.5;\
+        vec3 dis = texture(displacement_map, _texCoord).xyz-0.5;\
         vec4 pos=matrix * (vec4((vertex+dis*strength)*scale,1.0));\
         gl_Position = pos/pos.w;\
     }');
@@ -2379,7 +2375,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     });
     
     // set shader textures
-    gl.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    gl.patch_displacement.textures({displacement_map: this._.texture, input0: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     this._.spareTexture.drawTo(function() {
@@ -2558,11 +2554,11 @@ canvas.bulgePinch=function(centerX, centerY, radius, strength) {
  */
 canvas.zoomBlur=function(centerX, centerY, strength) {
     gl.zoomBlur = gl.zoomBlur || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 center;\
         uniform float strength;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         ' + randomShaderFunc + '\
         void main() {\
             vec4 color = vec4(0.0);\
@@ -2575,19 +2571,19 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
             for (float t = 0.0; t <= 40.0; t++) {\
                 float percent = (t + offset) / 40.0;\
                 float weight = 4.0 * (percent - percent * percent);\
-                vec4 sample = texture2D(texture, texCoord + toCenter * percent * strength / texSize);\
+                vec4 _sample = texture(input0, texCoord + toCenter * percent * strength / texSize);\
                 \
                 /* switch to pre-multiplied alpha to correctly blur transparent images */\
-                sample.rgb *= sample.a;\
+                _sample.rgb *= _sample.a;\
                 \
-                color += sample * weight;\
+                color += _sample * weight;\
                 total += weight;\
             }\
             \
-            gl_FragColor = color / total;\
+            output0 = color / total;\
             \
             /* switch back from pre-multiplied alpha */\
-            gl_FragColor.rgb /= gl_FragColor.a + 0.00001;\
+            output0.rgb /= output0.a + 0.00001;\
         }\
     ');
 
@@ -2603,9 +2599,9 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
 // src/filters/blur/dilate.js
 canvas.dilate=function(iterations) {
     gl.dilate = gl.dilate || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() \
         {\
           vec4 col = vec4(0.,0.,0.,1.);\
@@ -2614,10 +2610,10 @@ canvas.dilate=function(iterations) {
 	          for(int yoffset = -1; yoffset <= 1; yoffset++)\
 	          {\
 		          vec2 offset = vec2(xoffset,yoffset);\
-		          col = max(col,texture2D(texture,texCoord+offset/texSize));\
+		          col = max(col,texture(input0,texCoord+offset/texSize));\
 	          }\
           }\
-          gl_FragColor = clamp(col,vec4(0.),vec4(1.));\
+          output0 = clamp(col,vec4(0.),vec4(1.));\
         }\
     ');
 
@@ -2628,54 +2624,47 @@ canvas.dilate=function(iterations) {
 }
 
 // src/filters/blur/localcontrast.js
-/**
- * @filter       Fast Blur
- * @description  This is the most basic blur filter, which convolves the image with a
- *               pyramid filter. The pyramid filter is separable and is applied as two
- *               perpendicular triangle filters.
- * @param radius The radius of the pyramid convolved with the image.
- */
 canvas.localContrast=function(radius,strength) {
     gl.localContrastMin = gl.localContrastMin || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 delta;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             vec4 color = vec4(1.0);\
-            color=min(color,texture2D(texture, texCoord         ));\
-            color=min(color,texture2D(texture, texCoord + delta * vec2( 1.,0.) ));\
-            color=min(color,texture2D(texture, texCoord + delta * vec2(-1.,0.) ));\
-            color=min(color,texture2D(texture, texCoord + delta * vec2(0., 1.) ));\
-            color=min(color,texture2D(texture, texCoord + delta * vec2(0.,-1.) ));\
-            gl_FragColor = color; \
+            color=min(color,texture(input0, texCoord         ));\
+            color=min(color,texture(input0, texCoord + delta * vec2( 1.,0.) ));\
+            color=min(color,texture(input0, texCoord + delta * vec2(-1.,0.) ));\
+            color=min(color,texture(input0, texCoord + delta * vec2(0., 1.) ));\
+            color=min(color,texture(input0, texCoord + delta * vec2(0.,-1.) ));\
+            output0 = color; \
         }\
     ');
     gl.localContrastMax = gl.localContrastMax || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 delta;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             vec4 color = vec4(0.0);\
-            color=max(color,texture2D(texture, texCoord         ));\
-            color=max(color,texture2D(texture, texCoord + delta * vec2( 1.,0.) ));\
-            color=max(color,texture2D(texture, texCoord + delta * vec2(-1.,0.) ));\
-            color=max(color,texture2D(texture, texCoord + delta * vec2(0., 1.) ));\
-            color=max(color,texture2D(texture, texCoord + delta * vec2(0.,-1.) ));\
-            gl_FragColor = color; \
+            color=max(color,texture(input0, texCoord         ));\
+            color=max(color,texture(input0, texCoord + delta * vec2( 1.,0.) ));\
+            color=max(color,texture(input0, texCoord + delta * vec2(-1.,0.) ));\
+            color=max(color,texture(input0, texCoord + delta * vec2(0., 1.) ));\
+            color=max(color,texture(input0, texCoord + delta * vec2(0.,-1.) ));\
+            output0 = color; \
         }\
     ');
     gl.localContrast = gl.localContrast || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform sampler2D min_texture;\
         uniform sampler2D max_texture;\
         uniform float strength; \
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec3 color    =texture2D(texture    ,texCoord).rgb; \
-            vec3 min_color=texture2D(min_texture,texCoord).rgb; \
-            vec3 max_color=texture2D(max_texture,texCoord).rgb; \
+            vec3 color    =texture(input0     ,texCoord).rgb; \
+            vec3 min_color=texture(min_texture,texCoord).rgb; \
+            vec3 max_color=texture(max_texture,texCoord).rgb; \
             vec3 contrast_color=(color-min_color)/(max_color-min_color);\
-            gl_FragColor = vec4(mix(color,contrast_color,strength),1.); \
+            output0 = vec4(mix(color,contrast_color,strength),1.); \
         }\
     ');
 
@@ -2711,9 +2700,9 @@ canvas.localContrast=function(radius,strength) {
 // src/filters/blur/erode.js
 canvas.erode=function(iterations) {
     gl.erode = gl.erode || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() \
         {\
           vec4 col = vec4(1);\
@@ -2722,10 +2711,10 @@ canvas.erode=function(iterations) {
 	          for(int yoffset = -1; yoffset <= 1; yoffset++)\
 	          {\
 		          vec2 offset = vec2(xoffset,yoffset);\
-		          col = min(col,texture2D(texture,texCoord+offset/texSize));\
+		          col = min(col,texture(input0,texCoord+offset/texSize));\
 	          }\
           }\
-          gl_FragColor = clamp(col,vec4(0.),vec4(1.));\
+          output0 = clamp(col,vec4(0.),vec4(1.));\
         }\
     ');
 
@@ -2737,17 +2726,17 @@ canvas.erode=function(iterations) {
 
 canvas.blur=function(radius) {
     gl.blur = gl.blur || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 delta;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             vec4 color = vec4(0.0);\
             float b=1./4.;\
-            color+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
-            gl_FragColor = color; \
+            color+=b*texture(input0, texCoord + delta * vec2( .5, .5) );\
+            color+=b*texture(input0, texCoord + delta * vec2(-.5, .5) );\
+            color+=b*texture(input0, texCoord + delta * vec2( .5,-.5) );\
+            color+=b*texture(input0, texCoord + delta * vec2(-.5,-.5) );\
+            output0 = color; \
         }\
     ');
 
@@ -2762,27 +2751,27 @@ canvas.fastBlur=canvas.blur; // legacy name for old filter chains
 
 canvas.blur_alpha=function(radius) {
     gl.blur_alpha = gl.blur_alpha || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 delta;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             float b=1./4.;\
             float alpha=0.0;\
-            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) ).a;\
-            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) ).a;\
-            alpha+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) ).a;\
-            alpha+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) ).a;\
-            gl_FragColor = vec4(color.rgb, alpha); \
+            alpha+=b*texture(input0, texCoord + delta * vec2( .5, .5) ).a;\
+            alpha+=b*texture(input0, texCoord + delta * vec2(-.5, .5) ).a;\
+            alpha+=b*texture(input0, texCoord + delta * vec2( .5,-.5) ).a;\
+            alpha+=b*texture(input0, texCoord + delta * vec2(-.5,-.5) ).a;\
+            output0 = vec4(color.rgb, alpha); \
         }\
     ');
 
     gl.blur_alpha_post = gl.blur_alpha_post || new Shader(null, '\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            gl_FragColor = vec4(color.rgb, 2.*color.a-1.); \
+            vec4 color = texture(input0, texCoord);\
+            output0 = vec4(color.rgb, 2.*color.a-1.); \
         }\
     ');
 
@@ -2798,19 +2787,19 @@ canvas.blur_alpha=function(radius) {
 
 canvas.blur2=function(radius,exponent) {
     gl.blur2 = gl.blur2 || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 delta;\
         uniform float exponent;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             vec4 color = vec4(0.0);\
             float b=1./4.;\
             vec4 e=vec4(exponent);\
-            color+=b*pow(texture2D(texture, texCoord + delta * vec2( .5, .5) ), e);\
-            color+=b*pow(texture2D(texture, texCoord + delta * vec2(-.5, .5) ), e);\
-            color+=b*pow(texture2D(texture, texCoord + delta * vec2( .5,-.5) ), e);\
-            color+=b*pow(texture2D(texture, texCoord + delta * vec2(-.5,-.5) ), e);\
-            gl_FragColor = pow(color,1./e); \
+            color+=b*pow(texture(input0, texCoord + delta * vec2( .5, .5) ), e);\
+            color+=b*pow(texture(input0, texCoord + delta * vec2(-.5, .5) ), e);\
+            color+=b*pow(texture(input0, texCoord + delta * vec2( .5,-.5) ), e);\
+            color+=b*pow(texture(input0, texCoord + delta * vec2(-.5,-.5) ), e);\
+            output0 = pow(color,1./e); \
         }\
     ');
 
@@ -2836,11 +2825,11 @@ canvas.unsharpMask=function(radius, strength) {
         uniform sampler2D originalTexture;\
         uniform float strength;\
         uniform float threshold;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 blurred = texture2D(blurredTexture, texCoord);\
-            vec4 original = texture2D(originalTexture, texCoord);\
-            gl_FragColor = mix(blurred, original, 1.0 + strength);\
+            vec4 blurred = texture(blurredTexture, texCoord);\
+            vec4 original = texture(originalTexture, texCoord);\
+            output0 = mix(blurred, original, 1.0 + strength);\
         }\
     ');
 
@@ -2872,18 +2861,18 @@ canvas.unsharpMask=function(radius, strength) {
  */
 canvas.color=function(alpha,r,g,b) {
     gl.color = gl.color || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float r;\
         uniform float g;\
         uniform float b;\
         uniform float a;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             color.r += r * a;\
             color.g += g * a;\
             color.b += b * a;\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -2908,25 +2897,25 @@ canvas.color=function(alpha,r,g,b) {
 canvas.denoise=function(exponent) {
     // Do a 9x9 bilateral box filter
     gl.denoise = gl.denoise || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float exponent;\
         uniform float strength;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 center = texture2D(texture, texCoord);\
+            vec4 center = texture(input0, texCoord);\
             vec4 color = vec4(0.0);\
             float total = 0.0;\
             for (float x = -4.0; x <= 4.0; x += 1.0) {\
                 for (float y = -4.0; y <= 4.0; y += 1.0) {\
-                    vec4 sample = texture2D(texture, texCoord + vec2(x, y) / texSize);\
+                    vec4 sample = texture(input0, texCoord + vec2(x, y) / texSize);\
                     float weight = 1.0 - abs(dot(sample.rgb - center.rgb, vec3(0.25)));\
                     weight = pow(weight, exponent);\
                     color += sample * weight;\
                     total += weight;\
                 }\
             }\
-            gl_FragColor = color / total;\
+            output0 = color / total;\
         }\
     ');
 
@@ -2951,16 +2940,16 @@ canvas.denoise=function(exponent) {
  */
 canvas.vibrance=function(amount) {
     gl.vibrance = gl.vibrance || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float amount;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             float average = (color.r + color.g + color.b) / 3.0;\
             float mx = max(color.r, max(color.g, color.b));\
             float amt = (mx - average) * (-amount * 3.0);\
             color.rgb = mix(color.rgb, vec3(mx), amt);\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -2975,19 +2964,19 @@ canvas.vibrance=function(amount) {
 // min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0
 canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
     gl.levels = gl.levels || new Shader(null, '\
-        varying vec2 texCoord;\
-        uniform sampler2D texture;\
+        in vec2 texCoord;\
+        uniform sampler2D input0;\
         uniform vec3 rgb_min; \
         uniform vec3 rgb_gamma; \
         uniform vec3 rgb_max; \
         void main()\
         {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             color.rgb-=rgb_min;\
             color.rgb/=(rgb_max-rgb_min);\
             color.rgb=clamp(color.rgb,0.0,1.0);\
             color.rgb = pow(color.rgb, rgb_gamma);\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -3015,12 +3004,12 @@ canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma
  */
 canvas.hueSaturation=function(hue, saturation) {
     gl.hueSaturation = gl.hueSaturation || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float hue;\
         uniform float saturation;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             \
             /* hue adjustment, wolfram alpha: RotationTransform[angle, {1, 1, 1}][{x, y, z}] */\
             float angle = hue * 3.14159265;\
@@ -3041,7 +3030,7 @@ canvas.hueSaturation=function(hue, saturation) {
                 color.rgb += (average - color.rgb) * (-saturation);\
             }\
             \
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -3062,19 +3051,19 @@ canvas.hueSaturation=function(hue, saturation) {
  */
 canvas.brightnessContrast=function(brightness, contrast) {
     gl.brightnessContrast = gl.brightnessContrast || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float brightness;\
         uniform float contrast;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             color.rgb += brightness;\
             if (contrast > 0.0) {\
                 color.rgb = (color.rgb - 0.5) / (1.0 - contrast) + 0.5;\
             } else {\
                 color.rgb = (color.rgb - 0.5) * (1.0 + contrast) + 0.5;\
             }\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -3088,16 +3077,16 @@ canvas.brightnessContrast=function(brightness, contrast) {
 
 canvas.contrast_s=function(contrast) {
     gl.contrast_s = gl.contrast_s || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float contrast;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             vec3 x=(color.rgb-0.5)*2.0;\
             vec3 xa=abs(x);\
             vec3 f=(contrast*xa-xa) / (2.0*contrast*xa - contrast - 1.0);\
             color.rgb=(sign(x)*f+1.0)/2.0;\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -3109,16 +3098,16 @@ canvas.contrast_s=function(contrast) {
 }
 canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
     gl.threshold = gl.threshold || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float threshold;\
         uniform float feather;\
         uniform vec3 c0;\
         uniform vec3 c1;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             color.rgb=mix(c0,c1,clamp((length(color.rgb)-threshold)/feather,0.0,1.0));\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
     
@@ -3146,7 +3135,7 @@ canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
 
 canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
     gl.sobel = gl.sobel || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float alpha;\
         uniform float r;\
         uniform float g;\
@@ -3158,17 +3147,17 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
         uniform float a;\
         uniform float secondary;\
         uniform float coef;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            float bottomLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).r;\
-            float topRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, -0.0020833)).r;\
-            float topLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).r;\
-            float bottomRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0.0020833)).r;\
-            float leftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0)).r;\
-            float rightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0)).r;\
-            float bottomIntensity = texture2D(texture, texCoord + vec2(0, 0.0020833)).r;\
-            float topIntensity = texture2D(texture, texCoord + vec2(0, -0.0020833)).r;\
+            vec4 color = texture(input0, texCoord);\
+            float bottomLeftIntensity = texture(input0, texCoord + vec2(-0.0015625, 0.0020833)).r;\
+            float topRightIntensity = texture(input0, texCoord + vec2(0.0015625, -0.0020833)).r;\
+            float topLeftIntensity = texture(input0, texCoord + vec2(-0.0015625, 0.0020833)).r;\
+            float bottomRightIntensity = texture(input0, texCoord + vec2(0.0015625, 0.0020833)).r;\
+            float leftIntensity = texture(input0, texCoord + vec2(-0.0015625, 0)).r;\
+            float rightIntensity = texture(input0, texCoord + vec2(0.0015625, 0)).r;\
+            float bottomIntensity = texture(input0, texCoord + vec2(0, 0.0020833)).r;\
+            float topIntensity = texture(input0, texCoord + vec2(0, -0.0020833)).r;\
             float h = -secondary * topLeftIntensity - coef * topIntensity - secondary * topRightIntensity + secondary * bottomLeftIntensity + coef * bottomIntensity + secondary * bottomRightIntensity;\
             float v = -secondary * bottomLeftIntensity - coef * leftIntensity - secondary * topLeftIntensity + secondary * bottomRightIntensity + coef * rightIntensity + secondary * topRightIntensity;\
 \
@@ -3188,7 +3177,7 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
                 color.b += b2 * al;\
                 color.rgb += al * mag;\
             }\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -3211,8 +3200,8 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 
 canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
     gl.sobel_rgb = gl.sobel_rgb || new Shader(null, '\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         uniform float alpha;\
         uniform vec3 c_edge;\
         uniform vec3 c_area;\
@@ -3220,22 +3209,22 @@ canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
         uniform float coef;\
         uniform float smoothness;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            vec3 bottomLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
-            vec3 topRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, -0.0020833)).rgb;\
-            vec3 topLeftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
-            vec3 bottomRightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0.0020833)).rgb;\
-            vec3 leftIntensity = texture2D(texture, texCoord + vec2(-0.0015625, 0)).rgb;\
-            vec3 rightIntensity = texture2D(texture, texCoord + vec2(0.0015625, 0)).rgb;\
-            vec3 bottomIntensity = texture2D(texture, texCoord + vec2(0, 0.0020833)).rgb;\
-            vec3 topIntensity = texture2D(texture, texCoord + vec2(0, -0.0020833)).rgb;\
+            vec4 color = texture(input0, texCoord);\
+            vec3 bottomLeftIntensity = texture(input0, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
+            vec3 topRightIntensity = texture(input0, texCoord + vec2(0.0015625, -0.0020833)).rgb;\
+            vec3 topLeftIntensity = texture(input0, texCoord + vec2(-0.0015625, 0.0020833)).rgb;\
+            vec3 bottomRightIntensity = texture(input0, texCoord + vec2(0.0015625, 0.0020833)).rgb;\
+            vec3 leftIntensity = texture(input0, texCoord + vec2(-0.0015625, 0)).rgb;\
+            vec3 rightIntensity = texture(input0, texCoord + vec2(0.0015625, 0)).rgb;\
+            vec3 bottomIntensity = texture(input0, texCoord + vec2(0, 0.0020833)).rgb;\
+            vec3 topIntensity = texture(input0, texCoord + vec2(0, -0.0020833)).rgb;\
             vec3 h = -secondary * topLeftIntensity - coef * topIntensity - secondary * topRightIntensity + secondary * bottomLeftIntensity + coef * bottomIntensity + secondary * bottomRightIntensity;\
             vec3 v = -secondary * bottomLeftIntensity - coef * leftIntensity - secondary * topLeftIntensity + secondary * bottomRightIntensity + coef * rightIntensity + secondary * topRightIntensity;\
 \
             vec3 mag = vec3( length(vec2(h.r, v.r)) , length(vec2(h.g, v.g)) , length(vec2(h.b, v.b)) );\
             vec3 c = mix(c_edge,c_area,smoothstep(.5-smoothness*.5,.5+smoothness*.5,mag));\
             color.rgb = mix(color.rgb,c,alpha);\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -3254,12 +3243,12 @@ canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
 
 canvas.posterize=function(steps) {
     gl.posterize = gl.posterize || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float steps;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
-            gl_FragColor = vec4(floor(color.rgb*(steps+vec3(1.)))/steps, color.a);\
+            vec4 color = texture(input0, texCoord);\
+            output0 = vec4(floor(color.rgb*(steps+vec3(1.)))/steps, color.a);\
         }\
     ');
 
@@ -3271,17 +3260,17 @@ canvas.posterize=function(steps) {
 
 canvas.posterize_hue=function(hue,brightness) {
     gl.posterize_hue = gl.posterize_hue || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float hue;\
         uniform float brightness;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             vec3 b=vec3(length(color.rgb));\
             vec3 h=color.rgb-b;\
             b=floor(b*brightness)/brightness;\
             h=floor(h*hue       )/hue       ;\
-            gl_FragColor = vec4(b+h, color.a);\
+            output0 = vec4(b+h, color.a);\
         }\
     ');
 
@@ -3303,11 +3292,11 @@ canvas.posterize_hue=function(hue,brightness) {
  */
 canvas.hexagonalPixelate=function(centerX, centerY, scale) {
     gl.hexagonalPixelate = gl.hexagonalPixelate || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 center;\
         uniform float scale;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             vec2 tex = (texCoord * texSize - center) / scale;\
             tex.y /= 0.866025404;\
@@ -3340,7 +3329,7 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
             choice.x += choice.y * 0.5;\
             choice.y *= 0.866025404;\
             choice *= scale / texSize;\
-            gl_FragColor = texture2D(texture, choice + center / texSize);\
+            output0 = texture(input0, choice + center / texSize);\
         }\
     ');
 
@@ -3355,17 +3344,17 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
 
 canvas.pixelate=function(sx,sy,coverage,lens) {
     gl.pixelate = gl.pixelate || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 size;\
         uniform float coverage;\
         uniform float lens;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
             vec2 tc=(floor((texCoord-0.5)*size+0.5))/size+0.5;\
             vec2 fc=abs(texCoord-tc)*size;\
             tc+=(texCoord-tc)*lens;\
-            if(fc.x<coverage && fc.y<coverage) gl_FragColor = texture2D(texture, tc);\
-            else                               gl_FragColor = vec4(0.);\
+            if(fc.x<coverage && fc.y<coverage) output0 = texture(input0, tc);\
+            else                               output0 = vec4(0.);\
         }\
     ');
 
@@ -3392,12 +3381,12 @@ canvas.pixelate=function(sx,sy,coverage,lens) {
  */
 canvas.colorHalftone=function(centerX, centerY, angle, size) {
     gl.colorHalftone = gl.colorHalftone || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform vec2 center;\
         uniform float angle;\
         uniform float scale;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         \
         float pattern(float angle) {\
             float s = sin(angle), c = cos(angle);\
@@ -3410,13 +3399,13 @@ canvas.colorHalftone=function(centerX, centerY, angle, size) {
         }\
         \
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             vec3 cmy = 1.0 - color.rgb;\
             float k = min(cmy.x, min(cmy.y, cmy.z));\
             cmy = (cmy - k) / (1.0 - k);\
             cmy = clamp(cmy * 10.0 - 3.0 + vec3(pattern(angle + 0.26179), pattern(angle + 1.30899), pattern(angle)), 0.0, 1.0);\
             k = clamp(k * 10.0 - 5.0 + pattern(angle + 0.78539), 0.0, 1.0);\
-            gl_FragColor = vec4(1.0 - cmy - k, color.a);\
+            output0 = vec4(1.0 - cmy - k, color.a);\
         }\
     ');
 
@@ -3437,12 +3426,12 @@ canvas.colorHalftone=function(centerX, centerY, angle, size) {
 
 canvas.invert=function() {
     gl.invert = gl.invert || new Shader(null, '\
-        uniform sampler2D texture;\
-        varying vec2 texCoord;\
+        uniform sampler2D input0;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, texCoord);\
+            vec4 color = texture(input0, texCoord);\
             color.rgb = 1.0 - color.rgb;\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
     this.simpleShader( gl.invert, {});
@@ -3454,12 +3443,12 @@ canvas.invertColor=canvas.invert; // legacy name
 canvas.glitch=function(scale,detail,strength,speed) {
     canvas.glitch_time=(canvas.glitch_time || 0.0)+0.0001*speed;
     gl.glitch = gl.glitch || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float time;\
         uniform float strength;\
         uniform float detail;\
         uniform vec2 texSize;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         vec3 rand(vec3 seed) {\
             return fract(sin(seed * 43758.5453) + seed);\
         }\
@@ -3475,15 +3464,15 @@ canvas.glitch=function(scale,detail,strength,speed) {
         }\
         \
         void main() {\
-            vec4 dc    = texture2D(texture, floor(texCoord*texSize)/texSize );\
+            vec4 dc    = texture(input0, floor(texCoord*texSize)/texSize );\
             vec3 primes=vec3(3.0,17.0,23.0);\
             float time_seed=sin(floor(dot(time*primes,primes.zxy)));\
             float seed =dot(floor(texCoord*texSize),vec2(texSize.y,1.0)+time_seed);\
             float seed2=floor(dot(floor(texCoord*texSize),vec2(0.013,1.0)))+floor(time_seed/17.);\
             vec3 glitch2=glitch(dc.rgb,seed2,detail/16.0);\
-            vec4 color = texture2D(texture, texCoord+glitch2.xy/texSize.xy*16.0);\
+            vec4 color = texture(input0, texCoord+glitch2.xy/texSize.xy*16.0);\
             color.rgb+=glitch(dc.rgb,seed,detail)+glitch2;\
-            gl_FragColor = color;\
+            output0 = color;\
         }\
     ');
 
@@ -3500,12 +3489,12 @@ canvas.glitch=function(scale,detail,strength,speed) {
 /* Mirrors the image vertically (useful for webcams) */
 canvas.mirror_y = function() {
     gl.mirror_y = gl.mirror_y || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float brightness;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, vec2(1.0 - texCoord.x,texCoord.y));\
-            gl_FragColor = color;\
+            vec4 color = texture(input0, vec2(1.0 - texCoord.x,texCoord.y));\
+            output0 = color;\
         }\
     ');
 
@@ -3516,12 +3505,12 @@ canvas.mirror_y = function() {
 /* Mirrors the image horizontally */
 canvas.mirror_x = function() {
     gl.mirror_x = gl.mirror_x || new Shader(null, '\
-        uniform sampler2D texture;\
+        uniform sampler2D input0;\
         uniform float brightness;\
-        varying vec2 texCoord;\
+        in vec2 texCoord;\
         void main() {\
-            vec4 color = texture2D(texture, vec2(texCoord.x, 1.0-texCoord.y));\
-            gl_FragColor = color;\
+            vec4 color = texture(input0, vec2(texCoord.x, 1.0-texCoord.y));\
+            output0 = color;\
         }\
     ');
 

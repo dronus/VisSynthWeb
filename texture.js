@@ -21,7 +21,8 @@ var Texture = (function() {
 //        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
+        var internalFormat=(this.type==gl.FLOAT ? gl.RGBA32F : gl.RGBA8);
+        if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, this.format, this.type, null);
     }
 
     Texture.prototype.load = function(data) {
@@ -77,7 +78,8 @@ var Texture = (function() {
             this.format = format;
             this.type = type;
             gl.bindTexture(gl.TEXTURE_2D, this.id);
-            gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
+            var internalFormat=(this.type==gl.FLOAT ? gl.RGBA32F : gl.RGBA8);
+            gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, this.format, this.type, null);
         }
     };
 
