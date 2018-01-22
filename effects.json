@@ -20,6 +20,7 @@
       "osciloscope":{"inputs":0,"args":{"amplitude":1.0}},
       "vectorscope":{"inputs": 0,"args":{"size": 2.0," intensity":0.3," linewidth":1.0}},
       "spectrogram":{"inputs":0},
+      "midi":{"inputs":0,"args":{"device":0,"rows":16,"cols":16,"echo":1}},
       "preview":{},
       "feedbackOut":{"args":{"blend":0.7,"clear_on_switch":0.0}},
       "feedbackIn":{},

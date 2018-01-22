@@ -3528,3 +3528,69 @@ canvas.mirror_x = function() {
     this.simpleShader( gl.mirror_x, {});
     return this;
 }
+
+canvas._.midiInit=false;
+canvas._.midiIn =null;
+canvas._.midiOut=null;
+canvas.midi=function(device, rows, cols, echo)
+{
+  device=Math.floor(device);
+  rows=Math.floor(rows);
+  cols=Math.floor(cols);
+  echo=!!echo;
+  
+  var midiHandler=function(data){
+     data = event.data;
+    var cmd = data[0] >> 4;
+    var channel = data[0] & 0xf;
+    var noteNumber = data[1];
+    var velocity = data[2];
+
+    console.log(cmd,channel,noteNumber,velocity);
+
+    if (cmd == 8) {  // Note off
+      var l=noteNumber;
+      var x=l%cols;
+      var y=Math.floor(l/cols);
+
+      var value=255-canvas._.midiState[noteNumber];
+      canvas._.midiState[noteNumber]=value;
+     
+      if(echo){
+        if (value)
+        	canvas._.midiOut.send( [0x90,noteNumber,0x7f]);
+        else
+          canvas._.midiOut.send( [0x80,noteNumber,0x00]);
+      }
+    }
+  }
+  var midiInit=function( midiAccess ) {
+    // TODO selection by 'device' parameter
+    for (var input of midiAccess.inputs.values()) {
+      canvas._.midiIn=input;
+    }
+    for (var output of midiAccess.outputs.values()) {
+      canvas._.midiOut=output;
+    }
+    
+    canvas._.midiState  =new Uint8Array(rows*cols);
+    canvas._.midiTexture=new Texture(rows,cols,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    input.onmidimessage=midiHandler;
+  }
+  if(!canvas._.midiInit)
+  {
+    navigator.requestMIDIAccess({}).then(midiInit);
+    canvas._.midiInit=true;
+  }
+  
+  if(this._.midiState)
+  {
+    this._.midiTexture.load(this._.midiState);
+    this._.midiTexture.copyTo(this._.texture);
+  }
+}
+
+
+
+
+
