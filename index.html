@@ -151,8 +151,10 @@
 
     // enumerate the available sources at startup and start update loop if found
     var source_ids={audio:[],video:[]};
+    var running=false;
     function onSourcesAcquired(sources) 
     {
+      source_ids={audio:[],video:[]};
       for (var i = 0; i != sources.length; ++i) {      
         var source = sources[i];
         var kind=source.kind;
@@ -160,17 +162,24 @@
         // on the newer navigator.mediaDevices.enumerateDevices interface, kind is "audioinput" or "videoinput" and so on..
         kind=kind.replace('input','');
 
-				if(kind=='audio' || kind=='video')
-	        source_ids[kind].push(source.id || source.deviceId);
+        if(kind=='audio' || kind=='video')
+        {
+          source_ids[kind].push(source.id || source.deviceId);
+        }
       }      
-      // start frequent canvas updates
-      update();
-    }
+      // send out device data to UI
+      put('devices',JSON.stringify(sources));
 
-    if(navigator.mediaDevices.enumerateDevices)
-    	navigator.mediaDevices.enumerateDevices().then(onSourcesAcquired);
-    else
-      onSourcesAcquired([]);
+      // start frequent canvas updates
+      if(!running)
+      {
+        running=true;
+        update();
+      }
+    }
+    // fetch available capture devices for the first time and report them to UI. 
+    // Also starts the rendering engine after device enumeration.
+    devices();
 
     // let the remote change the audio source
     // 
@@ -178,9 +187,22 @@
     // TODO find a cleaner way to provide this function
     //    
     var audio_device_index=0;
+    var audio_found=-1;
     function select_audio(device_index)
     {
       audio_device_index=parseInt(device_index);
+      if(audio_found==audio_device_index) return;
+      audio_found=audio_device_index;
+
+      var constraints = {
+        video: false,
+        audio:{deviceId:source_ids.audio[audio_device_index]}
+      };
+      navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+        console.log("Got audio: "+constraints.audio.deviceId);
+        // capture device was successfully acquired
+        if(stream.getAudioTracks().length) initAudioAnalysers(stream);
+      });
     }
 
     // get the video feed from a capture device name by source_index into source_ids
@@ -194,7 +216,6 @@
     // maybe we should at least delay device grabbing until the pre_chain is evaluated for the first time,
     // we can then ask for the sources that will most likely be the only ones for the full session.
     var videos={};
-    var audio_found=false;
     var get_video=function(source_index,width,height)
     {
       source_index = source_index | 0;
@@ -224,14 +245,6 @@
           constraints.video.width.min=width;  constraints.video.height.min=height;
       }
       
-      // TODO handle audio again, in a more flexible fashion than one device only...
-      // for now, we just take the first device queried
-      if(!audio_found)
-      {
-        constraints.audio={deviceId:source_ids.audio[audio_device_index]};
-        audio_found=true;
-      }
-
       navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
         console.log("Got camera!");
         // capture device was successfully acquired
@@ -241,18 +254,14 @@
           video.mozSrcObject = stream;
         else
           video.src = URL.createObjectURL(stream);      
-
-        // TODO handle audio again, in a more flexible fashion than one device only...
-        if(stream.getAudioTracks().length) initAudioAnalysers(stream);        
       });
     }
     
     // set video handler. 
     // the video devices are started on demand.
     // returns a <video> Element streaming the selected device.
-    // this is used by the 'capture' effect in glfx.js to acquire the camera.
+    // this is used by the 'capture' effect to acquire the camera.
     canvas.video_source=get_video;
-
 
     // helper functions for chain code generation
 
@@ -354,6 +363,15 @@
       
       // set canvas 'switched' flag, that can be used by filters to reset buffers
       canvas.switched=true;
+    }
+
+    // receive device list request from remote
+    function devices()
+    {
+      if(navigator.mediaDevices.enumerateDevices)
+        navigator.mediaDevices.enumerateDevices().then(onSourcesAcquired);
+      else
+        onSourcesAcquired([]);      
     }
         
     // receive preview request from remote       

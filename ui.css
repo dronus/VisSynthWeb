@@ -166,7 +166,7 @@
       bottom: 0px;
       right: 330px;
     }
-    #effects, #files{
+    #effects, #files, #devices{
       position: absolute;
       top: 50px;
       bottom: 0px;
@@ -265,7 +265,8 @@
     .effect .ui_object{
       display: block;
     }
-    .effects .key>*, .effects .value>*{
+    /* hide default parameters in effects selection list*/
+    #effects .key, #effects .value div:not(:first-child){
       display: none;
     }
     .effect>.ui_object>.value{
