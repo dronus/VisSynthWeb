@@ -1757,7 +1757,7 @@ canvas.life=function() {
       varying vec2 texCoord;\
 \
       float cell(float x, float y){\
-	      float f=dot(texture2D(texture,vec2(x,y)),vec4(.33,.33,.33,0.));\
+	      float f=dot(texture2D(texture,fract(vec2(x,y))),vec4(.33,.33,.33,0.));\
 	      return floor(f+0.5);\
       }\
 \
