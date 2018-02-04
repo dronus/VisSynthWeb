@@ -3548,7 +3548,10 @@ canvas.midi=function(device, rows, cols, echo)
 
     console.log(cmd,channel,noteNumber,velocity);
 
-    if (cmd == 8) {  // Note off
+    if(canvas.midi_handler) 
+      canvas.midi_handler(cmd,channel,noteNumber,velocity);
+
+    if (channel == 0 && cmd == 8) {  // Note off
       var l=noteNumber;
       var x=l%cols;
       var y=Math.floor(l/cols);
@@ -3563,7 +3566,9 @@ canvas.midi=function(device, rows, cols, echo)
           canvas._.midiOut.send( [0x80,noteNumber,0x00]);
       }
     }
+
   }
+
   var midiInit=function( midiAccess ) {
     // TODO selection by 'device' parameter
     for (var input of midiAccess.inputs.values()) {
