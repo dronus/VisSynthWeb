@@ -3,66 +3,170 @@
   "SETUP",
   {
    "effect": "resolution",
-   "x": 1920,
-   "y": 1080,
+   "x": 1024,
+   "y": 600,
    "filtering": "linear",
    "precision": "byte",
-   "fps_limit": 60
+   "fps_limit": {
+    "type": "midi",
+    "channel": 7,
+    "a": 1,
+    "o": 1
+   }
   },
   {
    "effect": "select_audio",
-   "audio_device": 2
+   "device": 2,
+   "name": "Internes Audio Analog Stereo"
   },
   {
    "effect": "image",
-   "url": "files/test.jpg"
-  },
-  {
-   "effect": "capture",
-   "device": 0
+   "url": "files/Startgeneration_03.png"
   }
  ],
  [
   "POST"
  ],
  [
-  "",
+  "nogame of life",
   {
-   "effect": "grid",
-   "size": 1,
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "threshold",
+   "threshold": 1.399,
+   "feather": 0,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "life"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "midi",
+   "device": 0,
+   "rows": 16,
+   "cols": 16,
+   "echo": 1
+  },
+  {
+   "effect": "brightnessContrast",
+   "brightness": {
+    "type": "midi_note",
+    "channel": 2,
+    "note": 119,
+    "a": 0.01,
+    "o": -1
+   },
+   "contrast": 0
+  },
+  {
+   "effect": "motion",
+   "threshold": 0.3,
+   "interval": 1,
+   "damper": 0
+  },
+  {
+   "effect": "color",
+   "strength": 1,
+   "rgb": {
+    "type": "rgb",
+    " r": 0.343,
+    "g": 0,
+    "b": 0.283
+   }
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "midi",
+    "channel": 0,
+    "a": 0.000976562,
+    "o": 0
+   },
+   "y": {
+    "type": "midi",
+    "channel": 1,
+    "a": 0.001666667,
+    "o": 0
+   },
+   "scale": 1,
    "angle": 0,
-   "x": 0,
-   "y": 0
+   "sx": 0.015625,
+   "sy": 0.026666667
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 2,
+   "offset": 0
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "midi pad test",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "midi",
+   "device": 0,
+   "rows": 16,
+   "cols": 16,
+   "echo": 1
   },
   {
    "effect": "transform",
    "x": 0,
    "y": 0,
-   "scale": 5.504,
+   "scale": 0.283,
    "angle": 0,
-   "sx": 1,
-   "sy": 1
+   "sx": 0.919,
+   "sy": 1.205
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
   }
  ],
  [
   "matte grid 2",
   {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgba",
-    " r": 1,
-    "g": 1,
-    "b": 11,
-    "a": 1
-   }
-  },
-  {
    "effect": "grid",
-   "size": 1,
+   "size": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.25,
+    "p": 0,
+    "o": 0.5,
+    "waveform": "sine",
+    "duty": 0.5
+   },
    "angle": 0,
    "x": 0,
    "y": 0,
    "linewidth": 0
+  }
+ ],
+ [
+  "ripple",
+  {
+   "effect": "ripple",
+   "width": 0.3,
+   "length": 0.3,
+   "angle": 0,
+   "strength": 8.061
   }
  ],
  [
@@ -83,7 +187,7 @@
     "f": 1.696,
     "a": 0,
     "p": 0,
-    "o": 2.083,
+    "o": 5.1,
     "waveform": "random",
     "duty": 0.5
    },
@@ -119,6 +223,46 @@
   {
    "effect": "invert"
   }
+ ],
+ [
+  "matte grid 2",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    " r": 1.041,
+    "g": 1,
+    "b": 11,
+    "a": 1
+   }
+  },
+  {
+   "effect": "grid",
+   "size": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.25,
+    "p": 0,
+    "o": 0.5,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "angle": 0,
+   "x": 0,
+   "y": 0,
+   "linewidth": 0
+  }
+ ],
+ [
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  ""
  ],
  [
   "spot fever",
@@ -182,7 +326,7 @@
   },
   {
    "effect": "threshold",
-   "threshold": 1.695,
+   "threshold": 1.32,
    "feather": 0,
    "r0": 0,
    "g0": 0,
@@ -1627,7 +1771,7 @@
    "effect": "mesh_displacement",
    "sx": 0,
    "sy": 0,
-   "sz": 0.104,
+   "sz": 0.253,
    "anglex": 0,
    "angley": 0,
    "anglez": 0
