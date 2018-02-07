@@ -269,7 +269,7 @@
 
     // effect argument value generators...    
     var random_index=0;
-    oscillators={
+    var oscillators={
       sine  : Math.sin,
       saw   : function(t){return (t % (2*Math.PI))/Math.PI-1.},
       square: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.},
@@ -289,7 +289,7 @@
       }
     }
 
-    clamp=function(x,a,b){
+    var clamp=function(x,a,b){
       return Math.min(b,Math.max(a,x));
     }  
 
@@ -306,7 +306,7 @@
       rgb_range:flatten
     };
 
-    function get_param_values(param,canvas,t)
+    var get_param_values=function(param,canvas,t)
     {
       var args=[];
       if(!(param instanceof Object)) return param;
@@ -314,7 +314,7 @@
       return fn.call(window,t,param);
     }
 
-    function run_effect(effect,canvas,t)
+    var run_effect=function(effect,canvas,t)
     {
       if(typeof effect == "string") return;
       var args=[];
@@ -327,7 +327,7 @@
       fn.apply(canvas,args);
     }
 
-    function run_chain(chain,canvas,t)
+    var run_chain=function(chain,canvas,t)
     {
       for(var i=0; i<chain.length; i++) 
         run_effect(chain[i],canvas,t);
@@ -345,23 +345,10 @@
           havePreview=true;
       if(!havePreview)
         effects.push({'effect':'preview'});
-      // var effects=JSON.parse(json);
-      
-/*
-      // create JS chain function source code
-      var src='var _=function(c,t){with(c){';
-      for (var i=0; i<effects.length; i++)
-        if(typeof(effects[i])!='string')  // skip names
-          src+=generate_code(effects[i]);
-      src+='}};_';
 
-      // compile chain
-      var w=canvas.width, h=canvas.height; // provide global values for chain functions
-      chain=eval(src);
-*/
+      // set chain
       chain=effects;
 
-      
       // set canvas 'switched' flag, that can be used by filters to reset buffers
       canvas.switched=true;
     }
