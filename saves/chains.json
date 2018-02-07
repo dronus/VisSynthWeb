@@ -20,12 +20,35 @@
    "name": "Internes Audio Analog Stereo"
   },
   {
+   "effect": "fps",
+   "fps": 15
+  },
+  {
    "effect": "image",
    "url": "files/Startgeneration_03.png"
+  },
+  {
+   "effect": "capture",
+   "device": 0
   }
  ],
  [
   "POST"
+ ],
+ [
+  "",
+  {
+   "effect": "hexagonalPixelate",
+   "center": {
+    "type": "pos",
+    "x": 0.163,
+    "y": -0.313
+   },
+   " size": 0.02
+  }
+ ],
+ [
+  "midi pad test"
  ],
  [
   "nogame of life",
@@ -122,61 +145,6 @@
   }
  ],
  [
-  "midi pad test",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "midi",
-   "device": 0,
-   "rows": 16,
-   "cols": 16,
-   "echo": 1
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 0.283,
-   "angle": 0,
-   "sx": 0.919,
-   "sy": 1.205
-  },
-  {
-   "effect": "blend_alpha",
-   "alpha": 1
-  }
- ],
- [
-  "matte grid 2",
-  {
-   "effect": "grid",
-   "size": {
-    "type": "osc",
-    "f": 5,
-    "a": 0.25,
-    "p": 0,
-    "o": 0.5,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "angle": 0,
-   "x": 0,
-   "y": 0,
-   "linewidth": 0
-  }
- ],
- [
-  "ripple",
-  {
-   "effect": "ripple",
-   "width": 0.3,
-   "length": 0.3,
-   "angle": 0,
-   "strength": 8.061
-  }
- ],
- [
   "grid fever",
   {
    "effect": "matte",
@@ -232,6 +200,61 @@
   }
  ],
  [
+  "midi pad test",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "midi",
+   "device": 0,
+   "rows": 16,
+   "cols": 16,
+   "echo": 1
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 0.283,
+   "angle": 0,
+   "sx": 0.919,
+   "sy": 1.205
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
+  }
+ ],
+ [
+  "matte grid 2",
+  {
+   "effect": "grid",
+   "size": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.25,
+    "p": 0,
+    "o": 0.5,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "angle": 0,
+   "x": 0,
+   "y": 0,
+   "linewidth": 0
+  }
+ ],
+ [
+  "ripple",
+  {
+   "effect": "ripple",
+   "width": 0.3,
+   "length": 0.3,
+   "angle": 0,
+   "strength": 8.061
+  }
+ ],
+ [
   "matte grid 2",
   {
    "effect": "matte",
@@ -259,18 +282,6 @@
    "y": 0,
    "linewidth": 0
   }
- ],
- [
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  ""
  ],
  [
   "spot fever",
@@ -1213,7 +1224,7 @@
    "strength": {
     "type": "osc",
     "f": 1.059,
-    "a": 0.148,
+    "a": 4.482,
     "p": 0,
     "o": 0
    }
@@ -1453,11 +1464,11 @@
    },
    "size": {
     "type": "beat",
-    "pulse": 1.16,
+    "pulse": 0.435,
     "f": 0.43,
-    "a": 1.53,
+    "a": 0.01,
     "p": 0.03,
-    "o": 22.1
+    "o": 0.02
    }
   },
   {
@@ -1489,7 +1500,7 @@
     "x": 0,
     "y": 0
    },
-   "size": 21.47
+   "size": 0.02
   },
   {
    "effect": "invertColor"
@@ -2943,9 +2954,9 @@
    "effect": "perspective",
    "perspective": {
     "type": "perspective",
-    " x1": -0.638,
+    "x1": -0.638,
     "y1": -1.301,
-    " x2": -1.023,
+    "x2": -1.023,
     "y2": 0.404,
     "x3": 0.163,
     "y3": -0.654,
@@ -7601,30 +7612,24 @@
    "effect": "ripple",
    "width": {
     "type": "osc",
-    "f": -27.25,
-    "a": 0.15,
+    "f": 1.301,
+    "a": 5.592,
     "p": 0,
-    "o": 0.3
+    "o": 300
    },
    "length": {
     "type": "osc",
     "f": 8.51,
-    "a": 0.15,
+    "a": 13.59,
     "p": 0,
-    "o": 0.3
+    "o": 150
    },
-   "angle": {
-    "type": "osc",
-    "f": 1.674,
-    "a": 0,
-    "p": 0,
-    "o": 0
-   },
+   "angle": 0,
    "strength": {
     "type": "beat",
-    "pulse": 78.987,
+    "pulse": 0.435,
     "f": 0.253,
-    "a": 2.246,
+    "a": 0,
     "p": 0,
     "o": 0
    }
