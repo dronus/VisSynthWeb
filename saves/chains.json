@@ -36,16 +36,7 @@
   "POST"
  ],
  [
-  "",
-  {
-   "effect": "hexagonalPixelate",
-   "center": {
-    "type": "pos",
-    "x": 0.163,
-    "y": -0.313
-   },
-   " size": 0.02
-  }
+  ""
  ],
  [
   "midi pad test"
@@ -248,10 +239,10 @@
   "ripple",
   {
    "effect": "ripple",
-   "width": 0.3,
-   "length": 0.3,
+   "width": 112.627,
+   "length": 112.627,
    "angle": 0,
-   "strength": 8.061
+   "strength": 0.015
   }
  ],
  [
@@ -268,15 +259,7 @@
   },
   {
    "effect": "grid",
-   "size": {
-    "type": "osc",
-    "f": 5,
-    "a": 0.25,
-    "p": 0,
-    "o": 0.5,
-    "waveform": "sine",
-    "duty": 0.5
-   },
+   "size": 0.5,
    "angle": 0,
    "x": 0,
    "y": 0,
