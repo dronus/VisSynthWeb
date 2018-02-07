@@ -266,24 +266,24 @@
       display: block;
     }
     /* hide default parameters in effects selection list*/
-    #effects .key, #effects .value div:not(:first-child){
+    #effects .key, #effects div:not(:first-child){
       display: none;
     }
-    .effect>.ui_object>.value{
+    .effect{
       margin-left: 0px;
     }
-    .effect>.ui_object>.key
+/*    .effect>.ui_object>.key
     {
       display: none;
-    }
-    .effect>.ui_object>.value>:first-child{
+    }*/
+    .effect>:first-child{
       display: block;
     }    
-    .effect>.ui_object>.value>:first-child>.key
+    .effect>:first-child>.key
     {
       display: none;
     }
-    .effect>.ui_object>.value>:first-child>.value
+    .effect>:first-child>.value
     {
       font-size: 16px;
     }
@@ -311,7 +311,7 @@
       content: '▾';
     }
     /* effects with more inputs show additional stack input arrows.*/
-    .chain .effect[ui_inputs="2"]>.ui_object::before{
+    .chain .effect[ui_inputs="2"]>:first-child::before{
       display: block;
       position:absolute;
       top: -3px;
@@ -319,7 +319,7 @@
       content: '◂▤';
       color: #f00;
     }
-    .chain .effect[ui_inputs="3"]>.ui_object::before{
+    .chain .effect[ui_inputs="3"]>:first-child::before{
       display: block;
       position:absolute;
       top: -3px;
@@ -332,7 +332,7 @@
       display: none;
     }
     /* effects with additional outputs show stack output arrows*/
-    .chain .effect[ui_outputs]>.ui_object::before{
+    .chain .effect[ui_outputs]>:last-child::before{
       display: block;
       position:absolute;
       bottom: -3px;
@@ -425,21 +425,21 @@
     }    
 
     /* nestet UI blocks, like multiple slider BEAT or OSC UIs */
-    .ui_object .ui_object
+    .ui_object
     {
 	    background-color: #373737;
 	    margin: 2px;
 	    border-radius:2px;
 	    box-shadow: 2px 2px 2px 0px rgba(0,0,0,.3);
     }
-    .adjust_ui .ui_object .ui_object{      
+    .adjust_ui .ui_object{
       border-radius: 5px;
       margin: 5px;
       padding-left: 15px;
       background-color: #333;
       box-shadow: 2px 2px 8px 0px rgba(0,0,0,1);
     }
-    .adjust_ui .ui_object .ui_object .ui_object{
+    .adjust_ui .ui_object .ui_object{
       background-color: #555;
     }    
     .adjust_ui .ui_number{
