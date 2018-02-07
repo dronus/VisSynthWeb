@@ -3,6 +3,7 @@ midi={};
 midi.notes      ={}; // MIDI note on / off driven note states
 midi.toggles    ={}; // MIDI note on derived virtual toggle switches
 midi.controllers={}; // MIDI controller inputs
+midi.controllers_infinite={};
 
 //midi.handlers   =[];
 
@@ -21,11 +22,14 @@ midi.echo_toggles=false;
 
     if(cmd==11) {
       // MIDI controller input
-      if(!midi.controllers[note]) midi.controllers[note]=0;
-      /* if     (midi_controllers[note]<=0   && velocity==  0) midi_controllers[note]--;
-      else if(midi_controllers[note]>=127 && velocity==127) midi_controllers[note]++;
-      else*/
+
+      var delta=velocity-(midi.controllers[note]||0);
       midi.controllers[note]=velocity;
+
+      if(!midi.controllers_infinite[note]) midi.controllers_infinite[note]=0;
+      if      (delta   !=  0) midi.controllers_infinite[note]+=delta;
+      else if (velocity==  0) midi.controllers_infinite[note]--;
+      else if (velocity==127) midi.controllers_infinite[note]++;
     }
     else if(cmd==9) { 
       // MIDI note on
