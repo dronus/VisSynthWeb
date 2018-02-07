@@ -1076,18 +1076,19 @@ canvas.relief=function(scale2,scale4) {
 
 
 // src/filters/video/transform.js
-canvas.transform=function(x,y,scale,angle,sx,sy) {
+canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
     gl.transform = gl.transform || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
         uniform vec4 xform;\
         varying vec2 texCoord;\
         uniform vec2 aspect;\
+        uniform float wrap;\
         void main() {\
           mat2 mat=mat2(xform.xy,xform.zw);\
           vec2 uv=(mat*(texCoord*aspect+translation-vec2(0.5,0.5))+vec2(0.5,0.5))/aspect; \
-          if(uv.x>=0. && uv.y>=0. && uv.x<=1. && uv.y<=1.) \
-            gl_FragColor = texture2D(texture,uv);\
+          if(wrap>=1.|| ( uv.x>=0. && uv.y>=0. && uv.x<=1. && uv.y<=1.) ) \
+            gl_FragColor = texture2D(texture,fract(uv));\
           else \
             gl_FragColor = vec4(0.,0.,0.,0.); \
         }\
@@ -1101,7 +1102,8 @@ canvas.transform=function(x,y,scale,angle,sx,sy) {
          Math.cos(angle)/scale/sx, Math.sin(angle)/scale/sy,
         -Math.sin(angle)/scale/sx, Math.cos(angle)/scale/sy
       ],
-      aspect:[this.width/this.height,1.]
+      aspect:[this.width/this.height,1.],
+      wrap:wrap||0
     });
 
     return this;

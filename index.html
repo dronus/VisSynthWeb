@@ -295,13 +295,16 @@
       }
     }
 
-  
+    clamp=function(x,a,b){
+      return Math.min(b,Math.max(a,x));
+    }  
+
     var generators={
       perspective:function(args){delete args.type; return ["[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],["+flatten(args).join(',')+"],true"]},
       osc:function(args){return [args.a+"*oscillators['"+(args.waveform ? args.waveform : 'sine' )+"'](t*"+args.f+"+"+args.p+","+(args.duty?args.duty:0.5)+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
       beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
-      midi:function(args){return["(window.midi.controllers"+(args.infinite?"_infinite":"")+"["+args.channel+"]|0)*"+args.a+"+"+args.o]},
+      midi:function(args){return["clamp((window.midi.controllers"+(args.infinite?"_infinite":"")+"["+args.channel+"]|0)*"+args.a+"+"+args.o+","+args.min+","+args.max+")"]},
       midi_note:function(args){return["(window.midi.notes[\""+args.channel+" "+args.note+"\"]|0)*"+args.a+"+"+args.o]},
       size:flatten,
       rgb:flatten,

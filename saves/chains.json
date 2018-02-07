@@ -92,19 +92,24 @@
     "channel": 0,
     "a": 0.000976562,
     "o": 0,
-    "infinite": 1
+    "infinite": 1,
+    "min": 0,
+    "max": 1920
    },
    "y": {
     "type": "midi",
     "channel": 1,
     "a": 0.001666667,
     "o": 0,
-    "infinite": 1
+    "infinite": 1,
+    "min": 0,
+    "max": 1080
    },
    "scale": 1,
    "angle": 0,
    "sx": 0.015625,
-   "sy": 0.026666667
+   "sy": 0.026666667,
+   "wrap": 0
   },
   {
    "effect": "blend",
