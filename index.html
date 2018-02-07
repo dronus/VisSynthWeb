@@ -100,7 +100,7 @@
 
       // run effect chain
       random_index=0; // used by effect chain to distinguish all random invocations in a single frame
-      if(chain) chain(canvas,effect_time);
+      if(chain) run_chain(chain,canvas,effect_time);
 
       // provide preview if requested
       // the preview is a downscaled image provided by the 'preview' effect
@@ -258,19 +258,13 @@
     // helper functions for chain code generation
 
     // flatten tree-like objects values into single array, dropping keys
-    var flatten=function(o)
+    var flatten=function(t,args)
     {
-      var a=[];
-      for(var key in o) 
-        if(key!='type') 
-        {
-          var value=o[key];
-          if(typeof(value)=='object')
-            a=a.concat(generators[value.type](value));
-          else
-            a.push(value);
-        }
-      return a;
+      var vals=[];
+      for(var key in args)
+        if(key!="type")
+          vals.push(args[key]);
+      return vals;
     }
 
     // effect argument value generators...    
@@ -300,38 +294,43 @@
     }  
 
     var generators={
-      perspective:function(args){delete args.type; return ["[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],["+flatten(args).join(',')+"],true"]},
-      osc:function(args){return [args.a+"*oscillators['"+(args.waveform ? args.waveform : 'sine' )+"'](t*"+args.f+"+"+args.p+","+(args.duty?args.duty:0.5)+")+"+args.o]},
-      pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
-      beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
-      midi:function(args){return["clamp((window.midi.controllers"+(args.infinite?"_infinite":"")+"["+args.channel+"]|0)*"+args.a+"+"+args.o+","+args.min+","+args.max+")"]},
-      midi_note:function(args){return["(window.midi.notes[\""+args.channel+" "+args.note+"\"]|0)*"+args.a+"+"+args.o]},
+      perspective:function(t,args){delete args.type; return [[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],flatten(t,args),true]},
+      osc:function(t,args){return args.a*oscillators[args.waveform ? args.waveform : 'sine'](t*args.f+args.p,args.duty?args.duty:0.5)+args.o;},
+      pos:function(t,args){return [args.x+w/2,args.y+h/2]},
+      beat:function(t,args) { return audio_engine.beatValue.apply(null,flatten(t,args));},
+      midi:function(t,args){return clamp( (args.infinite?window.midi.controllers_infinite:window.midi.controllers)[args.channel|0]*args.a+args.o, args.min, args.max)},
+      midi_note:function(t,args){return (window.midi.notes[args.channel+" "+args.note]|0)*args.a+args.o},
       size:flatten,
       rgb:flatten,
       rgba:flatten,
       rgb_range:flatten
     };
 
-    // generate a single effect function call source code
-    var generate_code=function(effect)
+    function get_param_values(param,canvas,t)
     {
-      var command=effect.effect;
       var args=[];
+      if(!(param instanceof Object)) return param;
+      var fn=generators[param.type];
+      return fn.call(window,t,param);
+    }
+
+    function run_effect(effect,canvas,t)
+    {
+      if(typeof effect == "string") return;
+      var args=[];
+      var fn=canvas[effect.effect] ? canvas[effect.effect] : window[effect.effect];
       for(var key in effect)
       {
         if(key=='effect') continue;
-        var value=effect[key];
-        if(typeof(value)=='object')
-          args=args.concat(generators[value.type](value));
-        else if (typeof(value)=='string')
-          args.push('"'+value+'"');
-        else
-          args.push(value);
+        args=args.concat(get_param_values(effect[key],canvas,t));
       }
-      
-      var src=command+'('+args.join(',')+'); ';
-            
-      return src;
+      fn.apply(canvas,args);
+    }
+
+    function run_chain(chain,canvas,t)
+    {
+      for(var i=0; i<chain.length; i++) 
+        run_effect(chain[i],canvas,t);
     }
 
     // global functions called by remote control
@@ -348,6 +347,7 @@
         effects.push({'effect':'preview'});
       // var effects=JSON.parse(json);
       
+/*
       // create JS chain function source code
       var src='var _=function(c,t){with(c){';
       for (var i=0; i<effects.length; i++)
@@ -358,6 +358,9 @@
       // compile chain
       var w=canvas.width, h=canvas.height; // provide global values for chain functions
       chain=eval(src);
+*/
+      chain=effects;
+
       
       // set canvas 'switched' flag, that can be used by filters to reset buffers
       canvas.switched=true;
