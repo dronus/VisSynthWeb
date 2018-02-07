@@ -6,6 +6,7 @@
   <script src="shader.js"></script>
   <script src="glmatrix.js"></script>
   <script src="audio.js"></script>
+  <script src="midi.js"></script>
   <script src="canvas.js"></script>  
   <script src="filters.js"></script>
 </head>
@@ -294,28 +295,14 @@
       }
     }
 
-    midi_controllers={};
-    midi_notes={};
-    canvas.midi_handler=function(cmd,channel,note,velocity){
-
-      if(cmd==11) {
-      if(!midi_controllers[note]) midi_controllers[note]=0;
-/*      if     (midi_controllers[note]<=0   && velocity==  0) midi_controllers[note]--;
-      else if(midi_controllers[note]>=127 && velocity==127) midi_controllers[note]++;
-      else*/
-        midi_controllers[note]=velocity;
-      }
-      if(cmd==9) midi_notes[channel+' '+note]=velocity;
-      if(cmd==8) midi_notes[channel+' '+note]=0;
-    };
-
+  
     var generators={
       perspective:function(args){delete args.type; return ["[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],["+flatten(args).join(',')+"],true"]},
       osc:function(args){return [args.a+"*oscillators['"+(args.waveform ? args.waveform : 'sine' )+"'](t*"+args.f+"+"+args.p+","+(args.duty?args.duty:0.5)+")+"+args.o]},
       pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
       beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
-      midi:function(args){return["(midi_controllers["+args.channel+"]|0)*"+args.a+"+"+args.o]},
-      midi_note:function(args){return["(midi_notes[\""+args.channel+" "+args.note+"\"]|0)*"+args.a+"+"+args.o]},
+      midi:function(args){return["(window.midi.controllers["+args.channel+"]|0)*"+args.a+"+"+args.o]},
+      midi_note:function(args){return["(window.midi.notes[\""+args.channel+" "+args.note+"\"]|0)*"+args.a+"+"+args.o]},
       size:flatten,
       rgb:flatten,
       rgba:flatten,
