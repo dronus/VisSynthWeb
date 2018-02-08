@@ -1078,7 +1078,7 @@ canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
         uniform float wrap;\
         void main() {\
           mat2 mat=mat2(xform.xy,xform.zw);\
-          vec2 uv=(mat*(texCoord*aspect+translation-vec2(0.5,0.5))+vec2(0.5,0.5))/aspect; \
+          vec2 uv=(mat*(texCoord-translation-vec2(0.5,0.5))*aspect+vec2(0.5,0.5))/aspect; \
           if(wrap>=1.|| ( uv.x>=0. && uv.y>=0. && uv.x<=1. && uv.y<=1.) ) \
             gl_FragColor = texture2D(texture,fract(uv));\
           else \
