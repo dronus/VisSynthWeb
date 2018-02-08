@@ -3,25 +3,23 @@
   "SETUP",
   {
    "effect": "resolution",
-   "x": 1024,
-   "y": 600,
+   "x": 1920,
+   "y": 1080,
    "filtering": "linear",
    "precision": "byte",
    "fps_limit": {
     "type": "midi",
     "channel": 7,
     "a": 1,
-    "o": 1
+    "o": 1,
+    "min": 1,
+    "max": 100
    }
   },
   {
    "effect": "select_audio",
    "device": 2,
    "name": "Internes Audio Analog Stereo"
-  },
-  {
-   "effect": "fps",
-   "fps": 15
   },
   {
    "effect": "image",
@@ -36,10 +34,154 @@
   "POST"
  ],
  [
-  ""
+  "nogame of life",
+  {
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "threshold",
+   "threshold": 1.399,
+   "feather": 0,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "life",
+   "iterations": 5
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "midi",
+   "device": 0,
+   "rows": 16,
+   "cols": 16,
+   "echo": 1
+  },
+  {
+   "effect": "brightnessContrast",
+   "brightness": {
+    "type": "midi_note",
+    "channel": 2,
+    "note": 119,
+    "a": 0.01,
+    "o": -1
+   },
+   "contrast": 0
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "midi",
+    "channel": 0,
+    "a": 0.000520833,
+    "o": 0.00025,
+    "infinite": 1,
+    "min": -0.5,
+    "max": 0.5
+   },
+   "y": {
+    "type": "midi",
+    "channel": 1,
+    "a": 0.000925926,
+    "o": 0.00025,
+    "infinite": 1,
+    "min": -0.5,
+    "max": 0.5
+   },
+   "scale": 1,
+   "angle": 0,
+   "sx": 0.008333333,
+   "sy": 0.014814815,
+   "wrap": 0
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 2,
+   "offset": 0
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "rectangle",
+   "color": {
+    "type": "rgba",
+    " r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 0.1
+   },
+   "x": {
+    "type": "midi",
+    "channel": 0,
+    "a": 0.000520833,
+    "o": 0.00025,
+    "infinite": 1,
+    "min": -0.5,
+    "max": 0.5
+   },
+   "y": 0,
+   "width": 0.008333333,
+   "height": 1,
+   "angle": 0
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "rectangle",
+   "color": {
+    "type": "rgba",
+    " r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 0.1
+   },
+   "x": 0,
+   "y": {
+    "type": "midi",
+    "channel": 1,
+    "a": 0.000925926,
+    "o": 0.00025,
+    "infinite": 1,
+    "min": -0.5,
+    "max": 0.5
+   },
+   "width": 1,
+   "height": 0.007407407,
+   "angle": 0
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
+  }
  ],
  [
-  "midi pad test"
+  "",
+  "",
+  "",
+  {
+   "effect": "motion",
+   "threshold": 1.005,
+   "interval": 1,
+   "damper": 0.97
+  }
  ],
  [
   "nogame of life",
@@ -134,6 +276,9 @@
   {
    "effect": "feedbackIn"
   }
+ ],
+ [
+  "midi pad test"
  ],
  [
   "grid fever",
