@@ -80,7 +80,7 @@
       "colorDisplacement":{"args":{"angle":0.0,"strength":3.0}},
       "grid":{"args":{"size":1.0,"angle":0.0, "x": 0.0, "y": 0.0,"linewidth":0.1}},
       "gauze":{"args":{"width":300,"length":200,"angle":0.0,"strength":0.5,"center":{"type":"pos","x":0.0,"y":0.0}}},
-      "life":{},
+      "life":{"args":{"iterations":1}},
       "colorHalftone":{"args":{"center":{"type":"pos","x":0,"y":0},"angle":30.0,"size":{"type":"osc","f":5.0,"a":1.0,"p":0.0,"o":2.0}}},
       "analogize":{"args":{"exposure":2.0,"gamma":1.5,"glow":1.0,"glow_radius":16.0}},
       "relief":{"args":{"scale2":16.0,"scale4":64.0}},

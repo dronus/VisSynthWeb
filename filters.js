@@ -1744,7 +1744,7 @@ canvas.colorkey=canvas.chroma_key=function(r,g,b,threshold,feather) {
 }
 
 // src/filters/video/life.js
-canvas.life=function() {
+canvas.life=function(iterations) {
     gl.life = gl.life || new Shader(null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
@@ -1781,7 +1781,8 @@ canvas.life=function() {
       }\
     ');
 
-    this.simpleShader( gl.life, {texSize: [this.width, this.height]});
+    for(var i=0; i<1 || i<iterations && i<100; i++)
+      this.simpleShader( gl.life, {texSize: [this.width, this.height]});
 
     return this;
 }
