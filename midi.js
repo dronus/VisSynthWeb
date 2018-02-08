@@ -7,7 +7,7 @@ midi.controllers_infinite={};
 
 //midi.handlers   =[];
 
-midi.echo_toggles=false;
+midi.echo_toggles_channels={};
 
 (function(){
   var messageHandler=function(evt){
@@ -39,8 +39,9 @@ midi.echo_toggles=false;
     else if(cmd==8) {
       // MIDI note off
       midi.notes[channel+' '+note]=0;
-      if(midi.echo_toggles)
+      if(midi.echo_toggles_channels[channel]){
         midi.midiOut.send([((midi.toggles[channel+' '+note]?9:8)<<4)+channel,note,midi.toggles[channel+' '+note]*127]);
+      }
     }
 
     // for(var key in handlers) handlers[key](cmd,channel,note,velocity);

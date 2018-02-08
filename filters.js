@@ -3518,7 +3518,8 @@ canvas.midi=function(device, rows, cols, toggles)
   device=Math.floor(device);
   rows=Math.floor(rows);
   cols=Math.floor(cols);
-  midi.echo_toggles=!!toggles;
+
+  midi.echo_toggles_channels[0]=!!toggles;
 
   if(!this._.midiState)
   {

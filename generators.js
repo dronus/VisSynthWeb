@@ -45,7 +45,7 @@ generators={
   osc:function(t,args){return args.a*oscillators[args.waveform ? args.waveform : 'sine'](t*args.f+args.p,args.duty?args.duty:0.5)+args.o;},
   beat:function(t,args) { return audio_engine.beatValue.apply(null,flatten(t,args));},
   midi:function(t,args){return clamp( (args.infinite?window.midi.controllers_infinite:window.midi.controllers)[args.channel|0]*args.a+args.o, args.min, args.max)},
-  midi_note:function(t,args){return (window.midi.notes[args.channel+" "+args.note]|0)*args.a+args.o},
+  midi_note:function(t,args){var v=window.midi.notes[args.channel+" "+args.note]|0; window.midi.notes[args.channel+" "+args.note]=0; return v*args.a+args.o},
   pos:flatten,
   size:flatten,
   rgb:flatten,
