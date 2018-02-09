@@ -1,6 +1,7 @@
 midi={};
 
 midi.notes      ={}; // MIDI note on / off driven note states
+midi.note       ={}; // MIDI last note on state for every channel
 midi.toggles    ={}; // MIDI note on derived virtual toggle switches
 midi.controllers={}; // MIDI controller inputs
 midi.controllers_infinite={};
@@ -34,11 +35,13 @@ midi.echo_toggles_channels={};
     else if(cmd==9) { 
       // MIDI note on
       midi.notes  [channel+' '+note]=velocity;
+      midi.note   [channel]=note;
       midi.toggles[channel+' '+note]=!midi.toggles[channel+' '+note];
     }
     else if(cmd==8) {
       // MIDI note off
       midi.notes[channel+' '+note]=0;
+      midi.note[channel]=0;
       if(midi.echo_toggles_channels[channel]){
         midi.midiOut.send([((midi.toggles[channel+' '+note]?9:8)<<4)+channel,note,midi.toggles[channel+' '+note]*127]);
       }
