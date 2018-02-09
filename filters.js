@@ -686,36 +686,44 @@ canvas.video=function(url,play_sound)
     return this;
 }
 
-var image_loaded=[];
-canvas.image=function(url)
+canvas._.imageImgs={};
+canvas._.imageTextures={};
+canvas.image=function(url,url_param)
 {
+  url=url.replace('#',(url_param|0));
 
-    if(!this._.imageFilterElement) this._.imageFilterElement=[];
-    var v=this._.imageFilterElement[url];
-
-    if(!v)
-    {
-      var v = document.createElement('img');
-      v.crossOrigin = "anonymous";
-      v.src=url;
-      this._.imageFilterElement[url]=v;
-      v.onload=function(){
-          image_loaded[url]=true;
-      }
-    }  
-      
-    // make sure the image has adapted to the image source
-    if(!this._.imageTexture) this._.imageTexture=[];
-    if(!this._.imageTexture[url] && image_loaded[url])
-    {
-      this._.imageTexture[url]=this.texture(v);    
-      this._.imageTexture[url].loadContentsOf(v);
-    }
-    
-    if(this._.imageTexture[url])
-      this._.imageTexture[url].copyTo(this._.texture);
-        
+  // if image texture exists, just copy it.
+  if(this._.imageTextures[url])
+  {
+    this._.imageTextures[url].copyTo(this._.texture);
     return this;
+  } 
+
+  // check if image is loaded and create texture if so.
+  var img=this._.imageImgs[url];
+  if(img && img.isReady)
+  {
+    this._.imageTextures[url]=this.texture(img);
+    this._.imageTextures[url].loadContentsOf(img);
+    delete this._.imageImgs[url];
+    return this;
+  }
+
+  // if we get here, and the image element exists, wait further to load it.
+  if(img) return;
+
+  // if we get here, the image needs to be loaded. Create a HTML image element to do so.
+  var img = document.createElement('img');
+  img.crossOrigin = "anonymous";
+  img.src=url;
+  this._.imageImgs[url]=img;
+  img.onload=function(){
+    img.isReady=true;
+  }
+  console.log("image: "+url);
+
+
+  return this;
 }
 
 
