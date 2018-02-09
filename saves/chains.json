@@ -20,14 +20,6 @@
    "effect": "select_audio",
    "device": 2,
    "name": "Internes Audio Analog Stereo"
-  },
-  {
-   "effect": "image",
-   "url": "files/Startgeneration_03.png"
-  },
-  {
-   "effect": "capture",
-   "device": 0
   }
  ],
  [
@@ -42,7 +34,7 @@
   },
   {
    "effect": "threshold",
-   "threshold": 1.399,
+   "threshold": 1.131,
    "feather": 0,
    "r0": 0,
    "g0": 0,
@@ -68,7 +60,7 @@
   {
    "effect": "brightnessContrast",
    "brightness": {
-    "type": "midi_note",
+    "type": "midi_note_on",
     "channel": 2,
     "note": 119,
     "a": 0.01,
@@ -107,6 +99,16 @@
    "alpha": 0.5,
    "factor": 2,
    "offset": 0
+  },
+  {
+   "effect": "image",
+   "url": "files/Startgeneration_#.png",
+   "url_param": {
+    "type": "midi_note",
+    "channel": 2,
+    "a": 1,
+    "o": 0
+   }
   },
   {
    "effect": "feedbackIn"
@@ -174,13 +176,40 @@
  ],
  [
   "",
-  "",
+  {
+   "effect": "matte",
+   "r": {
+    "type": "midi_note",
+    "channel": 2,
+    "a": 0.03,
+    "o": 0
+   },
+   "g": 1,
+   "b": 1.023,
+   "a": 1
+  }
+ ],
+ [
   "",
   {
-   "effect": "motion",
-   "threshold": 1.005,
-   "interval": 1,
-   "damper": 0.97
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    " r": 0,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "image",
+   "url": "files/Startgeneration_#.png",
+   "url_param": {
+    "type": "midi_note",
+    "channel": 2,
+    "a": 1,
+    "o": 0
+   }
   }
  ],
  [
