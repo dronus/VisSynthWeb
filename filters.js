@@ -46,16 +46,17 @@ canvas.filtering=function(linear)
 
 
 // src/filters/common.js
+// TODO check if clamping can be done by texture border modes in today's WebGL implementations
 var warpShader=function(uniforms, warp) {
     return new Shader(null, uniforms + '\
     uniform sampler2D texture;\
-    uniform vec2 texSize;\
     varying vec2 texCoord;\
     void main() {\
-        vec2 coord = texCoord * texSize;\
+        vec2 coord = texCoord-vec2(0.5);\
         ' + warp + '\
-        gl_FragColor = texture2D(texture, coord / texSize);\
-        vec2 clampedCoord = clamp(coord, vec2(0.0), texSize);\
+        coord+=vec2(0.5);\
+        gl_FragColor = texture2D(texture, coord);\
+        vec2 clampedCoord = clamp(coord, vec2(0.0), vec2(1.0));\
         if (coord != clampedCoord) {\
             /* fade to transparent black if we are outside the image */\
             gl_FragColor *= max(0.0, 1.0 - length(coord - clampedCoord));\
@@ -723,12 +724,9 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
     gl.ripple = gl.ripple || warpShader('\
         uniform vec4 xform;\
         uniform float amplitude;\
-        uniform vec2 center;\
     ', '\
         mat2 mat=mat2(xform.xy,xform.zw);\
-        coord -= center;\
         coord += amplitude*sin(mat*coord);\
-        coord += center;\
     ');
 
     this.simpleShader( gl.ripple, {
@@ -737,8 +735,6 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
           -Math.sin(angle)*fx, Math.cos(angle)*fy
         ],
         amplitude: amplitude,
-        center: [this.width/2, this.height/2],
-        texSize: [this.width, this.height]
     });
 
     return this;
@@ -750,18 +746,15 @@ canvas.spherical=function(radius,scale) {
         uniform float radius;\
         uniform float scale;\
     ', '\
-        coord=coord-0.5;\
         float l=length(coord);\
         /* float l2=l-radius; */ \
         float l2=-1.0/(l/radius-1.0)-1.0;\
         coord*=(l2/l/scale);\
-        coord=coord+0.5;\
     ');
 
     this.simpleShader( gl.spherical, {
         radius: radius,
         scale : scale,
-        texSize:[1.0,1.0]
     });
 
     return this;
@@ -951,8 +944,7 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
           -Math.sin(angle)*scale, Math.cos(angle)*scale
         ],
         iterations  : iterations,
-        center: [x-this.width/2,y-this.height/2], // TODO remove this fix to cope with UI values top-left origin
-        texSize: [this.width, this.height]
+        center: [x,y]
     });
 
     return this;
@@ -992,7 +984,7 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
         ],
         iterations  : iterations,
         c: [cx,cy], 
-        center: [x-this.width/2,y-this.height/2], // TODO remove this fix to cope with UI values top-left origin
+        center: [x,y],
         texSize: [this.width, this.height]
     });
 
@@ -1076,18 +1068,19 @@ canvas.relief=function(scale2,scale4) {
 
 
 // src/filters/video/transform.js
-canvas.transform=function(x,y,scale,angle,sx,sy) {
+canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
     gl.transform = gl.transform || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
         uniform vec4 xform;\
         varying vec2 texCoord;\
         uniform vec2 aspect;\
+        uniform float wrap;\
         void main() {\
           mat2 mat=mat2(xform.xy,xform.zw);\
           vec2 uv=(mat*(texCoord*aspect+translation-vec2(0.5,0.5))+vec2(0.5,0.5))/aspect; \
-          if(uv.x>=0. && uv.y>=0. && uv.x<=1. && uv.y<=1.) \
-            gl_FragColor = texture2D(texture,uv);\
+          if(wrap>=1.|| ( uv.x>=0. && uv.y>=0. && uv.x<=1. && uv.y<=1.) ) \
+            gl_FragColor = texture2D(texture,fract(uv));\
           else \
             gl_FragColor = vec4(0.,0.,0.,0.); \
         }\
@@ -1101,7 +1094,8 @@ canvas.transform=function(x,y,scale,angle,sx,sy) {
          Math.cos(angle)/scale/sx, Math.sin(angle)/scale/sy,
         -Math.sin(angle)/scale/sx, Math.cos(angle)/scale/sy
       ],
-      aspect:[this.width/this.height,1.]
+      aspect:[this.width/this.height,1.],
+      wrap:wrap||0
     });
 
     return this;
@@ -1165,7 +1159,7 @@ canvas.noalpha=function() {
 // src/filters/video/preview.js
 canvas.preview=function()
 {
-    this.preview_width=320; this.preview_height=200;
+    this.preview_width=640; this.preview_height=400;
     this._.texture.use();
     gl.viewport(0,0,this.preview_width,this.preview_height);
     this._.flippedShader.drawRect();
@@ -1589,7 +1583,7 @@ canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
           -Math.sin(angle)*fx, Math.cos(angle)*fy
         ],
         amplitude: amplitude,
-        center: [x-this.width/2,y-this.height/2], // TODO remove this fix to cope with UI values top-left origin
+        center: [x,y],
         texSize: [this.width, this.height]
     });
 
@@ -1757,7 +1751,7 @@ canvas.life=function() {
       varying vec2 texCoord;\
 \
       float cell(float x, float y){\
-	      float f=dot(texture2D(texture,vec2(x,y)),vec4(.33,.33,.33,0.));\
+	      float f=dot(texture2D(texture,fract(vec2(x,y))),vec4(.33,.33,.33,0.));\
 	      return floor(f+0.5);\
       }\
 \
@@ -2406,7 +2400,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
  * @param after  The x and y coordinates of four points after the transform in a flat list, just
  *               like the other argument.
  */
-canvas.perspective=function(before, after,use_texture_space) {
+canvas.perspective=function(before, after) {
     function getSquareToQuad(x0, y0, x1, y1, x2, y2, x3, y3) {
         var dx1 = x1 - x2;
         var dy1 = y1 - y2;
@@ -2429,7 +2423,7 @@ canvas.perspective=function(before, after,use_texture_space) {
     var b = getSquareToQuad.apply(null, before);
     var c = mat4.multiply( b,mat4.inverse(a));
     var d = mat4.toMat3(c);
-    return this.matrixWarp(d,false,use_texture_space);
+    return this.matrixWarp(d,false);
 }
 
 // src/filters/warp/matrixwarp.js
@@ -2448,21 +2442,16 @@ canvas.perspective=function(before, after,use_texture_space) {
  *                        from -1 to 1 instead of 0 to width - 1 or height - 1, and are easier
  *                        to use for simple operations like flipping and rotating.
  */
-canvas.matrixWarp=function(matrix, inverse, useTextureSpace) {
+canvas.matrixWarp=function(matrix, inverse) {
     gl.matrixWarp = gl.matrixWarp || warpShader('\
         uniform mat3 matrix;\
-        uniform float useTextureSpace;\
     ', '\
-        if (useTextureSpace>0.) coord = coord / texSize * 2.0 - 1.0;\
         vec3 warp = matrix * vec3(coord, 1.0);\
         coord = warp.xy / warp.z;\
-        if (useTextureSpace>0.) coord = (coord * 0.5 + 0.5) * texSize;\
     ');
 
     this.simpleShader( gl.matrixWarp, {
-        matrix: inverse ? getInverse(matrix) : matrix,
-        texSize: [this.width, this.height],
-        useTextureSpace: useTextureSpace | 0
+        matrix: inverse ? getInverse(matrix) : matrix
     });
 
     return this;
@@ -2502,8 +2491,7 @@ canvas.swirl=function(centerX, centerY, radius, angle) {
     this.simpleShader( gl.swirl, {
         radius: radius,
         center: [centerX, centerY],
-        angle: angle,
-        texSize: [this.width, this.height]
+        angle: angle
     });
 
     return this;
@@ -2540,8 +2528,7 @@ canvas.bulgePinch=function(centerX, centerY, radius, strength) {
     this.simpleShader( gl.bulgePinch, {
         radius: radius,
         strength: clamp(-1, strength, 1),
-        center: [centerX, centerY],
-        texSize: [this.width, this.height]
+        center: [centerX, centerY]
     });
 
     return this;
@@ -2561,13 +2548,11 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float strength;\
-        uniform vec2 texSize;\
         varying vec2 texCoord;\
         ' + randomShaderFunc + '\
         void main() {\
             vec4 color = vec4(0.0);\
             float total = 0.0;\
-            vec2 toCenter = center - texCoord * texSize;\
             \
             /* randomize the lookup values to hide the fixed number of samples */\
             float offset = random(vec3(12.9898, 78.233, 151.7182), 0.0);\
@@ -2575,7 +2560,7 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
             for (float t = 0.0; t <= 40.0; t++) {\
                 float percent = (t + offset) / 40.0;\
                 float weight = 4.0 * (percent - percent * percent);\
-                vec4 sample = texture2D(texture, texCoord + toCenter * percent * strength / texSize);\
+                vec4 sample = texture2D(texture, (texCoord - center) * (1. - percent * strength) + center );\
                 \
                 /* switch to pre-multiplied alpha to correctly blur transparent images */\
                 sample.rgb *= sample.a;\
@@ -2592,9 +2577,8 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
     ');
 
     this.simpleShader( gl.zoomBlur, {
-        center: [centerX, centerY],
-        strength: strength,
-        texSize: [this.width, this.height]
+        center: [centerX+0.5, centerY+0.5],
+        strength: strength
     });
 
     return this;
@@ -3306,10 +3290,9 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float scale;\
-        uniform vec2 texSize;\
         varying vec2 texCoord;\
         void main() {\
-            vec2 tex = (texCoord * texSize - center) / scale;\
+            vec2 tex = (texCoord - center) / scale;\
             tex.y /= 0.866025404;\
             tex.x -= tex.y * 0.5;\
             \
@@ -3339,15 +3322,14 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
             \
             choice.x += choice.y * 0.5;\
             choice.y *= 0.866025404;\
-            choice *= scale / texSize;\
-            gl_FragColor = texture2D(texture, choice + center / texSize);\
+            choice *= scale;\
+            gl_FragColor = texture2D(texture, choice + center);\
         }\
     ');
 
     this.simpleShader( gl.hexagonalPixelate, {
-        center: [centerX, centerY],
-        scale: scale,
-        texSize: [this.width, this.height]
+        center: [centerX+0.5, centerY+0.5],
+        scale: scale
     });
 
     return this;
@@ -3528,3 +3510,31 @@ canvas.mirror_x = function() {
     this.simpleShader( gl.mirror_x, {});
     return this;
 }
+
+canvas._.midi_init=false;
+canvas.midi=function(device, rows, cols, toggles)
+{
+  device=Math.floor(device);
+  rows=Math.floor(rows);
+  cols=Math.floor(cols);
+  midi.echo_toggles=!!toggles;
+
+  if(!this._.midiState)
+  {
+    this._.midiState  =new Uint8Array(rows*cols);
+    this._.midiTexture=new Texture(rows,cols,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+  }
+
+  this._.midiState.fill(0);
+
+  for(var i=0; i<127; i++)
+    if(midi.toggles['0 '+i] && i<rows*cols)
+    {
+      this._.midiState[i]=255;
+    }
+
+  this._.midiTexture.load(this._.midiState);
+  this._.midiTexture.copyTo(this._.texture);
+}
+
+

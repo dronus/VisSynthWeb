@@ -6,8 +6,10 @@
   <script src="shader.js"></script>
   <script src="glmatrix.js"></script>
   <script src="audio.js"></script>
+  <script src="midi.js"></script>
   <script src="canvas.js"></script>  
   <script src="filters.js"></script>
+  <script src="generators.js"></script>
 </head>
 <body>
   <style>
@@ -99,7 +101,7 @@
 
       // run effect chain
       random_index=0; // used by effect chain to distinguish all random invocations in a single frame
-      if(chain) chain(canvas,effect_time);
+      if(chain) run_chain(chain,canvas,effect_time);
 
       // provide preview if requested
       // the preview is a downscaled image provided by the 'preview' effect
@@ -130,7 +132,7 @@
 
         // only provide data every other frame if a preview image is send.
         // if only frame rate data is send, we keep the network calm.
-        preview_cycle=preview_enabled ? 2 : 15; 
+        preview_cycle=preview_enabled ? 2 : 2; 
       }
       preview_cycle--;
 
@@ -242,7 +244,7 @@
       // enforce resolution, if asked to
       if(width && height)
       {
-          constraints.video.width.min=width;  constraints.video.height.min=height;
+          constraints.video.width=width;  constraints.video.height=height;
       }
       
       navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
@@ -265,75 +267,31 @@
 
     // helper functions for chain code generation
 
-    // flatten tree-like objects values into single array, dropping keys
-    var flatten=function(o)
+    var get_param_values=function(param,canvas,t)
     {
-      var a=[];
-      for(var key in o) 
-        if(key!='type') 
-        {
-          var value=o[key];
-          if(typeof(value)=='object')
-            a=a.concat(generators[value.type](value));
-          else
-            a.push(value);
-        }
-      return a;
-    }
-
-    // effect argument value generators...    
-    var random_index=0;
-    oscillators={
-      sine  : Math.sin,
-      saw   : function(t){return (t % (2*Math.PI))/Math.PI-1.},
-      square: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.},
-      random: function(t){
-        t=t/Math.PI;
-        var i0=Math.floor(t);
-        var i1=i0+1;
-        t=t-i0;
-        var p1=42841, p2=99991;
-        var r0=Math.sin(i0*p1+random_index*p2)+1.0;
-        r0=(p1*r0) % 2.0 - 1.0;
-        var r1=Math.sin(i1*p1+random_index*p2)+1.0;
-        r1=(p1*r1) % 2.0 - 1.0;
-        random_index++;
-        t=(Math.sin((t-0.5)*Math.PI)+1.0)/2.0;
-        return r0*(1.-t)+r1*t;
-      }
-    }
-    
-    var generators={
-      perspective:function(args){delete args.type; return ["[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],["+flatten(args).join(',')+"],true"]},
-      osc:function(args){return [args.a+"*oscillators['"+(args.waveform ? args.waveform : 'sine' )+"'](t*"+args.f+"+"+args.p+","+(args.duty?args.duty:0.5)+")+"+args.o]},
-      pos:function(args){return [args.x+"+w/2",args.y+"+h/2"]},
-      beat:function(args){return["audio_engine.beatValue("+flatten(args).join(',')+")"]},
-      size:flatten,
-      rgb:flatten,
-      rgba:flatten,
-      rgb_range:flatten
-    };
-
-    // generate a single effect function call source code
-    var generate_code=function(effect)
-    {
-      var command=effect.effect;
       var args=[];
+      if(!(param instanceof Object)) return param;
+      var fn=generators[param.type]; // from generators.js
+      return fn.call(window,t,param);
+    }
+
+    var run_effect=function(effect,canvas,t)
+    {
+      if(typeof effect == "string") return;
+      var args=[];
+      var fn=canvas[effect.effect] ? canvas[effect.effect] : window[effect.effect];
       for(var key in effect)
       {
         if(key=='effect') continue;
-        var value=effect[key];
-        if(typeof(value)=='object')
-          args=args.concat(generators[value.type](value));
-        else if (typeof(value)=='string')
-          args.push('"'+value+'"');
-        else
-          args.push(value);
+        args=args.concat(get_param_values(effect[key],canvas,t));
       }
-      
-      var src=command+'('+args.join(',')+'); ';
-            
-      return src;
+      fn.apply(canvas,args);
+    }
+
+    var run_chain=function(chain,canvas,t)
+    {
+      for(var i=0; i<chain.length; i++) 
+        run_effect(chain[i],canvas,t);
     }
 
     // global functions called by remote control
@@ -348,19 +306,10 @@
           havePreview=true;
       if(!havePreview)
         effects.push({'effect':'preview'});
-      // var effects=JSON.parse(json);
-      
-      // create JS chain function source code
-      var src='var _=function(c,t){with(c){';
-      for (var i=0; i<effects.length; i++)
-        if(typeof(effects[i])!='string')  // skip names
-          src+=generate_code(effects[i]);
-      src+='}};_';
 
-      // compile chain
-      var w=canvas.width, h=canvas.height; // provide global values for chain functions
-      chain=eval(src);
-      
+      // set chain
+      chain=effects;
+
       // set canvas 'switched' flag, that can be used by filters to reset buffers
       canvas.switched=true;
     }
