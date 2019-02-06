@@ -252,7 +252,9 @@
         // capture device was successfully acquired
         video.autoplay = true;
         video.muted=true;
-        if (video.mozSrcObject !== undefined) 
+        if (video.srcObject !== undefined) 
+          video.srcObject = stream;
+        else if (video.mozSrcObject !== undefined) 
           video.mozSrcObject = stream;
         else
           video.src = URL.createObjectURL(stream);      

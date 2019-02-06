@@ -2,34 +2,12 @@
  [
   "SETUP",
   {
-   "effect": "resolution",
-   "x": 1024,
-   "y": 600,
-   "filtering": "linear",
-   "precision": "byte",
-   "fps_limit": {
-    "type": "midi",
-    "channel": 7,
-    "a": 1,
-    "o": 1
-   }
-  },
-  {
-   "effect": "select_audio",
-   "device": 2,
-   "name": "Internes Audio Analog Stereo"
-  },
-  {
    "effect": "fps",
    "fps": 15
   },
   {
-   "effect": "image",
-   "url": "files/Startgeneration_03.png"
-  },
-  {
    "effect": "capture",
-   "device": 0
+   "device": 1
   }
  ],
  [
