@@ -653,7 +653,7 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
 
 // src/filters/video/video.js
-canvas.video=function(url,play_sound)
+canvas.video=function(url,play_sound,speed)
 {
     if(!this._.videoFilterElement) this._.videoFilterElement={};
     var v=this._.videoFilterElement[url];
@@ -676,6 +676,9 @@ canvas.video=function(url,play_sound)
       this._.videoFilterElement[url]=v;
     }  
       
+    if(!speed) speed=1.0;
+    v.playbackRate=speed;
+
     // make sure the video has adapted to the video source
     if(v.currentTime==0 || !v.videoWidth) return this; 
     
@@ -1714,8 +1717,8 @@ canvas.lumakey=canvas.luma_key=function(threshold,feather) {
 }
 
 // src/filters/video/colorkey.js
-canvas.colorkey=canvas.chroma_key=function(r,g,b,threshold,feather) {
-    gl.colorkey = gl.colorkey || new Shader(null, '\
+canvas.chroma_key_rgb=function(r,g,b,threshold,feather) {
+    gl.chroma_key_rgb=gl.chroma_key_rgb || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform vec3 key_color;\
@@ -1737,8 +1740,49 @@ canvas.colorkey=canvas.chroma_key=function(r,g,b,threshold,feather) {
       }\
     ');
 
-    gl.colorkey.textures({texture: this._.texture, texture1: this.stack_pop()});
-    this.simpleShader( gl.colorkey, { key_color:[r,g,b], threshold: threshold, feather: feather });
+    gl.chroma_key_rgb.textures({texture: this._.texture, texture1: this.stack_pop()});
+    this.simpleShader( gl.chroma_key_rgb, { key_color:[r,g,b], threshold: threshold, feather: feather });
+
+    return this;
+}
+
+// src/filters/video/colorkey.js
+canvas.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_feather) {
+ 
+    // legacy chains use chroma_key to denote chroma_key_rgb
+    if(arguments.length==5) canvas.chroma_key_rgb.apply(this,arguments);
+
+    gl.chroma_key = gl.chroma_key || new Shader(null, '\
+      uniform sampler2D texture;\
+      uniform sampler2D texture1;\
+      uniform vec3 hsv_key;\
+      uniform vec3 hsv_key_width;\
+      uniform vec3 hsv_key_feather;\
+      varying vec2 texCoord;\
+      void main() {\
+        vec4 c  = texture2D(texture , texCoord);\
+        vec4 c1 = texture2D(texture1, texCoord);\
+        \
+        vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\
+        vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));\
+        vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));\
+        \
+        float d = q.x - min(q.w, q.y);\
+        float e = 1.0e-10;\
+        vec3 hsv=vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\
+        \
+        vec3 d_hsv=abs(hsv-hsv_key);\
+        d_hsv.x=min(d_hsv.x,1.-d_hsv.x);\
+        d_hsv=vec3(1.)-smoothstep(hsv_key_width,hsv_key_width+hsv_key_feather,d_hsv);\
+        float delta=d_hsv.x*d_hsv.y*d_hsv.z;\
+        float alpha=clamp(delta,0.0,1.0);\
+        gl_FragColor = mix(c, c1, alpha);\
+      }\
+    ');
+
+    h=Math.max(0.0,Math.min(1.0,h));
+    gl.chroma_key.textures({texture: this._.texture, texture1: this.stack_pop()});
+    this.simpleShader( gl.chroma_key, { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]});
 
     return this;
 }

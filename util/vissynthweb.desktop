@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=VisSynthWeb
+Comment=Run all parts of a VisSynthWeb presenter
+Exec=sh /home/ubuntu/VisSynthWeb/run.sh
+Terminal=false
+Type=Application

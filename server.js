@@ -47,8 +47,11 @@ var pending={};
 //var recorder_cmd="avconv -f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov";
 //var recorder_cmd="avconv";
 //var recorder_args="-f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov".split(" ");
-var recorder_cmd="gst-launch-0.10";
-var recorder_args="-e ximagesrc use-damage=0 ! ffmpegcolorspace ! nv_omx_h264enc bitrate=16000000 ! qtmux ! filesink location={FILENAME}";
+var recorder_cmd="gst-launch-1.0";
+//var recorder_args="-e ximagesrc use-damage=0 ! ffmpegcolorspace ! nv_omx_h264enc bitrate=16000000 ! qtmux ! filesink location={FILENAME}";
+var recorder_args="-e ximagesrc use-damage=0 ! nvvidconv ! omxh264enc bitrate=16000000 ! video/x-h264,framerate=6/1 ! qtmux ! filesink location={FILENAME}";
+
+
 var recorder=false;
 
 // HTTP server for delivering the client and handle server-side commands
