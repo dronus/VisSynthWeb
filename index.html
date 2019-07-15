@@ -249,6 +249,9 @@
       
       navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
         console.log("Got camera!");
+
+        requestAnimationFrame(function(){});
+
         // capture device was successfully acquired
         video.autoplay = true;
         video.muted=true;
@@ -258,6 +261,10 @@
           video.mozSrcObject = stream;
         else
           video.src = URL.createObjectURL(stream);      
+
+        // on newer chrome browsers, autopla won't trigger if video element is not visible 
+        // (which it itself never is here), so we issue a play() after setting the source.
+        video.play()
       });
     }
     
