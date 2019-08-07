@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>untitled</title>
+    
+    <link rel="stylesheet" href="css/font.css">
+    <link rel="stylesheet" href="css/vars.css">
+    <link rel="stylesheet" href="css/util.css">
+    <link rel="stylesheet" href="css/index.css">
+
+    <script src="lib/fsm.js"></script>
+    <script src="lib/idle.js"></script>
+    <script src="lib/lang.js"></script>
+    <script src="lib/snippet.js"></script>
+  </head>
+
+  <body>
+    
+    <section class="stage start">
+      <div class="backdrop"></div>
+      <div class="title tilted h--alpha">
+        <div class="line1"></div>
+        <div class="line2"></div>
+      </div>
+      <div class="box">
+        <div class="header t--beta"></div>
+        <div class="body t--gamma"></div>
+        <div class="icon"></div>
+      </div>
+      <div class="button t--beta"></div>
+    </section>
+    
+    <section class="stage category">
+      <div class="title tilted">
+        <div class="line1 h--gamma"></div>
+        <div class="line2 h--beta"></div>
+      </div>
+      <div class="list">
+        <div class="instruction t--beta"></div>
+        <div class="cat env o--beta" data-cat="env"></div>
+        <div class="cat kids o--beta" data-cat="kids"></div>
+        <div class="cat equal o--beta" data-cat="equal"></div>
+        <div class="cat aid o--beta" data-cat="aid"></div>
+      </div>
+    </section>
+    
+    <section class="stage theme">
+      <div class="title tilted">
+        <div class="line1 h--gamma"></div>
+        <div class="line2 h--beta"></div>
+      </div>
+      <div class="preview"></div>
+      <div class="list">
+        <div class="instruction t--beta"></div>
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+      </div>
+      <div class="button prev t--beta"></div>
+      <div class="button next t--beta"></div>
+    </section>
+    
+    <section class="stage countdown">
+      <div class="flap iii tilted h--beta"></div>
+      <div class="flap ii tilted h--beta"></div>
+      <div class="flap i tilted h--beta"></div>
+    </section>
+    
+    <section class="stage preview">
+    </section>
+    
+    <section class="stage message">
+    </section>
+    
+    <section class="stage send">
+    </section>
+    
+    <section class="stage end">
+    </section>
+
+    <script src="js/index.txt.js"></script>
+    <script src="js/index.fsm.js"></script>
+    <script src="js/index.js"></script>
+  </body>
+  
+</html>

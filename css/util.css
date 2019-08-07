@@ -1,0 +1,27 @@
+.hidden {
+  display: none !important;
+}
+
+.tilted {
+  position: absolute;
+  transform-origin: top left;
+  transform: rotate(-4.5deg);
+}
+
+.button {
+  width: 260px;
+  height: 72px;
+  background-image: url(../svg/button.svg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button:active {
+  color: var(--white);
+  background-image: url(../svg/button_active.svg);
+}
+
+.s span {
+  pointer-events: none;
+}

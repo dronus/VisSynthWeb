@@ -1,0 +1,77 @@
+@font-face {
+  font-family: "HelveticaLT";
+  src: url("../font/HelveticaLTPro-Roman.ttf");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "HelveticaLT";
+  src: url("../font/HelveticaLTPro-Bold.ttf");
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: "Veneer";
+  src: url("../font/Veneer.otf");
+}
+
+body {
+  font-family: HelveticaLT;
+}
+
+.h--alpha {
+  font-family: Veneer;
+  font-size: 130px;
+  line-height: 1;
+}
+
+.h--beta {
+  font-family: Veneer;
+  font-size: 90px;
+  line-height: 1;
+}
+
+.h--gamma {
+  font-family: Veneer;
+  font-size: 60px;
+  line-height: 1;
+}
+
+.t--alpha {
+  font-size: 30px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.t--beta {
+  font-size: 23px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.t--gamma {
+  font-size: 23px;
+  line-height: 1.2;
+}
+
+.t--delta {
+  font-size: 17px;
+  background-repeat: no-repeat;
+  line-height: 1.2;
+}
+
+.o--alpha {
+  font-family: Veneer;
+  font-size: 80px;
+  line-height: 1;
+}
+
+.o--beta {
+  font-family: Veneer;
+  font-size: 50px;
+  line-height: 1;
+}
+
+.o--beta small {
+  font-size: 35px;
+}
