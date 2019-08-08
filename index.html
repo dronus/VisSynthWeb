@@ -255,7 +255,8 @@
         if (video.mozSrcObject !== undefined) 
           video.mozSrcObject = stream;
         else
-          video.src = URL.createObjectURL(stream);      
+          video.srcObject = stream;
+        video.play();
       });
     }
     
