@@ -44,7 +44,7 @@ p + p {
 }
 
 .stage.start {
-  background-image: url(../jpg/start.jpg);
+  background-image: none;
 }
 
 .stage.start .title .line2 {
@@ -175,7 +175,11 @@ p + p {
   bottom: 65px;
 }
 
-.countdown .flap {
+.stage.countdown {
+  background-image: none;
+}
+
+.stage.countdown .flap {
   width: 240px;
   height: 210px;
   position: absolute;
@@ -186,4 +190,21 @@ p + p {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.stage.countdown .shutter {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: black;
+  opacity: 0;
+}
+
+.stage.countdown .shutter.dark {
+  animation: darken .2s forwards;
+}
+
+@keyframes darken {
+  from {opacity: 0}
+  to {opacity: 1}
 }

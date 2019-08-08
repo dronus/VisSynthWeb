@@ -7,4 +7,3 @@ fsm.update("category");
 idle.callback = () => fsm.update("start");
 
 let CAT = "";
-let THM = 0;

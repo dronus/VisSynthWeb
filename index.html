@@ -8,16 +8,23 @@
     <link rel="stylesheet" href="css/font.css">
     <link rel="stylesheet" href="css/vars.css">
     <link rel="stylesheet" href="css/util.css">
+    <link rel="stylesheet" href="css/vis.css">
     <link rel="stylesheet" href="css/index.css">
 
     <script src="lib/fsm.js"></script>
     <script src="lib/idle.js"></script>
     <script src="lib/lang.js"></script>
     <script src="lib/snippet.js"></script>
+
+    <script src="vis/canvas.js"></script>
+    <script src="vis/filters.js"></script>
+    <script src="vis/glmatrix.js"></script>
+    <script src="vis/texture.js"></script>
+    <script src="vis/generators.js"></script>
+    <script src="vis/shader.js"></script>
   </head>
 
   <body>
-    
     <section class="stage start">
       <div class="backdrop"></div>
       <div class="title tilted h--alpha">
@@ -69,6 +76,7 @@
       <div class="flap iii tilted h--beta"></div>
       <div class="flap ii tilted h--beta"></div>
       <div class="flap i tilted h--beta"></div>
+      <div class="shutter"></div>
     </section>
     
     <section class="stage preview">
@@ -83,6 +91,7 @@
     <section class="stage end">
     </section>
 
+    <script src="js/vis.js"></script>
     <script src="js/index.txt.js"></script>
     <script src="js/index.fsm.js"></script>
     <script src="js/index.js"></script>

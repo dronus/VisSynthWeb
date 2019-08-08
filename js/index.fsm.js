@@ -33,6 +33,7 @@ fsm.states = {
       this.thumbs.forEach((node, i) => node.addEventListener("click", ev => {
         THM = i;
         this.preview.style.backgroundImage = `url(themes/${CAT}/${i}.jpg)`;
+        chains[2][1].url = `themes/${CAT}/${i}.jpg`;
         this.thumbs.forEach(n => n.classList.remove("active"));
         ev.target.classList.add("active");
       }));
@@ -56,14 +57,13 @@ fsm.states = {
 
   "countdown": {
     init: function() {
-      this.delay = 1000;
+      this.shutter = this.stage.querySelector(".shutter");
       this.flaps = this.stage.querySelectorAll(".flap");
       this.flaps.forEach(n => n.classList.add("hidden"));
+      this.delay = 1000;
     },
 
     up: function() {
-      this.stage.style.backgroundImage = `url(themes/${CAT}/${THM}.jpg)`;
-
       for (let i = 0; i < this.flaps.length; i++) {
         setTimeout(() => {
           this.flaps.forEach(n => n.classList.add("hidden"));
@@ -77,7 +77,8 @@ fsm.states = {
     down: function() {},
 
     scrot: function() {
-      console.log("cheese");
+      this.shutter.classList.add("dark");
+      setTimeout(() => fsm.update("preview"), 200);
     },
   },
 
