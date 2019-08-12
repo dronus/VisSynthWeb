@@ -1,0 +1,34 @@
+[[
+  "SETUP",
+  {
+   "effect": "resolution",
+   "x": 1920,
+   "y": 1080,
+   "filtering": "linear",
+   "precision": "byte",
+   "fps_limit": 25
+  }
+ ],
+ [
+  "POST"
+ ],
+[
+  "selfiebox",
+  {
+    "effect": "image",
+    "url": ""
+  },
+  {
+    "effect": "stack_push"
+  },
+  {
+    "effect": "capture",
+    "device": 0,
+    "name": "Integrated Camera (5986:02d2)"
+  },
+  {
+    "effect": "luma_key",
+    "threshold": 0.5,
+    "feather": 0.05
+  }
+]]

@@ -41,8 +41,8 @@
       // take screenshot if requested
       if(screenshot_cycle==1)
       {
-        var pixels=canvas.toDataURL('image/jpeg');
-        put('screenshot',pixels);
+        var img = canvas.toDataURL('image/jpeg');
+        put(img);
         screenshot_cycle=0;
       }
     };
@@ -234,7 +234,7 @@
 
     // load startup chain (first three of chains.json : setup pre, current, setup after)
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET','../vis/chains.json',false);
+    xmlHttp.open('GET','static/vis/chains.json',false);
     xmlHttp.send(null);
     if(xmlHttp.responseText)
     {

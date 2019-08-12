@@ -4,9 +4,18 @@ fsm.states = {
     init: function() {
       this.button = this.stage.querySelector(".button");
       this.button.addEventListener("click", ev => fsm.update("category"));
+
+      this.cats = [];
+      document.querySelectorAll(".stage.category .cat")
+        .forEach(n => this.cats.push(n.dataset.cat));
     },
 
-    up: function() {},
+    up: function() {
+      let cat = this.cats[Math.floor(Math.random() * this.cats.length)];
+      let thm = Math.floor(Math.random() * 7);
+      chains[2][1].url = `static/themes/${cat}/${thm}.jpg`;
+    },
+
     down: function() {},
   },
 
@@ -32,8 +41,8 @@ fsm.states = {
 
       this.thumbs.forEach((node, i) => node.addEventListener("click", ev => {
         THM = i;
-        this.preview.style.backgroundImage = `url(themes/${CAT}/${i}.jpg)`;
-        chains[2][1].url = `themes/${CAT}/${i}.jpg`;
+        this.preview.style.backgroundImage = `url(static/themes/${CAT}/${i}.jpg)`;
+        chains[2][1].url = `static/themes/${CAT}/${i}.jpg`;
         this.thumbs.forEach(n => n.classList.remove("active"));
         ev.target.classList.add("active");
       }));
@@ -43,10 +52,10 @@ fsm.states = {
     },
 
     up: function() {
-      this.preview.style.backgroundImage = `url(themes/${CAT}/0.jpg)`;
+      this.preview.style.backgroundImage = `url(static/themes/${CAT}/0.jpg)`;
       this.thumbs.forEach((n, i) => {
         if (i === 0) n.classList.add("active");
-        n.style.backgroundImage = `url(themes/${CAT}/${i}.jpg)`;
+        n.style.backgroundImage = `url(static/themes/${CAT}/${i}.jpg)`;
       });
     },
 
