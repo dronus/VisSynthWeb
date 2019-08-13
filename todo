@@ -1,0 +1,4 @@
+- theme: decrease loading time of images
+- message: loading time of canvas
+- send: loading time of canvas
+- send: email pattern verification: https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression 

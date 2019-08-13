@@ -1,3 +1,5 @@
+let Keyboard = window.SimpleKeyboard.default;
+
 loadSnippets(S);
 initText("de");
 
@@ -8,6 +10,7 @@ idle.callback = () => fsm.update("start");
 
 let CAT = "";
 let IMG = "";
+let IMG_TXT = "";
 let ID = "";
 
 let put = (img, id) => {

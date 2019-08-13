@@ -239,3 +239,64 @@ p + p {
   from {opacity: 1}
   to {opacity: 0}
 }
+
+.stage.message .preview,
+.stage.send .preview {
+  width: 680px;
+  height: 545px;
+  position: absolute;
+  left: 170px;
+  top: 370px;
+  background-size: cover;
+  background-position: center;
+  -webkit-mask-image: url(../svg/mask_preview.svg);
+}
+
+.stage.message .canvas,
+.stage.send .canvas {
+  height: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.stage.message .instruction,
+.stage.send .instruction {
+  color: var(--white);
+  position: absolute;
+  left: 920px;
+  top: 290px;
+}
+
+.stage.message .input,
+.stage.send .input {
+  width: 840px;
+  height: 175px;
+  position: absolute;
+  top: 370px;
+  right: 160px;
+  background: transparent;
+  border: none;
+  color: var(--blue);
+  background-image: url(../svg/input.svg);
+  background-repeat: no-repeat;
+  padding: 50px;
+  pointer-events: none;
+}
+
+.stage.message .kb,
+.stage.send .kb {
+  width: 840px;
+  position: absolute;
+  top: 600px;
+  right: 160px;
+}
+
+.stage.message .nav,
+.stage.send .nav {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 150px 60px;
+}

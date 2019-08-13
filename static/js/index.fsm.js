@@ -12,7 +12,7 @@ fsm.states = {
 
     up: function() {
       let cat = this.cats[Math.floor(Math.random() * this.cats.length)];
-      let thm = Math.floor(Math.random() * 7);
+      let thm = Math.floor(Math.random() * 6);
       chains[2][1].url = `static/themes/${cat}/${thm}.jpg`;
     },
 
@@ -98,12 +98,12 @@ fsm.states = {
 
   "preview": {
     init: function() {
-      this.reset = this.stage.querySelector(".reset");
+      this.prev = this.stage.querySelector(".prev");
       this.retry = this.stage.querySelector(".retry");
       this.next = this.stage.querySelector(".next");
       this.shutter = this.stage.querySelector(".shutter");
 
-      this.reset.addEventListener("click", ev => fsm.update("theme"));
+      this.prev.addEventListener("click", ev => fsm.update("theme"));
       this.retry.addEventListener("click", ev => fsm.update("countdown"));
       this.next.addEventListener("click", ev => fsm.update("message"));
     },
@@ -118,15 +118,116 @@ fsm.states = {
   },
 
   "message": {
-    init: function() {},
-    up: function() {},
-    down: function() {},
+    init: function() {
+      this.input = this.stage.querySelector(".input");
+      this.canvas = this.stage.querySelector(".canvas");
+      this.ctx = this.canvas.getContext("2d");
+      this.ctx.font = "100px Veneer";
+      this.ctx.fillStyle = "#0072bb";
+      this.text = {
+        left: 350,
+        top: 250,
+        cmax: 25,
+      };
+
+      this.kb = new Keyboard(".message .kb", {
+        theme: "simple-keyboard hg-theme-default hg-layout-default",
+        onChange: input => this.onChange(input),
+        layout: {'default': [
+          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+          "q w e r t y u i o p [ ] \\",
+          "a s d f g h j k l ; '",
+          "z x c v b n m , . /",
+          "{space}"
+        ]},
+      });
+
+      this.prev = this.stage.querySelector(".prev");
+      this.reset = this.stage.querySelector(".reset");
+      this.next = this.stage.querySelector(".next");
+
+      this.prev.addEventListener("click", ev => fsm.update("theme"));
+      this.reset.addEventListener("click", ev => fsm.update("start"));
+      this.next.addEventListener("click", ev => {
+        IMG_TXT = this.canvas.toDataURL("image/jpeg");
+        fsm.update("send");
+      });
+    },
+
+    up: function() {
+      this.img = new Image;
+      this.img.src = IMG;
+      this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
+    },
+
+    down: function() {
+      this.kb.setInput("");
+      this.input.value = "";
+    },
+
+    onChange: function(input) {
+      if (input.length === this.text.cmax + 1) {
+        input = input.substring(0, this.text.cmax);
+        this.kb.setInput(input);
+      }
+
+      this.input.value = input;
+      this.ctx.drawImage(this.img, 0, 0);
+      this.ctx.save();
+      this.ctx.rotate(-4.5 * Math.PI / 180);
+      this.ctx.fillText(input, this.text.left, this.text.top);
+      this.ctx.restore();
+    },
   },
 
   "send": {
-    init: function() {},
-    up: function() {},
-    down: function() {},
+    init: function() {
+      this.preview = this.stage.querySelector(".preview");
+      this.input = this.stage.querySelector(".input");
+      this.ctx = this.stage.querySelector(".canvas").getContext("2d");
+      this.cmax = 25;
+
+      this.kb = new Keyboard(".send .kb", {
+        theme: "simple-keyboard hg-theme-default hg-layout-default",
+        onChange: input => this.onChange(input),
+        layout: {'default': [
+          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+          "q w e r t y u i o p [ ] \\",
+          "a s d f g h j k l ; '",
+          "z x c v b n m , . /",
+          "{space}"
+        ]},
+      });
+
+      this.prev = this.stage.querySelector(".prev");
+      this.reset = this.stage.querySelector(".reset");
+      this.next = this.stage.querySelector(".next");
+
+      this.prev.addEventListener("click", ev => fsm.update("message"));
+      this.reset.addEventListener("click", ev => fsm.update("start"));
+      this.next.addEventListener("click", ev => fsm.update("send"));
+    },
+
+    up: function() {
+      this.img = new Image;
+      this.img.src = IMG_TXT;
+      this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
+    },
+
+    down: function() {
+      this.img = new Image;
+      this.img.src = IMG;
+      this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
+    },
+
+    onChange: function(input) {
+      if (input.length === this.cmax + 1) {
+        input = input.substring(0, this.cmax);
+        this.kb.setInput(input);
+      }
+
+      this.input.value = input;
+    },
   },
 
   "end": {

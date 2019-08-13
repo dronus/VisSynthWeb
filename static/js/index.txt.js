@@ -24,7 +24,21 @@ const S = [
   {selector: ".countdown .i", lang: "de", text: "1"},
 
   {selector: ".preview .title .line1", lang: "de", text: "Dein Selfie!"},
-  {selector: ".preview .reset", lang: "de", text: "Anderes Motiv auswählen"},
+  {selector: ".preview .prev", lang: "de", text: "Anderes Motiv auswählen"},
   {selector: ".preview .retry", lang: "de", text: "Selfie wiederholen"},
   {selector: ".preview .next", lang: "de", text: "Dieses Selfie nehmen"},
+
+  {selector: ".message .title .line1", lang: "de", text: "Step 4"},
+  {selector: ".message .title .line2", lang: "de", text: "Deine Botschaft"},
+  {selector: ".message .instruction", lang: "de", text: "Möchtest du eine Botschaft<br>auf dein Selfie schreiben?"},
+  {selector: ".message .prev", lang: "de", text: "Anderes Motiv auswählen"},
+  {selector: ".message .reset", lang: "de", text: "Zurück zum Anfang"},
+  {selector: ".message .next", lang: "de", text: "Weiter"},
+
+  {selector: ".send .title .line1", lang: "de", text: "Step 5"},
+  {selector: ".send .title .line2", lang: "de", text: "Verschicke dein Selfie"},
+  {selector: ".send .instruction", lang: "de", text: "Gib deine E-Mail-Adresse ein.<br>Sie wird nicht gespeichert."},
+  {selector: ".send .prev", lang: "de", text: "Deine Botschaft ändern"},
+  {selector: ".send .reset", lang: "de", text: "Zurück zum Anfang"},
+  {selector: ".send .next", lang: "de", text: "Weiter"},
 ];

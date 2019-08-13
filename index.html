@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="static/css/util.css">
     <link rel="stylesheet" href="static/css/vis.css">
     <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/keyboard.css">
 
     <script src="static/lib/fsm.js"></script>
     <script src="static/lib/idle.js"></script>
@@ -83,7 +84,7 @@
         <div class="line1 h--beta"></div>
       </div>
       <div class="nav">
-        <div class="button--l reset t--beta"></div>
+        <div class="button--l prev t--beta"></div>
         <div class="button--l retry t--beta"></div>
         <div class="button--l next t--beta"></div>
       </div>
@@ -91,14 +92,49 @@
     </section>
     
     <section class="stage message">
+      <div class="title tilted">
+        <div class="line1 h--gamma"></div>
+        <div class="line2 h--beta"></div>
+      </div>
+      <div class="preview">
+        <canvas class="canvas" width="1920" height="1080"></canvas>
+      </div>
+      <div class="instruction t--beta"></div>
+      <input class="input o--beta" placeholder="Hau in die Tasten!" />
+      <div class="t--beta">
+        <div class="kb"></div>
+      </div>
+      <div class="nav">
+        <div class="button--l prev t--beta"></div>
+        <div class="button--l reset t--beta"></div>
+        <div class="button--l next t--beta"></div>
+      </div>
     </section>
     
     <section class="stage send">
+      <div class="title tilted">
+        <div class="line1 h--gamma"></div>
+        <div class="line2 h--beta"></div>
+      </div>
+      <div class="preview">
+        <canvas class="canvas" width="1920" height="1080"></canvas>
+      </div>
+      <div class="instruction t--beta"></div>
+      <input class="input o--beta" placeholder="Wohin damit?" />
+      <div class="t--beta">
+        <div class="kb"></div>
+      </div>
+      <div class="nav">
+        <div class="button--l prev t--beta"></div>
+        <div class="button--l reset t--beta"></div>
+        <div class="button--l next t--beta"></div>
+      </div>
     </section>
     
     <section class="stage end">
     </section>
 
+    <script src="static/lib/keyboard.js"></script>
     <script src="static/js/vis.js"></script>
     <script src="static/js/index.txt.js"></script>
     <script src="static/js/index.fsm.js"></script>
