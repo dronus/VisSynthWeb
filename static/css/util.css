@@ -22,6 +22,20 @@
   background-image: url(../svg/button_active.svg);
 }
 
+.button--l {
+  width: 390px;
+  height: 72px;
+  background-image: url(../svg/button_large.svg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button--l:active {
+  color: var(--white);
+  background-image: url(../svg/button_large_active.svg);
+}
+
 .s span {
   pointer-events: none;
 }

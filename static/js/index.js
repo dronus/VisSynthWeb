@@ -2,16 +2,17 @@ loadSnippets(S);
 initText("de");
 
 fsm.setup();
-fsm.update("start");
+fsm.update("category");
 
 idle.callback = () => fsm.update("start");
 
 let CAT = "";
+let IMG = "";
 let ID = "";
 
-let put = (img) => {
+let put = (img, id) => {
   let url = "save";
-  let json = JSON.stringify({"dataurl": img, "id": pronid()});
+  let json = JSON.stringify({"dataurl": img, "id": id});
   let xhr = new XMLHttpRequest();
 
   xhr.open("POST", url, true);

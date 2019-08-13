@@ -200,11 +200,42 @@ p + p {
   opacity: 0;
 }
 
-.stage.countdown .shutter.dark {
-  animation: darken .2s forwards;
+.stage.countdown .shutter.close {
+  animation: closing .2s forwards;
 }
 
-@keyframes darken {
+@keyframes closing {
   from {opacity: 0}
   to {opacity: 1}
+}
+
+.stage.preview .title {
+  color: var(--blue);
+  background-image: url(../svg/preview_title.svg);
+  padding: 16px;
+}
+
+.stage.preview .nav {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 150px 60px;
+}
+
+.stage.preview .shutter {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: black;
+}
+
+.stage.preview .shutter.open {
+  animation: opening .1s forwards;
+}
+
+@keyframes opening {
+  from {opacity: 1}
+  to {opacity: 0}
 }

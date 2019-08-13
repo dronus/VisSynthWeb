@@ -41,8 +41,8 @@ fsm.states = {
 
       this.thumbs.forEach((node, i) => node.addEventListener("click", ev => {
         THM = i;
-        this.preview.style.backgroundImage = `url(static/themes/${CAT}/${i}.jpg)`;
         chains[2][1].url = `static/themes/${CAT}/${i}.jpg`;
+        this.preview.style.backgroundImage = `url(static/themes/${CAT}/${i}.jpg)`;
         this.thumbs.forEach(n => n.classList.remove("active"));
         ev.target.classList.add("active");
       }));
@@ -52,6 +52,7 @@ fsm.states = {
     },
 
     up: function() {
+      chains[2][1].url = `static/themes/${CAT}/0.jpg`;
       this.preview.style.backgroundImage = `url(static/themes/${CAT}/0.jpg)`;
       this.thumbs.forEach((n, i) => {
         if (i === 0) n.classList.add("active");
@@ -83,17 +84,36 @@ fsm.states = {
       setTimeout(() => this.scrot(), this.flaps.length * this.delay);
     },
 
-    down: function() {},
+    down: function() {
+      this.shutter.classList.remove("close");
+    },
 
     scrot: function() {
-      this.shutter.classList.add("dark");
-      setTimeout(() => fsm.update("preview"), 200);
+      this.shutter.classList.add("close");
+      setTimeout(() => {
+        screenshot();
+      }, 200);
     },
   },
 
   "preview": {
-    init: function() {},
-    up: function() {},
+    init: function() {
+      this.reset = this.stage.querySelector(".reset");
+      this.retry = this.stage.querySelector(".retry");
+      this.next = this.stage.querySelector(".next");
+      this.shutter = this.stage.querySelector(".shutter");
+
+      this.reset.addEventListener("click", ev => fsm.update("theme"));
+      this.retry.addEventListener("click", ev => fsm.update("countdown"));
+      this.next.addEventListener("click", ev => fsm.update("message"));
+    },
+
+    up: function() {
+      this.stage.style.backgroundImage = `url(${IMG})`;
+      this.shutter.classList.add("open");
+      setTimeout(this.shutter.classList.add("hidden"), 100);
+    },
+
     down: function() {},
   },
 

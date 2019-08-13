@@ -46,7 +46,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := decoder.Decode(&data)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	ascii := strings.SplitAfter(data.DataUrl, "base64,")[1]

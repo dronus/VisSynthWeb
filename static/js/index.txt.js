@@ -22,4 +22,9 @@ const S = [
   {selector: ".countdown .iii", lang: "de", text: "3"},
   {selector: ".countdown .ii", lang: "de", text: "2"},
   {selector: ".countdown .i", lang: "de", text: "1"},
+
+  {selector: ".preview .title .line1", lang: "de", text: "Dein Selfie!"},
+  {selector: ".preview .reset", lang: "de", text: "Anderes Motiv auswählen"},
+  {selector: ".preview .retry", lang: "de", text: "Selfie wiederholen"},
+  {selector: ".preview .next", lang: "de", text: "Dieses Selfie nehmen"},
 ];
