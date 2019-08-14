@@ -1,4 +1,11 @@
 - theme: decrease loading time of images
 - message: loading time of canvas
 - send: loading time of canvas
-- send: email pattern verification: https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression 
+- keyboard layout and style
+
+# feedback
+
+- outline for image text
+- two line necessary?
+- hint the user that email could take a while
+- host files forever?

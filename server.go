@@ -1,16 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
-	"image/jpeg"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"strings"
 	"text/template"
+	"time"
 )
 
 type Config struct {
@@ -40,8 +37,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func saveHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var data struct {
-		DataUrl string
-		Id      string
+		Id    string
+		Email string
+		Img   string
 	}
 
 	err := decoder.Decode(&data)
@@ -49,25 +47,13 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	ascii := strings.SplitAfter(data.DataUrl, "base64,")[1]
-	binary, err := base64.StdEncoding.DecodeString(ascii)
+	bytes, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
 	}
 
-	reader := bytes.NewReader(binary)
-	img, err := jpeg.Decode(reader)
+	err = ioutil.WriteFile("./selfies/"+fmt.Sprintf("%d", time.Now().Unix())+".json", bytes, 0644)
 	if err != nil {
-		log.Println(err)
-	}
-
-	f, err := os.Create("selfies/" + data.Id + ".jpg")
-	if err != nil {
-		log.Println(err)
-	}
-
-	if err := jpeg.Encode(f, img, nil); err != nil {
-		f.Close()
 		log.Println(err)
 	}
 }

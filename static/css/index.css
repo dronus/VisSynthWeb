@@ -298,5 +298,27 @@ p + p {
   bottom: 0;
   display: flex;
   justify-content: space-between;
-  padding: 0 150px 60px;
+  padding: 0 170px 60px;
+}
+
+.stage.send .invalid {
+  position: absolute;
+  top: 500px;
+  left: 970px;
+}
+
+.stage.end .progress .x--- {
+  background-image: url(../svg/progress_a.svg);
+}
+
+.stage.end .progress .xx-- {
+  background-image: url(../svg/progress_b.svg);
+}
+
+.stage.end .progress .xxx- {
+  background-image: url(../svg/progress_c.svg);
+}
+
+.stage.end .progress .xxxx {
+  background-image: url(../svg/progress_d.svg);
 }

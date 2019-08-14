@@ -184,8 +184,10 @@ fsm.states = {
     init: function() {
       this.preview = this.stage.querySelector(".preview");
       this.input = this.stage.querySelector(".input");
+      this.invalid = this.stage.querySelector(".invalid");
       this.ctx = this.stage.querySelector(".canvas").getContext("2d");
       this.cmax = 25;
+      this.regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
       this.kb = new Keyboard(".send .kb", {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
@@ -194,8 +196,8 @@ fsm.states = {
           "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
           "q w e r t y u i o p [ ] \\",
           "a s d f g h j k l ; '",
-          "z x c v b n m , . /",
-          "{space}"
+          "@ z x c v b n m , . /",
+          ".de .com {space} .org .net"
         ]},
       });
 
@@ -205,7 +207,15 @@ fsm.states = {
 
       this.prev.addEventListener("click", ev => fsm.update("message"));
       this.reset.addEventListener("click", ev => fsm.update("start"));
-      this.next.addEventListener("click", ev => fsm.update("send"));
+      this.next.addEventListener("click", ev => {
+        if (this.regex.test(this.input.value.toLowerCase())) {
+          EMAIL = this.input.value.toLowerCase();
+          return fsm.update("end");
+        }
+        this.invalid.classList.remove("hidden");
+      });
+
+      this.invalid.classList.add("hidden");
     },
 
     up: function() {
@@ -218,6 +228,10 @@ fsm.states = {
       this.img = new Image;
       this.img.src = IMG;
       this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
+
+      this.invalid.classList.add("hidden");
+      this.kb.setInput("");
+      this.input.value = "";
     },
 
     onChange: function(input) {
@@ -232,20 +246,40 @@ fsm.states = {
 
   "end": {
     init: function() {
-      this.handler = this.handler.bind(this);
     },
 
     up: function() {
-      this.stage.addEventListener("click", this.handler);
+      this.put(this.pronid(), EMAIL, IMG_TXT);
     },
 
     down: function() {
-      this.stage.removeEventListener("click", this.handler);
     },
 
-    handler: function() {
-      console.log(this.stage);
-      fsm.update("foo");
+    put: function(id, email, img) {
+      let url = "save";
+      let json = JSON.stringify({"id": id, "email": email, "img": img});
+      let xhr = new XMLHttpRequest();
+
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader("Content-type","application/json; charset=utf-8");
+      xhr.send(json);
+    },
+
+    pronid: function() {
+      let template = "cvcvnnnn".split("");
+      let chars = {};
+      chars.v = "aeiouy";
+      chars.c = "bcdfghjklmnprstvwxz";
+      chars.n = "0123456789";
+
+      let str = "";
+      template.forEach(t => {
+        let pool = chars[t];
+        let randi = Math.floor(Math.random() * pool.length);
+        str += pool.charAt(randi);
+      });
+
+      return str;
     },
   },
 

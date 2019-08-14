@@ -38,7 +38,14 @@ const S = [
   {selector: ".send .title .line1", lang: "de", text: "Step 5"},
   {selector: ".send .title .line2", lang: "de", text: "Verschicke dein Selfie"},
   {selector: ".send .instruction", lang: "de", text: "Gib deine E-Mail-Adresse ein.<br>Sie wird nicht gespeichert."},
+  {selector: ".send .invalid", lang: "de", text: "Ungültige E-Mail-Adresse! Gib eine andere Adresse ein."},
   {selector: ".send .prev", lang: "de", text: "Deine Botschaft ändern"},
   {selector: ".send .reset", lang: "de", text: "Zurück zum Anfang"},
   {selector: ".send .next", lang: "de", text: "Weiter"},
+
+  {selector: ".end .title .line1", lang: "de", text: "Step 5"},
+  {selector: ".end .title .line2", lang: "de", text: "Verschicke dein Selfie"},
+  {selector: ".end .wait", lang: "de", text: "Dein Selfie wird verschickt ..."},
+  {selector: ".end .done", lang: "de", text: "Geschafft!"},
+  {selector: ".end .reset", lang: "de", text: "Neues Bild"},
 ];

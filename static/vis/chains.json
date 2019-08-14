@@ -16,19 +16,27 @@
   "selfiebox",
   {
     "effect": "image",
-    "url": ""
+    "url": "jpg/start.jpg"
   },
   {
     "effect": "stack_push"
   },
   {
     "effect": "capture",
-    "device": 0,
-    "name": "Integrated Camera (5986:02d2)"
+    "device": 1,
+    "name": "HD Pro Webcam C920 (046d:082d)"
   },
   {
-    "effect": "luma_key",
-    "threshold": 0.5,
-    "feather": 0.05
+    "effect": "chroma_key",
+    "h": 0.671,
+    "s": 0.902,
+    "l": 1.095,
+    "h_width": 0.104,
+    "s_width": 0.163,
+    "l_width": 0.389,
+    "h_feather": 0.05,
+    "s_feather": 0.05,
+    "l_feather": 0.05
   }
 ]]
+
