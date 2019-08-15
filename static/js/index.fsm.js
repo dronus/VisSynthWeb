@@ -246,13 +246,40 @@ fsm.states = {
 
   "end": {
     init: function() {
+      this.wait = this.stage.querySelector(".wait");
+      this.done = this.stage.querySelector(".done");
+      this.reset = this.stage.querySelector(".reset");
+      this.flaps = this.stage.querySelectorAll(".flap");
+      this.delay = 1000;
+
+      this.done.classList.add("hidden");
+      this.reset.classList.add("hidden");
+      this.reset.addEventListener("click", ev => fsm.update("start"));
+      this.flaps.forEach(n => n.classList.add("hidden"));
     },
 
     up: function() {
       this.put(this.pronid(), EMAIL, IMG_TXT);
+
+      for (let i = 0; i < this.flaps.length; i++) {
+        setTimeout(() => {
+          this.flaps.forEach(n => n.classList.add("hidden"));
+          this.flaps[i].classList.remove("hidden");
+        }, i * this.delay);
+      }
+
+      setTimeout(() => {
+        this.wait.classList.add("hidden");
+        this.done.classList.remove("hidden");
+        this.reset.classList.remove("hidden");
+      }, this.flaps.length * this.delay);
     },
 
     down: function() {
+      this.wait.classList.remove("hidden");
+      this.done.classList.add("hidden");
+      this.reset.classList.add("hidden");
+      this.flaps.forEach(n => n.classList.add("hidden"));
     },
 
     put: function(id, email, img) {
@@ -263,6 +290,10 @@ fsm.states = {
       xhr.open("POST", url, true);
       xhr.setRequestHeader("Content-type","application/json; charset=utf-8");
       xhr.send(json);
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) console.log("data written");
+      };
     },
 
     pronid: function() {

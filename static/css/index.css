@@ -307,6 +307,21 @@ p + p {
   left: 970px;
 }
 
+.stage.end .progress {
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.stage.end .progress .flap {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
 .stage.end .progress .x--- {
   background-image: url(../svg/progress_a.svg);
 }
@@ -321,4 +336,28 @@ p + p {
 
 .stage.end .progress .xxxx {
   background-image: url(../svg/progress_d.svg);
+}
+
+.stage.end .wait {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 650px;
+  color: var(--white);
+}
+
+.stage.end .done {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) rotate(-4.5deg);
+  transform-origin: top left;
+  top: 625px;
+  color: var(--white);
+}
+
+.stage.end .reset {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 835px;
 }
