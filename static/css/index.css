@@ -201,7 +201,7 @@ p + p {
 }
 
 .stage.countdown .shutter.close {
-  animation: closing .2s forwards;
+  animation: closing 50ms forwards;
 }
 
 @keyframes closing {
@@ -222,22 +222,6 @@ p + p {
   display: flex;
   justify-content: space-between;
   padding: 0 150px 60px;
-}
-
-.stage.preview .shutter {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  background: black;
-}
-
-.stage.preview .shutter.open {
-  animation: opening .1s forwards;
-}
-
-@keyframes opening {
-  from {opacity: 1}
-  to {opacity: 0}
 }
 
 .stage.message .preview,

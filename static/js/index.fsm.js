@@ -92,7 +92,7 @@ fsm.states = {
       this.shutter.classList.add("close");
       setTimeout(() => {
         screenshot();
-      }, 200);
+      }, 50);
     },
   },
 
@@ -101,7 +101,6 @@ fsm.states = {
       this.prev = this.stage.querySelector(".prev");
       this.retry = this.stage.querySelector(".retry");
       this.next = this.stage.querySelector(".next");
-      this.shutter = this.stage.querySelector(".shutter");
 
       this.prev.addEventListener("click", ev => fsm.update("theme"));
       this.retry.addEventListener("click", ev => fsm.update("countdown"));
@@ -110,8 +109,6 @@ fsm.states = {
 
     up: function() {
       this.stage.style.backgroundImage = `url(${IMG})`;
-      this.shutter.classList.add("open");
-      setTimeout(this.shutter.classList.add("hidden"), 100);
     },
 
     down: function() {},
