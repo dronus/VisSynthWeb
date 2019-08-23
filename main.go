@@ -52,7 +52,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	err = ioutil.WriteFile("./selfies/"+fmt.Sprintf("%d", time.Now().Unix())+".json", bytes, 0644)
+	err = ioutil.WriteFile("./out/"+fmt.Sprintf("%d", time.Now().Unix())+".json", bytes, 0644)
 	if err != nil {
 		log.Println(err)
 	}
@@ -73,7 +73,7 @@ func main() {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	})
 
-	http.HandleFunc("/selfies/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/out/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	})
 

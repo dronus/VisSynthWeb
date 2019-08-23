@@ -116,26 +116,27 @@ fsm.states = {
 
   "message": {
     init: function() {
-      this.input = this.stage.querySelector(".input");
       this.canvas = this.stage.querySelector(".canvas");
       this.ctx = this.canvas.getContext("2d");
-      this.ctx.font = "100px Veneer";
-      this.ctx.fillStyle = "#0072bb";
+      this.ctx.textBaseline = "top";
+      this.ctx.font = "85px Veneer";
+
       this.text = {
         left: 350,
         top: 250,
-        cmax: 25,
+        wmax: 750,
+        height: 80,
       };
 
       this.kb = new Keyboard(".message .kb", {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
         onChange: input => this.onChange(input),
         layout: {'default': [
-          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-          "q w e r t y u i o p [ ] \\",
-          "a s d f g h j k l ; '",
-          "z x c v b n m , . /",
-          "{space}"
+          "1 2 3 4 5 6 7 8 9 0 {bksp}",
+          "q w e r t y u i o p ü *",
+          "a s d f g h j k l ö ä #",
+          "! ? z x c v b n m . , -",
+          "' \" {space} ( )"
         ]},
       });
 
@@ -155,25 +156,77 @@ fsm.states = {
       this.img = new Image;
       this.img.src = IMG;
       this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
+
+      this.box = new Image;
+      this.box.src = "static/svg/message.svg";
     },
 
     down: function() {
       this.kb.setInput("");
-      this.input.value = "";
     },
 
     onChange: function(input) {
-      if (input.length === this.text.cmax + 1) {
-        input = input.substring(0, this.text.cmax);
-        this.kb.setInput(input);
-      }
+      let [lines, overflow] = this.multiline(input);
+      if (overflow) this.kb.setInput(input.slice(0, -1));
 
-      this.input.value = input;
       this.ctx.drawImage(this.img, 0, 0);
       this.ctx.save();
       this.ctx.rotate(-4.5 * Math.PI / 180);
-      this.ctx.fillText(input, this.text.left, this.text.top);
+      this.ctx.globalAlpha = 0.8;
+      this.ctx.drawImage(this.box, this.text.left - 50, this.text.top - 50, this.longest(lines) + 100, this.text.height * lines.length + 100);
+      this.ctx.globalAlpha = 1;
+      this.ctx.fillStyle = "#0072bb";
+      lines.forEach((l, i) => {
+        this.ctx.fillText(l, this.text.left, this.text.top + this.text.height * i)
+      });
       this.ctx.restore();
+    },
+
+    width: function(str) {
+      let result = 0;
+      str.split("").forEach(n => result += wchars.get(n));
+      return result;
+    },
+
+    longest: function(array) {
+      let n = 0;
+      array.forEach(str => {
+        w = this.width(str);
+        if (w > n) n = w;
+      });
+      return n;
+    },
+
+    multiline: function(str) {
+      let result = [];
+      let line = "";
+      let eol = 0;
+
+      for (var i = 0; i < str.length; i++) {
+        if (this.width(line) > this.text.wmax && result.length === 2) {
+          result.push(line);
+          return [result, true];
+        }
+
+        if (this.width(line) > this.text.wmax)
+          eol = line.lastIndexOf(" ");
+
+        if (eol === -1) {
+          result.push(line);
+          return [result, true];
+        }
+
+        if (eol > 0) {
+          result.push(line.slice(0, eol));
+          line = line.slice(eol + 1);
+          eol = 0;
+        }
+
+        line += str.charAt(i);
+      }
+
+      result.push(line);
+      return [result, false];
     },
   },
 
@@ -190,11 +243,11 @@ fsm.states = {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
         onChange: input => this.onChange(input),
         layout: {'default': [
-          "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-          "q w e r t y u i o p [ ] \\",
-          "a s d f g h j k l ; '",
-          "@ z x c v b n m , . /",
-          ".de .com {space} .org .net"
+          "1 2 3 4 5 6 7 8 9 0 {bksp}",
+          "q w e r t y u i o p",
+          "a s d f g h j k l",
+          "@ z x c v b n m - _ .",
+          ".org .net {space} .de .com"
         ]},
       });
 
