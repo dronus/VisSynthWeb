@@ -7,6 +7,7 @@
       "type_float":{"inputs":0,"outputs":0},
       "filtering":{"inputs":0,"outputs":0,"args":{"linear":1}},
       "resolution":{"inputs":0,"outputs":0,"args":{"x":640,"y":480,"filtering":"linear","precision":"byte","fps_limit":25.0}},
+      "switch_chain":{"inputs":0,"outputs":0,"args":{"chain_index":1,"time_min":1.0,"time_max":2.0}},
       "capture":{"inputs":0,"args":{"device":0}},
       "video":{"inputs":0,"args":{"url":"test.mp4","play_sound":0.0,"speed":1.0}},
       "image":{"inputs":0,"args":{"url":"test.jpg"}},

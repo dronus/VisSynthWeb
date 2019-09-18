@@ -1,5 +1,3 @@
-
-
 canvas.for_all_textures=function(callback){
   callback(this._.texture);
   callback(this._.spareTexture);
@@ -7,6 +5,19 @@ canvas.for_all_textures=function(callback){
 };
 
 canvas.none=function(){};
+
+canvas.switch_chain_time=0;
+canvas.switch_chain=function(chain_index,time_min,time_max)
+{  
+  if(this.switched) 
+    this.switch_chain_time=Date.now()+time_min*1000. + Math.random()*(time_max-time_min)*1000.;
+  
+  if(Date.now()>this.switch_chain_time){
+    switchChain(Math.floor(chain_index));
+    // prevent re-trigger until chain switch, which may take some cycles
+    this.switch_chain_time=Infinity;
+  }
+}
 
 canvas.fps=function(fps){
   this.proposed_fps=fps;
