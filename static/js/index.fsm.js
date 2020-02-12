@@ -116,6 +116,7 @@ fsm.states = {
 
   "message": {
     init: function() {
+      this.preview = this.stage.querySelector(".preview");
       this.canvas = this.stage.querySelector(".canvas");
       this.ctx = this.canvas.getContext("2d");
       this.ctx.textBaseline = "top";
@@ -127,6 +128,12 @@ fsm.states = {
         wmax: 750,
         height: 80,
       };
+
+      this.preview.addEventListener("touchmove", ev => {
+        this.text.left = (ev.touches[0].clientX - this.huge.x) / this.huge.width * 1920;
+        this.text.top = (ev.touches[0].clientY - this.huge.y) / this.huge.height * 1080;
+        this.onChange(this.kb.getInput());
+      });
 
       this.kb = new Keyboard(".message .kb", {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
@@ -159,6 +166,9 @@ fsm.states = {
 
       this.box = new Image;
       this.box.src = "static/svg/message.svg";
+
+      this.small = this.preview.getBoundingClientRect();
+      this.huge = this.canvas.getBoundingClientRect();
     },
 
     down: function() {
