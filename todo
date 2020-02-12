@@ -2,10 +2,4 @@
 - message: loading time of canvas
 - send: loading time of canvas
 - keyboard layout and style
-
-# feedback
-
-- wann kommen die richtigen motive
-- hint the user that email could take a while
-- hint to download image weil löschung
-- host files forever? -> delete after x time?
+- add final theme images

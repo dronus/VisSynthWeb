@@ -30,7 +30,8 @@ const S = [
 
   {selector: ".message .title .line1", lang: "de", text: "Step 4"},
   {selector: ".message .title .line2", lang: "de", text: "Deine Botschaft"},
-  {selector: ".message .instruction", lang: "de", text: "Möchtest du eine Botschaft<br>auf dein Selfie schreiben?"},
+  {selector: ".message .instruction .header", lang: "de", text: "Möchtest du eine Botschaft <br>auf dein Selfie schreiben?"},
+  {selector: ".message .instruction .body", lang: "de", text: "Die Botschaft kannst du <br>auf dem Bild verschieben!"},
   {selector: ".message .prev", lang: "de", text: "Anderes Motiv auswählen"},
   {selector: ".message .reset", lang: "de", text: "Zurück zum Anfang"},
   {selector: ".message .next", lang: "de", text: "Weiter"},
@@ -47,5 +48,6 @@ const S = [
   {selector: ".end .title .line2", lang: "de", text: "Verschicke dein Selfie"},
   {selector: ".end .wait", lang: "de", text: "Dein Selfie wird verschickt ..."},
   {selector: ".end .done", lang: "de", text: "Geschafft!"},
+  {selector: ".end .info", lang: "de", text: "Dein Selfie ist unterwegs und wird dich in <br>Kürze per Mail erreichen. Aufgrund des Datenschutzes <br>wird das Selfie in zwei Tagen gelöscht."},
   {selector: ".end .reset", lang: "de", text: "Neues Bild"},
 ];

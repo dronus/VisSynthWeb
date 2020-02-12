@@ -251,6 +251,19 @@ p + p {
   top: 290px;
 }
 
+.stage.message .instruction .body {
+  padding: 60px 0 0 50px;
+}
+
+.stage.message .instruction .icon {
+  background-image: url(../svg/icon_attention.svg);
+  width: 30px;
+  height: 80px;
+  position: absolute;
+  left: 5px;
+  top: 100px;
+}
+
 .stage.message .input,
 .stage.send .input {
   width: 840px;
@@ -339,9 +352,19 @@ p + p {
   color: var(--white);
 }
 
+.stage.end .info {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: top left;
+  top: 730px;
+  color: var(--white);
+  text-align: center;
+}
+
 .stage.end .reset {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 835px;
+  top: 870px;
 }

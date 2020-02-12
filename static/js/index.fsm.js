@@ -308,11 +308,13 @@ fsm.states = {
     init: function() {
       this.wait = this.stage.querySelector(".wait");
       this.done = this.stage.querySelector(".done");
+      this.info = this.stage.querySelector(".info");
       this.reset = this.stage.querySelector(".reset");
       this.flaps = this.stage.querySelectorAll(".flap");
       this.delay = 1000;
 
       this.done.classList.add("hidden");
+      this.info.classList.add("hidden");
       this.reset.classList.add("hidden");
       this.reset.addEventListener("click", ev => fsm.update("start"));
       this.flaps.forEach(n => n.classList.add("hidden"));
@@ -331,6 +333,7 @@ fsm.states = {
       setTimeout(() => {
         this.wait.classList.add("hidden");
         this.done.classList.remove("hidden");
+        this.info.classList.remove("hidden");
         this.reset.classList.remove("hidden");
       }, this.flaps.length * this.delay);
     },
@@ -338,6 +341,7 @@ fsm.states = {
     down: function() {
       this.wait.classList.remove("hidden");
       this.done.classList.add("hidden");
+      this.info.classList.add("hidden");
       this.reset.classList.add("hidden");
       this.flaps.forEach(n => n.classList.add("hidden"));
     },
