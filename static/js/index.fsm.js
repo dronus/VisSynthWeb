@@ -132,12 +132,12 @@ fsm.states = {
       this.preview.addEventListener("touchmove", ev => {
         this.text.left = (ev.touches[0].clientX - this.huge.x) / this.huge.width * 1920;
         this.text.top = (ev.touches[0].clientY - this.huge.y) / this.huge.height * 1080;
-        this.onChange(this.kb.getInput());
+        this.redraw(this.kb.getInput());
       });
 
       this.kb = new Keyboard(".message .kb", {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
-        onChange: input => this.onChange(input),
+        onChange: input => this.redraw(input),
         layout: {'default': [
           "1 2 3 4 5 6 7 8 9 0 {bksp}",
           "q w e r t y u i o p ü *",
@@ -251,7 +251,7 @@ fsm.states = {
 
       this.kb = new Keyboard(".send .kb", {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
-        onChange: input => this.onChange(input),
+        onChange: input => this.redraw(input),
         layout: {'default': [
           "1 2 3 4 5 6 7 8 9 0 {bksp}",
           "q w e r t y u i o p",
@@ -294,7 +294,7 @@ fsm.states = {
       this.input.value = "";
     },
 
-    onChange: function(input) {
+    redraw: function(input) {
       if (input.length === this.cmax + 1) {
         input = input.substring(0, this.cmax);
         this.kb.setInput(input);
