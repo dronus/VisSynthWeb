@@ -1,3 +1,6 @@
+- slim down message drag overhead -> lags right now
+- final email text
+
 - theme: decrease loading time of images
 - message: loading time of canvas
 - send: loading time of canvas
