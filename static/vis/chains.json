@@ -22,21 +22,38 @@
     "effect": "stack_push"
   },
   {
+    "effect": "stack_push"
+  },
+  {
     "effect": "capture",
     "device": 1,
     "name": "HD Pro Webcam C920 (046d:082d)"
   },
   {
+    "effect": "transform",
+    "x": -0.35,
+    "y": 0,
+    "scale": 1,
+    "angle": 1.57079632679,
+    "sx": 1,
+    "sy": 1,
+    "wrap": 0
+  },
+  {
     "effect": "chroma_key",
-    "h": 0.671,
-    "s": 0.902,
-    "l": 1.095,
-    "h_width": 0.104,
-    "s_width": 0.163,
-    "l_width": 0.389,
+    "h": 0.471,
+    "s": 0.8,
+    "l": 0.8,
+    "h_width": 0.1,
+    "s_width": 0.268,
+    "l_width": 0.404,
     "h_feather": 0.05,
     "s_feather": 0.05,
     "l_feather": 0.05
+  },
+  {
+    "effect": "blend_alpha",
+    "alpha": 1
   }
 ]]
 
