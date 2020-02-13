@@ -175,7 +175,7 @@ fsm.states = {
       this.kb.setInput("");
     },
 
-    onChange: function(input) {
+    redraw: function(input) {
       let [lines, overflow] = this.multiline(input);
       if (overflow) this.kb.setInput(input.slice(0, -1));
 
