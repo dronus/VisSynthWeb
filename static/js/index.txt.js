@@ -19,6 +19,13 @@ const S = [
   {selector: ".theme .prev", lang: "de", text: "Zurück"},
   {selector: ".theme .next", lang: "de", text: "Ich bin bereit!"},
 
+  {selector: ".countdown .x", lang: "de", text: "10"},
+  {selector: ".countdown .ix", lang: "de", text: "9"},
+  {selector: ".countdown .viii", lang: "de", text: "8"},
+  {selector: ".countdown .vii", lang: "de", text: "7"},
+  {selector: ".countdown .vi", lang: "de", text: "6"},
+  {selector: ".countdown .v", lang: "de", text: "5"},
+  {selector: ".countdown .iv", lang: "de", text: "4"},
   {selector: ".countdown .iii", lang: "de", text: "3"},
   {selector: ".countdown .ii", lang: "de", text: "2"},
   {selector: ".countdown .i", lang: "de", text: "1"},
