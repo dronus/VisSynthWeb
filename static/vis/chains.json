@@ -36,17 +36,17 @@
     "scale": 1,
     "angle": 1.57079632679,
     "sx": 1,
-    "sy": 1,
+    "sy": -1,
     "wrap": 0
   },
   {
     "effect": "chroma_key",
-    "h": 0.471,
-    "s": 0.8,
-    "l": 0.8,
+    "h": 0.3,
+    "s": 0.7,
+    "l": 0.5,
     "h_width": 0.1,
-    "s_width": 0.268,
-    "l_width": 0.404,
+    "s_width": 0.3,
+    "l_width": 0.4,
     "h_feather": 0.05,
     "s_feather": 0.05,
     "l_feather": 0.05
