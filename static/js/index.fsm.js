@@ -129,6 +129,12 @@ fsm.states = {
         height: 80,
       };
 
+      this.preview.addEventListener("touchstart", ev => {
+        // https://docs.google.com/document/d/1sfUup3nsJG3zJTf0YR0s2C5vgFTYEmfEqZs01VVj8tE/edit#heading=h.kwu02aavwrcu
+        // keep event flow stable; workaround
+        ev.preventDefault();
+      });
+
       this.preview.addEventListener("touchmove", ev => {
         this.text.left = (ev.touches[0].clientX - this.huge.x) / this.huge.width * 1920;
         this.text.top = (ev.touches[0].clientY - this.huge.y) / this.huge.height * 1080;
