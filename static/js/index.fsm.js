@@ -255,7 +255,7 @@ fsm.states = {
       this.input = this.stage.querySelector(".input");
       this.invalid = this.stage.querySelector(".invalid");
       this.ctx = this.stage.querySelector(".canvas").getContext("2d");
-      this.cmax = 25;
+      this.cmax = 32;
       this.regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
       this.kb = new Keyboard(".send .kb", {
@@ -304,7 +304,7 @@ fsm.states = {
     },
 
     redraw: function(input) {
-      if (input.length === this.cmax + 1) {
+      if (input.length >= this.cmax + 1) {
         input = input.substring(0, this.cmax);
         this.kb.setInput(input);
       }
