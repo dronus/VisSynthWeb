@@ -1,6 +1,8 @@
 #!/bin/sh
 
 syncthing -no-browser -home=$HOME/selfiebox/st_config &
+
+sleep 15
 ./selfiebox &
 
 xset s off
