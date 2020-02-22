@@ -15,7 +15,8 @@ const S = [
 
   {selector: ".theme .title .line1", lang: "de", text: "Step 2"},
   {selector: ".theme .title .line2", lang: "de", text: "Die Motiv-Auswahl"},
-  {selector: ".theme .instruction", lang: "de", text: "Du möchtest dich für Klima und Umwelt engagieren.<br>Wähle eines dieser Motive aus:"},
+  {selector: ".theme .instruction .prefix", lang: "de", text: "Du möchtest dich für"},
+  {selector: ".theme .instruction .suffix", lang: "de", text: "engagieren.<br>Wähle eines dieser Motive aus:"},
   {selector: ".theme .prev", lang: "de", text: "Zurück"},
   {selector: ".theme .next", lang: "de", text: "Ich bin bereit!"},
 

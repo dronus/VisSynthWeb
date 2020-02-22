@@ -9,6 +9,7 @@ fsm.update("start");
 idle.callback = () => fsm.update("start");
 
 let CAT = "";
+let CAT_TXT = "";
 let IMG = "";
 let IMG_TXT = "";
 let EMAIL = "";

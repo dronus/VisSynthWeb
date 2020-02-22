@@ -24,6 +24,7 @@ fsm.states = {
       this.buttons = this.stage.querySelectorAll(".cat");
       this.buttons.forEach(n => n.addEventListener("click", ev => {
         CAT = ev.target.dataset.cat;
+        CAT_TXT = ev.target.innerText;
         fsm.update("theme");
       }));
     },
@@ -38,6 +39,7 @@ fsm.states = {
       this.thumbs = this.stage.querySelectorAll(".thumb");
       this.prev = this.stage.querySelector(".prev");
       this.next = this.stage.querySelector(".next");
+      this.cat = this.stage.querySelector(".instruction .cat");
 
       this.thumbs.forEach((node, i) => node.addEventListener("click", ev => {
         THM = i;
@@ -58,6 +60,7 @@ fsm.states = {
         if (i === 0) n.classList.add("active");
         n.style.backgroundImage = `url(static/themes/${CAT}/${i}.jpg)`;
       });
+      this.cat.innerText = CAT_TXT;
     },
 
     down: function() {
