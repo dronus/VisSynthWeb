@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"text/template"
 	"time"
 )
@@ -59,6 +60,8 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	_ = os.Mkdir("./out", 0755)
+
 	var cfg Config
 	j, _ := ioutil.ReadFile("config.json")
 	err := json.Unmarshal(j, &cfg)
