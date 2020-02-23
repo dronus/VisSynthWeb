@@ -1,0 +1,11 @@
+{
+  "host": "foo.com",
+  "port": 587,
+  "user": "alice",
+  "pass": "abc.123",
+  "from": "noreply@sender.com",
+  "name": "Alice McSender",
+  "subj": "Selfie Example",
+  "body": "This is your selfie, enjoy!",
+  "addr": "https://bar.com/selfies/"
+}
