@@ -260,11 +260,8 @@
         else if (video.mozSrcObject !== undefined) 
           video.mozSrcObject = stream;
         else
-          video.src = URL.createObjectURL(stream);      
-
-        // on newer chrome browsers, autopla won't trigger if video element is not visible 
-        // (which it itself never is here), so we issue a play() after setting the source.
-        video.play()
+          video.srcObject = stream;
+          video.play();
       });
     }
     
