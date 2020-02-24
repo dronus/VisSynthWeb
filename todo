@@ -1,6 +1,7 @@
 - bilder werden gestaucht
 - theme: decrease loading time of images
-  * theme states umbauen auf donor-clone pattern; siehe conference
+  * rename category -> gate
+  * 1 preview -> 6 previews elements
 
 - final email layout
 - final theme images

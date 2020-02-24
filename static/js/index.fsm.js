@@ -7,7 +7,7 @@ fsm.states = {
 
       this.cats = [];
       document.querySelectorAll(".stage.category .cat")
-        .forEach(n => this.cats.push(n.dataset.cat));
+        .forEach(n => this.cats.push(n.dataset.id));
     },
 
     up: function() {
@@ -21,19 +21,19 @@ fsm.states = {
 
   "category": {
     init: function() {
-      this.buttons = this.stage.querySelectorAll(".cat");
-      this.buttons.forEach(n => n.addEventListener("click", ev => {
-        CAT = ev.target.dataset.cat;
-        CAT_TXT = ev.target.innerText;
-        fsm.update("theme");
-      }));
+      this.stage.querySelectorAll(".cat").forEach(c => {
+        c.addEventListener("click", ev =>
+          fsm.update(`theme__${c.dataset.id}`));
+        fsm.states.theme.stages.push(`theme__${c.dataset.id}`);
+      });
     },
-
     up: function() {},
     down: function() {},
   },
 
   "theme": {
+    stages: [],
+
     init: function() {
       this.preview = this.stage.querySelector(".preview");
       this.thumbs = this.stage.querySelectorAll(".thumb");
@@ -43,8 +43,8 @@ fsm.states = {
 
       this.thumbs.forEach((node, i) => node.addEventListener("click", ev => {
         THM = i;
-        chains[2][1].url = `static/themes/${CAT}/${i}.jpg`;
-        this.preview.style.backgroundImage = `url(static/themes/${CAT}/${i}.jpg)`;
+        chains[2][1].url = `static/themes/${this.stage.dataset.id}/${i}.jpg`;
+        this.preview.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/${i}.jpg)`;
         this.thumbs.forEach(n => n.classList.remove("active"));
         ev.target.classList.add("active");
       }));
@@ -54,13 +54,12 @@ fsm.states = {
     },
 
     up: function() {
-      chains[2][1].url = `static/themes/${CAT}/0.jpg`;
-      this.preview.style.backgroundImage = `url(static/themes/${CAT}/0.jpg)`;
+      chains[2][1].url = `static/themes/${this.stage.dataset.id}/0.jpg`;
+      this.preview.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/0.jpg)`;
       this.thumbs.forEach((n, i) => {
         if (i === 0) n.classList.add("active");
-        n.style.backgroundImage = `url(static/themes/${CAT}/${i}.jpg)`;
+        n.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/${i}.jpg)`;
       });
-      this.cat.innerText = CAT_TXT;
     },
 
     down: function() {

@@ -48,12 +48,13 @@
       <div class="list">
         <div class="instruction t--beta"></div>
         {{ range . }}
-        <div class="cat {{ . }} o--beta" data-cat="{{ . }}"></div>
+        <div class="cat {{ . }} o--beta" data-id="{{ . }}"></div>
         {{ end }}
       </div>
     </section>
-    
-    <section class="stage theme">
+{{ range . }}
+
+<section class="stage theme theme__{{ . }}" data-id="{{ . }}">
       <div class="title tilted">
         <div class="line1 h--gamma"></div>
         <div class="line2 h--beta"></div>
@@ -75,6 +76,7 @@
       <div class="button prev t--beta"></div>
       <div class="button next t--beta"></div>
     </section>
+{{ end }}
     
     <section class="stage countdown">
       <div class="flap x tilted h--beta"></div>
