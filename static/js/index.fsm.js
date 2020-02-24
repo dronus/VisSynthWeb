@@ -41,29 +41,39 @@ fsm.states = {
       this.next = this.stage.querySelector(".next");
       this.cat = this.stage.querySelector(".instruction .cat");
 
-      this.thumbs.forEach((node, i) => node.addEventListener("click", ev => {
-        THM = i;
-        chains[2][1].url = `static/themes/${this.stage.dataset.id}/${i}.jpg`;
-        this.preview.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/${i}.jpg)`;
-        this.thumbs.forEach(n => n.classList.remove("active"));
-        ev.target.classList.add("active");
-      }));
+      this.thumbs.forEach((node, i) => {
+        node.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/${i}.jpg)`;
+
+        node.addEventListener("click", ev => {
+          THM = i;
+          chains[2][1].url = `static/themes/${this.stage.dataset.id}/${i}.jpg`;
+
+          this.updatePreview(node);
+          this.thumbs.forEach(n => {
+            n.classList.remove("active");
+          });
+          ev.target.classList.add("active");
+        });
+      });
 
       this.prev.addEventListener("click", ev => fsm.update("category"));
       this.next.addEventListener("click", ev => fsm.update("countdown"));
     },
 
     up: function() {
-      chains[2][1].url = `static/themes/${this.stage.dataset.id}/0.jpg`;
-      this.preview.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/0.jpg)`;
-      this.thumbs.forEach((n, i) => {
-        if (i === 0) n.classList.add("active");
-        n.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/${i}.jpg)`;
-      });
+      this.updatePreview(this.thumbs[0]);
+      this.thumbs[0].classList.add("active");
     },
 
     down: function() {
       this.thumbs.forEach(n => n.classList.remove("active"));
+    },
+
+    updatePreview: function(el) {
+      let clone = el.cloneNode(true);
+      clone.className = "preview";
+      this.stage.replaceChild(clone, this.preview);
+      this.preview = clone;
     },
   },
 
