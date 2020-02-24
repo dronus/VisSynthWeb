@@ -684,6 +684,7 @@ canvas.video=function(url,play_sound,speed)
 
       v.crossOrigin = "anonymous";
       v.src=url;
+      v.play();
       this._.videoFilterElement[url]=v;
     }  
       
