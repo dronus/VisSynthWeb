@@ -39,7 +39,7 @@
       "patch_displacement":{"inputs": 2,"args":{"sx":0.0,"sy":0.0,"sz":0.1,"anglex":0.0,"angley":0.3,"anglez":0.0,"scale":2.0,"pixelate":0.0}},
       "particles":{"inputs": 2,"args":{"anglex":0.0,"angley":0.3,"anglez":0.0,"size": 15.0," strength":0.5,"homing":0.01,"noise":1.0,"displacement":0.0}},
       "transform":{"args":{"x":0.0,"y":0.0,"scale":1.0,"angle":0.0,"sx":1.0,"sy":1.0,"wrap":0.0}},
-      "perspective":{"args":{"perspective":{"type":"perspective"," x1":-0.75,"y1":-0.75," x2":-0.75,"y2":0.75,"x3":0.75,"y3":-0.75,"x4":0.75,"y4":0.75}}},
+      "perspective":{"args":{"perspective":{"type":"perspective"," x1":-0.5,"y1":-0.5," x2":-0.5,"y2":0.5,"x3":0.5,"y3":-0.5,"x4":0.5,"y4":0.5}}},
       "strobe":{"args":{"period":10.0}},
       "timeshift":{"args":{"time":{"type":"osc","f":200.0,"a":12.5,"p":0.0,"o":12.5},"clear_on_switch":0.0}},
       "vibrance":{"args":{"strength":1.0}},
