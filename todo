@@ -1,8 +1,10 @@
+- bilder werden gestaucht
+- theme: decrease loading time of images
+  * theme states umbauen auf donor-clone pattern; siehe conference
+
 - final email layout
 - final theme images
 
-- theme: decrease loading time of images
 - message: loading time of canvas
 - send: loading time of canvas
 - keyboard layout and style
-- add final theme images
