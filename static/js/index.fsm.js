@@ -61,6 +61,7 @@ fsm.states = {
     },
 
     up: function() {
+      fsm.theme = this.stage.dataset.id;
       this.updatePreview(this.thumbs[0]);
       this.thumbs[0].classList.add("active");
     },
@@ -114,7 +115,7 @@ fsm.states = {
       this.retry = this.stage.querySelector(".retry");
       this.next = this.stage.querySelector(".next");
 
-      this.prev.addEventListener("click", ev => fsm.update("theme"));
+      this.prev.addEventListener("click", ev => fsm.update(`theme__${fsm.theme}`));
       this.retry.addEventListener("click", ev => fsm.update("countdown"));
       this.next.addEventListener("click", ev => fsm.update("message"));
     },
@@ -169,7 +170,7 @@ fsm.states = {
       this.reset = this.stage.querySelector(".reset");
       this.next = this.stage.querySelector(".next");
 
-      this.prev.addEventListener("click", ev => fsm.update("theme"));
+      this.prev.addEventListener("click", ev => fsm.update(`theme__${fsm.theme}`));
       this.reset.addEventListener("click", ev => fsm.update("start"));
       this.next.addEventListener("click", ev => {
         IMG_TXT = this.canvas.toDataURL("image/jpeg");

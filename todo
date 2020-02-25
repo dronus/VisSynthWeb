@@ -1,8 +1,10 @@
-- bilder werden gestaucht
 - theme: decrease loading time of images
+  * thumbnail auswahl eventhandler als benamten handler kapseln und on "up" einmal callen für thumbs[0]; updatePreview obsolet
   * rename category -> gate
-
+- eliminate globals
 - final email layout
+
+- merge image contain and cover modes
 - final theme images
 
 - message: loading time of canvas
