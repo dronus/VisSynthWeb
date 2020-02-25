@@ -22,9 +22,9 @@ fsm.states = {
   "gate": {
     init: function() {
       this.stage.querySelectorAll(".cat").forEach(c => {
+        fsm.states.theme.stages.push(`theme__${c.dataset.id}`);
         c.addEventListener("click", ev =>
           fsm.update(`theme__${c.dataset.id}`));
-        fsm.states.theme.stages.push(`theme__${c.dataset.id}`);
       });
     },
     up: function() {},
@@ -64,6 +64,7 @@ fsm.states = {
       fsm.theme = this.stage.dataset.id;
       this.updatePreview(this.thumbs[0]);
       this.thumbs[0].classList.add("active");
+      chains[2][1].url = `static/themes/${this.stage.dataset.id}/0.jpg`;
     },
 
     down: function() {
