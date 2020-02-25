@@ -3,10 +3,10 @@ fsm.states = {
   "start": {
     init: function() {
       this.button = this.stage.querySelector(".button");
-      this.button.addEventListener("click", ev => fsm.update("category"));
+      this.button.addEventListener("click", ev => fsm.update("gate"));
 
       this.cats = [];
-      document.querySelectorAll(".stage.category .cat")
+      document.querySelectorAll(".stage.gate .cat")
         .forEach(n => this.cats.push(n.dataset.id));
     },
 
@@ -19,7 +19,7 @@ fsm.states = {
     down: function() {},
   },
 
-  "category": {
+  "gate": {
     init: function() {
       this.stage.querySelectorAll(".cat").forEach(c => {
         c.addEventListener("click", ev =>
@@ -56,7 +56,7 @@ fsm.states = {
         });
       });
 
-      this.prev.addEventListener("click", ev => fsm.update("category"));
+      this.prev.addEventListener("click", ev => fsm.update("gate"));
       this.next.addEventListener("click", ev => fsm.update("countdown"));
     },
 

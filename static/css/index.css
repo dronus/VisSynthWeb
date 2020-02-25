@@ -84,7 +84,7 @@ p + p {
   bottom: 130px;
 }
 
-.stage.category .list {
+.stage.gate .list {
   width: 1200px;
   height: 400px;
   position: absolute;
@@ -96,14 +96,14 @@ p + p {
   justify-content: space-between;
 }
 
-.stage.category .instruction {
+.stage.gate .instruction {
   color: var(--white);
   max-width: 330px;
   position: absolute;
   top: -100px;
 }
 
-.stage.category .cat {
+.stage.gate .cat {
   width: 520px;
   height: 125px;
   background-image: url(../svg/cat.svg);
@@ -112,7 +112,7 @@ p + p {
   align-items: center;
 }
 
-.stage.category .cat:active {
+.stage.gate .cat:active {
   color: var(--white);
   background-image: url(../svg/cat_active.svg);
 }

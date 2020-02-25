@@ -1,7 +1,6 @@
 - theme: when image not changed, start image stays active
 - theme: decrease loading time of images
   * thumbnail auswahl eventhandler als benamten handler kapseln und on "up" einmal callen für thumbs[0]; updatePreview obsolet
-  * rename category -> gate
 - final email layout
 
 - merge image contain and cover modes
