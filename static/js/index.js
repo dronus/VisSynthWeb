@@ -7,8 +7,3 @@ fsm.setup();
 fsm.update("start");
 
 idle.callback = () => fsm.update("start");
-
-let IMG = "";
-let IMG_TXT = "";
-let EMAIL = "";
-let ID = "";

@@ -121,7 +121,7 @@ fsm.states = {
     },
 
     up: function() {
-      this.stage.style.backgroundImage = `url(${IMG})`;
+      this.stage.style.backgroundImage = `url(${fsm.img})`;
     },
 
     down: function() {},
@@ -173,14 +173,14 @@ fsm.states = {
       this.prev.addEventListener("click", ev => fsm.update(`theme__${fsm.theme}`));
       this.reset.addEventListener("click", ev => fsm.update("start"));
       this.next.addEventListener("click", ev => {
-        IMG_TXT = this.canvas.toDataURL("image/jpeg");
+        fsm.txt = this.canvas.toDataURL("image/jpeg");
         fsm.update("send");
       });
     },
 
     up: function() {
       this.img = new Image;
-      this.img.src = IMG;
+      this.img.src = fsm.img;
       this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
 
       this.box = new Image;
@@ -288,7 +288,7 @@ fsm.states = {
       this.reset.addEventListener("click", ev => fsm.update("start"));
       this.next.addEventListener("click", ev => {
         if (this.regex.test(this.input.value.toLowerCase())) {
-          EMAIL = this.input.value.toLowerCase();
+          fsm.email = this.input.value.toLowerCase();
           return fsm.update("end");
         }
         this.invalid.classList.remove("hidden");
@@ -299,13 +299,13 @@ fsm.states = {
 
     up: function() {
       this.img = new Image;
-      this.img.src = IMG_TXT;
+      this.img.src = fsm.txt;
       this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
     },
 
     down: function() {
       this.img = new Image;
-      this.img.src = IMG;
+      this.img.src = fsm.img;
       this.img.onload = () => this.ctx.drawImage(this.img, 0, 0);
 
       this.invalid.classList.add("hidden");
@@ -340,7 +340,7 @@ fsm.states = {
     },
 
     up: function() {
-      this.put(this.pronid(), EMAIL, IMG_TXT);
+      this.put(this.pronid(), fsm.email, fsm.txt);
 
       for (let i = 0; i < this.flaps.length; i++) {
         setTimeout(() => {
