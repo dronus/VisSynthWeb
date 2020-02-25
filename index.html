@@ -149,6 +149,13 @@
         put('screenshot',pixels);
         screenshot_cycle=0;
       }
+      
+      // take movie stream export frame if requested
+      if(mediaRecorder) 
+      {
+        recorderContext.drawImage(canvas,0,0);
+        mediaRecorder.stream.getVideoTracks()[0].requestFrame();
+      }
     };
 
     // enumerate the available sources at startup and start update loop if found
@@ -343,7 +350,60 @@
       // engage screenshot process
       screenshot_cycle=1;
     }
-    
+
+    let mediaRecorder;
+    let recordedBlobs = [];
+    let recorderContext=null;
+
+    function stream(enabled) {
+      if(enabled)
+      {
+        var options = {mimeType: 'video/webm'};
+
+        const recorderCanvas=document.createElement('canvas');
+        recorderCanvas.width=canvas.width;
+        recorderCanvas.height=canvas.height;
+        recorderContext=recorderCanvas.getContext('2d');
+                
+        const stream = recorderCanvas.captureStream(0);
+        stream.getVideoTracks()[0].contentHint="detail";
+        console.log('Started stream capture from canvas element: ', stream);
+        mediaRecorder = new MediaRecorder(stream, options);
+        console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
+
+        mediaRecorder.onstop = function(event) 
+        {
+          console.log('Recorder stopped: ', event);
+          const blob = new Blob(recordedBlobs, {type: 'video/webm'});
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = 'export.webm';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+          recordedBlobs = [];
+        };
+
+        mediaRecorder.ondataavailable = function(event) 
+        {
+          if (event.data && event.data.size > 0) {
+            recordedBlobs.push(event.data);
+          }
+        }
+        mediaRecorder.start(1000); 
+        console.log('MediaRecorder started', mediaRecorder);
+      }
+      else
+      {  
+        mediaRecorder.stop();
+        mediaRecorder=null;
+      }
+    }    
 
     function switchChain(chain_index)
     {

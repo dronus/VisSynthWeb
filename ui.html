@@ -111,7 +111,8 @@
     {
       recording=!recording;
 
-      put(recording ? '/recorder/start' : '/recorder/stop' , '');
+      send('stream('+(recording ? 'true' : 'false')+')');
+      // put(recording ? '/recorder/start' : '/recorder/stop' , '');
 
       $('#recorder_button').html(recording ? 'STOP RECORDING' : 'START RECORDING');
       if(recording) $('#recorder_button').addClass   ('active');
