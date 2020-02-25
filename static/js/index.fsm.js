@@ -4,16 +4,12 @@ fsm.states = {
     init: function() {
       this.button = this.stage.querySelector(".button");
       this.button.addEventListener("click", ev => fsm.update("gate"));
-
-      this.cats = [];
-      document.querySelectorAll(".stage.gate .cat")
-        .forEach(n => this.cats.push(n.dataset.id));
+      this.all = document.querySelectorAll(".theme .thumb");
     },
 
     up: function() {
-      let cat = this.cats[Math.floor(Math.random() * this.cats.length)];
-      let thm = Math.floor(Math.random() * 6);
-      chains[2][1].url = `static/themes/${cat}/${thm}.jpg`;
+      let irand = Math.floor(Math.random() * this.all.length);
+      chains[2][1].url = this.all[irand].dataset.src;
     },
 
     down: function() {},
@@ -23,8 +19,10 @@ fsm.states = {
     init: function() {
       this.stage.querySelectorAll(".cat").forEach(c => {
         fsm.states.theme.stages.push(`theme__${c.dataset.id}`);
-        c.addEventListener("click", ev =>
-          fsm.update(`theme__${c.dataset.id}`));
+        c.addEventListener("click", ev => {
+          fsm.theme = c.dataset.id;
+          fsm.update(`theme__${c.dataset.id}`);
+        });
       });
     },
     up: function() {},
@@ -39,43 +37,29 @@ fsm.states = {
       this.thumbs = this.stage.querySelectorAll(".thumb");
       this.prev = this.stage.querySelector(".prev");
       this.next = this.stage.querySelector(".next");
-      this.cat = this.stage.querySelector(".instruction .cat");
 
-      this.thumbs.forEach((node, i) => {
-        node.style.backgroundImage = `url(static/themes/${this.stage.dataset.id}/${i}.jpg)`;
-
-        node.addEventListener("click", ev => {
-          THM = i;
-          chains[2][1].url = `static/themes/${this.stage.dataset.id}/${i}.jpg`;
-
-          this.updatePreview(node);
-          this.thumbs.forEach(n => {
-            n.classList.remove("active");
-          });
-          ev.target.classList.add("active");
-        });
-      });
-
+      this.thumbs.forEach((node, i) => node.addEventListener("click",
+        ev => this.activate(node)));
       this.prev.addEventListener("click", ev => fsm.update("gate"));
       this.next.addEventListener("click", ev => fsm.update("countdown"));
     },
 
     up: function() {
-      fsm.theme = this.stage.dataset.id;
-      this.updatePreview(this.thumbs[0]);
-      this.thumbs[0].classList.add("active");
-      chains[2][1].url = `static/themes/${this.stage.dataset.id}/0.jpg`;
+      this.activate(this.thumbs[0]);
     },
 
-    down: function() {
-      this.thumbs.forEach(n => n.classList.remove("active"));
-    },
+    down: function() {},
 
-    updatePreview: function(el) {
+    activate: function(el) {
       let clone = el.cloneNode(true);
       clone.className = "preview";
       this.stage.replaceChild(clone, this.preview);
       this.preview = clone;
+
+      this.thumbs.forEach(n => n.classList.remove("active"));
+      el.classList.add("active");
+
+      chains[2][1].url = el.dataset.src;
     },
   },
 

@@ -27,16 +27,27 @@ type Mailer struct {
 	Addr string
 }
 
-func categories() []string {
-	var all []string
+func categories() map[string][]string {
+	all := make(map[string][]string)
 
-	files, err := ioutil.ReadDir("./static/themes")
+	dirs, err := ioutil.ReadDir("./static/themes")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, f := range files {
-		all = append(all, f.Name())
+	for _, d := range dirs {
+		var names []string
+
+		files, err := ioutil.ReadDir("./static/themes/" + d.Name())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, f := range files {
+			names = append(names, f.Name())
+		}
+
+		all[d.Name()] = names
 	}
 
 	return all

@@ -47,14 +47,14 @@
       </div>
       <div class="list">
         <div class="instruction t--beta"></div>
-        {{ range . }}
-        <div class="cat {{ . }} o--beta" data-id="{{ . }}"></div>
+        {{ range $cat, $files := . }}
+        <div class="cat {{ $cat }} o--beta" data-id="{{ $cat }}"></div>
         {{ end }}
       </div>
     </section>
-{{ range . }}
+{{ range $cat, $files := . }}
 
-<section class="stage theme theme__{{ . }}" data-id="{{ . }}">
+    <section class="stage theme theme__{{ $cat }}" data-id="{{ $cat }}">
       <div class="title tilted">
         <div class="line1 h--gamma"></div>
         <div class="line2 h--beta"></div>
@@ -66,12 +66,9 @@
           <span class="cat"></span>
           <span class="suffix"></span>
         </div>
-        <div class="thumb"></div>
-        <div class="thumb"></div>
-        <div class="thumb"></div>
-        <div class="thumb"></div>
-        <div class="thumb"></div>
-        <div class="thumb"></div>
+{{ range $file := $files }}
+        <div class="thumb" style="background-image: url(static/themes/{{ $cat }}/{{ $file }});" data-src="static/themes/{{ $cat }}/{{ $file }}"></div>
+{{ end }}
       </div>
       <div class="button prev t--beta"></div>
       <div class="button next t--beta"></div>
@@ -135,7 +132,7 @@
         <canvas class="canvas" width="1920" height="1080"></canvas>
       </div>
       <div class="instruction t--beta"></div>
-      <input class="input o--beta" placeholder="Wohin damit?" />
+      <input class="input o--beta" placeholder="Deine E-Mail-Adresse" />
       <div class="invalid t--beta"></div>
       <div class="t--beta">
         <div class="kb"></div>
