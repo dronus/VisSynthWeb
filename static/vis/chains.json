@@ -16,7 +16,9 @@
   "selfiebox",
   {
     "effect": "image",
-    "url": "jpg/start.jpg"
+    "url": "jpg/start.jpg",
+    "contain":0,
+    "cover": 1
   },
   {
     "effect": "stack_push"

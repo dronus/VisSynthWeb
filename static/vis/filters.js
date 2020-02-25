@@ -689,8 +689,23 @@ canvas.video=function(url,play_sound,speed)
     return this;
 }
 
+canvas.drawImage=function(texture,contain,cover)
+{
+      var r_w=1.0,r_h=1.0;
+      if(contain || cover){
+        r_w=texture.width /this._.texture.width;
+        r_h=texture.height/this._.texture.height;
+        var r = cover ? Math.min(r_w, r_h) : Math.max(r_w,r_h);
+        r_w/=r; r_h/=r;
+      }
+      
+      this._.texture.swapWith(texture);
+      this.transform(0,0,1.,0,r_w,r_h,false);
+      this._.spareTexture.swapWith(texture);
+}
+
 var image_loaded=[];
-canvas.image=function(url)
+canvas.image=function(url,contain,cover)
 {
 
     if(!this._.imageFilterElement) this._.imageFilterElement=[];
@@ -715,12 +730,13 @@ canvas.image=function(url)
       this._.imageTexture[url].loadContentsOf(v);
     }
     
-    if(this._.imageTexture[url])
-      this._.imageTexture[url].copyTo(this._.texture);
-        
+    var img_tex=this._.imageTexture[url];
+    if(!img_tex) return this;
+    
+    canvas.drawImage(img_tex,contain,cover);
+    
     return this;
 }
-
 
 // src/filters/video/ripple.js
 canvas.ripple=function(fx,fy,angle,amplitude) {
