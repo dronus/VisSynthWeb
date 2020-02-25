@@ -1,36 +1,11 @@
-fsm.states = {
+fsm.protos = new Map([
 
-  "start": {
-    init: function() {
-      this.button = this.stage.querySelector(".button");
-      this.button.addEventListener("click", ev => fsm.update("gate"));
-      this.all = document.querySelectorAll(".theme .thumb");
-    },
-
-    up: function() {
-      let irand = Math.floor(Math.random() * this.all.length);
-      chains[2][1].url = this.all[irand].dataset.src;
-    },
-
-    down: function() {},
-  },
-
-  "gate": {
-    init: function() {
-      this.stage.querySelectorAll(".cat").forEach(c => {
-        fsm.states.theme.stages.push(`theme__${c.dataset.id}`);
-        c.addEventListener("click", ev => {
-          fsm.theme = c.dataset.id;
-          fsm.update(`theme__${c.dataset.id}`);
-        });
-      });
-    },
-    up: function() {},
-    down: function() {},
-  },
-
-  "theme": {
-    stages: [],
+  [[
+    "theme__aid",
+    "theme__env",
+    "theme__equal",
+    "theme__kids",
+  ], {
 
     init: function() {
       this.preview = this.stage.querySelector(".preview");
@@ -61,6 +36,38 @@ fsm.states = {
 
       chains[2][1].url = el.dataset.src;
     },
+  }],
+
+]);
+
+fsm.states = {
+
+  "start": {
+    init: function() {
+      this.button = this.stage.querySelector(".button");
+      this.button.addEventListener("click", ev => fsm.update("gate"));
+      this.all = document.querySelectorAll(".theme .thumb");
+    },
+
+    up: function() {
+      let irand = Math.floor(Math.random() * this.all.length);
+      chains[2][1].url = this.all[irand].dataset.src;
+    },
+
+    down: function() {},
+  },
+
+  "gate": {
+    init: function() {
+      this.stage.querySelectorAll(".cat").forEach(c => {
+        c.addEventListener("click", ev => {
+          fsm.theme = c.dataset.id;
+          fsm.update(`theme__${c.dataset.id}`);
+        });
+      });
+    },
+    up: function() {},
+    down: function() {},
   },
 
   "countdown": {
