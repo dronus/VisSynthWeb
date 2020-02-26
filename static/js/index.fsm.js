@@ -8,6 +8,7 @@ fsm.protos = new Map([
   ], {
 
     init: function() {
+      this.stage.addEventListener("click", ev => idle.start());
       this.preview = this.stage.querySelector(".preview");
       this.thumbs = this.stage.querySelectorAll(".thumb");
       this.prev = this.stage.querySelector(".prev");
@@ -59,6 +60,7 @@ fsm.states = {
 
   "gate": {
     init: function() {
+      this.stage.addEventListener("click", ev => idle.start());
       this.stage.querySelectorAll(".cat").forEach(c => {
         c.addEventListener("click", ev => {
           fsm.cat = c.dataset.id;
@@ -103,6 +105,8 @@ fsm.states = {
 
   "preview": {
     init: function() {
+      this.stage.addEventListener("click", ev => idle.start());
+
       this.prev = this.stage.querySelector(".prev");
       this.retry = this.stage.querySelector(".retry");
       this.next = this.stage.querySelector(".next");
@@ -121,6 +125,8 @@ fsm.states = {
 
   "message": {
     init: function() {
+      this.stage.addEventListener("click", ev => idle.start());
+
       this.preview = this.stage.querySelector(".preview");
       this.canvas = this.stage.querySelector(".canvas");
       this.ctx = this.canvas.getContext("2d");
@@ -253,6 +259,8 @@ fsm.states = {
 
   "send": {
     init: function() {
+      this.stage.addEventListener("click", ev => idle.start());
+
       this.preview = this.stage.querySelector(".preview");
       this.input = this.stage.querySelector(".input");
       this.invalid = this.stage.querySelector(".invalid");
@@ -317,6 +325,8 @@ fsm.states = {
 
   "end": {
     init: function() {
+      this.stage.addEventListener("click", ev => idle.start());
+
       this.wait = this.stage.querySelector(".wait");
       this.done = this.stage.querySelector(".done");
       this.info = this.stage.querySelector(".info");

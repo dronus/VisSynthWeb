@@ -1,10 +1,6 @@
-- final email layout
-  * fix sender and subject
-  * add image
-- email composition from server to client
-- setup idle timer
 - final theme images
 - sharpness & shadows
+- email composition from server to client
 
 - message: loading time of canvas
 - send: loading time of canvas
