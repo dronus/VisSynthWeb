@@ -61,7 +61,7 @@ fsm.states = {
     init: function() {
       this.stage.querySelectorAll(".cat").forEach(c => {
         c.addEventListener("click", ev => {
-          fsm.theme = c.dataset.id;
+          fsm.cat = c.dataset.id;
           fsm.update(`theme__${c.dataset.id}`);
         });
       });
@@ -107,7 +107,7 @@ fsm.states = {
       this.retry = this.stage.querySelector(".retry");
       this.next = this.stage.querySelector(".next");
 
-      this.prev.addEventListener("click", ev => fsm.update(`theme__${fsm.theme}`));
+      this.prev.addEventListener("click", ev => fsm.update(`theme__${fsm.cat}`));
       this.retry.addEventListener("click", ev => fsm.update("countdown"));
       this.next.addEventListener("click", ev => fsm.update("message"));
     },
@@ -162,7 +162,7 @@ fsm.states = {
       this.reset = this.stage.querySelector(".reset");
       this.next = this.stage.querySelector(".next");
 
-      this.prev.addEventListener("click", ev => fsm.update(`theme__${fsm.theme}`));
+      this.prev.addEventListener("click", ev => fsm.update(`theme__${fsm.cat}`));
       this.reset.addEventListener("click", ev => fsm.update("start"));
       this.next.addEventListener("click", ev => {
         fsm.txt = this.canvas.toDataURL("image/jpeg");
@@ -332,7 +332,7 @@ fsm.states = {
     },
 
     up: function() {
-      this.put(this.pronid(), fsm.email, fsm.txt);
+      this.put(this.pronid(), fsm.cat, fsm.email, fsm.txt);
 
       for (let i = 0; i < this.flaps.length; i++) {
         setTimeout(() => {
@@ -357,9 +357,9 @@ fsm.states = {
       this.flaps.forEach(n => n.classList.add("hidden"));
     },
 
-    put: function(id, email, img) {
+    put: function(id, cat, email, img) {
       let url = "save";
-      let json = JSON.stringify({"id": id, "email": email, "img": img});
+      let json = JSON.stringify({"id": id, "cat": cat, "email": email, "img": img});
       let xhr = new XMLHttpRequest();
 
       xhr.open("POST", url, true);

@@ -1,4 +1,7 @@
 - final email layout
+  * fix sender and subject
+  * add image
+- email composition from server to client
 - setup idle timer
 - final theme images
 - sharpness & shadows

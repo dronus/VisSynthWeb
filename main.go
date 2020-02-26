@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +25,6 @@ type Mailer struct {
 	Name string
 	Subj string
 	Body string
-	Addr string
 }
 
 func categories() map[string][]string {
@@ -62,6 +62,7 @@ func (m *Mailer) saveHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var data struct {
 		Id     string
+		Cat    string
 		Email  string
 		Img    string
 		Mailer *Mailer
@@ -73,6 +74,10 @@ func (m *Mailer) saveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Mailer = m
+	t, _ := template.ParseFiles("./email.html")
+	var b bytes.Buffer
+	t.Execute(&b, struct{ Id, Cat string }{data.Id, data.Cat})
+	data.Mailer.Body = b.String()
 
 	bytes, err := json.Marshal(data)
 	if err != nil {
