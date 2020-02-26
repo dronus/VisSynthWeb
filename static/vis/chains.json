@@ -33,6 +33,46 @@
   },
   {
     "effect": "transform",
+    "x": 0,
+    "y": -0.11,
+    "scale": 1,
+    "angle": 0,
+    "sx": 1,
+    "sy": 1,
+    "wrap": 0
+  },
+  {
+    "effect": "transform",
+    "x": 0,
+    "y": 0.11,
+    "scale": 1,
+    "angle": 0,
+    "sx": 1,
+    "sy": 1,
+    "wrap": 0
+  },
+  {
+    "effect": "transform",
+    "x": 0,
+    "y": 0.05,
+    "scale": 1,
+    "angle": 0,
+    "sx": 1,
+    "sy": 1,
+    "wrap": 0
+  },
+  {
+    "effect": "transform",
+    "x": 0,
+    "y": -0.05,
+    "scale": 1,
+    "angle": 0,
+    "sx": 1,
+    "sy": 1,
+    "wrap": 0
+  },
+  {
+    "effect": "transform",
     "x": -0.35,
     "y": 0,
     "scale": 1,
