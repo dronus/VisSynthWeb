@@ -41,7 +41,7 @@ var clamp=function(x,a,b){
 }  
 
 generators={
-  perspective:function(t,args){return [[-0.75,-0.75, -0.75,0.75, 0.75,-0.75, 0.75,0.75],flatten(t,args)]},
+  perspective:function(t,args){return [[-0.5,-0.5, -0.5,0.5, 0.5,-0.5, 0.5,0.5],flatten(t,args)]},
   osc:function(t,args){return args.a*oscillators[args.waveform ? args.waveform : 'sine'](t*args.f+args.p,args.duty?args.duty:0.5)+args.o;},
   beat:function(t,args) { return audio_engine.beatValue.apply(null,flatten(t,args));},
   midi:function(t,args){return clamp( (args.infinite?window.midi.controllers_infinite:window.midi.controllers)[args.channel|0]*args.a+args.o, args.min, args.max)},
