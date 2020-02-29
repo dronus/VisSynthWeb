@@ -2,6 +2,7 @@
   box-sizing: border-box;
   background-repeat: no-repeat;
   cursor: none;
+  user-select: none;
 }
 
 body {
