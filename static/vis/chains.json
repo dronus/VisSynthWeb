@@ -1,4 +1,5 @@
-[[
+[
+ [
   "SETUP",
   {
    "effect": "resolution",
@@ -7,95 +8,79 @@
    "filtering": "linear",
    "precision": "byte",
    "fps_limit": 25
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    " r": 0.389,
+    "g": 0.389,
+    "b": 0.42,
+    "a": 1
+   }
   }
  ],
  [
   "POST"
  ],
-[
+ [
   "selfiebox",
   {
-    "effect": "image",
-    "url": "jpg/start.jpg",
-    "contain":0,
-    "cover": 1
+   "effect": "image",
+   "url": "jpg/start.jpg",
+   "contain": 0,
+   "cover": 1
   },
   {
-    "effect": "stack_push"
+   "effect": "stack_push"
   },
   {
-    "effect": "stack_push"
+   "effect": "stack_push"
   },
   {
-    "effect": "capture",
-    "device": 1,
-    "name": "HD Pro Webcam C920 (046d:082d)"
+   "effect": "capture",
+   "device": 1,
+   "name": "HD Pro Webcam C920 (046d:082d)"
   },
   {
-    "effect": "transform",
-    "x": 0,
-    "y": -0.11,
-    "scale": 1,
-    "angle": 0,
-    "sx": 1,
-    "sy": 1,
-    "wrap": 0
+   "effect": "perspective",
+   "perspective": {
+    "type": "perspective",
+    " x1": -0.671,
+    "y1": -0.528,
+    " x2": -0.638,
+    "y2": 0.497,
+    "x3": 0.5,
+    "y3": -0.784,
+    "x4": 0.458,
+    "y4": 0.724
+   }
   },
   {
-    "effect": "transform",
-    "x": 0,
-    "y": 0.11,
-    "scale": 1,
-    "angle": 0,
-    "sx": 1,
-    "sy": 1,
-    "wrap": 0
+   "effect": "transform",
+   "x": -0.374,
+   "y": 0.219,
+   "scale": 0.695,
+   "angle": -1.57079632679,
+   "sx": 1,
+   "sy": -1,
+   "wrap": 0
   },
   {
-    "effect": "transform",
-    "x": 0,
-    "y": 0.05,
-    "scale": 1,
-    "angle": 0,
-    "sx": 1,
-    "sy": 1,
-    "wrap": 0
+   "effect": "chroma_key",
+   "h": 0.44,
+   "s": 0.543,
+   "l": 0.513,
+   "h_width": 0.089,
+   "s_width": 0.242,
+   "l_width": 0.281,
+   "h_feather": 0.05,
+   "s_feather": 0.104,
+   "l_feather": 0.1
   },
   {
-    "effect": "transform",
-    "x": 0,
-    "y": -0.05,
-    "scale": 1,
-    "angle": 0,
-    "sx": 1,
-    "sy": 1,
-    "wrap": 0
-  },
-  {
-    "effect": "transform",
-    "x": -0.374,
-    "y": 0.219,
-    "scale": 0.5625,
-    "angle": -1.57079632679,
-    "sx": 1,
-    "sy": -1,
-    "wrap": 0
-  },
-  {
-    "effect": "chroma_key",
-    "h": 0.313,
-    "s": 0.575,
-    "l": 0.831,
-    "h_width": 0.063,
-    "s_width": 0.2,
-    "l_width": 0.639,
-    "h_feather": 0.05,
-    "s_feather": 0.05,
-    "l_feather": 0.05
-  },
-  {
-    "effect": "blend_alpha",
-    "alpha": 1
+   "effect": "blend_alpha",
+   "alpha": 1
   }
-]]
-
+ ]
+]
