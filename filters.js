@@ -70,7 +70,7 @@ var warpShader=function(uniforms, warp) {
         vec2 clampedCoord = clamp(coord, vec2(0.0), vec2(1.0));\
         if (coord != clampedCoord) {\
             /* fade to transparent black if we are outside the image */\
-            gl_FragColor *= max(0.0, 1.0 - length(coord - clampedCoord));\
+             gl_FragColor *= max(0.0, 1.0 - length(coord - clampedCoord) * 1000.); \
         }\
     }');
 }
@@ -664,7 +664,7 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
 
 // src/filters/video/video.js
-canvas.video=function(url,play_sound,speed)
+canvas.video=function(url,play_sound,speed,loop)
 {
     if(!this._.videoFilterElement) this._.videoFilterElement={};
     var v=this._.videoFilterElement[url];
@@ -673,6 +673,7 @@ canvas.video=function(url,play_sound,speed)
       var v = document.createElement('video');
       v.autoplay = true;
       v.muted=!play_sound;
+      v.loop=loop;
 
       //v.loop=true;
       // loop workaround: loop=true requires HTTP range request capability of the server for some browsers (like seek would do).
