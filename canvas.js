@@ -61,6 +61,9 @@ canvas = function() {
     }
 
     canvas.update=function() {
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)
+        
         this._.texture.use();
         // update canvas size to texture size...
         if(this.width!=this._.texture.width || this.height!=this._.texture.width)
@@ -75,9 +78,8 @@ canvas = function() {
     
     canvas.simpleShader=function(shader, uniforms, textureIn, textureOut) {
         (textureIn || this._.texture).use();
-        this._.spareTexture.drawTo(function() {
-            shader.uniforms(uniforms).drawRect();
-        });
+        this._.spareTexture.setAsTarget();
+        shader.uniforms(uniforms).drawRect();
         this._.spareTexture.swapWith(textureOut || this._.texture);
     };
 

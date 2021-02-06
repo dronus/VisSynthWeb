@@ -81,7 +81,7 @@ var Texture = (function() {
         }
     };
 
-    Texture.prototype.drawTo = function(callback,with_depth) {
+    Texture.prototype.setAsTarget = function(with_depth) {
         // start rendering to this texture
         gl.framebuffer = gl.framebuffer || gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
@@ -104,21 +104,20 @@ var Texture = (function() {
             throw new Error('incomplete framebuffer');
         }*/
         gl.viewport(0, 0, this.width, this.height);
-
-        // do the drawing
-        callback();
-
-        // stop rendering to this texture
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
     
-
+    // TODO most likely obsolete
+    Texture.prototype.unsetTarget=function()
+    {
+        // stop rendering to this / any texture
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+    
     Texture.prototype.copyTo = function(target) {
         this.use();
-        target.drawTo(function() {
-            Shader.getDefaultShader().drawRect();
-        });
+        target.setAsTarget();
+        Shader.getDefaultShader().drawRect();
     };
     
     // clear this texture to black
