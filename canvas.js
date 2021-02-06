@@ -32,10 +32,6 @@ canvas = function() {
         flippedShader: null
     };
 
-    canvas.texture=function(element) {
-        return Texture.fromElement(element);
-    }
-
     canvas.initialize=function(width, height) {
         var type = gl.UNSIGNED_BYTE;
 
@@ -43,8 +39,6 @@ canvas = function() {
         // if not supported, it should be fine as long as type UNSIGNED_BYTE is used as by default.
   	if (gl.getExtension('OES_texture_float')) gl.getExtension('OES_texture_float_linear');
 
-        if (this._.texture) this._.texture.destroy();
-        if (this._.spareTexture) this._.spareTexture.destroy();
         this.width = width;
         this.height = height;
         this._.texture = new Texture(width, height, gl.RGBA, type);

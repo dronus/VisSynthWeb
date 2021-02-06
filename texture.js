@@ -24,11 +24,6 @@ var Texture = (function() {
         if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
     }
 
-    Texture.prototype.load = function(data) {
-        gl.bindTexture(gl.TEXTURE_2D, this.id);
-        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, data);
-    };
-    
     Texture.prototype.loadContentsOf = function(element) {
         this.width = element.width || element.videoWidth;
         this.height = element.height || element.videoHeight;
@@ -36,28 +31,9 @@ var Texture = (function() {
         gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, element);
     };
 
-    Texture.prototype.initFromBytes = function(width, height, data) {
-        this.width = width;
-        this.height = height;
-        this.format = gl.RGBA;
-        this.type = gl.UNSIGNED_BYTE;
-        gl.bindTexture(gl.TEXTURE_2D, this.id);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, this.type, new Uint8Array(data));
-    };
-
-    Texture.prototype.destroy = function() {
-        gl.deleteTexture(this.id);
-        this.id = null;
-    };
-
     Texture.prototype.use = function(unit) {
         gl.activeTexture(gl.TEXTURE0 + (unit || 0));
         gl.bindTexture(gl.TEXTURE_2D, this.id);
-    };
-
-    Texture.prototype.unuse = function(unit) {
-        gl.activeTexture(gl.TEXTURE0 + (unit || 0));
-        gl.bindTexture(gl.TEXTURE_2D, null);
     };
 
     Texture.prototype.ensureFormat = function(width, height, format, type) {
@@ -106,14 +82,6 @@ var Texture = (function() {
         }*/
         gl.viewport(0, 0, this.width, this.height);
     };
-    
-    // TODO most likely obsolete
-    Texture.prototype.unsetTarget=function()
-    {
-        // stop rendering to this / any texture
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    }
     
     Texture.prototype.copyTo = function(target) {
         this.use();

@@ -689,9 +689,9 @@ canvas.video=function(url,play_sound,speed)
     v.playbackRate=speed;
 
     // make sure the video has adapted to the video source
-    if(v.currentTime==0 || !v.videoWidth) return this; 
-    
-    if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
+    if(v.currentTime==0 || !v.videoWidth) return this;
+
+    if(!this._.videoTexture) this._.videoTexture=Texture.fromElement(v);
     this._.videoTexture.loadContentsOf(v);
     this._.videoTexture.copyTo(this._.texture);
         
@@ -720,7 +720,7 @@ canvas.image=function(url)
     if(!this._.imageTexture) this._.imageTexture=[];
     if(!this._.imageTexture[url] && image_loaded[url])
     {
-      this._.imageTexture[url]=this.texture(v);    
+      this._.imageTexture[url]=Texture.fromElement(v);
       this._.imageTexture[url].loadContentsOf(v);
     }
     
@@ -1925,7 +1925,7 @@ canvas.capture=function(source_index)
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
     
-    if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
+    if(!this._.videoTexture) this._.videoTexture=Texture.fromElement(v);    
     this._.videoTexture.loadContentsOf(v);
 //    this.draw(this._.videoTexture);
     this._.videoTexture.copyTo(this._.texture);
