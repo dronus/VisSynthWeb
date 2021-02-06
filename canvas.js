@@ -76,11 +76,21 @@ canvas = function() {
         return this;
     }
     
+    // exchange output and input texture
+    canvas.swap=function()
+    {
+        var tmp=this._.texture;
+        this._.texture=this._.spareTexture;
+        this._.spareTexture=tmp;
+    }
+    
     canvas.simpleShader=function(shader, uniforms, textureIn, textureOut) {
-        (textureIn || this._.texture).use();
-        this._.spareTexture.setAsTarget();
+        (textureIn  || this._.texture     ).use();
+        (textureOut || this._.spareTexture).setAsTarget();
         shader.uniforms(uniforms).drawRect();
-        this._.spareTexture.swapWith(textureOut || this._.texture);
+        
+        if(!textureOut) 
+          this.swap();
     };
 
     return canvas;

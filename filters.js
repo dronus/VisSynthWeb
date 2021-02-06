@@ -2318,7 +2318,7 @@ canvas.stack_push=function(from_texture)
   return nt;
 }
 
-canvas.stack_pop=function(to_texture)
+canvas.stack_pop=function()
 {
   var texture=this._.stack.pop();
   if(!texture)
@@ -2327,21 +2327,18 @@ canvas.stack_pop=function(to_texture)
     return this._.texture;
   }
   this._.stackUnused.push(texture);
-  
-  if(to_texture) 
-  {
-    texture.swapWith(to_texture);
-    return null;
-  }
-  
+
   return texture;
 }
 
 canvas.stack_swap=function()
 {
   // exchange topmost stack element with current texture
-  if(this._.stack.length<1) return;  
-  this._.texture.swapWith(this._.stack[this._.stack.length-1]);
+  if(this._.stack.length<1) return;
+  
+  var tmp=this._.texture;
+  this._.texture=this._.stack[this._.stack.length-1];
+  this._.stack[this._.stack.length-1]=tmp;
 }
 
 canvas.stack_prepare=function()

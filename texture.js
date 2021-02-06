@@ -120,30 +120,5 @@ var Texture = (function() {
         Shader.getDefaultShader().drawRect();
     };
     
-    // clear this texture to black
-    Texture.prototype.clear = function() {
-        gl.bindTexture(gl.TEXTURE_2D, this.id);
-        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, null);
-    }
-    
-    var canvas = null;
-
-    function getCanvas(texture) {
-        if (canvas == null) canvas = document.createElement('canvas');
-        canvas.width = texture.width;
-        canvas.height = texture.height;
-        var c = canvas.getContext('2d');
-        c.clearRect(0, 0, canvas.width, canvas.height);
-        return c;
-    }
-
-    Texture.prototype.swapWith = function(other) {
-        var temp;
-        temp = other.id; other.id = this.id; this.id = temp;
-        temp = other.width; other.width = this.width; this.width = temp;
-        temp = other.height; other.height = this.height; this.height = temp;
-        temp = other.format; other.format = this.format; this.format = temp;
-    };
-
     return Texture;
 })();
