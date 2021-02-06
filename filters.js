@@ -1,8 +1,7 @@
-canvas.for_all_textures=function(callback){
-  callback(this._.texture);
-  callback(this._.spareTexture);
-  callback(this._.extraTexture);
-};
+
+function clamp(lo, value, hi) {
+    return Math.max(lo, Math.min(value, hi));
+}
 
 canvas.none=function(){};
 
@@ -3527,10 +3526,10 @@ canvas.glitch=function(scale,detail,strength,speed) {
 }
 
 /* Mirrors the image vertically (useful for webcams) */
+// also used for rendering into the canvas, that seem to display mirrored.
 canvas.mirror_y = function() {
     gl.mirror_y = gl.mirror_y || new Shader(null, '\
         uniform sampler2D texture;\
-        uniform float brightness;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color = texture2D(texture, vec2(1.0 - texCoord.x,texCoord.y));\
@@ -3543,10 +3542,9 @@ canvas.mirror_y = function() {
 }
 
 /* Mirrors the image horizontally */
-canvas.mirror_x = function() {
+canvas.mirror_x = function(target) {
     gl.mirror_x = gl.mirror_x || new Shader(null, '\
         uniform sampler2D texture;\
-        uniform float brightness;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color = texture2D(texture, vec2(texCoord.x, 1.0-texCoord.y));\
@@ -3554,7 +3552,7 @@ canvas.mirror_x = function() {
         }\
     ');
 
-    this.simpleShader( gl.mirror_x, {});
+    this.simpleShader( gl.mirror_x, {}, null, target);
     return this;
 }
 

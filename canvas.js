@@ -1,70 +1,39 @@
 var gl;
 
-function clamp(lo, value, hi) {
-    return Math.max(lo, Math.min(value, hi));
-}
-
-/*function wrap(func) {
-    return function() {
-        // Make sure that we're using the correct global WebGL context
-        gl = this._.gl;
-
-        // Now that the context has been switched, we can call the wrapped function
-        return func.apply(this, arguments);
-    };
-}
-*/
 canvas = function() {
     var canvas = document.createElement('canvas');
-    try {
-        gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
-    } catch (e) {
-        gl = null;
-    }
-    if (!gl) {
+    gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false, antialias: true });
+    if (!gl) 
         throw 'This browser does not support WebGL';
-    }
-    canvas._ = {
-        gl: gl,
-        isInitialized: false,
-        texture: null,
-        spareTexture: null,
-        flippedShader: null
-    };
 
-    canvas.initialize=function(width, height) {
-        var type = gl.UNSIGNED_BYTE;
+    canvas._={}; // "private" members go here
+    canvas.textures=[];
+    canvas.initialize=function() {
 
         // ready extensions to enable switch to float textures, if wanted.
         // if not supported, it should be fine as long as type UNSIGNED_BYTE is used as by default.
   	if (gl.getExtension('OES_texture_float')) gl.getExtension('OES_texture_float_linear');
 
-        this.width = width;
-        this.height = height;
-        this._.texture = new Texture(width, height, gl.RGBA, type);
-        this._.spareTexture = new Texture(width, height, gl.RGBA, type);
-        this._.extraTexture = this._.extraTexture || new Texture(0, 0, gl.RGBA, type);
-        this._.flippedShader = this._.flippedShader || new Shader(null, '\
-            uniform sampler2D texture;\
-            varying vec2 texCoord;\
-            void main() {\
-                gl_FragColor = texture2D(texture, vec2(texCoord.x, 1.0 - texCoord.y));\
-            }\
-        ');
-        this._.isInitialized = true;
+        // create first texture manually as template for future ones
+        this._.texture = new Texture(this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
+        this.textures.push(this._.texture);
+        // from now on we can create by template
+        this._.spareTexture = this.createTexture();
+        this._.extraTexture = this.createTexture();
     }
 
     canvas.update=function() {
-        this.setAsTarget();
-        this._.texture.use();
         // update canvas size to texture size...
         if(this.width!=this._.texture.width || this.height!=this._.texture.width)
         {
           this.width =this._.texture.width;
           this.height=this._.texture.height;
         }
-        gl.viewport(0, 0, this.width, this.height);        
-        this._.flippedShader.drawRect();
+
+        gl.viewport(0,0, this.width, this.height);
+        this.mirror_x(this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
+        //this._.texture.copyTo(this);
+
         return this;
     }
     
@@ -81,8 +50,8 @@ canvas = function() {
         (textureOut || this._.spareTexture).setAsTarget();
         shader.uniforms(uniforms).drawRect();
         
-        if(!textureOut) 
-          this.swap();
+        if(!textureOut)
+            this.swap();
     };
     
     canvas.setAsTarget=function(){
@@ -90,6 +59,5 @@ canvas = function() {
     }
 
     return canvas;
-};
-canvas=canvas();
-// exports.splineInterpolate = splineInterpolate;
+}();
+
