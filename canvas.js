@@ -58,6 +58,19 @@ canvas = function() {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)        
     }
 
+    // hold a list of managed textures that would get updated by setFormat, setFilter, ...
+    canvas.textures=[];
+
+    // create an additional texture matched to this canvas settings. It is automatically adapted to future resolution and type settings.
+    canvas.createTexture=function()
+    {
+      var template=this._.texture;
+      var texture = new Texture(template.width, template.height, gl.RGBA, template.type);
+      this.textures.push(texture);
+
+      return texture;
+    }
+
     return canvas;
 }();
 

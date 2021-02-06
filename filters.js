@@ -23,37 +23,37 @@ canvas.fps=function(fps){
 };
 
 canvas.type_byte=function(){
-  this.for_all_textures(function(texture){
-    texture.ensureFormat(texture.width,texture.height,texture.format,gl.UNSIGNED_BYTE);
-  });
+  var t=canvas._.texture;
+  for (var texture of this.textures)
+    texture.setFormat(t.width,t.height,t.format,gl.UNSIGNED_BYTE);
 };
 
 canvas.type_float=function(){
-  this.for_all_textures(function(texture){
-    texture.ensureFormat(texture.width,texture.height,texture.format,gl.FLOAT);
-  });
+  var t=canvas._.texture;
+  for (var texture of this.textures)
+    texture.setFormat(t.width,t.height,t.format,gl.FLOAT);
 };
 
 canvas.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
   this.proposed_fps=fps_limit;
   var type=(precision=="float" ? gl.FLOAT : gl.UNSIGNED_BYTE);
-  this.for_all_textures(function(texture){
-    texture.ensureFormat(w,h,texture.format,type);
-  });
   this.filtering(filtering=="linear" ? 1 : 0);
+  var t=canvas._.texture;
+  for (var texture of this.textures)
+    texture.setFormat(w,h,t.format,t.type);
 };
 
 canvas.filtering=function(linear)
 {
-  this.for_all_textures(function(texture){
-    var filter=linear>0 ? gl.LINEAR : gl.NEAREST;
+  var filter=linear>0 ? gl.LINEAR : gl.NEAREST;
+  for (var texture of this.textures)
+  {
     gl.bindTexture(gl.TEXTURE_2D, texture.id);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-  });
+  }
 }
-
 
 // src/filters/common.js
 // TODO check if clamping can be done by texture border modes in today's WebGL implementations
@@ -288,11 +288,9 @@ canvas.feedbackIn=function()
 {
     // Store a copy of the current texture in the feedback texture unit
 
-    var t=this._.texture;
     if(!this._.feedbackTexture) 
-      this._.feedbackTexture=new Texture(t.width,t.height,t.format,t.type);
-    
-    this._.feedbackTexture.ensureFormat(this._.texture);
+      this._.feedbackTexture=canvas.createTexture();
+
     this._.texture.copyTo(this._.feedbackTexture);
 
     return this;
@@ -302,8 +300,7 @@ canvas.strobe=function(period)
 {
     var t=this._.texture;
     if(!this._.strobeTexture)
-      this._.strobeTexture=new Texture(t.width,t.height,t.format,t.type);
-    this._.strobeTexture.ensureFormat(this._.texture);
+      this._.strobeTexture=this.createTexture();
 
     this._.strobePhase=((this._.strobePhase|0)+1.) % period;
     if(this._.strobePhase==0) this._.texture.copyTo(this._.strobeTexture);
@@ -1133,7 +1130,6 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this._.extraTexture.ensureFormat(this._.texture);
     this._.texture.copyTo(this._.extraTexture);
 
     this.blur(radius);
@@ -1170,10 +1166,8 @@ canvas.noalpha=function() {
 canvas.preview=function()
 {
     this.preview_width=640; this.preview_height=400;
-    this._.texture.use();
     gl.viewport(0,0,this.preview_width,this.preview_height);
-    canvas.setAsTarget();
-    this._.flippedShader.drawRect();
+    this.mirror_x(this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
     gl.viewport(0,0,this.width,this.height);
 
     return this;
@@ -1236,10 +1230,8 @@ canvas.motion=function(threshold,interval,damper) {
         }\
     ');
 
-    var t=this._.texture;
     if(!this._.motionTexture) 
-      this._.motionTexture=new Texture(t.width,t.height,t.format,t.type);
-    this._.motionTexture.ensureFormat(this._.texture);
+      this._.motionTexture=this.createTexture();
 
     if(!this._.motionCycle || this._.motionCycle>interval)
     {
@@ -1897,11 +1889,10 @@ canvas.timeshift=function(time,clear_on_switch)
         this._.pastTextures[key].clear();
 
     if(this._.pastTextures.length<max_frames)
-      this._.pastTextures.push(new Texture(t.width,t.height,t.format,t.type));
+      this._.pastTextures.push(canvas.createTexture());
     
     // copy current frame to the start of the queue, pushing all frames back
     var nt=this._.pastTextures.pop();
-    nt.ensureFormat(this._.texture);
     this._.texture.copyTo(nt);
     this._.pastTextures.unshift(nt);
 
@@ -2294,8 +2285,8 @@ canvas.stack_push=function(from_texture)
   // add another texture to empty stack pool if needed
   var t=this._.texture;
   if(!this._.stackUnused.length)
-    this._.stackUnused.push(new Texture(t.width,t.height,t.format,t.type));
-  
+    this._.stackUnused.push(canvas.createTexture());
+
   // check for stack overflow
   if(this._.stack.length>10) 
   {
@@ -2305,7 +2296,6 @@ canvas.stack_push=function(from_texture)
   
   // copy current frame on top of the stack
   var nt=this._.stackUnused.pop();
-  nt.ensureFormat(from_texture);
   from_texture.copyTo(nt);
   this._.stack.push(nt);
 
@@ -2875,7 +2865,6 @@ canvas.unsharpMask=function(radius, strength) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this._.extraTexture.ensureFormat(this._.texture);
     this._.texture.copyTo(this._.extraTexture);
 
     // Blur the current texture, then use the stored texture to detect edges

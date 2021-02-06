@@ -5,9 +5,8 @@ var Texture = (function() {
         texture.loadContentsOf(element);
         return texture;
     };
-
+    
     function Texture(width, height, format, type) {
-        this.gl = gl;
         this.id = gl.createTexture();
         this.width = width;
         this.height = height;
@@ -31,21 +30,17 @@ var Texture = (function() {
         gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, element);
     };
 
+    Texture.prototype.load = function(data) {
+        gl.bindTexture(gl.TEXTURE_2D, this.id);
+        gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, data);
+    };
+
     Texture.prototype.use = function(unit) {
         gl.activeTexture(gl.TEXTURE0 + (unit || 0));
         gl.bindTexture(gl.TEXTURE_2D, this.id);
     };
 
-    Texture.prototype.ensureFormat = function(width, height, format, type) {
-        // allow passing an existing texture instead of individual arguments
-        if (arguments.length == 1) {
-            var texture = arguments[0];
-            width = texture.width;
-            height = texture.height;
-            format = texture.format;
-            type = texture.type;
-        }
-
+    Texture.prototype.setFormat = function(width, height, format, type) {
         // change the format only if required
         if (width != this.width || height != this.height || format != this.format || type != this.type) {
             this.width = width;
