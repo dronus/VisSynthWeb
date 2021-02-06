@@ -272,15 +272,14 @@ canvas.superquadric=function(A,B,C,r,s,t,angle) {
 
   
     this._.texture.use(0);
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
-        gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
-    this._.spareTexture.swapWith(this._.texture);
+    this._.spareTexture.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
+    gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
+    this.swap();
     
     return this;
 }
@@ -441,14 +440,13 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
 
     var supershapeMeshUVs=this._.supershapeMeshUVs;
     this._.texture.use(0);
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
-        gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
-    this._.spareTexture.swapWith(this._.texture);
+    this._.spareTexture.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
+    gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
+    this.swap();
     
     return this;
 }
@@ -860,18 +858,17 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     mesh_shader.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
+    this._.spareTexture.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
 //        gl.enable(gl.CULL_FACE);
-        gl.frontFace(gl.CCW);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        mesh_shader.drawArrays(gl.TRIANGLE_STRIP);
-        gl.disable(gl.DEPTH_TEST);
+    gl.frontFace(gl.CCW);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    mesh_shader.drawArrays(gl.TRIANGLE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
 //        gl.disable(gl.CULL_FACE);
-    },true);
     // replace current texture by spare texture
-    this._.spareTexture.swapWith(this._.texture);
+    this.swap();
  
     return this;
 }
@@ -1176,13 +1173,12 @@ canvas.preview=function()
     this.preview_width=640; this.preview_height=400;
     this._.texture.use();
     gl.viewport(0,0,this.preview_width,this.preview_height);
+    canvas.setAsTarget();
     this._.flippedShader.drawRect();
     gl.viewport(0,0,this.width,this.height);
 
     return this;
 }
-
-
 
 // src/filters/video/feedbackOut.js
 canvas.feedbackOut=function(blend,clear_on_switch) {
@@ -1688,18 +1684,17 @@ canvas.vectorscope=function(size,intensity,linewidth) {
     gl.vectorscope.textures({waveform: this._.waveformTexture});
 
     // render 3d mesh stored in waveform texture,uvs to texture
-    this._.texture.drawTo(function() {
-        //gl.enable(gl.DEPTH_TEST);
-        //gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE);
-        gl.enable(gl.LINE_SMOOTH);
-        gl.lineWidth(linewidth);
-        gl.vectorscope.drawArrays(gl.LINE_STRIP);
-        //gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.BLEND);        
-    },true);
+    this._.texture.setAsTarget();
+    //gl.enable(gl.DEPTH_TEST);
+    ///gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);
+    gl.enable(gl.LINE_SMOOTH);
+    gl.lineWidth(linewidth);
+    gl.vectorscope.drawArrays(gl.LINE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);        
  
     return this;
 }
@@ -2240,8 +2235,8 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
         this._.particleTextureB=new Texture(w,h, gl.RGBA, type);
       }
     }
-    
-    this._.particleTextureB.swapWith(this._.particleTextureA);
+   
+    [this._.particleTextureB,this._.particleTextureA]=[this._.particleTextureA,this._.particleTextureB];
 
     gl.particle_update.uniforms({
       homing:homing,
@@ -2251,7 +2246,8 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     var texture=this.stack_pop();
     gl.particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
         
-    this._.particleTextureA.drawTo(function() { gl.particle_update.drawRect(); });
+    this._.particleTextureA.setAsTarget();
+    gl.particle_update.drawRect();
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -2277,15 +2273,14 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     gl.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.particles.drawArrays(gl.POINTS);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
+    this._.spareTexture.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.particles.drawArrays(gl.POINTS);
+    gl.disable(gl.DEPTH_TEST);
     // replace current texture by spare texture
-    this._.spareTexture.swapWith(this._.texture);
+    this.swap();
  
     return this;
 }
@@ -2429,15 +2424,14 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     gl.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.patch_displacement.drawArrays(gl.TRIANGLES);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
+    this._.spareTexture.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.patch_displacement.drawArrays(gl.TRIANGLES);
+    gl.disable(gl.DEPTH_TEST);
     // replace current texture by spare texture
-    this._.spareTexture.swapWith(this._.texture);
+    this.swap();
  
     return this;
 }

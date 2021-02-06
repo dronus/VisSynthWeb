@@ -61,9 +61,7 @@ canvas = function() {
     }
 
     canvas.update=function() {
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)
-        
+        this.setAsTarget();
         this._.texture.use();
         // update canvas size to texture size...
         if(this.width!=this._.texture.width || this.height!=this._.texture.width)
@@ -92,6 +90,10 @@ canvas = function() {
         if(!textureOut) 
           this.swap();
     };
+    
+    canvas.setAsTarget=function(){
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)        
+    }
 
     return canvas;
 };

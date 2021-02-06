@@ -142,11 +142,5 @@ var Shader = (function() {
         gl.drawArrays(mode, 0, this._element_count);
     };
 
-
-    Shader.getDefaultShader = function() {
-        gl.defaultShader = gl.defaultShader || new Shader();
-        return gl.defaultShader;
-    };
-
     return Shader;
 })();

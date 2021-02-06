@@ -95,8 +95,9 @@ var Texture = (function() {
             gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthbuffer);
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
           }
-          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.depthbuffer);          
-        }
+          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.depthbuffer);
+        }else
+          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
         
         // TODO this forces GPU sync it seems, CPU is waiting. 
         // If removed, the load seem to show off on another GL feedback method (eg. getParameter) .
@@ -117,7 +118,8 @@ var Texture = (function() {
     Texture.prototype.copyTo = function(target) {
         this.use();
         target.setAsTarget();
-        Shader.getDefaultShader().drawRect();
+        gl.copyShader = gl.copyShader || new Shader();
+        gl.copyShader.drawRect();
     };
     
     return Texture;
