@@ -58,8 +58,11 @@ midi.echo_toggles=false;
     input.onmidimessage=messageHandler;
   }
 
-  navigator.requestMIDIAccess({}).then(init);
-
+  try{
+  	navigator.requestMIDIAccess({}).then(init);
+  }catch(e){
+	console.log(e);
+  } 
 })();
 
 
