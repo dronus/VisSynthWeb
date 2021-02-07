@@ -2,12 +2,21 @@
  [
   "SETUP",
   {
+   "effect": "filtering",
+   "linear": 1
+  },
+  {
    "effect": "fps",
-   "fps": 15
+   "fps": 62
   },
   {
    "effect": "capture",
-   "device": 1
+   "device": 0
+  },
+  {
+   "effect": "select_audio",
+   "device": 1,
+   "name": "Eingebautes Tongerät Analog Stereo"
   }
  ],
  [
@@ -568,7 +577,7 @@
   "staffblast",
   {
    "effect": "osciloscope",
-   "amplitude": 4.237
+   "amplitude": 0.424
   },
   {
    "effect": "absolute"
@@ -1781,7 +1790,7 @@
   "rainbowblast",
   {
    "effect": "osciloscope",
-   "amplitude": 1
+   "amplitude": 0.393
   },
   {
    "effect": "kaleidoscope",
@@ -6437,6 +6446,10 @@
  [
   "voiceprint",
   {
+   "effect": "filtering",
+   "linear": 0
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -6466,7 +6479,7 @@
   },
   {
    "effect": "transform",
-   "x": -0.006,
+   "x": -0.001,
    "y": 0,
    "scale": 1,
    "angle": 0
@@ -6772,9 +6785,9 @@
   "vectorscope",
   {
    "effect": "vectorscope",
-   "size": 2.805,
+   "size": 1,
    "intensity": 1,
-   "linewidth": 1
+   "linewidth": 2
   }
  ],
  [
