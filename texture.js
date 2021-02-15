@@ -6,26 +6,33 @@ var Texture = (function() {
         return texture;
     };
     
-    function Texture(width, height, format, type) {
+    Texture.formatKey=function(template)
+    {
+          return template.width+"_"+template.height+"_"+template.format+"_"+template.type;
+    }
+    
+    function Texture(width, height, format, type, filter) {
         this.id = gl.createTexture();
-        this.width = width;
-        this.height = height;
-        this.format = format;
-        this.type = type;
 
         gl.bindTexture(gl.TEXTURE_2D, this.id);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-//        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-//        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
+
+        this.setFilter(filter || gl.LINEAR);
+        this.setFormat(width,height,format,type);
+    }
+    
+    Texture.prototype.setFilter=function(filter)
+    {
+      this.filter=filter;
+      gl.bindTexture(gl.TEXTURE_2D, this.id);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
     }
     
     Texture.prototype.getFormatKey=function()
     {
-      return this.width+"_"+this.height+"_"+this.format+"_"+this.type;
+      return Texture.formatKey(this);
     }
     
     Texture.prototype.loadContentsOf = function(element) {

@@ -36,21 +36,19 @@ canvas.type_float=function(){
 canvas.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
   this.proposed_fps=fps_limit;
-  var type=(precision=="float" ? gl.FLOAT : gl.UNSIGNED_BYTE);
+  var t=this._.template;
+  t.width=w;
+  t.height=h;
+
+  if(precision=='linear') this.type_byte();
+  if(precision=='float')  this.type_float();
+
   this.filtering(filtering=="linear" ? 1 : 0);
-  var t=canvas._.template;
-  texture.setFormat(w,h,t.format,t.type);
 };
 
 canvas.filtering=function(linear)
 {
-  var filter=linear>0 ? gl.LINEAR : gl.NEAREST;
-  for (var texture of this.textures)
-  {
-    gl.bindTexture(gl.TEXTURE_2D, texture.id);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-  }
+  canvas._.template.filter=linear>0 ? gl.LINEAR : gl.NEAREST;
 }
 
 // src/filters/common.js
@@ -686,7 +684,9 @@ canvas.video=function(url,play_sound,speed)
 
     if(!this._.videoTexture) this._.videoTexture=Texture.fromElement(v);
     this._.videoTexture.loadContentsOf(v);
-    this._.videoTexture.copyTo(this._.texture);
+    var target=this.getSpareTexture();
+    this._.videoTexture.copyTo(target);
+    this.putTexture(target);
         
     return this;
 }
@@ -713,12 +713,16 @@ canvas.image=function(url)
     if(!this._.imageTexture) this._.imageTexture=[];
     if(!this._.imageTexture[url] && image_loaded[url])
     {
-      this._.imageTexture[url]=Texture.fromElement(v);
+      this._.imageTexture[url]=this.getSpareTexture(null,v.width,v.height);
       this._.imageTexture[url].loadContentsOf(v);
     }
     
     if(this._.imageTexture[url])
-      this._.imageTexture[url].copyTo(this._.texture);
+    {
+      var target=this.getSpareTexture();
+      this._.imageTexture[url].copyTo(target);
+      this.putTexture(target);
+    }
         
     return this;
 }

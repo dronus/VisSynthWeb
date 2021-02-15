@@ -57,11 +57,26 @@ canvas = function() {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)        
     }
 
-    // create an additional texture matched to this canvas settings.
-    canvas.getSpareTexture=function(candidate_texture)
+    // Retrieve a working texture matched to this canvas or size settings.
+    // 
+    // -If a candidate texture is given, it is validated to match the current format and returned unchanged (image is kept) if so. 
+    //  So getSpareTexture can be easily used for lazy creation.
+    //
+    // -if there is no candidate or it is not matching the current format, a valid texture is returned (either recycled or created). The image is undefined then.
+    //
+    // If the texture is for transient use, it should be freed later by releaseTexture().
+    // Otherwise filters are encouraged to pass their private working textures here every frame, ensuring chain updates are adopted (transiently losing the image).
+    //
+    canvas.getSpareTexture=function(candidate_texture,width,height,format,type)
     {
-      var t=this._.template;
-      var k=t.getFormatKey();
+      var t;
+
+      if(width && height)
+        t={width:width, height:height, format:format || gl.RGBA, type: type || gl.UNSIGNED_BYTE};
+      else 
+        t=this._.template;
+
+      var k=Texture.formatKey(t);
       
       if(candidate_texture)
         if(k==candidate_texture.getFormatKey())
@@ -76,10 +91,15 @@ canvas = function() {
         return this._.spareTextures[k].pop();
       else{
         console.log("canvas.getSpareTexture "+k);
-        return new Texture(t.width, t.height, t.format, t.type);
+        return new Texture(t.width, t.height, t.format, t.type, t.filter);
       }
     }
+    
 
+    // Put a texture back to the spare pool.
+    //
+    // Do NOT use a texture afterwards, as its binding and image is undefined.
+    // (If the texture is bound as a target again, the application may issue a feedback loop warning)
     canvas.releaseTexture=function(texture)
     {
       var k=texture .getFormatKey();
