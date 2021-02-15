@@ -267,14 +267,15 @@ canvas.superquadric=function(A,B,C,r,s,t,angle) {
 
   
     this._.texture.use(0);
-    this._.spareTexture.setAsTarget();
+    var target=this.getSpareTexture();
+    target.setAsTarget();
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
     gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
     gl.disable(gl.DEPTH_TEST);
-    this.swap();
+    this.setTexture(target);
     
     return this;
 }
@@ -283,9 +284,7 @@ canvas.superquadric=function(A,B,C,r,s,t,angle) {
 canvas.feedbackIn=function()
 {
     // Store a copy of the current texture in the feedback texture unit
-
-    if(!this._.feedbackTexture) 
-      this._.feedbackTexture=canvas.createTexture();
+    this._.feedbackTexture=canvas.getSpareTexture(this._.feedbackTexture);
 
     this._.texture.copyTo(this._.feedbackTexture);
 
@@ -431,13 +430,14 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
 
     var supershapeMeshUVs=this._.supershapeMeshUVs;
     this._.texture.use(0);
-    this._.spareTexture.setAsTarget();
+    var target=this.getSpareTexture();
+    target.setAsTarget();
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
     gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
     gl.disable(gl.DEPTH_TEST);
-    this.swap();
+    this.putTexture(target);
     
     return this;
 }
@@ -855,7 +855,8 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     mesh_shader.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.setAsTarget();
+    var target=this.getSpareTexture();
+    target.setAsTarget();
     gl.enable(gl.DEPTH_TEST);
 //        gl.enable(gl.CULL_FACE);
     gl.frontFace(gl.CCW);
@@ -865,7 +866,7 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     gl.disable(gl.DEPTH_TEST);
 //        gl.disable(gl.CULL_FACE);
     // replace current texture by spare texture
-    this.swap();
+    this.putTexture(target);
  
     return this;
 }
@@ -1131,13 +1132,13 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this._.texture.copyTo(this._.extraTexture);
+    this.stack_push();
 
     this.blur(radius);
 
     gl.analogize.textures({
         glow_texture: this._.texture,
-        texture: this._.extraTexture
+        texture: this.stack_pop()
     });
     this.simpleShader( gl.analogize, {
         Glow: glow,
@@ -1231,19 +1232,22 @@ canvas.motion=function(threshold,interval,damper) {
         }\
     ');
 
-    if(!this._.motionTexture) 
-      this._.motionTexture=this.createTexture();
+    this._.motionTexture=this.getSpareTexture(this._.motionTexture);
 
     if(!this._.motionCycle || this._.motionCycle>interval)
     {
       // blend current image into mean motion texture
+      var target=this.getSpareTexture();
       gl.motionBlend.textures({
           texture: this._.texture,
           motionTexture: this._.motionTexture
       });
       this.simpleShader( gl.motionBlend, {
           blend: damper
-      },this._.texture,this._.motionTexture);
+      },this._.texture,target);
+
+      this.releaseTexture(this._.motionTexture);
+      this._.motionTexture=target;
 
       this._.motionCycle=0;
     }
@@ -1599,11 +1603,10 @@ canvas.waveform=function()
     var values=audio_engine.waveform;
     if(!values) return;
     
-    if(!this._.waveformTexture)
-      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
-      
-    this._.waveformTexture.load(values);
-    this._.waveformTexture.copyTo(this._.texture);
+    // TODO using this effect seems to create TWO textures of this format. Why? Do other filters suffer this as well?
+    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    waveformTexture.load(values);
+    this.putTexture(waveformTexture);
         
     return this;
 }
@@ -1625,12 +1628,13 @@ canvas.osciloscope=function(amplitude)
 
     var values=audio_engine.waveform;
     if(!values) return;
-        
-    if(!this._.waveformTexture)
-      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
-      
-    this._.waveformTexture.load(values);
-    this.simpleShader( gl.osciloscope, {amplitude:amplitude}, this._.waveformTexture);
+
+    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    waveformTexture.load(values);
+
+    this.simpleShader( gl.osciloscope, {amplitude:amplitude}, waveformTexture);
+    
+    this.releaseTexture(waveformTexture);
 
     return this;
 }
@@ -1670,10 +1674,9 @@ canvas.vectorscope=function(size,intensity,linewidth) {
       size:size, delta: 20.0/count,intensity:intensity
     });    
     // set shader textures    
-    if(!this._.waveformTexture)
-      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);      
-    this._.waveformTexture.load(values);
-    gl.vectorscope.textures({waveform: this._.waveformTexture});
+    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    waveformTexture.load(values);
+    gl.vectorscope.textures({waveform: waveformTexture});
 
     // render 3d mesh stored in waveform texture,uvs to texture
     this._.texture.setAsTarget();
@@ -1682,11 +1685,13 @@ canvas.vectorscope=function(size,intensity,linewidth) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
-    gl.enable(gl.LINE_SMOOTH);
+   // gl.enable(gl.LINE_SMOOTH);
     gl.lineWidth(linewidth);
     gl.vectorscope.drawArrays(gl.LINE_STRIP);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);        
+ 
+    this.releaseTexture(waveformTexture);
  
     return this;
 }
@@ -1872,6 +1877,7 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 
 
 // src/filters/video/timeshift.js
+// TODO check wether we remiplement this by compressed textures or even an encoded video stream (WebRTC APIs or WebAsm codecs)
 canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last seconds in a ring buffer
@@ -1879,6 +1885,7 @@ canvas.timeshift=function(time,clear_on_switch)
     // calculate a sane frame limit by estimating it's memory needs.
     //
     var t=this._.texture;
+    // TODO gl.FLOAT is a wrong identifier, it is oes.HALF_FLOAT with 2 or oes.FLOAT with 4 bytes.
     var frame_bytes = t.width * t.height * 4 * (t.type==gl.FLOAT ? 2 : 1);
     var max_buffer_bytes=256000000;
     var max_frames=Math.floor(max_buffer_bytes / frame_bytes);
@@ -1889,11 +1896,13 @@ canvas.timeshift=function(time,clear_on_switch)
       for(key in this._.pastTextures)
         this._.pastTextures[key].clear();
 
-    if(this._.pastTextures.length<max_frames)
-      this._.pastTextures.push(canvas.createTexture());
-    
     // copy current frame to the start of the queue, pushing all frames back
-    var nt=this._.pastTextures.pop();
+
+    var nt=null;
+    if(this._.pastTextures.length>=max_frames)
+      nt=this._.pastTextures.pop();
+      
+    nt=this.getSpareTexture(nt);
     this._.texture.copyTo(nt);
     this._.pastTextures.unshift(nt);
 
@@ -1916,11 +1925,10 @@ canvas.capture=function(source_index)
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
     
-    if(!this._.videoTexture) this._.videoTexture=Texture.fromElement(v);    
-    this._.videoTexture.loadContentsOf(v);
-//    this.draw(this._.videoTexture);
-    this._.videoTexture.copyTo(this._.texture);
-        
+    var videoTexture=this.getSpareTexture(null,v.videoWidth, v.videoHeight);
+    videoTexture.loadContentsOf(v);
+    this.putTexture(videoTexture);
+    
     return this;
 }
 
@@ -2046,12 +2054,11 @@ canvas.spectrogram=function()
     var values=audio_engine.spectrogram;
     if(!values) return;
     
-    if(!this._.spectrogramTexture)
-      this._.spectrogramTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
-      
-    this._.spectrogramTexture.load(values);
-    this._.spectrogramTexture.copyTo(this._.texture);
-        
+    var spectrogramTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    spectrogramTexture.load(values);
+    this.putTexture(spectrogramTexture);
+    
+    
     return this;
 }
 
@@ -2217,13 +2224,15 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
       
       // generate particle data double buffer
       if(!this._.particleTextureA) {
-        var type=gl.FLOAT;
-        if (!gl.getExtension( 'OES_texture_float' )) {
+        var type;
+        var oes=gl.getExtension( 'OES_texture_float' );
+        if (!oes) {
           console.log('particle effect recommends gl.FLOAT textures, falling back to gl.BYTE');
           type=gl.UNSIGNED_BYTE;
-        };
-        this._.particleTextureA=new Texture(w,h, gl.RGBA, type);
-        this._.particleTextureB=new Texture(w,h, gl.RGBA, type);
+        }else
+          type=oes.FLOAT;
+        this._.particleTextureA=this.getSpareTexture(null, w,h, gl.RGBA, type);
+        this._.particleTextureB=this.getSpareTexture(null, w,h, gl.RGBA, type);
       }
     }
    
@@ -2264,14 +2273,15 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     gl.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.setAsTarget();
+    var target=this.getSpareTexture()
+    target.setAsTarget();
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.particles.drawArrays(gl.POINTS);
     gl.disable(gl.DEPTH_TEST);
     // replace current texture by spare texture
-    this.swap();
+    this.putTexture(target);
  
     return this;
 }
@@ -2415,14 +2425,15 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     gl.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.setAsTarget();
+    var target=this.getSpareTexture();
+    target.setAsTarget();
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.patch_displacement.drawArrays(gl.TRIANGLES);
     gl.disable(gl.DEPTH_TEST);
-    // replace current texture by spare texture
-    this.swap();
+
+    this.putTexture(target);
  
     return this;
 }
