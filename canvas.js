@@ -10,16 +10,13 @@ canvas = function() {
     canvas.textures=[];
     canvas.initialize=function() {
 
-        // ready extensions to enable switch to float textures, if wanted.
-        // if not supported, it should be fine as long as type UNSIGNED_BYTE is used as by default.
-  	if (gl.getExtension('OES_texture_float')) gl.getExtension('OES_texture_float_linear');
-
-        // create first texture manually as template for future ones
-        this._.texture = new Texture(this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
-        this.textures.push(this._.texture);
-        // from now on we can create by template
-        this._.spareTexture = this.createTexture();
-        this._.extraTexture = this.createTexture();
+        this._={};
+        // create a template texture manually as template for future ones
+        this._.template = new Texture(this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
+        // hold a list of managed spare textures
+        this._.spareTextures=[];
+        // create default texture for simpleShader
+        this._.texture = this.getSpareTexture();
     }
 
     canvas.update=function() {
@@ -38,37 +35,58 @@ canvas = function() {
     }
     
     // exchange output and input texture
-    canvas.swap=function()
+    canvas.putTexture=function(texture)
     {
-        var tmp=this._.texture;
-        this._.texture=this._.spareTexture;
-        this._.spareTexture=tmp;
+        this.releaseTexture(this._.texture);
+        this._.texture=texture;
     }
     
     canvas.simpleShader=function(shader, uniforms, textureIn, textureOut) {
-        (textureIn  || this._.texture     ).use();
-        (textureOut || this._.spareTexture).setAsTarget();
+        var texture=(textureIn  || this._.texture        );
+        var target =(textureOut || this.getSpareTexture());
+
+        texture.use();
+        target .setAsTarget();
         shader.uniforms(uniforms).drawRect();
         
         if(!textureOut)
-            this.swap();
+          this.putTexture(target);
     };
     
     canvas.setAsTarget=function(){
         gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)        
     }
 
-    // hold a list of managed textures that would get updated by setFormat, setFilter, ...
-    canvas.textures=[];
-
-    // create an additional texture matched to this canvas settings. It is automatically adapted to future resolution and type settings.
-    canvas.createTexture=function()
+    // create an additional texture matched to this canvas settings.
+    canvas.getSpareTexture=function(candidate_texture)
     {
-      var template=this._.texture;
-      var texture = new Texture(template.width, template.height, gl.RGBA, template.type);
-      this.textures.push(texture);
+      var t=this._.template;
+      var k=t.getFormatKey();
+      
+      if(candidate_texture)
+        if(k==candidate_texture.getFormatKey())
+          return candidate_texture;
+        else
+          this.releaseTexture(candidate_texture);
+      
+      if(!this._.spareTextures[k])
+        this._.spareTextures[k]=[];
+        
+      if(this._.spareTextures[k].length)
+        return this._.spareTextures[k].pop();
+      else{
+        console.log("canvas.getSpareTexture "+k);
+        return new Texture(t.width, t.height, t.format, t.type);
+      }
+    }
 
-      return texture;
+    canvas.releaseTexture=function(texture)
+    {
+      var k=texture .getFormatKey();
+      if(!this._.spareTextures[k])
+        this._.spareTextures[k]=[];
+
+      this._.spareTextures[k].push(texture);
     }
 
     return canvas;

@@ -23,15 +23,14 @@ canvas.fps=function(fps){
 };
 
 canvas.type_byte=function(){
-  var t=canvas._.texture;
-  for (var texture of this.textures)
-    texture.setFormat(t.width,t.height,t.format,gl.UNSIGNED_BYTE);
+  this._.template.type=gl.UNSIGNED_BYTE;
 };
 
 canvas.type_float=function(){
-  var t=canvas._.texture;
-  for (var texture of this.textures)
-    texture.setFormat(t.width,t.height,t.format,gl.FLOAT);
+
+  var ext=gl.getExtension('OES_texture_half_float');
+  gl.getExtension('OES_texture_half_float_linear');  
+  this._.template.type=ext.HALF_FLOAT_OES;
 };
 
 canvas.resolution=function(w,h,filtering,precision,fps_limit){
@@ -39,9 +38,8 @@ canvas.resolution=function(w,h,filtering,precision,fps_limit){
   this.proposed_fps=fps_limit;
   var type=(precision=="float" ? gl.FLOAT : gl.UNSIGNED_BYTE);
   this.filtering(filtering=="linear" ? 1 : 0);
-  var t=canvas._.texture;
-  for (var texture of this.textures)
-    texture.setFormat(w,h,t.format,t.type);
+  var t=canvas._.template;
+  texture.setFormat(w,h,t.format,t.type);
 };
 
 canvas.filtering=function(linear)
@@ -299,8 +297,7 @@ canvas.feedbackIn=function()
 canvas.strobe=function(period)
 {
     var t=this._.texture;
-    if(!this._.strobeTexture)
-      this._.strobeTexture=this.createTexture();
+    this._.strobeTexture=this.getSpareTexture(this._.strobeTexture);
 
     this._.strobePhase=((this._.strobePhase|0)+1.) % period;
     if(this._.strobePhase==0) this._.texture.copyTo(this._.strobeTexture);
@@ -2283,9 +2280,8 @@ canvas.stack_push=function(from_texture)
 
 
   // add another texture to empty stack pool if needed
-  var t=this._.texture;
   if(!this._.stackUnused.length)
-    this._.stackUnused.push(canvas.createTexture());
+    this._.stackUnused.push(canvas.getSpareTexture());
 
   // check for stack overflow
   if(this._.stack.length>10) 
@@ -2327,8 +2323,6 @@ canvas.stack_swap=function()
 
 canvas.stack_prepare=function()
 {
-  // check stack
-
   // make sure the stack is there
   if(!this._.stack) this._.stack=[];
   if(!this._.stackUnused) this._.stackUnused=[];
@@ -2339,7 +2333,11 @@ canvas.stack_prepare=function()
 
   // pop any remaining elements
   while(this._.stack.length)
-    this._.stackUnused.push(this._.stack.pop());
+    this.releaseTexture(this._.stack.pop());
+    
+  // release all freed elements
+  while(this._.stackUnused.length)
+    this.releaseTexture(this._.stackUnused.pop());
 }
 
 

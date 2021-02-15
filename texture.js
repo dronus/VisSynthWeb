@@ -22,7 +22,12 @@ var Texture = (function() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         if (width && height) gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
     }
-
+    
+    Texture.prototype.getFormatKey=function()
+    {
+      return this.width+"_"+this.height+"_"+this.format+"_"+this.type;
+    }
+    
     Texture.prototype.loadContentsOf = function(element) {
         this.width = element.width || element.videoWidth;
         this.height = element.height || element.videoHeight;
