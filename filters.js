@@ -2878,17 +2878,20 @@ canvas.unsharpMask=function(radius, strength) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this._.texture.copyTo(this._.extraTexture);
+    var tmp=this.getSpareTexture()
+    this._.texture.copyTo(tmp);
 
     // Blur the current texture, then use the stored texture to detect edges
     this.blur(radius);
     gl.unsharpMask.textures({
         blurredTexture: this._.texture,
-        originalTexture: this._.extraTexture
+        originalTexture: tmp
     });
     this.simpleShader( gl.unsharpMask, {
         strength: strength
     });
+
+    this.releaseTexture(tmp);
 
     return this;
 }
