@@ -15,6 +15,8 @@ canvas = function() {
         this._.template = new Texture(this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
         // hold a list of managed spare textures
         this._.spareTextures=[];
+        // hold a list of garbage collected textures
+        this._.tempTextures=[];
         // create default texture for simpleShader
         this._.texture = this.getSpareTexture();
     }
@@ -30,6 +32,8 @@ canvas = function() {
         gl.viewport(0,0, this.width, this.height);
         this.mirror_x(this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
         //this._.texture.copyTo(this);
+
+        this.gc();
 
         return this;
     }
@@ -95,6 +99,18 @@ canvas = function() {
       }
     }
     
+    canvas.getTemporaryTexture=function()
+    {
+      var texture=getSpareTexture.apply(this,arguments);
+      this._.temporary.push(texture);
+    }
+    
+    canvas.gc=function()
+    {
+      var texture;
+      while(texture=this._.tempTextures.pop())
+        this.releaseTexture(texture);
+    }
 
     // Put a texture back to the spare pool.
     //

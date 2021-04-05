@@ -6,8 +6,12 @@
    "linear": 1
   },
   {
-   "effect": "fps",
-   "fps": 62
+   "effect": "resolution",
+   "x": 1920,
+   "y": 1080,
+   "filtering": "linear",
+   "precision": "byte",
+   "fps_limit": 90
   },
   {
    "effect": "capture",
@@ -23,7 +27,14 @@
   "POST"
  ],
  [
-  ""
+  "",
+  "",
+  "",
+  "",
+  {
+   "effect": "osciloscope",
+   "amplitude": 1
+  }
  ],
  [
   "midi pad test"
@@ -403,6 +414,9 @@
     "o": 0
    },
    "displacement": 0.101
+  },
+  {
+   "effect": "preview"
   },
   {
    "effect": "julia",
@@ -2234,6 +2248,9 @@
  ],
  [
   "shimmer clash",
+  {
+   "effect": "stack_push"
+  },
   {
    "effect": "displacement",
    "strength": {
