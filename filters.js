@@ -671,26 +671,27 @@ canvas.video=function(url,play_sound,speed,loop)
     if(!v)
     {
       var v = document.createElement('video');
-      v.autoplay = true;
       v.muted=!play_sound;
       v.loop=loop;
-
-      //v.loop=true;
+      v.crossOrigin = "anonymous";
+      v._urls=url.split(' ');
+      v._urlIndex=-1;
       // loop workaround: loop=true requires HTTP range request capability of the server for some browsers (like seek would do).
       // so we just start the video anew completely.
-      v.onended = function () {
-        this.load();
-        this.play();
-      };
-
-      v.crossOrigin = "anonymous";
-      v.src=url;
-      v.play();
+      var playNext=function()
+      {
+         v._urlIndex++;
+         if(v._urlIndex>=v._urls.length) v._urlIndex=0;
+	 v.src = v._urls[v._urlIndex];
+         v.load();
+         v.play();
+      }
+      v.onended = playNext;
+      playNext();
       this._.videoFilterElement[url]=v;
     }  
       
-    if(!speed) speed=1.0;
-    v.playbackRate=speed;
+    v.playbackRate=speed || 1.0;
 
     // make sure the video has adapted to the video source
     if(v.currentTime==0 || !v.videoWidth) return this; 
