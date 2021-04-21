@@ -377,17 +377,11 @@
         {
           console.log('Recorder stopped: ', event);
           const blob = new Blob(recordedBlobs, {type: 'video/webm'});
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = 'export.webm';
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-          }, 100);
+          const a = new FileReader();
+          a.onload = function(e) {
+            put('screenshot',e.target.result);
+          }
+          a.readAsDataURL(blob);
           recordedBlobs = [];
         };
 

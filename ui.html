@@ -876,7 +876,7 @@
         else if(path=='/feeds'+session_url+'screenshot'){
           var link=$('<a>');
           link.attr('href',message);
-          link.attr('download','screenshot.jpg');
+          link.attr('download',message.startsWith('data:image/jpeg') ? 'VisSynthWebScreenshot.jpg' : 'VisSynthWebMovie.webm' );
           $(document.body).append(link);
           link[0].click();
           // link.remove();
