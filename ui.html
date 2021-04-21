@@ -866,7 +866,7 @@
           var json=message;
           var data=JSON.parse(json);
           document.getElementById('preview').src=data.jpeg ? data.jpeg : "";
-          document.getElementById('stats').innerHTML='online, running '+(Math.round(1000./data.frame_time))+' fps';
+          document.getElementById('stats').innerHTML='online, running '+(Math.round(10000./data.frame_time)/10.)+' fps';
           if(preview_offline_timeout) clearTimeout(preview_offline_timeout);
           preview_offline_timeout=setTimeout(function(){
             document.getElementById('stats').innerHTML='offline';
