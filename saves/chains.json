@@ -2,12 +2,12 @@
  [
   "SETUP",
   {
-   "effect": "filtering",
-   "linear": 1
-  },
-  {
-   "effect": "fps",
-   "fps": 62
+   "effect": "resolution",
+   "x": 1920,
+   "y": 1080,
+   "filtering": "linear",
+   "precision": "byte",
+   "fps_limit": 10
   },
   {
    "effect": "capture",
@@ -23,7 +23,26 @@
   "POST"
  ],
  [
-  ""
+  "",
+  {
+   "effect": "rainbow"
+  }
+ ],
+ [
+  "",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "webrtc",
+   "websocket_url": ""
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 1,
+   "offset": 0
+  }
  ],
  [
   "midi pad test"

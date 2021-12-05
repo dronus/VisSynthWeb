@@ -1,87 +1,133 @@
-var gl;
-
-function clamp(lo, value, hi) {
-    return Math.max(lo, Math.min(value, hi));
-}
-
-/*function wrap(func) {
-    return function() {
-        // Make sure that we're using the correct global WebGL context
-        gl = this._.gl;
-
-        // Now that the context has been switched, we can call the wrapped function
-        return func.apply(this, arguments);
-    };
-}
-*/
-canvas = function() {
-    var canvas = document.createElement('canvas');
-    try {
-        gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
-    } catch (e) {
-        gl = null;
-    }
-    if (!gl) {
-        throw 'This browser does not support WebGL';
-    }
-    canvas._ = {
-        gl: gl,
-        isInitialized: false,
-        texture: null,
-        spareTexture: null,
-        flippedShader: null
-    };
+var {canvas,gl} = (function() {
+    let canvas = document.getElementById('canvas');
+    let gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
 
     canvas.texture=function(element) {
         return Texture.fromElement(element);
     }
 
-    canvas.initialize=function(width, height) {
-        var type = gl.UNSIGNED_BYTE;
-
-        // ready extensions to enable switch to float textures, if wanted.
-        // if not supported, it should be fine as long as type UNSIGNED_BYTE is used as by default.
-  	if (gl.getExtension('OES_texture_float')) gl.getExtension('OES_texture_float_linear');
-
-        if (this._.texture) this._.texture.destroy();
-        if (this._.spareTexture) this._.spareTexture.destroy();
-        this.width = width;
-        this.height = height;
-        this._.texture = new Texture(width, height, gl.RGBA, type);
-        this._.spareTexture = new Texture(width, height, gl.RGBA, type);
-        this._.extraTexture = this._.extraTexture || new Texture(0, 0, gl.RGBA, type);
-        this._.flippedShader = this._.flippedShader || new Shader(null, '\
-            uniform sampler2D texture;\
-            varying vec2 texCoord;\
-            void main() {\
-                gl_FragColor = texture2D(texture, vec2(texCoord.x, 1.0 - texCoord.y));\
-            }\
-        ');
-        this._.isInitialized = true;
+    canvas.initialize=function() {
+        this._={};
+        // create a template texture manually as template for future ones
+        this._.template = new Texture(this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
+        // hold a list of managed spare textures
+        this._.spareTextures=[];
+        // hold a list of garbage collected textures
+        this._.tempTextures=[];
+        // create default texture for simpleShader
+        this._.texture = this.getSpareTexture();
     }
 
+    canvas.for_all_textures=function(callback){
+        callback(this._.texture);
+        callback(this._.spareTexture);
+        callback(this._.extraTexture);
+    };
+
     canvas.update=function() {
-        this._.texture.use();
         // update canvas size to texture size...
         if(this.width!=this._.texture.width || this.height!=this._.texture.width)
         {
           this.width =this._.texture.width;
           this.height=this._.texture.height;
         }
-        gl.viewport(0, 0, this.width, this.height);        
-        this._.flippedShader.drawRect();
+
+        gl.viewport(0,0, this.width, this.height);
+        this.mirror_x(this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
+        //this._.texture.copyTo(this);
+
+        this.gc();
+
         return this;
     }
     
+    // exchange output and input texture
+    canvas.putTexture=function(texture)
+    {
+        this.releaseTexture(this._.texture);
+        this._.texture=texture;
+    }
+    
     canvas.simpleShader=function(shader, uniforms, textureIn, textureOut) {
-        (textureIn || this._.texture).use();
-        this._.spareTexture.drawTo(function() {
-            shader.uniforms(uniforms).drawRect();
-        });
-        this._.spareTexture.swapWith(textureOut || this._.texture);
-    };
+        var texture=(textureIn  || this._.texture        );
+        var target =(textureOut || this.getSpareTexture());
 
-    return canvas;
-};
-canvas=canvas();
-// exports.splineInterpolate = splineInterpolate;
+        texture.use();
+        target .setAsTarget();
+        shader.uniforms(uniforms).drawRect();
+        
+        if(!textureOut)
+          this.putTexture(target);
+    };
+    
+    canvas.setAsTarget=function(){
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)        
+    }
+
+    // Retrieve a working texture matched to this canvas or size settings.
+    // 
+    // -If a candidate texture is given, it is validated to match the current format and returned unchanged (image is kept) if so. 
+    //  So getSpareTexture can be easily used for lazy creation.
+    //
+    // -if there is no candidate or it is not matching the current format, a valid texture is returned (either recycled or created). The image is undefined then.
+    //
+    // If the texture is for transient use, it should be freed later by releaseTexture().
+    // Otherwise filters are encouraged to pass their private working textures here every frame, ensuring chain updates are adopted (transiently losing the image).
+    //
+    canvas.getSpareTexture=function(candidate_texture,width,height,format,type)
+    {
+      var t;
+
+      if(width && height)
+        t={width:width, height:height, format:format || gl.RGBA, type: type || gl.UNSIGNED_BYTE};
+      else 
+        t=this._.template;
+
+      var k=Texture.formatKey(t);
+      
+      if(candidate_texture)
+        if(k==candidate_texture.getFormatKey())
+          return candidate_texture;
+        else
+          this.releaseTexture(candidate_texture);
+      
+      if(!this._.spareTextures[k])
+        this._.spareTextures[k]=[];
+        
+      if(this._.spareTextures[k].length)
+        return this._.spareTextures[k].pop();
+      else{
+        console.log("canvas.getSpareTexture "+k);
+        return new Texture(t.width, t.height, t.format, t.type, t.filter);
+      }
+    }
+    
+    canvas.getTemporaryTexture=function()
+    {
+      var texture=getSpareTexture.apply(this,arguments);
+      this._.temporary.push(texture);
+    }
+    
+    canvas.gc=function()
+    {
+      var texture;
+      while(texture=this._.tempTextures.pop())
+        this.releaseTexture(texture);
+    }
+
+    // Put a texture back to the spare pool.
+    //
+    // Do NOT use a texture afterwards, as its binding and image is undefined.
+    // (If the texture is bound as a target again, the application may issue a feedback loop warning)
+    canvas.releaseTexture=function(texture)
+    {
+      var k=texture .getFormatKey();
+      if(!this._.spareTextures[k])
+        this._.spareTextures[k]=[];
+
+      this._.spareTextures[k].push(texture);
+    }
+
+    return {canvas,gl};
+})();
+

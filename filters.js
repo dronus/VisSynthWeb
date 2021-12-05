@@ -1,8 +1,6 @@
-canvas.for_all_textures=function(callback){
-  callback(this._.texture);
-  callback(this._.spareTexture);
-  callback(this._.extraTexture);
-};
+function clamp(lo, value, hi) {
+    return Math.max(lo, Math.min(value, hi));
+}
 
 canvas.none=function(){};
 
@@ -24,39 +22,34 @@ canvas.fps=function(fps){
 };
 
 canvas.type_byte=function(){
-  this.for_all_textures(function(texture){
-    texture.ensureFormat(texture.width,texture.height,texture.format,gl.UNSIGNED_BYTE);
-  });
+  this._.template.type=gl.UNSIGNED_BYTE;
 };
 
 canvas.type_float=function(){
-  this.for_all_textures(function(texture){
-    texture.ensureFormat(texture.width,texture.height,texture.format,gl.FLOAT);
-  });
+
+  var ext=gl.getExtension('OES_texture_half_float');
+  gl.getExtension('OES_texture_half_float_linear');  
+  this._.template.type=ext.HALF_FLOAT_OES;
 };
 
 canvas.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
   this.proposed_fps=fps_limit;
-  var type=(precision=="float" ? gl.FLOAT : gl.UNSIGNED_BYTE);
-  this.for_all_textures(function(texture){
-    texture.ensureFormat(w,h,texture.format,type);
-  });
+  var t=this._.template;
+  t.width=w;
+  t.height=h;
+
+  if(precision=='linear') this.type_byte();
+  if(precision=='float')  this.type_float();
+
   this.filtering(filtering=="linear" ? 1 : 0);
 };
 
 canvas.filtering=function(linear)
 {
-  this.for_all_textures(function(texture){
-    var filter=linear>0 ? gl.LINEAR : gl.NEAREST;
-    gl.bindTexture(gl.TEXTURE_2D, texture.id);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-  });
+  canvas._.template.filter=linear>0 ? gl.LINEAR : gl.NEAREST;
 }
 
-
-// src/filters/common.js
 // TODO check if clamping can be done by texture border modes in today's WebGL implementations
 var warpShader=function(uniforms, warp) {
     return new Shader(null, uniforms + '\
@@ -83,7 +76,6 @@ var randomShaderFunc = '\
     }\
 ';
 
-// src/filters/video/blend_alpha.js
 canvas.blend_alpha=function(alpha) {
 
     alpha=alpha||1.0;
@@ -107,7 +99,6 @@ canvas.blend_alpha=function(alpha) {
     return this;
 }
 
-// src/filters/video/blend_alpha.js
 canvas.multiply=function() {
     gl.multiply = gl.multiply || new Shader(null, '\
         uniform sampler2D texture1;\
@@ -151,7 +142,6 @@ canvas.blend_mask=function() {
 }
 
 
-// src/filters/video/superquadric.js
 canvas.superquadric=function(A,B,C,r,s,t,angle) {
     gl.superquadric = gl.superquadric || new Shader('\
     attribute vec3 vertex;\
@@ -272,29 +262,24 @@ canvas.superquadric=function(A,B,C,r,s,t,angle) {
 
   
     this._.texture.use(0);
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
-        gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
-    this._.spareTexture.swapWith(this._.texture);
+    var target=this.getSpareTexture();
+    target.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
+    gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
+    this.setTexture(target);
     
     return this;
 }
 
-// src/filters/video/feedbackIn.js
 canvas.feedbackIn=function()
 {
     // Store a copy of the current texture in the feedback texture unit
+    this._.feedbackTexture=canvas.getSpareTexture(this._.feedbackTexture);
 
-    var t=this._.texture;
-    if(!this._.feedbackTexture) 
-      this._.feedbackTexture=new Texture(t.width,t.height,t.format,t.type);
-    
-    this._.feedbackTexture.ensureFormat(this._.texture);
     this._.texture.copyTo(this._.feedbackTexture);
 
     return this;
@@ -303,9 +288,7 @@ canvas.feedbackIn=function()
 canvas.strobe=function(period)
 {
     var t=this._.texture;
-    if(!this._.strobeTexture)
-      this._.strobeTexture=new Texture(t.width,t.height,t.format,t.type);
-    this._.strobeTexture.ensureFormat(this._.texture);
+    this._.strobeTexture=this.getSpareTexture(this._.strobeTexture);
 
     this._.strobePhase=((this._.strobePhase|0)+1.) % period;
     if(this._.strobePhase==0) this._.texture.copyTo(this._.strobeTexture);
@@ -314,7 +297,6 @@ canvas.strobe=function(period)
     return this;
 }
 
-// src/filters/video/tile.js
 canvas.tile=function(size,centerx,centery) {
     gl.tile = gl.tile || new Shader(null, '\
         uniform sampler2D texture;\
@@ -333,7 +315,6 @@ canvas.tile=function(size,centerx,centery) {
 }
 
 
-// src/filters/video/supershape.js
 canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
 
   if(!gl.supershape)
@@ -441,14 +422,14 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
 
     var supershapeMeshUVs=this._.supershapeMeshUVs;
     this._.texture.use(0);
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
-        gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
-    this._.spareTexture.swapWith(this._.texture);
+    var target=this.getSpareTexture();
+    target.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
+    gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
+    this.putTexture(target);
     
     return this;
 }
@@ -528,7 +509,6 @@ canvas.grating=function(size,angle,ax,fx,ay,fy) {
 };
 
 
-// src/filters/video/colorDisplacement.js
 canvas.colorDisplacement=function(angle,amplitude) {
     gl.colorDisplacement = gl.colorDisplacement || new Shader(null,'\
     \
@@ -561,7 +541,6 @@ canvas.colorDisplacement=function(angle,amplitude) {
     return this;
 }
 
-// src/filters/video/matte.js
 canvas.matte=function(r,g,b,a) {
     gl.matte = gl.matte || new Shader(null, '\
         uniform vec4 color;\
@@ -663,7 +642,6 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 }
 
 
-// src/filters/video/video.js
 canvas.video=function(url,play_sound,speed,loop)
 {
     if(!this._.videoFilterElement) this._.videoFilterElement={};
@@ -694,11 +672,13 @@ canvas.video=function(url,play_sound,speed,loop)
     v.playbackRate=speed || 1.0;
 
     // make sure the video has adapted to the video source
-    if(v.currentTime==0 || !v.videoWidth) return this; 
-    
-    if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
+    if(v.currentTime==0 || !v.videoWidth) return this;
+
+    if(!this._.videoTexture) this._.videoTexture=Texture.fromElement(v);
     this._.videoTexture.loadContentsOf(v);
-    this._.videoTexture.copyTo(this._.texture);
+    var target=this.getSpareTexture();
+    this._.videoTexture.copyTo(target);
+    this.putTexture(target);
         
     return this;
 }
@@ -725,18 +705,21 @@ canvas.image=function(url)
     if(!this._.imageTexture) this._.imageTexture=[];
     if(!this._.imageTexture[url] && image_loaded[url])
     {
-      this._.imageTexture[url]=this.texture(v);    
+      this._.imageTexture[url]=this.getSpareTexture(null,v.width,v.height);
       this._.imageTexture[url].loadContentsOf(v);
     }
     
     if(this._.imageTexture[url])
-      this._.imageTexture[url].copyTo(this._.texture);
+    {
+      var target=this.getSpareTexture();
+      this._.imageTexture[url].copyTo(target);
+      this.putTexture(target);
+    }
         
     return this;
 }
 
 
-// src/filters/video/ripple.js
 canvas.ripple=function(fx,fy,angle,amplitude) {
     gl.ripple = gl.ripple || warpShader('\
         uniform vec4 xform;\
@@ -757,7 +740,6 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
     return this;
 }
 
-// src/filters/video/ripple.js
 canvas.spherical=function(radius,scale) {
     gl.spherical = gl.spherical || warpShader('\
         uniform float radius;\
@@ -863,23 +845,22 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     mesh_shader.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
+    var target=this.getSpareTexture();
+    target.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
 //        gl.enable(gl.CULL_FACE);
-        gl.frontFace(gl.CCW);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        mesh_shader.drawArrays(gl.TRIANGLE_STRIP);
-        gl.disable(gl.DEPTH_TEST);
+    gl.frontFace(gl.CCW);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    mesh_shader.drawArrays(gl.TRIANGLE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
 //        gl.disable(gl.CULL_FACE);
-    },true);
     // replace current texture by spare texture
-    this._.spareTexture.swapWith(this._.texture);
+    this.putTexture(target);
  
     return this;
 }
 
-// src/filters/video/blend.js
 canvas.blend=function(alpha,factor,offset) {
     gl.blend = gl.blend || new Shader(null, '\
         uniform sampler2D texture;\
@@ -901,7 +882,6 @@ canvas.blend=function(alpha,factor,offset) {
     return this;
 }
 
-// src/filters/video/kaleidoscope.js
 canvas.kaleidoscope=function(sides,angle,angle2) {
     gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1009,7 +989,6 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
 }
 
 
-// src/filters/video/relief.js
 canvas.relief=function(scale2,scale4) {
       gl.getExtension('OES_standard_derivatives');
       gl.relief = gl.relief || new Shader(null,'\n\
@@ -1084,7 +1063,6 @@ canvas.relief=function(scale2,scale4) {
 }
 
 
-// src/filters/video/transform.js
 canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
     gl.transform = gl.transform || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1119,7 +1097,6 @@ canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
 }
 
 
-// src/filters/video/analogize.js
 canvas.analogize=function(exposure,gamma,glow,radius) {
     gl.analogize = gl.analogize || new Shader(null,'\
     \
@@ -1140,14 +1117,13 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this._.extraTexture.ensureFormat(this._.texture);
-    this._.texture.copyTo(this._.extraTexture);
+    this.stack_push();
 
     this.blur(radius);
 
     gl.analogize.textures({
         glow_texture: this._.texture,
-        texture: this._.extraTexture
+        texture: this.stack_pop()
     });
     this.simpleShader( gl.analogize, {
         Glow: glow,
@@ -1159,7 +1135,6 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 }
 
 
-// src/filters/video/noalpha.js
 canvas.noalpha=function() {
     gl.noalpha = gl.noalpha || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1173,21 +1148,16 @@ canvas.noalpha=function() {
     return this;
 }
 
-// src/filters/video/preview.js
 canvas.preview=function()
 {
     this.preview_width=640; this.preview_height=400;
-    this._.texture.use();
     gl.viewport(0,0,this.preview_width,this.preview_height);
-    this._.flippedShader.drawRect();
+    this.mirror_x(this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
     gl.viewport(0,0,this.width,this.height);
 
     return this;
 }
 
-
-
-// src/filters/video/feedbackOut.js
 canvas.feedbackOut=function(blend,clear_on_switch) {
     gl.feedbackOut = gl.feedbackOut || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1217,7 +1187,6 @@ canvas.feedbackOut=function(blend,clear_on_switch) {
     return this;
 }
 
-// src/filters/video/motion.js
 canvas.motion=function(threshold,interval,damper) {
     gl.motionBlend = gl.motionBlend || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1244,21 +1213,22 @@ canvas.motion=function(threshold,interval,damper) {
         }\
     ');
 
-    var t=this._.texture;
-    if(!this._.motionTexture) 
-      this._.motionTexture=new Texture(t.width,t.height,t.format,t.type);
-    this._.motionTexture.ensureFormat(this._.texture);
+    this._.motionTexture=this.getSpareTexture(this._.motionTexture);
 
     if(!this._.motionCycle || this._.motionCycle>interval)
     {
       // blend current image into mean motion texture
+      var target=this.getSpareTexture();
       gl.motionBlend.textures({
           texture: this._.texture,
           motionTexture: this._.motionTexture
       });
       this.simpleShader( gl.motionBlend, {
           blend: damper
-      },this._.texture,this._.motionTexture);
+      },this._.texture,target);
+
+      this.releaseTexture(this._.motionTexture);
+      this._.motionTexture=target;
 
       this._.motionCycle=0;
     }
@@ -1276,7 +1246,6 @@ canvas.motion=function(threshold,interval,damper) {
     return this;
 }
 
-// src/filters/video/reaction.js
 canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
     gl.getExtension('OES_standard_derivatives');
@@ -1475,7 +1444,6 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 
 
-// src/filters/video/displacement.js
 canvas.reaction2=function(F,K,D_a,D_b,iterations) {
     iterations=Math.floor(Math.min(iterations,100.));
     gl.reaction2 = gl.reaction2 || new Shader(null, '\
@@ -1517,7 +1485,6 @@ canvas.reaction2=function(F,K,D_a,D_b,iterations) {
 }
 
 
-// src/filters/video/displacement.js
 canvas.displacement=function(strength) {
     gl.displacement = gl.displacement || new Shader(null, '\
         uniform sampler2D displacement_map;\
@@ -1576,7 +1543,6 @@ canvas.address_glitch=function(mask_x,mask_y) {
 }
 
 
-// src/filters/video/gauze.js
 canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
 
     gl.gauze = gl.gauze || new Shader(null, '\
@@ -1608,23 +1574,20 @@ canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
 }
 
 
-// src/filters/video/waveform.js
 canvas.waveform=function()
 {
     var values=audio_engine.waveform;
     if(!values) return;
     
-    if(!this._.waveformTexture)
-      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
-      
-    this._.waveformTexture.load(values);
-    this._.waveformTexture.copyTo(this._.texture);
+    // TODO using this effect seems to create TWO textures of this format. Why? Do other filters suffer this as well?
+    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    waveformTexture.load(values);
+    this.putTexture(waveformTexture);
         
     return this;
 }
 
 
-// src/filters/video/waveform.js
 canvas.osciloscope=function(amplitude)
 {
     gl.osciloscope = gl.osciloscope || new Shader(null, '\
@@ -1640,12 +1603,13 @@ canvas.osciloscope=function(amplitude)
 
     var values=audio_engine.waveform;
     if(!values) return;
-        
-    if(!this._.waveformTexture)
-      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
-      
-    this._.waveformTexture.load(values);
-    this.simpleShader( gl.osciloscope, {amplitude:amplitude}, this._.waveformTexture);
+
+    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    waveformTexture.load(values);
+
+    this.simpleShader( gl.osciloscope, {amplitude:amplitude}, waveformTexture);
+    
+    this.releaseTexture(waveformTexture);
 
     return this;
 }
@@ -1685,29 +1649,28 @@ canvas.vectorscope=function(size,intensity,linewidth) {
       size:size, delta: 20.0/count,intensity:intensity
     });    
     // set shader textures    
-    if(!this._.waveformTexture)
-      this._.waveformTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);      
-    this._.waveformTexture.load(values);
-    gl.vectorscope.textures({waveform: this._.waveformTexture});
+    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    waveformTexture.load(values);
+    gl.vectorscope.textures({waveform: waveformTexture});
 
     // render 3d mesh stored in waveform texture,uvs to texture
-    this._.texture.drawTo(function() {
-        //gl.enable(gl.DEPTH_TEST);
-        //gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE);
-        gl.enable(gl.LINE_SMOOTH);
-        gl.lineWidth(linewidth);
-        gl.vectorscope.drawArrays(gl.LINE_STRIP);
-        //gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.BLEND);        
-    },true);
+    this._.texture.setAsTarget();
+    //gl.enable(gl.DEPTH_TEST);
+    ///gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);
+   // gl.enable(gl.LINE_SMOOTH);
+    gl.lineWidth(linewidth);
+    gl.vectorscope.drawArrays(gl.LINE_STRIP);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);        
+ 
+    this.releaseTexture(waveformTexture);
  
     return this;
 }
 
-// src/filters/video/lumakey.js
 canvas.lumakey=canvas.luma_key=function(threshold,feather) {
     gl.lumakey = gl.lumakey || new Shader(null, '\
       uniform sampler2D texture;\
@@ -1730,7 +1693,6 @@ canvas.lumakey=canvas.luma_key=function(threshold,feather) {
     return this;
 }
 
-// src/filters/video/colorkey.js
 canvas.chroma_key_rgb=function(r,g,b,threshold,feather) {
     gl.chroma_key_rgb=gl.chroma_key_rgb || new Shader(null, '\
       uniform sampler2D texture;\
@@ -1760,7 +1722,6 @@ canvas.chroma_key_rgb=function(r,g,b,threshold,feather) {
     return this;
 }
 
-// src/filters/video/colorkey.js
 canvas.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_feather) {
  
     // legacy chains use chroma_key to denote chroma_key_rgb
@@ -1801,7 +1762,6 @@ canvas.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_f
     return this;
 }
 
-// src/filters/video/life.js
 canvas.life=function(iterations) {
     gl.life = gl.life || new Shader(null, '\
       uniform sampler2D texture;\
@@ -1846,7 +1806,6 @@ canvas.life=function(iterations) {
 }
 
 
-// src/filters/video/polygon.js
 canvas.polygon=function(sides,x,y,size,angle,aspect) {
 
     aspect=aspect || 1.;
@@ -1887,7 +1846,7 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 }
 
 
-// src/filters/video/timeshift.js
+// TODO check wether we remiplement this by compressed textures or even an encoded video stream (WebRTC APIs or WebAsm codecs)
 canvas.timeshift=function(time,clear_on_switch)
 {
     // Store a stream of the last seconds in a ring buffer
@@ -1895,6 +1854,7 @@ canvas.timeshift=function(time,clear_on_switch)
     // calculate a sane frame limit by estimating it's memory needs.
     //
     var t=this._.texture;
+    // TODO gl.FLOAT is a wrong identifier, it is oes.HALF_FLOAT with 2 or oes.FLOAT with 4 bytes.
     var frame_bytes = t.width * t.height * 4 * (t.type==gl.FLOAT ? 2 : 1);
     var max_buffer_bytes=256000000;
     var max_frames=Math.floor(max_buffer_bytes / frame_bytes);
@@ -1905,12 +1865,13 @@ canvas.timeshift=function(time,clear_on_switch)
       for(key in this._.pastTextures)
         this._.pastTextures[key].clear();
 
-    if(this._.pastTextures.length<max_frames)
-      this._.pastTextures.push(new Texture(t.width,t.height,t.format,t.type));
-    
     // copy current frame to the start of the queue, pushing all frames back
-    var nt=this._.pastTextures.pop();
-    nt.ensureFormat(this._.texture);
+
+    var nt=null;
+    if(this._.pastTextures.length>=max_frames)
+      nt=this._.pastTextures.pop();
+      
+    nt=this.getSpareTexture(nt);
     this._.texture.copyTo(nt);
     this._.pastTextures.unshift(nt);
 
@@ -1924,7 +1885,6 @@ canvas.timeshift=function(time,clear_on_switch)
     return this;
 }
 
-// src/filters/video/capture.js
 canvas.capture=function(source_index)
 {
     source_index=Math.floor(source_index);    
@@ -1933,11 +1893,10 @@ canvas.capture=function(source_index)
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
     
-    if(!this._.videoTexture) this._.videoTexture=this.texture(v);    
-    this._.videoTexture.loadContentsOf(v);
-//    this.draw(this._.videoTexture);
-    this._.videoTexture.copyTo(this._.texture);
-        
+    var videoTexture=this.getSpareTexture(null,v.videoWidth, v.videoHeight);
+    videoTexture.loadContentsOf(v);
+    this.putTexture(videoTexture);
+    
     return this;
 }
 
@@ -1968,7 +1927,6 @@ canvas.webrtc=function(websocket_url)
     return this;
 }
 
-// src/filters/video/rainbow.js
 canvas.rainbow=function(size, angle) {
     gl.rainbow = gl.rainbow || new Shader(null, '\
         uniform sampler2D texture;\
@@ -1990,7 +1948,6 @@ canvas.rainbow=function(size, angle) {
     return this;
 }
 
-// src/filters/video/grid.js
 /**
  * @filter         Grid
  * @description    Adds a grid to the image
@@ -2022,7 +1979,6 @@ canvas.grid=function(size, angle, x, y, width) {
     return this;
 }
 
-// src/filters/video/absolute.js
 canvas.absolute=function(size, angle) {
     gl.absolute = gl.absolute || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2039,7 +1995,6 @@ canvas.absolute=function(size, angle) {
     return this;
 }
 
-// src/filters/video/denoisefast.js
 /**
  * @filter         Denoise Fast
  * @description    Smooths over grainy noise in dark images using an 9x9 box filter
@@ -2084,22 +2039,19 @@ canvas.denoisefast=function(exponent) {
     return this;
 }
 
-// src/filters/video/spectrogram.js
 canvas.spectrogram=function()
 {
     var values=audio_engine.spectrogram;
     if(!values) return;
     
-    if(!this._.spectrogramTexture)
-      this._.spectrogramTexture=new Texture(values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
-      
-    this._.spectrogramTexture.load(values);
-    this._.spectrogramTexture.copyTo(this._.texture);
-        
+    var spectrogramTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    spectrogramTexture.load(values);
+    this.putTexture(spectrogramTexture);
+    
+    
     return this;
 }
 
-// src/filters/video/smoothlife.js
 canvas.smoothlife=function(birth_min,birth_max,death_min) {
     gl.smoothlife = gl.smoothlife || new Shader(null, '\
       uniform sampler2D texture;\
@@ -2190,7 +2142,6 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
 }
 
 
-// src/filters/video/particle_displacement.js
 canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
     gl.particles = gl.particles || new Shader('\
     attribute vec2 _texCoord;\
@@ -2261,17 +2212,19 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
       
       // generate particle data double buffer
       if(!this._.particleTextureA) {
-        var type=gl.FLOAT;
-        if (!gl.getExtension( 'OES_texture_float' )) {
+        var type;
+        var oes=gl.getExtension( 'OES_texture_float' );
+        if (!oes) {
           console.log('particle effect recommends gl.FLOAT textures, falling back to gl.BYTE');
           type=gl.UNSIGNED_BYTE;
-        };
-        this._.particleTextureA=new Texture(w,h, gl.RGBA, type);
-        this._.particleTextureB=new Texture(w,h, gl.RGBA, type);
+        }else
+          type=oes.FLOAT;
+        this._.particleTextureA=this.getSpareTexture(null, w,h, gl.RGBA, type);
+        this._.particleTextureB=this.getSpareTexture(null, w,h, gl.RGBA, type);
       }
     }
-    
-    this._.particleTextureB.swapWith(this._.particleTextureA);
+   
+    [this._.particleTextureB,this._.particleTextureA]=[this._.particleTextureA,this._.particleTextureB];
 
     gl.particle_update.uniforms({
       homing:homing,
@@ -2281,7 +2234,8 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     var texture=this.stack_pop();
     gl.particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
         
-    this._.particleTextureA.drawTo(function() { gl.particle_update.drawRect(); });
+    this._.particleTextureA.setAsTarget();
+    gl.particle_update.drawRect();
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -2307,20 +2261,19 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     gl.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.particles.drawArrays(gl.POINTS);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
+    var target=this.getSpareTexture()
+    target.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.particles.drawArrays(gl.POINTS);
+    gl.disable(gl.DEPTH_TEST);
     // replace current texture by spare texture
-    this._.spareTexture.swapWith(this._.texture);
+    this.putTexture(target);
  
     return this;
 }
 
-// src/filters/video/stack.js
 canvas.stack_push=function(from_texture)
 {
   // push given or current image onto stack
@@ -2328,10 +2281,9 @@ canvas.stack_push=function(from_texture)
 
 
   // add another texture to empty stack pool if needed
-  var t=this._.texture;
   if(!this._.stackUnused.length)
-    this._.stackUnused.push(new Texture(t.width,t.height,t.format,t.type));
-  
+    this._.stackUnused.push(canvas.getSpareTexture());
+
   // check for stack overflow
   if(this._.stack.length>10) 
   {
@@ -2341,14 +2293,13 @@ canvas.stack_push=function(from_texture)
   
   // copy current frame on top of the stack
   var nt=this._.stackUnused.pop();
-  nt.ensureFormat(from_texture);
   from_texture.copyTo(nt);
   this._.stack.push(nt);
 
   return nt;
 }
 
-canvas.stack_pop=function(to_texture)
+canvas.stack_pop=function()
 {
   var texture=this._.stack.pop();
   if(!texture)
@@ -2357,27 +2308,22 @@ canvas.stack_pop=function(to_texture)
     return this._.texture;
   }
   this._.stackUnused.push(texture);
-  
-  if(to_texture) 
-  {
-    texture.swapWith(to_texture);
-    return null;
-  }
-  
+
   return texture;
 }
 
 canvas.stack_swap=function()
 {
   // exchange topmost stack element with current texture
-  if(this._.stack.length<1) return;  
-  this._.texture.swapWith(this._.stack[this._.stack.length-1]);
+  if(this._.stack.length<1) return;
+  
+  var tmp=this._.texture;
+  this._.texture=this._.stack[this._.stack.length-1];
+  this._.stack[this._.stack.length-1]=tmp;
 }
 
 canvas.stack_prepare=function()
 {
-  // check stack
-
   // make sure the stack is there
   if(!this._.stack) this._.stack=[];
   if(!this._.stackUnused) this._.stackUnused=[];
@@ -2388,12 +2334,15 @@ canvas.stack_prepare=function()
 
   // pop any remaining elements
   while(this._.stack.length)
-    this._.stackUnused.push(this._.stack.pop());
+    this.releaseTexture(this._.stack.pop());
+    
+  // release all freed elements
+  while(this._.stackUnused.length)
+    this.releaseTexture(this._.stackUnused.pop());
 }
 
 
 
-// src/filters/video/patch_displacement.js
 canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     gl.patch_displacement = gl.patch_displacement || new Shader('\
     attribute vec3 vertex;\
@@ -2462,20 +2411,19 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     gl.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
-    this._.spareTexture.drawTo(function() {
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.patch_displacement.drawArrays(gl.TRIANGLES);
-        gl.disable(gl.DEPTH_TEST);
-    },true);
-    // replace current texture by spare texture
-    this._.spareTexture.swapWith(this._.texture);
+    var target=this.getSpareTexture();
+    target.setAsTarget();
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.patch_displacement.drawArrays(gl.TRIANGLES);
+    gl.disable(gl.DEPTH_TEST);
+
+    this.putTexture(target);
  
     return this;
 }
 
-// src/filters/warp/perspective.js
 /**
  * @filter       Perspective
  * @description  Warps one quadrangle to another with a perspective transform. This can be used to
@@ -2512,7 +2460,6 @@ canvas.perspective=function(before, after) {
     return this.matrixWarp(d,false);
 }
 
-// src/filters/warp/matrixwarp.js
 /**
  * @filter                Matrix Warp
  * @description           Transforms an image by a 2x2 or 3x3 matrix. The coordinates used in
@@ -2543,7 +2490,6 @@ canvas.matrixWarp=function(matrix, inverse) {
     return this;
 }
 
-// src/filters/warp/swirl.js
 /**
  * @filter        Swirl
  * @description   Warps a circular region of the image in a swirl.
@@ -2583,7 +2529,6 @@ canvas.swirl=function(centerX, centerY, radius, angle) {
     return this;
 }
 
-// src/filters/warp/bulgepinch.js
 /**
  * @filter         Bulge / Pinch
  * @description    Bulges or pinches the image in a circle.
@@ -2620,7 +2565,6 @@ canvas.bulgePinch=function(centerX, centerY, radius, strength) {
     return this;
 }
 
-// src/filters/blur/zoomblur.js
 /**
  * @filter         Zoom Blur
  * @description    Blurs the image away from a certain point, which looks like radial motion blur.
@@ -2670,7 +2614,6 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
     return this;
 }
 
-// src/filters/blur/dilate.js
 canvas.dilate=function(iterations) {
     gl.dilate = gl.dilate || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2697,7 +2640,6 @@ canvas.dilate=function(iterations) {
     return this;
 }
 
-// src/filters/blur/localcontrast.js
 /**
  * @filter       Fast Blur
  * @description  This is the most basic blur filter, which convolves the image with a
@@ -2778,7 +2720,6 @@ canvas.localContrast=function(radius,strength) {
 }
 
 
-// src/filters/blur/erode.js
 canvas.erode=function(iterations) {
     gl.erode = gl.erode || new Shader(null, '\
         uniform sampler2D texture;\
@@ -2892,7 +2833,6 @@ canvas.blur2=function(radius,exponent) {
 }
 
 
-// src/filters/adjust/unsharpmask.js
 /**
  * @filter         Unsharp Mask
  * @description    A form of image sharpening that amplifies high-frequencies in the image. It
@@ -2915,7 +2855,6 @@ canvas.unsharpMask=function(radius, strength) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this._.extraTexture.ensureFormat(this._.texture);
     this._.texture.copyTo(this._.extraTexture);
 
     // Blur the current texture, then use the stored texture to detect edges
@@ -2931,7 +2870,6 @@ canvas.unsharpMask=function(radius, strength) {
     return this;
 }
 
-// src/filters/adjust/color.js
 /**
  * @filter           Color
  * @description      Give more or less importance to a color
@@ -2966,7 +2904,6 @@ canvas.color=function(alpha,r,g,b) {
 
     return this;
 }
-// src/filters/adjust/denoise.js
 /**
  * @filter         Denoise
  * @description    Smooths over grainy noise in dark images using an 9x9 box filter
@@ -3013,7 +2950,6 @@ canvas.denoise=function(exponent) {
 
 
 
-// src/filters/adjust/vibrance.js
 /**
  * @filter       Vibrance
  * @description  Modifies the saturation of desaturated colors, leaving saturated colors unmodified.
@@ -3041,7 +2977,6 @@ canvas.vibrance=function(amount) {
     return this;
 }
 
-// src/filters/adjust/levels.js
 // min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0
 canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
     gl.levels = gl.levels || new Shader(null, '\
@@ -3070,7 +3005,6 @@ canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma
     return this;
 }
 
-// src/filters/adjust/huesaturation.js
 /**
  * @filter           Hue / Saturation
  * @description      Provides rotational hue and multiplicative saturation control. RGB color space
@@ -3123,7 +3057,6 @@ canvas.hueSaturation=function(hue, saturation) {
     return this;
 }
 
-// src/filters/adjust/brightnesscontrast.js
 /**
  * @filter           Brightness / Contrast
  * @description      Provides additive brightness and multiplicative contrast control.
@@ -3198,7 +3131,6 @@ canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
 }
 
 
-// src/filters/fun/sobel.js
 /**
  * @description Sobel implementation of image with alpha and line color control
  * @param secondary (0 to 1), indice of sobel strength
@@ -3320,7 +3252,6 @@ canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
 
     return this;
 }
-// src/filters/fun/posterize.js
 
 canvas.posterize=function(steps) {
     gl.posterize = gl.posterize || new Shader(null, '\
@@ -3362,7 +3293,6 @@ canvas.posterize_hue=function(hue,brightness) {
 
 
 
-// src/filters/fun/hexagonalpixelate.js
 /**
  * @filter        Hexagonal Pixelate
  * @description   Renders the image using a pattern of hexagonal tiles. Tile colors
@@ -3447,7 +3377,6 @@ canvas.pixelate=function(sx,sy,coverage,lens) {
 }
 
 
-// src/filters/fun/colorhalftone.js
 /**
  * @filter        Color Halftone
  * @description   Simulates a CMYK halftone rendering of the image by multiplying pixel values
@@ -3498,7 +3427,6 @@ canvas.colorHalftone=function(centerX, centerY, angle, size) {
     return this;
 }
 
-// src/filters/fun/invert.js
 /**
  * @description Invert the colors!
  */
@@ -3566,10 +3494,10 @@ canvas.glitch=function(scale,detail,strength,speed) {
 }
 
 /* Mirrors the image vertically (useful for webcams) */
+// also used for rendering into the canvas, that seem to display mirrored.
 canvas.mirror_y = function() {
     gl.mirror_y = gl.mirror_y || new Shader(null, '\
         uniform sampler2D texture;\
-        uniform float brightness;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color = texture2D(texture, vec2(1.0 - texCoord.x,texCoord.y));\
@@ -3582,10 +3510,9 @@ canvas.mirror_y = function() {
 }
 
 /* Mirrors the image horizontally */
-canvas.mirror_x = function() {
+canvas.mirror_x = function(target) {
     gl.mirror_x = gl.mirror_x || new Shader(null, '\
         uniform sampler2D texture;\
-        uniform float brightness;\
         varying vec2 texCoord;\
         void main() {\
             vec4 color = texture2D(texture, vec2(texCoord.x, 1.0-texCoord.y));\
@@ -3593,7 +3520,7 @@ canvas.mirror_x = function() {
         }\
     ');
 
-    this.simpleShader( gl.mirror_x, {});
+    this.simpleShader( gl.mirror_x, {}, null, target);
     return this;
 }
 

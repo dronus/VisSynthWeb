@@ -1,11 +1,4 @@
 var Shader = (function() {
-    function isArray(obj) {
-        return Object.prototype.toString.call(obj) == '[object Array]';
-    }
-
-    function isNumber(obj) {
-        return Object.prototype.toString.call(obj) == '[object Number]';
-    }
 
     function compileSource(type, source) {
         var shader = gl.createShader(type);
@@ -58,7 +51,7 @@ var Shader = (function() {
             var location = gl.getUniformLocation(this.program, name);
             if (location === null) continue; // will be null if the uniform isn't used in the shader
             var value = uniforms[name];
-            if (isArray(value) || ArrayBuffer.isView(value)) {
+            if (Array.isArray(value) || ArrayBuffer.isView(value)) {
                 switch (value.length) {
                     case 1: gl.uniform1fv(location, new Float32Array(value)); break;
                     case 2: gl.uniform2fv(location, new Float32Array(value)); break;
@@ -68,7 +61,7 @@ var Shader = (function() {
                     case 16: gl.uniformMatrix4fv(location, false, new Float32Array(value)); break;
                     default: throw 'dont\'t know how to load uniform "' + name + '" of length ' + value.length;
                 }
-            } else if (isNumber(value)) {
+            } else if (typeof value == 'number') {
                 gl.uniform1f(location, value);
             } else {
                 throw 'attempted to set uniform "' + name + '" to invalid value ' + (value || 'undefined').toString();
@@ -140,12 +133,6 @@ var Shader = (function() {
           gl.vertexAttribPointer(attribute.location, attribute.size, gl.FLOAT, false, 0, 0);          
         }
         gl.drawArrays(mode, 0, this._element_count);
-    };
-
-
-    Shader.getDefaultShader = function() {
-        gl.defaultShader = gl.defaultShader || new Shader();
-        return gl.defaultShader;
     };
 
     return Shader;
