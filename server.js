@@ -171,7 +171,7 @@ wss.on('connection', function connection(ws) {
       child_process.spawn('sh',['shutdown.sh'], {stdio:'inherit'});
     else if(key.match(/restart/))
       child_process.spawn('sh',['run_chrome.sh'], {stdio:'inherit'});
-    else if(key.match(/feeds\/.*/))
+    else if(method=='put')
     {
       // if it denotes a feed in feeds/ answer pending requests for this key
       if(pending[key])
