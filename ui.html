@@ -17,6 +17,7 @@
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
     <button id=undo onclick="undo()">UNDO</button>
     <button id=recorder_button onclick="toggle_recorder()">START RECORDING</button>
+    <button id=stream_button onclick="toggle_stream()">START STREAM</button>
     <button id=screens_button onclick="show_screens()">SCREEN</button>
     <span id=stats>offline</span>
   </div>
@@ -111,13 +112,26 @@
     {
       recording=!recording;
 
-      send('stream('+(recording ? 'true' : 'false')+')');
+      send('recording('+(recording ? 'true' : 'false')+')');
       // put(recording ? '/recorder/start' : '/recorder/stop' , '');
 
       $('#recorder_button').html(recording ? 'STOP RECORDING' : 'START RECORDING');
       if(recording) $('#recorder_button').addClass   ('active');
       else          $('#recorder_button').removeClass('active');
     }
+
+    var streaming=false;
+    function toggle_stream()
+    {
+      streaming=!streaming;
+
+      send('webrtc('+(streaming ? 'true' : 'false')+')');
+
+      $('#stream_button').html(streaming ? 'STOP STREAMING' : 'START STREAMING');
+      if(recording) $('#stream_button').addClass   ('active');
+      else          $('#stream_button').removeClass('active');
+    }
+
 
     /* the undo history. updated by frequent save() calls */
     var undo_history=[];

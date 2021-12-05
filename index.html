@@ -153,10 +153,11 @@
       }
       
       // take movie stream export frame if requested
-      if(mediaRecorder) 
+      if(recorderContext)
       {
+        // TODO if this is done for WebRTC, only do this copy if stream is actually running.
         recorderContext.drawImage(canvas,0,0);
-        mediaRecorder.stream.getVideoTracks()[0].requestFrame();
+        if(mediaRecorder) mediaRecorder.stream.getVideoTracks()[0].requestFrame();
       }
     };
 
@@ -356,16 +357,19 @@
     let mediaRecorder;
     let recordedBlobs = [];
     let recorderContext=null;
+    let recorderCanvas=null;
 
     function stream(enabled) {
       if(enabled)
       {
         var options = {mimeType: 'video/webm'};
 
-        const recorderCanvas=document.createElement('canvas');
-        recorderCanvas.width=canvas.width;
-        recorderCanvas.height=canvas.height;
-        recorderContext=recorderCanvas.getContext('2d');
+        if(!recorderContext) {
+          recorderCanvas=document.createElement('canvas');
+          recorderCanvas.width=canvas.width;
+          recorderCanvas.height=canvas.height;
+          recorderContext=recorderCanvas.getContext('2d');
+        }
                 
         const stream = recorderCanvas.captureStream(0);
         stream.getVideoTracks()[0].contentHint="detail";
@@ -400,6 +404,29 @@
         mediaRecorder=null;
       }
     }    
+
+    let webrtcOut=null;
+    function webrtc(enabled) {
+      if(enabled)
+      {
+        if(!recorderContext) {
+          recorderCanvas=document.createElement('canvas');
+          recorderCanvas.width=canvas.width;
+          recorderCanvas.height=canvas.height;
+          recorderContext=recorderCanvas.getContext('2d');
+        }
+        if(!webrtcOut) {
+          webrtcOut=true;
+          import("./webrtc.js").then(async(webrtc) => {
+            webrtcOut=await webrtc.WebRTC("",recorderCanvas);
+          });
+        }
+      }else{
+        webrtcOut.hangup();
+        webrtcOut=null;
+        recorderContext=null;
+      }
+    }
 
     function switchChain(chain_index)
     {
