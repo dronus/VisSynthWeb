@@ -1941,6 +1941,33 @@ canvas.capture=function(source_index)
     return this;
 }
 
+canvas.webrtc=function(websocket_url)
+{
+    if(!this.webrtc_videos) {
+      this.webrtc_videos={};
+      this.webrtc_peers={};
+    }
+    if(!this.webrtc_videos[websocket_url]) {
+      let v=this.webrtc_videos[websocket_url]=document.createElement('video');
+      v.muted=true;
+      v.autoplay=true;
+      import("./webrtc.js").then(async(webrtc) => {
+        canvas.webrtc_peers[websocket_url]=await webrtc.WebRTC(websocket_url, null, v, null);
+        canvas.webrtc_peers[websocket_url].call();
+        v.play();
+      });
+    }
+
+    let v=this.webrtc_videos[websocket_url];
+    // make sure the video has adapted to the capture source
+    if(!v || v.currentTime==0 || !v.videoWidth) return this;
+    if(!this._.videoTexture) this._.videoTexture=this.texture(v);
+    this._.videoTexture.loadContentsOf(v);
+    this._.videoTexture.copyTo(this._.texture);
+
+    return this;
+}
+
 // src/filters/video/rainbow.js
 canvas.rainbow=function(size, angle) {
     gl.rainbow = gl.rainbow || new Shader(null, '\
