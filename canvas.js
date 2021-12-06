@@ -1,21 +1,9 @@
-var {canvas,gl} = (function() {
-    let canvas = document.getElementById('canvas');
-    let gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
+    // canvas and gl are available at global scope
+    canvas = document.getElementById('canvas');
+    gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
 
     canvas.texture=function(element) {
         return Texture.fromElement(element);
-    }
-
-    canvas.initialize=function() {
-        this._={};
-        // create a template texture manually as template for future ones
-        this._.template = new Texture(this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE);
-        // hold a list of managed spare textures
-        this._.spareTextures=[];
-        // hold a list of garbage collected textures
-        this._.tempTextures=[];
-        // create default texture for simpleShader
-        this._.texture = this.getSpareTexture();
     }
 
     canvas.for_all_textures=function(callback){
@@ -128,6 +116,14 @@ var {canvas,gl} = (function() {
       this._.spareTextures[k].push(texture);
     }
 
-    return {canvas,gl};
-})();
+    // initialize (use browser canvas size as default. may be changed by user-defined via "resolution"-filter)
+    canvas._={};
+    // create a template texture manually as template for future ones
+    canvas._.template = new Texture(canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE);
+    // hold a list of managed spare textures
+    canvas._.spareTextures=[];
+    // hold a list of garbage collected textures
+    canvas._.tempTextures=[];
+    // create default texture for simpleShader
+    canvas._.texture = canvas.getSpareTexture();
 

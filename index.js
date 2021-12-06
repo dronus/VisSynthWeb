@@ -45,7 +45,6 @@ var preview_enabled=false;
 var screenshot_cycle=0;
 var preview_canvas=null;
 var chain=null;
-var isInitialized=false;
 
 // main update function, shows video frames via glfx.js canvas
 var update = function()
@@ -58,12 +57,6 @@ var update = function()
   else
     requestAnimationFrame(update);
 
-  // quirk: glfx.js canvas may not be initalized if draw was not called.
-  if(!isInitialized)
-  {
-    canvas.initialize(800,600);
-    isInitialized=true;
-  }
   // get animation time
   var current_time=Date.now();
   frame_time=frame_time*0.9 + (current_time-time)*0.1;
