@@ -21,7 +21,7 @@ var open_socket=function()
     if(path=='/feeds'+session_url+'command')
     {
       var js=message;
-      var result= window.eval(js);
+      var result= window.eval("with(remote_cmds){"+js+"}");
       if(result){
         put('result',JSON.stringify(result));
       }
@@ -126,7 +126,7 @@ var update = function()
 // enumerate the available sources at startup and start update loop if found
 var source_ids={audio:[],video:[]};
 var running=false;
-function onSourcesAcquired(sources)
+var onSourcesAcquired=function(sources)
 {
   source_ids={audio:[],video:[]};
   for (var i = 0; i != sources.length; ++i) {
@@ -151,9 +151,6 @@ function onSourcesAcquired(sources)
     update();
   }
 }
-// fetch available capture devices for the first time and report them to UI.
-// Also starts the rendering engine after device enumeration.
-devices();
 
 // let the remote change the audio source
 //
@@ -272,10 +269,11 @@ var run_chain=function(chain,canvas,t)
     run_effect(chain[i],canvas,t);
 }
 
-// global functions called by remote control
+// functions called by remote control
+var remote_cmds={};
 
 // set effect chain to render
-function setChain(effects)
+remote_cmds.setChain=function (effects)
 {
   effects.unshift({'effect':'stack_prepare'});
   var havePreview=false;
@@ -293,16 +291,19 @@ function setChain(effects)
 }
 
 // receive device list request from remote
-function devices()
+remote_cmds.devices=function()
 {
   if(navigator.mediaDevices.enumerateDevices)
     navigator.mediaDevices.enumerateDevices().then(onSourcesAcquired);
   else
     onSourcesAcquired([]);
 }
+// fetch available capture devices for the first time and report them to UI.
+// Also starts the rendering engine after device enumeration.
+remote_cmds.devices();
 
 // receive preview request from remote
-function preview(enabled)
+remote_cmds.preview=function(enabled)
 {
   // engage preview process
   preview_enabled=enabled;
@@ -310,7 +311,7 @@ function preview(enabled)
 }
 
 // receive screenshot request from remote
-function screenshot()
+remote_cmds.screenshot=function()
 {
   // engage screenshot process
   screenshot_cycle=1;
@@ -321,7 +322,7 @@ let recordedBlobs = [];
 let recorderContext=null;
 let recorderCanvas=null;
 
-function stream(enabled) {
+remote_cmds.stream=function(enabled) {
   if(enabled)
   {
     var options = {mimeType: 'video/webm'};
@@ -368,7 +369,7 @@ function stream(enabled) {
 }
 
 let webrtcOut=null;
-function webrtc(enabled) {
+remote_cmds.webrtc=function(enabled) {
   if(enabled)
   {
     if(!recorderContext) {
@@ -390,7 +391,7 @@ function webrtc(enabled) {
   }
 }
 
-function switchChain(chain_index)
+remote_cmds.switchChain=function(chain_index)
 {
   chain_index+=2;
 
