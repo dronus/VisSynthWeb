@@ -300,11 +300,11 @@
     {  
       var input=$('<input class=value_ui type=text>');
 
-      // initalize slider knob with current value 
+      // initalize input with current value 
       input.attr('value',value_element.text());
             
       // adjust the value_element if text is changed
-      input.on('input',function(){
+      input.on('change',function(){
         value_element.text(this.value);
         updateChain();
       });
