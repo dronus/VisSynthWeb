@@ -1,4 +1,4 @@
-var Shader = (function() {
+import {gl} from "./canvas.js"
 
     function compileSource(type, source) {
         var shader = gl.createShader(type);
@@ -27,7 +27,7 @@ var Shader = (function() {
         gl_FragColor = texture2D(texture, texCoord);\
     }';
 
-    function Shader(vertexSource, fragmentSource) {
+    export function Shader(vertexSource, fragmentSource) {
         this.vertexAttribute = null;
         this.texCoordAttribute = null;
         this._attributes={};
@@ -104,7 +104,7 @@ var Shader = (function() {
     };
 
     Shader.prototype.attributes=function(attributes,sizes){
-      for(key in attributes)
+      for(let key in attributes)
       {
         var attribute=this._attributes[key];
         if(!attribute)
@@ -126,7 +126,7 @@ var Shader = (function() {
     Shader.prototype.drawArrays = function(mode){
     
         gl.useProgram(this.program);
-        for(key in this._attributes)
+        for(let key in this._attributes)
         {
           var attribute=this._attributes[key];
           gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
@@ -135,5 +135,3 @@ var Shader = (function() {
         gl.drawArrays(mode, 0, this._element_count);
     };
 
-    return Shader;
-})();

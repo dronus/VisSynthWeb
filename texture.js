@@ -1,4 +1,5 @@
-var Texture = (function() {
+import {Shader} from "./shader.js";
+import {gl} from "./canvas.js";
 
     Texture.fromElement = function(element) {
         var texture = new Texture(0, 0, gl.RGBA, gl.UNSIGNED_BYTE);
@@ -11,7 +12,7 @@ var Texture = (function() {
           return template.width+"_"+template.height+"_"+template.format+"_"+template.type;
     }
     
-    function Texture(width, height, format, type, filter) {
+    export function Texture(width, height, format, type, filter) {
         this.id = gl.createTexture();
 
         gl.bindTexture(gl.TEXTURE_2D, this.id);
@@ -96,6 +97,3 @@ var Texture = (function() {
         gl.copyShader = gl.copyShader || new Shader();
         gl.copyShader.drawRect();
     };
-    
-    return Texture;
-})();

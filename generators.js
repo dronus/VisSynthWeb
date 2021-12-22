@@ -3,6 +3,7 @@
 // ui.html provide special UIs for some of these.
 //
 
+import {audio_engine} from "./audio.js"
 
 // flatten tree-like objects values into single array, dropping keys
 var flatten=function(t,args)
@@ -15,7 +16,10 @@ var flatten=function(t,args)
 }
 
 // effect argument value generators...    
-var random_index=0;
+let random_index=0;
+export function prepare() {
+  random_index=0;
+}
 var oscillators={
   sine  : Math.sin,
   saw   : function(t){return (t % (2*Math.PI))/Math.PI-1.},
@@ -40,7 +44,7 @@ var clamp=function(x,a,b){
   return Math.min(b,Math.max(a,x));
 }  
 
-generators={
+export let generators={
   perspective:function(t,args){return [[-0.5,-0.5, -0.5,0.5, 0.5,-0.5, 0.5,0.5],flatten(t,args)]},
   osc:function(t,args){return args.a*oscillators[args.waveform ? args.waveform : 'sine'](t*args.f+args.p,args.duty?args.duty:0.5)+args.o;},
   beat:function(t,args) { return audio_engine.beatValue.apply(null,flatten(t,args));},

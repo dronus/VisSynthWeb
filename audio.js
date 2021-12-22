@@ -1,5 +1,5 @@
 
-audio_engine={};
+export let audio_engine={};
 
 var BeatAnalyser=function()
 {
@@ -63,7 +63,7 @@ audio_engine.beatValue=function()
 audio_engine.spectrogram=false;
 audio_engine.waveform=false;
 
-function initAudioAnalysers(stream)
+export function initAudioAnalysers(stream)
 {
     // show audio histogram for debug purpose, if canvas exists
     var canvas,audio_canvas_ctx;

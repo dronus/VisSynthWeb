@@ -1,3 +1,8 @@
+import "./canvas.js"
+import "./filters.js"
+import {initAudioAnalysers} from "./audio.js"
+import {generators,prepare} from "./generators.js"
+
 // get session url, if any
 var session_url='/';
 if(document.location.hash)
@@ -64,7 +69,7 @@ var update = function()
   var effect_time=time*0.001; // 1 units per second
 
   // run effect chain
-  random_index=0; // used by effect chain to distinguish all random invocations in a single frame
+  prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
   if(chain) run_chain(chain,canvas,effect_time);
 
   // provide preview if requested
@@ -159,7 +164,7 @@ var onSourcesAcquired=function(sources)
 //
 var audio_device_index=0;
 var audio_found=-1;
-function select_audio(device_index)
+window.select_audio=function(device_index)
 {
   audio_device_index=parseInt(device_index);
   if(audio_found==audio_device_index) return;
@@ -270,7 +275,7 @@ var run_chain=function(chain,canvas,t)
 }
 
 // functions called by remote control
-var remote_cmds={};
+window.remote_cmds={};
 
 // set effect chain to render
 remote_cmds.setChain=function (effects)

@@ -1,3 +1,10 @@
+import {canvas, gl} from "./canvas.js";
+import {Shader} from "./shader.js";
+import {Texture} from "./texture.js"
+import {audio_engine} from "./audio.js"
+import {midi} from "./midi.js"
+import {vec3, mat3, mat4, quat4} from "./glmatrix.js"
+
 function clamp(lo, value, hi) {
     return Math.max(lo, Math.min(value, hi));
 }
@@ -3523,7 +3530,7 @@ canvas.mirror_x = function(target) {
     return this;
 }
 
-canvas._.midi_init=false;
+//canvas._.midi_init=false;
 canvas.midi=function(device, rows, cols, toggles)
 {
   device=Math.floor(device);

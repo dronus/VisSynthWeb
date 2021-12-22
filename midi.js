@@ -1,4 +1,4 @@
-midi={};
+export let midi={};
 
 midi.notes      ={}; // MIDI note on / off driven note states
 midi.toggles    ={}; // MIDI note on derived virtual toggle switches

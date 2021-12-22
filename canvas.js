@@ -1,6 +1,11 @@
+import {Texture} from "./texture.js";
+import {Shader} from "./shader.js";
+
 // canvas and gl are available at global scope
-canvas = document.getElementById('canvas');
-gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
+
+export let canvas = document.getElementById('canvas');
+export let gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
+
 
 canvas.texture=function(element) {
     return Texture.fromElement(element);

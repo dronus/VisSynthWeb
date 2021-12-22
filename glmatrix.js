@@ -30,47 +30,46 @@
 "use strict";
 
 // Type declarations
-(function(_global) {
-    // account for CommonJS environments
-    _global.glMatrixArrayType = _global.MatrixArray = null;
+    let MatrixArray = null;
+    let glMatrixArrayType = null;
 
     /**
      * @class 3 Dimensional Vector
      * @name vec3
      */
-    _global.vec3 = {};
+    export let vec3 = {};
 
     /**
      * @class 3x3 Matrix
      * @name mat3
      */
-    _global.mat3 = {};
+    export let mat3 = {};
 
     /**
      * @class 4x4 Matrix
      * @name mat4
      */
-    _global.mat4 = {};
+    export let mat4 = {};
 
     /**
      * @class Quaternion
      * @name quat4
      */
-    _global.quat4 = {};
+    export let quat4 = {};
 
     // explicitly sets and returns the type of array to use within glMatrix
-    _global.setMatrixArrayType = function(type) {
+    let setMatrixArrayType = function(type) {
         return glMatrixArrayType = MatrixArray = type;
     };
 
     // auto-detects and returns the best type of array to use within glMatrix, falling
     // back to Array if typed arrays are unsupported
-    _global.determineMatrixArrayType = function() {
+    let determineMatrixArrayType = function() {
         return setMatrixArrayType((typeof Float32Array !== 'undefined') ? Float32Array : Array);
     };
 
     determineMatrixArrayType();
-})((typeof(exports) != 'undefined') ? global : this);
+
 
 /*
  * vec3
