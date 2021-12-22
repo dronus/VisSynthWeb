@@ -1,28 +1,27 @@
 
-var websocket;
-var open_socket=function(websocket_url)
-{
-  if(!websocket_url)
-    websocket_url=(document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html','');
-  websocket=new WebSocket(websocket_url);
-  websocket.onopen=function(){
-    // opt in for webrtc 
-    websocket.send(JSON.stringify({'method':'get', path:'/webrtc',data:''}));
-  };
-  websocket.onclose=function()
-  {
-    setTimeout(() => {open_socket(websocket_url)},1000);
-  }
-}
-
-var put=function(path,data){
-  if(websocket.readyState)
-    websocket.send(JSON.stringify({'method':'put', 'path':path,'data':data}));
-}
-
-export async function WebRTC(websocket_url, source_el, target_el, close_listener) {
+export async function WebRTC(server_url, source_el, target_el, close_listener) {
   
-  open_socket(websocket_url);
+  var websocket;
+  var open_socket=function()
+  {
+    websocket=new WebSocket(server_url ? server_url : (document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html',''));
+    websocket.onopen=function(){
+      // opt in for webrtc 
+      websocket.send(JSON.stringify({'method':'get', path:'/webrtc',data:''}));
+      if(server_url) webrtc.call();
+    };
+    websocket.onerror=function()
+    {
+      setTimeout(open_socket,1000);
+    }
+  }
+  open_socket();
+
+  var put=function(path,data){
+    if(websocket.readyState)
+      websocket.send(JSON.stringify({'method':'put', 'path':path,'data':data}));
+  }  
+  
   
   let pc = new RTCPeerConnection({});
   
@@ -64,6 +63,8 @@ export async function WebRTC(websocket_url, source_el, target_el, close_listener
   pc.addEventListener('track', e => {
     if (target_el.srcObject !== e.streams[0]) {
       target_el.srcObject = e.streams[0];
+      if(close_listener)
+        e.streams[0].getVideoTracks()[0].onended=close_listener;
       console.log('pc received remote stream');
     }
   });
@@ -71,7 +72,7 @@ export async function WebRTC(websocket_url, source_el, target_el, close_listener
   // opt-in for command feed from remote control server
   websocket.onmessage=async function(event)
   {
-    var packet=JSON.parse(event.data);
+    var packet=JSON.parse(event.data.text ? await event.data.text() : event.data);
     var path=packet.path, message=packet.data;
     
     if(path=='/webrtc')
@@ -102,6 +103,7 @@ export async function WebRTC(websocket_url, source_el, target_el, close_listener
   webrtc.hangup=function() {
     pc.close();
     pc = null;
+    websocket.close();
   }
 
   webrtc.call=async function() {

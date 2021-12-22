@@ -1911,8 +1911,7 @@ canvas.webrtc=function(websocket_url)
       v.muted=true;
       v.autoplay=true;
       import("./webrtc.js").then(async(webrtc) => {
-        canvas.webrtc_peers[websocket_url]=await webrtc.WebRTC(websocket_url, null, v, null);
-        canvas.webrtc_peers[websocket_url].call();
+        canvas.webrtc_peers[websocket_url]=await  webrtc.WebRTC(websocket_url, null, v, null);
         v.play();
       });
     }
