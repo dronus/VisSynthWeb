@@ -11,7 +11,8 @@
   },
   {
    "effect": "capture",
-   "device": 0
+   "device": 0,
+   "name": "Integrated Camera (5986:2113)"
   },
   {
    "effect": "select_audio",
@@ -24,11 +25,38 @@
  ],
  [
   "",
+  "",
+  ""
+ ],
+ [
+  "rainbow run mul",
+  {
+   "effect": "stack_push"
+  },
   {
    "effect": "rainbow"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 0.402,
+    "a": -0.768,
+    "p": 0,
+    "o": 0
+   },
+   "saturation": 0
+  },
+  {
+   "effect": "multiply"
   }
  ],
  [
+  "",
+  "",
+  "",
+  "",
+  "",
   "",
   {
    "effect": "stack_push"

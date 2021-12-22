@@ -30,45 +30,45 @@
 "use strict";
 
 // Type declarations
-    let MatrixArray = null;
-    let glMatrixArrayType = null;
+let MatrixArray = null;
+let glMatrixArrayType = null;
 
-    /**
-     * @class 3 Dimensional Vector
-     * @name vec3
-     */
-    export let vec3 = {};
+/**
+ * @class 3 Dimensional Vector
+ * @name vec3
+ */
+export let vec3 = {};
 
-    /**
-     * @class 3x3 Matrix
-     * @name mat3
-     */
-    export let mat3 = {};
+/**
+ * @class 3x3 Matrix
+ * @name mat3
+ */
+export let mat3 = {};
 
-    /**
-     * @class 4x4 Matrix
-     * @name mat4
-     */
-    export let mat4 = {};
+/**
+ * @class 4x4 Matrix
+ * @name mat4
+ */
+export let mat4 = {};
 
-    /**
-     * @class Quaternion
-     * @name quat4
-     */
-    export let quat4 = {};
+/**
+ * @class Quaternion
+ * @name quat4
+ */
+export let quat4 = {};
 
-    // explicitly sets and returns the type of array to use within glMatrix
-    let setMatrixArrayType = function(type) {
-        return glMatrixArrayType = MatrixArray = type;
-    };
+// explicitly sets and returns the type of array to use within glMatrix
+let setMatrixArrayType = function(type) {
+    return glMatrixArrayType = MatrixArray = type;
+};
 
-    // auto-detects and returns the best type of array to use within glMatrix, falling
-    // back to Array if typed arrays are unsupported
-    let determineMatrixArrayType = function() {
-        return setMatrixArrayType((typeof Float32Array !== 'undefined') ? Float32Array : Array);
-    };
+// auto-detects and returns the best type of array to use within glMatrix, falling
+// back to Array if typed arrays are unsupported
+let determineMatrixArrayType = function() {
+    return setMatrixArrayType((typeof Float32Array !== 'undefined') ? Float32Array : Array);
+};
 
-    determineMatrixArrayType();
+determineMatrixArrayType();
 
 
 /*

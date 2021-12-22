@@ -147,16 +147,3 @@ export function initAudioAnalysers(stream)
     audio_engine.spectrogram=spectrogram;
 }
 
-/*
-var initAudio=function()
-{
-  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-  getUserMedia.call(navigator, {video: false, audio: true}, function(stream){
-    initAudioAnalysers(stream);
-  }, function(err){
-    console.log('no audio capture');
-  });
-}
-
-initAudio();
-*/
