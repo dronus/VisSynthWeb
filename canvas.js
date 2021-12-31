@@ -1,5 +1,6 @@
 import {Texture} from "./texture.js";
 import {Shader} from "./shader.js";
+import {filters} from "./filters.js";
 
 // canvas and gl are available at global scope
 
@@ -29,7 +30,7 @@ canvas.update=function() {
     }
 
     gl.viewport(0,0, this.width, this.height);
-    this.mirror_x(this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
+    filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
     //this._.texture.copyTo(this);
 
     this.gc();
@@ -122,6 +123,44 @@ canvas.releaseTexture=function(texture)
     this._.spareTextures[k]=[];
 
   this._.spareTextures[k].push(texture);
+}
+
+canvas.stack_push=function(from_texture)
+{
+  // push given or current image onto stack
+  if(!from_texture) from_texture=this._.texture;
+
+
+  // add another texture to empty stack pool if needed
+  if(!this._.stackUnused.length)
+    this._.stackUnused.push(canvas.getSpareTexture());
+
+  // check for stack overflow
+  if(this._.stack.length>10) 
+  {
+    console.log('glfx.js video stack overflow!');
+    return this;
+  }
+  
+  // copy current frame on top of the stack
+  var nt=this._.stackUnused.pop();
+  from_texture.copyTo(nt);
+  this._.stack.push(nt);
+
+  return nt;
+}
+
+canvas.stack_pop=function()
+{
+  var texture=this._.stack.pop();
+  if(!texture)
+  {
+    console.log('glfx.js video stack underflow!');
+    return this._.texture;
+  }
+  this._.stackUnused.push(texture);
+
+  return texture;
 }
 
 canvas._={};

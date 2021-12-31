@@ -1,5 +1,5 @@
 import {canvas} from "./canvas.js"
-import "./filters.js"
+import {filters} from "./filters.js"
 import {initAudioAnalysers} from "./audio.js"
 import {generators,prepare} from "./generators.js"
 
@@ -263,7 +263,7 @@ var run_effect=function(effect,canvas,t)
 {
   if(typeof effect == "string") return;
   var args=[];
-  var fn=canvas[effect.effect] ? canvas[effect.effect] : window[effect.effect];
+  var fn=filters[effect.effect] ? filters[effect.effect] : window[effect.effect];
   for(var key in effect)
   {
     if(key=='effect') continue;
