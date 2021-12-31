@@ -2,47 +2,15 @@ import {Canvas} from "./canvas.js"
 import {filters} from "./filters.js"
 import {initAudioAnalysers} from "./audio.js"
 import {generators,prepare} from "./generators.js"
+import {WebsocketRemote} from "./websocket_remote.js"
 
-// get session url, if any
-var session_url='/';
-if(document.location.hash)
-  session_url+=document.location.hash.substring(1)+'_';
 
-// establish WebSocket connection to command server
-var websocket;
-var open_socket=function()
-{
-  websocket=new WebSocket((document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html',''));
-  websocket.onopen=function(){
-    // opt in for commands
-    websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'command',data:''}));
-  };
-  // opt-in for command feed from remote control server
-  websocket.onmessage=function(event)
-  {
-    var packet=JSON.parse(event.data);
-    var path=packet.path, message=packet.data;
-
-    if(path=='/feeds'+session_url+'command')
-    {
-      var js=message;
-      var result= window.eval("with(remote_cmds){"+js+"}");
-      if(result){
-        put('result',JSON.stringify(result));
-      }
-    }
-  }
-  websocket.onclose=function()
-  {
-    setTimeout(open_socket,1000);
-  }
+let command_handler=function(js) {
+  return window.eval("with(remote_cmds){"+js+"}");
 }
-open_socket();
 
-var put=function(path,data){
-  if(websocket.readyState)
-    websocket.send(JSON.stringify({'method':'put', path:'/feeds'+session_url+path,data:data}));
-}
+let remote;
+
 
 var time=0,frame_time=0; // running time
 var preview_cycle=0;
@@ -51,7 +19,7 @@ var screenshot_cycle=0;
 var preview_canvas=null;
 var chain=null;
 
-var canvas=new Canvas('#canvas');
+var canvas;
 
 // main update function, shows video frames via glfx.js canvas
 var update = function()
@@ -99,7 +67,7 @@ var update = function()
     var jpeg=preview_enabled ? preview_canvas.toDataURL('image/jpeg') : null;
     var data={frame_time:frame_time, jpeg:jpeg};
     var json=JSON.stringify(data);
-    put('preview',json);
+    remote.put('preview',json);
 
     // only provide data every other frame if a preview image is send.
     // if only frame rate data is send, we keep the network calm.
@@ -117,7 +85,7 @@ var update = function()
   if(screenshot_cycle==1)
   {
     var pixels=canvas.toDataURL('image/jpeg');
-    put('screenshot',pixels);
+    remote.put('screenshot',pixels);
     screenshot_cycle=0;
   }
 
@@ -130,7 +98,7 @@ var update = function()
   }
 };
 
-// enumerate the available sources at startup and start update loop if found
+// enumerate the available sources at startup
 var source_ids={audio:[],video:[]};
 var running=false;
 var onSourcesAcquired=function(sources)
@@ -149,12 +117,20 @@ var onSourcesAcquired=function(sources)
     }
   }
   // send out device data to UI
-  put('devices',JSON.stringify(sources));
-
-
+  remote.put('devices',JSON.stringify(sources));
 }
 
-export var start=function() {
+export var start=function(selector, session_url) {
+  // initialize remote
+  remote  = new WebsocketRemote(session_url, command_handler);
+  
+  // initialize canvas
+  canvas=new Canvas(selector);
+  // set video handler.
+  // the video devices are started on demand.
+  // this is used by the 'capture' effect to acquire the camera.
+  canvas.video_source=get_video;
+
   // start frequent canvas updates
   if(!running)
   {
@@ -245,11 +221,6 @@ var get_video=function(source_index,width,height)
   });
 }
 
-// set video handler.
-// the video devices are started on demand.
-// returns a <video> Element streaming the selected device.
-// this is used by the 'capture' effect to acquire the camera.
-canvas.video_source=get_video;
 
 // helper functions for chain code generation
 
@@ -357,7 +328,7 @@ remote_cmds.stream=function(enabled) {
       const blob = new Blob(recordedBlobs, {type: 'video/webm'});
       const a = new FileReader();
       a.onload = function(e) {
-        put('screenshot',e.target.result);
+        remote.put('screenshot',e.target.result);
       }
       a.readAsDataURL(blob);
       recordedBlobs = [];

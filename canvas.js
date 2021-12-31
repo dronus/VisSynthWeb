@@ -192,3 +192,4 @@ Canvas.prototype.stack_prepare=function() {
 
 
 
+

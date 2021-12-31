@@ -8,7 +8,13 @@
   <canvas id=canvas style="position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh;"></canvas>
   <script type=module>
     import * as VisSynth from './vissynth.js';
-    VisSynth.start();
+    
+    // get session url, if any
+    var session_url='/';
+    if(document.location.hash)
+      session_url+=document.location.hash.substring(1)+'_';
+
+    VisSynth.start('#canvas', session_url);
   </script>
 </body>
 </html>
