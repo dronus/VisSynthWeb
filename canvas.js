@@ -20,6 +20,8 @@ export let Canvas = function(selector) {
     this.tempTextures=[];
     // create default texture for simpleShader
     this.texture = this.getSpareTexture();
+    // create shader registry
+    this.shaders={};
     // create stack
     this.stack=[];
     this.stackUnused=[];
@@ -127,6 +129,13 @@ Canvas.prototype.releaseTexture=function(texture)
     this.spareTextures[k]=[];
 
   this.spareTextures[k].push(texture);
+}
+
+Canvas.prototype.getShader=function(name, vertexSource, fragmentSource){
+  if(!this.shaders[name])
+    this.shaders[name] = new Shader(this.gl, vertexSource, fragmentSource);
+
+  return this.shaders[name];
 }
 
 Canvas.prototype.stack_push=function(from_texture)

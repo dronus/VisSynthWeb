@@ -9,8 +9,6 @@ function clamp(lo, value, hi) {
 }
 
 
-let shaders={};
-
 export let filters={};
 
 filters.none=function(){};
@@ -60,8 +58,8 @@ filters.filtering=function(linear) {
 }
 
 // TODO check if clamping can be done by texture border modes in today's WebGL implementations
-var warpShader=function(gl, uniforms, warp) {
-    return new Shader(gl, null, uniforms + '\
+var warpShader=function(canvas, name, uniforms, warp) {
+    return canvas.getShader(name, null, uniforms + '\
     uniform sampler2D texture;\
     varying vec2 texCoord;\
     void main() {\
@@ -89,7 +87,7 @@ filters.blend_alpha=function(alpha) {
 
     alpha=alpha||1.0;
 
-    shaders.blend_alpha = shaders.blend_alpha || new Shader(this.gl, null, '\
+    let s_blend_alpha = this.getShader('s_blend_alpha', null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         uniform float alpha;\
@@ -102,14 +100,14 @@ filters.blend_alpha=function(alpha) {
     ');
 
     var texture1=this.stack_pop();
-    shaders.blend_alpha.textures({texture2: this.texture, texture1: texture1});
-    this.simpleShader( shaders.blend_alpha, {alpha:clamp(0.,alpha,1.)});
+    s_blend_alpha.textures({texture2: this.texture, texture1: texture1});
+    this.simpleShader( s_blend_alpha, {alpha:clamp(0.,alpha,1.)});
 
     return this;
 }
 
 filters.multiply=function() {
-    shaders.multiply = shaders.multiply || new Shader(this.gl, null, '\
+    let s_multiply = this.getShader('s_multiply',  null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         varying vec2 texCoord;\
@@ -121,15 +119,15 @@ filters.multiply=function() {
     ');
 
     var texture1=this.stack_pop();
-    shaders.multiply.textures({texture2: this.texture, texture1: texture1});
-    this.simpleShader( shaders.multiply, {});
+    s_multiply.textures({texture2: this.texture, texture1: texture1});
+    this.simpleShader( s_multiply, {});
 
     return this;
 }
 
 
 filters.blend_mask=function() {
-    shaders.blend_mask = shaders.blend_mask || new Shader(this.gl, null, '\
+    let s_blend_mask = this.getShader('s_blend_mask', null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         uniform sampler2D mask;\
@@ -144,15 +142,15 @@ filters.blend_mask=function() {
 
     var texture2=this.stack_pop();
     var texture1=this.stack_pop();
-    shaders.blend_mask.textures({mask: this.texture, texture1: texture1, texture2: texture2});
-    this.simpleShader( shaders.blend_mask, {});
+    s_blend_mask.textures({mask: this.texture, texture1: texture1, texture2: texture2});
+    this.simpleShader( s_blend_mask, {});
 
     return this;
 }
 
 
 filters.superquadric=function(A,B,C,r,s,t,angle) {
-    shaders.superquadric = shaders.superquadric || new Shader(this.gl, '\
+    let s_superquadric = this.getShader('s_superquadric',  '\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -277,8 +275,8 @@ filters.superquadric=function(A,B,C,r,s,t,angle) {
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    shaders.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
-    shaders.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    s_superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
+    s_superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
     gl.disable(gl.DEPTH_TEST);
     this.setTexture(target);
     
@@ -306,7 +304,7 @@ filters.strobe=function(period) {
 }
 
 filters.tile=function(size,centerx,centery) {
-    shaders.tile = shaders.tile || new Shader(this.gl, null, '\
+    let s_tile = this.getShader('s_tile',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
       	uniform float size;\
@@ -317,7 +315,7 @@ filters.tile=function(size,centerx,centery) {
         }\
     ');
 
-    this.simpleShader( shaders.tile, {size:size,center: [centerx,centery]});
+    this.simpleShader( s_tile, {size:size,center: [centerx,centery]});
 
     return this;
 }
@@ -325,9 +323,9 @@ filters.tile=function(size,centerx,centery) {
 
 filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
 
-  if(!shaders.supershape)
+  if(!this.shaders['s_supershape'])
   {
-    shaders.supershape = new Shader(this.gl, '\
+    this.getShader('s_supershape', '\
       float superFormula(in float a, in float b, in float m, in float n1, in float n2, in float n3, in float phi)\
       {\
           vec2 ret;\
@@ -412,7 +410,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
               uvs.push(u,v2);                  
           }
       }
-      shaders.supershape.attributes({_texCoord:uvs},{_texCoord:2});
+      this.shaders['s_supershape'].attributes({_texCoord:uvs},{_texCoord:2});
     }
        
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -436,7 +434,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
-    shaders.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    this.shaders['s_supershape'].uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
     gl.disable(gl.DEPTH_TEST);
     this.putTexture(target);
     
@@ -445,7 +443,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
 
 
 filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
-    shaders.superellipse = shaders.superellipse || new Shader(this.gl, null, '\
+    let s_superellipse = this.getShader('s_superellipse',  null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
       uniform float a;\
@@ -485,14 +483,14 @@ filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
       -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
                         0,                 0,1
     ];
-    this.simpleShader( shaders.superellipse, {transform:transform,a:a,b:b,m:m,n1:n1,n2:n2,n3:n3});
+    this.simpleShader( s_superellipse, {transform:transform,a:a,b:b,m:m,n1:n1,n2:n2,n3:n3});
 
     return this;
 };
 
 
 filters.grating=function(size,angle,ax,fx,ay,fy) {
-    shaders.grating = shaders.grating || new Shader(this.gl, null, '\
+    let s_grating = this.getShader('s_grating',  null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
       uniform float ax;\
@@ -512,14 +510,14 @@ filters.grating=function(size,angle,ax,fx,ay,fy) {
       -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
                         0,                 0,1
     ];
-    this.simpleShader( shaders.grating, {transform:transform,ax:ax,fx:fx,ay:ay,fy:fy});
+    this.simpleShader( s_grating, {transform:transform,ax:ax,fx:fx,ay:ay,fy:fy});
 
     return this;
 };
 
 
 filters.colorDisplacement=function(angle,amplitude) {
-    shaders.colorDisplacement = shaders.colorDisplacement || new Shader(this.gl, null,'\
+    let s_colorDisplacement = this.getShader('s_colorDisplacement',  null,'\
     \
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -541,7 +539,7 @@ filters.colorDisplacement=function(angle,amplitude) {
         } \
     ');
 
-    this.simpleShader( shaders.colorDisplacement, {
+    this.simpleShader( s_colorDisplacement, {
         angle: angle,    
         amplitude: amplitude,
         texSize: [this.width, this.height]        
@@ -551,20 +549,20 @@ filters.colorDisplacement=function(angle,amplitude) {
 }
 
 filters.matte=function(r,g,b,a) {
-    shaders.matte = shaders.matte || new Shader(this.gl, null, '\
+    let s_matte = this.getShader('s_matte',  null, '\
         uniform vec4 color;\
         void main() {\
             gl_FragColor = color;\
         }\
     ');
     if(typeof(a)=='undefined') a=1.; // legacy
-    this.simpleShader( shaders.matte, {color:[r,g,b,a]});
+    this.simpleShader( s_matte, {color:[r,g,b,a]});
     return this;
 }
 
 
 filters.noise=function(seed) {
-    shaders.noise = shaders.noise || new Shader(this.gl, null, '\
+    let s_noise = this.getShader('s_noise',  null, '\
         varying vec2 texCoord;\
         uniform float seed;\
         vec3 noise3(vec3 t){\
@@ -579,14 +577,14 @@ filters.noise=function(seed) {
             gl_FragColor = vec4(noise3(vec3(texCoord,seed)),1.0);\
         }\
     ');
-    this.simpleShader( shaders.noise, {seed:seed});
+    this.simpleShader( s_noise, {seed:seed});
     return this;
 }
 
 
 filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
-    shaders.polygon_matte = shaders.polygon_matte || new Shader(this.gl, null, '\
+    let s_polygon_matte = this.getShader('s_polygon_matte',  null, '\
         uniform vec4 color;\
         uniform vec2 size;\
         uniform float sides;\
@@ -610,7 +608,7 @@ filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
         }\
     ');
 
-    this.simpleShader( shaders.polygon_matte, {
+    this.simpleShader( s_polygon_matte, {
         color:[r,g,b,a],
         size:[size*this.height/this.width,size*aspect],
         sides:Math.floor(sides),
@@ -623,7 +621,7 @@ filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
 filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
-    shaders.rectangle = shaders.rectangle || new Shader(this.gl, null, '\
+    let s_rectangle = this.getShader('s_rectangle',  null, '\
         uniform vec4 color;\
         uniform vec2 size;\
         uniform float angle;\
@@ -640,7 +638,7 @@ filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
         }\
     ');
 
-    this.simpleShader( shaders.rectangle, {
+    this.simpleShader( s_rectangle, {
         color:[r,g,b,a],
         size:[width*this.height/this.width,height],
         angle:angle,
@@ -728,7 +726,7 @@ filters.image=function(url) {
 
 
 filters.ripple=function(fx,fy,angle,amplitude) {
-    shaders.ripple = shaders.ripple || warpShader(this.gl, '\
+    let s_ripple = warpShader(this, 's_ripple', '\
         uniform vec4 xform;\
         uniform float amplitude;\
     ', '\
@@ -736,7 +734,7 @@ filters.ripple=function(fx,fy,angle,amplitude) {
         coord += amplitude*sin(mat*coord);\
     ');
 
-    this.simpleShader( shaders.ripple, {
+    this.simpleShader( s_ripple, {
         xform: [
            Math.cos(angle)*fx, Math.sin(angle)*fy,
           -Math.sin(angle)*fx, Math.cos(angle)*fy
@@ -748,7 +746,7 @@ filters.ripple=function(fx,fy,angle,amplitude) {
 }
 
 filters.spherical=function(radius,scale) {
-    shaders.spherical = shaders.spherical || warpShader(this.gl, '\
+    let s_spherical = warpShader(this, 's_spherical', '\
         uniform float radius;\
         uniform float scale;\
     ', '\
@@ -758,7 +756,7 @@ filters.spherical=function(radius,scale) {
         coord*=(l2/l/scale);\
     ');
 
-    this.simpleShader( shaders.spherical, {
+    this.simpleShader( s_spherical, {
         radius: radius,
         scale : scale,
     });
@@ -790,10 +788,10 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 
     if(!mesh_transforms[mesh_type]) mesh_type="plane";
 
-    if(!shaders.mesh_displacement) shaders.mesh_displacement={};
-    if(!shaders.mesh_displacement[mesh_type])
+    if(!this.shaders.s_mesh_displacement) this.shaders.s_mesh_displacement={};
+    if(!this.shaders.s_mesh_displacement[mesh_type])
     {
-    shaders.mesh_displacement[mesh_type] = new Shader(this.gl, '\
+    this.shaders.s_mesh_displacement[mesh_type] = new Shader(this.gl, '\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
     uniform mat4 matrix;\
@@ -825,9 +823,9 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
         gridMeshUvs.push(0.0,y-dy);
         gridMeshUvs.push(0.0,y-dy);
     }
-    shaders.mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
+    this.shaders.s_mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
     }
-    var mesh_shader=shaders.mesh_displacement[mesh_type];
+    var mesh_shader=this.shaders.s_mesh_displacement[mesh_type];
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -870,7 +868,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 }
 
 filters.blend=function(alpha,factor,offset) {
-    shaders.blend = shaders.blend || new Shader(this.gl, null, '\
+    let s_blend = this.getShader('s_blend',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D texture1;\
         uniform float alpha;\
@@ -884,14 +882,14 @@ filters.blend=function(alpha,factor,offset) {
         }\
     ');
 
-    shaders.blend.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( shaders.blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
+    s_blend.textures({texture: this.texture, texture1: this.stack_pop()});
+    this.simpleShader( s_blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
 
     return this;
 }
 
 filters.kaleidoscope=function(sides,angle,angle2) {
-    shaders.kaleidoscope = shaders.kaleidoscope || new Shader(this.gl, null, '\
+    let s_kaleidoscope = this.getShader('s_kaleidoscope',  null, '\
         uniform sampler2D texture;\
 	uniform float angle;\
 	uniform float angle2;\
@@ -910,7 +908,7 @@ filters.kaleidoscope=function(sides,angle,angle2) {
 	}\
     ');
 
-    this.simpleShader( shaders.kaleidoscope, {sides:Math.round(sides), angle:angle, angle2:angle2});
+    this.simpleShader( s_kaleidoscope, {sides:Math.round(sides), angle:angle, angle2:angle2});
 
     return this;
 }
@@ -922,7 +920,7 @@ filters.mandelbrot=function(x,y,scale,angle,iterations) {
 
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
-    shaders.mandelbrot = shaders.mandelbrot || new Shader(this.gl, null, '\
+    let s_mandelbrot = this.getShader('s_mandelbrot',  null, '\
         uniform sampler2D texture;\
         uniform vec4 xform;\
         uniform vec2 center;\
@@ -943,7 +941,7 @@ filters.mandelbrot=function(x,y,scale,angle,iterations) {
         }\
     ');
 
-    this.simpleShader( shaders.mandelbrot, {
+    this.simpleShader( s_mandelbrot, {
         xform: [
            Math.cos(angle)*scale, Math.sin(angle)*scale,
           -Math.sin(angle)*scale, Math.cos(angle)*scale
@@ -961,7 +959,7 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
-    shaders.julia = shaders.julia || new Shader(this.gl, null, '\
+    let s_julia = this.getShader('s_julia',  null, '\
         uniform sampler2D texture;\
         uniform vec4 xform;\
         uniform vec2 center;\
@@ -982,7 +980,7 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
         }\
     ');
 
-    this.simpleShader( shaders.julia, {
+    this.simpleShader( s_julia, {
         xform: [
            Math.cos(angle)*scale, Math.sin(angle)*scale,
           -Math.sin(angle)*scale, Math.cos(angle)*scale
@@ -999,7 +997,8 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
 filters.relief=function(scale2,scale4) {
       this.gl.getExtension('OES_standard_derivatives');
-      shaders.relief = shaders.relief || new Shader(this.gl, null,'\n\
+      let s_blur = simpleBlurShader(this);
+      let s_relief = this.getShader('s_relief',  null,'\n\
       #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur2;\n\
@@ -1048,7 +1047,7 @@ filters.relief=function(scale2,scale4) {
     var scales=[scale2,scale4];
     for(var d=1.; !(textures[0] && textures[1] ) ; d*=Math.sqrt(2))
     {
-      this.simpleShader( shaders.reaction_blur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( s_blur, { delta: [d/this.width, d/this.height]});
       
       for(var s=0; s<2; s++)
         if(!textures[s] && d>scales[s])
@@ -1057,13 +1056,13 @@ filters.relief=function(scale2,scale4) {
     for(var s=0; s<=2; s++)
       this.stack_pop();
       
-    shaders.relief.textures({
+    s_relief.textures({
         texture: texture,
         texture_blur2: textures[0],
         texture_blur4: textures[1]
     });    
     
-    this.simpleShader( shaders.relief, {
+    this.simpleShader( s_relief, {
         texSize: [1./this.width,1./this.height],
     },texture);
 
@@ -1072,7 +1071,7 @@ filters.relief=function(scale2,scale4) {
 
 
 filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
-    shaders.transform = shaders.transform || new Shader(this.gl, null, '\
+    let s_transform = this.getShader('s_transform',  null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
         uniform vec4 xform;\
@@ -1091,7 +1090,7 @@ filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
     
     if(!sx) sx=1.0;
     if(!sy) sy=1.0;
-    this.simpleShader( shaders.transform, {
+    this.simpleShader( s_transform, {
       translation: [x,y],
       xform: [
          Math.cos(angle)/scale/sx, Math.sin(angle)/scale/sy,
@@ -1106,7 +1105,7 @@ filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
 
 
 filters.analogize=function(exposure,gamma,glow,radius) {
-    shaders.analogize = shaders.analogize || new Shader(this.gl, null,'\
+    let s_analogize = this.getShader('s_analogize',  null,'\
     \
       uniform sampler2D texture;\
       uniform sampler2D glow_texture;\
@@ -1129,11 +1128,11 @@ filters.analogize=function(exposure,gamma,glow,radius) {
 
     filters.blur.call(this,radius);
 
-    shaders.analogize.textures({
+    s_analogize.textures({
         glow_texture: this.texture,
         texture: this.stack_pop()
     });
-    this.simpleShader( shaders.analogize, {
+    this.simpleShader( s_analogize, {
         Glow: glow,
         Exposure: exposure,
         Gamma: gamma
@@ -1144,7 +1143,7 @@ filters.analogize=function(exposure,gamma,glow,radius) {
 
 
 filters.noalpha=function() {
-    shaders.noalpha = shaders.noalpha || new Shader(this.gl, null, '\
+    let s_noalpha = this.getShader('s_noalpha',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1152,7 +1151,7 @@ filters.noalpha=function() {
             gl_FragColor = vec4(color.rgb,1.);\
         }\
     ');
-    this.simpleShader( shaders.noalpha, {});
+    this.simpleShader( s_noalpha, {});
     return this;
 }
 
@@ -1166,7 +1165,7 @@ filters.preview=function() {
 }
 
 filters.feedbackOut=function(blend,clear_on_switch) {
-    shaders.feedbackOut = shaders.feedbackOut || new Shader(this.gl, null, '\
+    let s_feedbackOut = this.getShader('s_feedbackOut',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D feedbackTexture;\
         uniform float blend;\
@@ -1183,11 +1182,11 @@ filters.feedbackOut=function(blend,clear_on_switch) {
     if(clear_on_switch && this.switched && this._.feedbackTexture)
       this._.feedbackTexture.clear();
 
-    shaders.feedbackOut.textures({
+    s_feedbackOut.textures({
         texture: this.texture,
         feedbackTexture: this._.feedbackTexture
     });
-    this.simpleShader( shaders.feedbackOut, {
+    this.simpleShader( s_feedbackOut, {
         blend: blend
     });
 
@@ -1195,7 +1194,7 @@ filters.feedbackOut=function(blend,clear_on_switch) {
 }
 
 filters.motion=function(threshold,interval,damper) {
-    shaders.motionBlend = shaders.motionBlend || new Shader(this.gl, null, '\
+    let s_motionBlend = this.getShader('s_motionBlend',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
         uniform float blend;\
@@ -1207,7 +1206,7 @@ filters.motion=function(threshold,interval,damper) {
         }\
     ');
 
-    shaders.motion = shaders.motion || new Shader(this.gl, null, '\
+    let s_motion = this.getShader('s_motion',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
         uniform float threshold;\
@@ -1226,11 +1225,11 @@ filters.motion=function(threshold,interval,damper) {
     {
       // blend current image into mean motion texture
       var target=this.getSpareTexture();
-      shaders.motionBlend.textures({
+      s_motionBlend.textures({
           texture: this.texture,
           motionTexture: this._.motionTexture
       });
-      this.simpleShader( shaders.motionBlend, {
+      this.simpleShader( s_motionBlend, {
           blend: damper
       },this.texture,target);
 
@@ -1242,37 +1241,41 @@ filters.motion=function(threshold,interval,damper) {
     this._.motionCycle++;
 
     // rebind, motionTexture was exchanged by simpleShader
-    shaders.motion.textures({
+    s_motion.textures({
         texture: this.texture,
         motionTexture: this._.motionTexture
     });
-    this.simpleShader( shaders.motion, {
+    this.simpleShader( s_motion, {
         threshold: threshold
     });
 
     return this;
 }
 
+var simpleBlurShader=function(canvas){
+  return canvas.getShader('s_reaction_blur',  null, '\
+      uniform sampler2D texture;\
+      uniform vec2 delta;\
+      varying vec2 texCoord;\
+      void main() {\
+          vec4 color = vec4(0.0);\
+          float b=1./4.;\
+          color+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) );\
+          color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
+          color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
+          color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
+          gl_FragColor = color; \
+      }\
+  ');
+}
+
 filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
     this.gl.getExtension('OES_standard_derivatives');
 
-    shaders.reaction_blur = shaders.reaction_blur || new Shader(this.gl, null, '\
-        uniform sampler2D texture;\
-        uniform vec2 delta;\
-        varying vec2 texCoord;\
-        void main() {\
-            vec4 color = vec4(0.0);\
-            float b=1./4.;\
-            color+=b*texture2D(texture, texCoord + delta * vec2( .5, .5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2(-.5, .5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2( .5,-.5) );\
-            color+=b*texture2D(texture, texCoord + delta * vec2(-.5,-.5) );\
-            gl_FragColor = color; \
-        }\
-    ');
+    let s_reaction_blur = simpleBlurShader(this);
     
-    shaders.reaction = shaders.reaction || new Shader(this.gl, null,'\n\
+    let s_reaction = this.getShader('s_reaction',  null,'\n\
       #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur;\n\
@@ -1420,7 +1423,7 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     var scales=[scale1,scale2,scale3,scale4];
     for(var d=1.; !(textures[0] && textures[1] && textures[2] && textures[3] ) ; d*=Math.sqrt(2))
     {
-      this.simpleShader( shaders.reaction_blur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( s_reaction_blur, { delta: [d/this.width, d/this.height]});
       
       for(var s=0; s<4; s++)
         if(!textures[s] && d>scales[s])
@@ -1431,7 +1434,7 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     for(var s=0; s<=4; s++)
       this.stack_pop();
       
-    shaders.reaction.textures({
+    s_reaction.textures({
         texture: texture,
         texture_blur: textures[0],
         texture_blur2: textures[1],
@@ -1439,7 +1442,7 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         texture_blur4: textures[3]
     });    
     
-    this.simpleShader( shaders.reaction, {
+    this.simpleShader( s_reaction, {
         texSize: [1./this.width,1./this.height],
         rnd: [Math.random(),Math.random(),Math.random(),Math.random()],
         noise_factor: noise_factor,
@@ -1453,7 +1456,7 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 filters.reaction2=function(F,K,D_a,D_b,iterations) {
     iterations=Math.floor(Math.min(iterations,100.));
-    shaders.reaction2 = shaders.reaction2 || new Shader(this.gl, null, '\
+    let s_reaction2 = this.getShader('s_reaction2',  null, '\
       uniform sampler2D texture;\n\
       uniform float F;\n\
       uniform float K;\n\
@@ -1486,14 +1489,14 @@ filters.reaction2=function(F,K,D_a,D_b,iterations) {
 
     this.texture.use(0);
     for(var i=0; i<iterations; i++)
-      this.simpleShader( shaders.reaction2, {F:F,K:K,D_a:D_a,D_b:D_b, scale: [this.width,this.height] });
+      this.simpleShader( s_reaction2, {F:F,K:K,D_a:D_a,D_b:D_b, scale: [this.width,this.height] });
 
     return this;
 }
 
 
 filters.displacement=function(strength) {
-    shaders.displacement = shaders.displacement || new Shader(this.gl, null, '\
+    let s_displacement = this.getShader('s_displacement',  null, '\
         uniform sampler2D displacement_map;\
         uniform sampler2D texture;\
         uniform float strength;\
@@ -1505,15 +1508,15 @@ filters.displacement=function(strength) {
         }\
     ');
 
-    shaders.displacement.textures({displacement_map: this.texture, texture: this.stack_pop()});
-    this.simpleShader( shaders.displacement, { strength: strength });
+    s_displacement.textures({displacement_map: this.texture, texture: this.stack_pop()});
+    this.simpleShader( s_displacement, { strength: strength });
 
     return this;
 }
 
 
 filters.address_glitch=function(mask_x,mask_y) {
-    shaders.address_glitch = shaders.address_glitch || new Shader(this.gl, null, '\
+    let s_address_glitch = this.getShader('s_address_glitch',  null, '\
         uniform sampler2D texture;\
         uniform float mask_x;\
         uniform float mask_y;\
@@ -1544,7 +1547,7 @@ filters.address_glitch=function(mask_x,mask_y) {
     ');
 
 
-    this.simpleShader( shaders.address_glitch, { mask_x:mask_x, mask_y:mask_y, texSize: [this.width, this.height]});
+    this.simpleShader( s_address_glitch, { mask_x:mask_x, mask_y:mask_y, texSize: [this.width, this.height]});
 
     return this;
 }
@@ -1552,7 +1555,7 @@ filters.address_glitch=function(mask_x,mask_y) {
 
 filters.gauze=function(fx,fy,angle,amplitude,x,y) {
 
-    shaders.gauze = shaders.gauze || new Shader(this.gl, null, '\
+    let s_gauze = this.getShader('s_gauze',  null, '\
         uniform sampler2D texture;\
         uniform float amplitude;\
         uniform vec4 xform;\
@@ -1567,7 +1570,7 @@ filters.gauze=function(fx,fy,angle,amplitude,x,y) {
         }\
     ');
 
-    this.simpleShader( shaders.gauze, {
+    this.simpleShader( s_gauze, {
         xform: [
            Math.cos(angle)*fx, Math.sin(angle)*fy,
           -Math.sin(angle)*fx, Math.cos(angle)*fy
@@ -1595,7 +1598,7 @@ filters.waveform=function() {
 
 
 filters.osciloscope=function(amplitude) {
-    shaders.osciloscope = shaders.osciloscope || new Shader(this.gl, null, '\
+    let s_osciloscope = this.getShader('s_osciloscope',  null, '\
       uniform sampler2D waveform;\
       uniform float amplitude; \
       varying vec2 texCoord;\
@@ -1612,7 +1615,7 @@ filters.osciloscope=function(amplitude) {
     var waveformTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
     waveformTexture.load(values);
 
-    this.simpleShader( shaders.osciloscope, {amplitude:amplitude}, waveformTexture);
+    this.simpleShader( s_osciloscope, {amplitude:amplitude}, waveformTexture);
     
     this.releaseTexture(waveformTexture);
 
@@ -1620,7 +1623,7 @@ filters.osciloscope=function(amplitude) {
 }
 
 filters.vectorscope=function(size,intensity,linewidth) {
-    shaders.vectorscope = shaders.vectorscope || new Shader(this.gl, '\
+    let s_vectorscope = this.getShader('s_vectorscope',  '\
     attribute vec2 _texCoord;\
     uniform sampler2D waveform;\
     uniform float size;\
@@ -1646,18 +1649,18 @@ filters.vectorscope=function(size,intensity,linewidth) {
       this._.vectorscopeUVs=[];
       for (var t=0;t<=1.0;t+=1.0/count)
         this._.vectorscopeUVs.push(t);
-      shaders.vectorscope.attributes({_texCoord:this._.vectorscopeUVs},{_texCoord:1});
+      s_vectorscope.attributes({_texCoord:this._.vectorscopeUVs},{_texCoord:1});
     }
             
     // set shader parameters
-    shaders.vectorscope.uniforms({
+    s_vectorscope.uniforms({
       size:size, delta: 20.0/count,intensity:intensity
     });    
     // set shader textures    
     let gl=this.gl;
     var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
     waveformTexture.load(values);
-    shaders.vectorscope.textures({waveform: waveformTexture});
+    s_vectorscope.textures({waveform: waveformTexture});
 
     // render 3d mesh stored in waveform texture,uvs to texture
     this.texture.setAsTarget();
@@ -1668,7 +1671,7 @@ filters.vectorscope=function(size,intensity,linewidth) {
     gl.blendFunc(gl.ONE, gl.ONE);
    // gl.enable(gl.LINE_SMOOTH);
     gl.lineWidth(linewidth);
-    shaders.vectorscope.drawArrays(gl.LINE_STRIP);
+    s_vectorscope.drawArrays(gl.LINE_STRIP);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);        
  
@@ -1678,7 +1681,7 @@ filters.vectorscope=function(size,intensity,linewidth) {
 }
 
 filters.lumakey=filters.luma_key=function(threshold,feather) {
-    shaders.lumakey = shaders.lumakey || new Shader(this.gl, null, '\
+    let s_lumakey = this.getShader('s_lumakey',  null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform float threshold;\
@@ -1693,14 +1696,14 @@ filters.lumakey=filters.luma_key=function(threshold,feather) {
       }\
     ');
 
-    shaders.lumakey.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( shaders.lumakey, { threshold: threshold, feather: feather });
+    s_lumakey.textures({texture: this.texture, texture1: this.stack_pop()});
+    this.simpleShader( s_lumakey, { threshold: threshold, feather: feather });
 
     return this;
 }
 
 filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
-    shaders.chroma_key_rgb=shaders.chroma_key_rgb || new Shader(this.gl, null, '\
+    let s_chroma_key_rgb = this.getShader('s_chroma_key_rgb',  null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform vec3 key_color;\
@@ -1722,8 +1725,8 @@ filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
       }\
     ');
 
-    shaders.chroma_key_rgb.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( shaders.chroma_key_rgb, { key_color:[r,g,b], threshold: threshold, feather: feather });
+    s_chroma_key_rgb.textures({texture: this.texture, texture1: this.stack_pop()});
+    this.simpleShader( s_chroma_key_rgb, { key_color:[r,g,b], threshold: threshold, feather: feather });
 
     return this;
 }
@@ -1733,7 +1736,7 @@ filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_
     // legacy chains use chroma_key to denote chroma_key_rgb
     if(arguments.length==5) filters.chroma_key_rgb.apply(this,arguments);
 
-    shaders.chroma_key = shaders.chroma_key || new Shader(this.gl, null, '\
+    let s_chroma_key = this.getShader('s_chroma_key',  null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform vec3 hsv_key;\
@@ -1762,14 +1765,14 @@ filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_
     ');
 
     h=Math.max(0.0,Math.min(1.0,h));
-    shaders.chroma_key.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( shaders.chroma_key, { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]});
+    s_chroma_key.textures({texture: this.texture, texture1: this.stack_pop()});
+    this.simpleShader( s_chroma_key, { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]});
 
     return this;
 }
 
 filters.life=function(iterations) {
-    shaders.life = shaders.life || new Shader(this.gl, null, '\
+    let s_life = this.getShader('s_life',  null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
       varying vec2 texCoord;\
@@ -1806,7 +1809,7 @@ filters.life=function(iterations) {
     ');
 
     for(var i=0; i<1 || i<iterations && i<100; i++)
-      this.simpleShader( shaders.life, {texSize: [this.width, this.height]});
+      this.simpleShader( s_life, {texSize: [this.width, this.height]});
 
     return this;
 }
@@ -1816,7 +1819,7 @@ filters.polygon=function(sides,x,y,size,angle,aspect) {
 
     aspect=aspect || 1.;
     
-    shaders.polygon = shaders.polygon || new Shader(this.gl, null, '\
+    let s_polygon = this.getShader('s_polygon',  null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float sides;\
@@ -1841,7 +1844,7 @@ filters.polygon=function(sides,x,y,size,angle,aspect) {
         }\
     ');
 
-    this.simpleShader( shaders.polygon, {
+    this.simpleShader( s_polygon, {
         size:[size*this.height/this.width,size*aspect],
         sides:Math.floor(sides),
         angle:angle,
@@ -1930,7 +1933,7 @@ filters.webrtc=function(websocket_url) {
 }
 
 filters.rainbow=function(size, angle) {
-    shaders.rainbow = shaders.rainbow || new Shader(this.gl, null, '\
+    let s_rainbow = this.getShader('s_rainbow',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1945,7 +1948,7 @@ filters.rainbow=function(size, angle) {
         }\
     ');
 
-    this.simpleShader( shaders.rainbow, {});
+    this.simpleShader( s_rainbow, {});
 
     return this;
 }
@@ -1956,7 +1959,7 @@ filters.rainbow=function(size, angle) {
  */
 filters.grid=function(size, angle, x, y, width) {
     if(!width) width=0.05;
-    shaders.grid = shaders.grid || new Shader(this.gl, null, '\
+    let s_grid = this.getShader('s_grid',  null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float angle;\
@@ -1975,14 +1978,14 @@ filters.grid=function(size, angle, x, y, width) {
         }\
     ');
 
-    this.simpleShader( shaders.grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
+    this.simpleShader( s_grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
     });
 
     return this;
 }
 
 filters.absolute=function(size, angle) {
-    shaders.absolute = shaders.absolute || new Shader(this.gl, null, '\
+    let s_absolute = this.getShader('s_absolute',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1992,7 +1995,7 @@ filters.absolute=function(size, angle) {
         }\
     ');
 
-    this.simpleShader( shaders.absolute, {});
+    this.simpleShader( s_absolute, {});
 
     return this;
 }
@@ -2007,7 +2010,7 @@ filters.absolute=function(size, angle) {
  */
 filters.denoisefast=function(exponent) {
     // Do a 3x3 bilateral box filter
-    shaders.denoisefast = shaders.denoisefast || new Shader(this.gl, null, '\
+    let s_denoisefast = this.getShader('s_denoisefast',  null, '\
         uniform sampler2D texture;\
         uniform float exponent;\
         uniform float strength;\
@@ -2032,7 +2035,7 @@ filters.denoisefast=function(exponent) {
 
     // Perform five iterations for stronger results
     for (var i = 0; i < 5; i++) {
-        this.simpleShader( shaders.denoisefast, {
+        this.simpleShader( s_denoisefast, {
             exponent: Math.max(0, exponent),
             texSize: [this.width, this.height]
         });
@@ -2054,7 +2057,7 @@ filters.spectrogram=function() {
 }
 
 filters.smoothlife=function(birth_min,birth_max,death_min) {
-    shaders.smoothlife = shaders.smoothlife || new Shader(this.gl, null, '\
+    let s_smoothlife = this.getShader('s_smoothlife',  null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
       varying vec2 texCoord;\
@@ -2095,7 +2098,7 @@ filters.smoothlife=function(birth_min,birth_max,death_min) {
       }\
     ');
 
-    this.simpleShader( shaders.smoothlife, {
+    this.simpleShader( s_smoothlife, {
       birth_min:birth_min,
       birth_max:birth_max,
       death_min:death_min,
@@ -2106,7 +2109,7 @@ filters.smoothlife=function(birth_min,birth_max,death_min) {
 }
 
 filters.soft_life=function(birth_min,birth_max,death_min) {
-    shaders.soft_life = shaders.soft_life || new Shader(this.gl, null, '\
+    let s_soft_life = this.getShader('s_soft_life',  null, '\
       uniform sampler2D inner_texture;\
       uniform sampler2D outer_texture;\
       varying vec2 texCoord;\
@@ -2131,9 +2134,9 @@ filters.soft_life=function(birth_min,birth_max,death_min) {
 
     this.stack_pop();
         
-    shaders.soft_life.textures({inner_texture: inner_texture, outer_texture: this.texture});
+    s_soft_life.textures({inner_texture: inner_texture, outer_texture: this.texture});
     
-    this.simpleShader( shaders.soft_life, {
+    this.simpleShader( s_soft_life, {
       birth_min:birth_min,
       birth_max:birth_max,
       death_min:death_min,
@@ -2144,7 +2147,7 @@ filters.soft_life=function(birth_min,birth_max,death_min) {
 
 
 filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
-    shaders.particles = shaders.particles || new Shader(this.gl, '\
+    let s_particles = this.getShader('s_particles',  '\
     attribute vec2 _texCoord;\
     uniform sampler2D texture;\
     uniform mat4 matrix;\
@@ -2169,7 +2172,7 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     }\
     ');
 
-    shaders.particle_update = shaders.particle_update || new Shader(this.gl, null,'\
+    let s_particle_update = this.getShader('s_particle_update',  null,'\
         uniform sampler2D texture;\
         uniform sampler2D displacement_texture;\
         uniform float homing; \
@@ -2209,7 +2212,7 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
               this._.particleUvs.push(x,y);
           }
       }
-      shaders.particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
+      s_particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
       
       // generate particle data double buffer
       if(!this._.particleTextureA) {
@@ -2227,16 +2230,16 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
    
     [this._.particleTextureB,this._.particleTextureA]=[this._.particleTextureA,this._.particleTextureB];
 
-    shaders.particle_update.uniforms({
+    s_particle_update.uniforms({
       homing:homing,
       noise:noise,
       displacement:displacement
     });             
     var texture=this.stack_pop();
-    shaders.particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
+    s_particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
         
     this._.particleTextureA.setAsTarget();
-    shaders.particle_update.drawRect();
+    s_particle_update.drawRect();
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -2252,14 +2255,14 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     
         
     // set shader parameters
-    shaders.particles.uniforms({
+    s_particles.uniforms({
       matrix:matrix,
       strength:strength,
       size:size
     });
     
     // set shader textures    
-    shaders.particles.textures({particles: this._.particleTextureA, texture: this.texture});
+    s_particles.textures({particles: this._.particleTextureA, texture: this.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture()
@@ -2268,7 +2271,7 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    shaders.particles.drawArrays(gl.POINTS);
+    s_particles.drawArrays(gl.POINTS);
     gl.disable(gl.DEPTH_TEST);
     // replace current texture by spare texture
     this.putTexture(target);
@@ -2290,7 +2293,7 @@ filters.stack_swap=function() {
 }
 
 filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
-    shaders.patch_displacement = shaders.patch_displacement || new Shader(this.gl, '\
+    let s_patch_displacement = this.getShader('s_patch_displacement',  '\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -2330,7 +2333,7 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
               this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
           }
       }
-      shaders.patch_displacement.attributes({vertex: this._.gridPatchesVertices,_texCoord:this._.gridPatchesUvs},{vertex: 3, _texCoord:2});
+      s_patch_displacement.attributes({vertex: this._.gridPatchesVertices,_texCoord:this._.gridPatchesUvs},{vertex: 3, _texCoord:2});
     }
 
     // perspective projection matrix
@@ -2346,7 +2349,7 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
     mat4.multiply(proj,matrix,matrix);
     
     // set shader parameters
-    shaders.patch_displacement.uniforms({
+    s_patch_displacement.uniforms({
       matrix:matrix,
       strength: [sx,sy,sz],
       scale: scale,
@@ -2354,7 +2357,7 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
     });
     
     // set shader textures
-    shaders.patch_displacement.textures({displacement_map: this.texture, texture: this.stack_pop()});
+    s_patch_displacement.textures({displacement_map: this.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture();
@@ -2363,7 +2366,7 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    shaders.patch_displacement.drawArrays(gl.TRIANGLES);
+    s_patch_displacement.drawArrays(gl.TRIANGLES);
     gl.disable(gl.DEPTH_TEST);
 
     this.putTexture(target);
@@ -2423,14 +2426,14 @@ filters.perspective=function(before, after) {
  *                        to use for simple operations like flipping and rotating.
  */
 filters.matrixWarp=function(matrix, inverse) {
-    shaders.matrixWarp = shaders.matrixWarp || warpShader(this.gl, '\
+    let s_matrixWarp = warpShader(this, 's_matrixWarp', '\
         uniform mat3 matrix;\
     ', '\
         vec3 warp = matrix * vec3(coord, 1.0);\
         coord = warp.xy / warp.z;\
     ');
 
-    this.simpleShader( shaders.matrixWarp, {
+    this.simpleShader( s_matrixWarp, {
         matrix: inverse ? getInverse(matrix) : matrix
     });
 
@@ -2447,7 +2450,7 @@ filters.matrixWarp=function(matrix, inverse) {
  *                the circular region will be rotated by.
  */
 filters.swirl=function(centerX, centerY, radius, angle) {
-    shaders.swirl = shaders.swirl || warpShader(this.gl, '\
+    let s_swirl = warpShader(this, 's_swirl', '\
         uniform float radius;\
         uniform float angle;\
         uniform vec2 center;\
@@ -2467,7 +2470,7 @@ filters.swirl=function(centerX, centerY, radius, angle) {
         coord += center;\
     ');
 
-    this.simpleShader( shaders.swirl, {
+    this.simpleShader( s_swirl, {
         radius: radius,
         center: [centerX, centerY],
         angle: angle
@@ -2485,7 +2488,7 @@ filters.swirl=function(centerX, centerY, radius, angle) {
  * @param strength -1 to 1 (-1 is strong pinch, 0 is no effect, 1 is strong bulge)
  */
 filters.bulgePinch=function(centerX, centerY, radius, strength) {
-    shaders.bulgePinch = shaders.bulgePinch || warpShader(this.gl, '\
+    let s_bulgePinch = warpShader(this, 's_bulgePinch', '\
         uniform float radius;\
         uniform float strength;\
         uniform vec2 center;\
@@ -2503,7 +2506,7 @@ filters.bulgePinch=function(centerX, centerY, radius, strength) {
         coord += center;\
     ');
 
-    this.simpleShader( shaders.bulgePinch, {
+    this.simpleShader( s_bulgePinch, {
         radius: radius,
         strength: clamp(-1, strength, 1),
         center: [centerX, centerY]
@@ -2521,7 +2524,7 @@ filters.bulgePinch=function(centerX, centerY, radius, strength) {
  *                 where 0 doesn't change the image and 1 creates a highly blurred image.
  */
 filters.zoomBlur=function(centerX, centerY, strength) {
-    shaders.zoomBlur = shaders.zoomBlur || new Shader(this.gl, null, '\
+    let s_zoomBlur = this.getShader('s_zoomBlur',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float strength;\
@@ -2553,7 +2556,7 @@ filters.zoomBlur=function(centerX, centerY, strength) {
         }\
     ');
 
-    this.simpleShader( shaders.zoomBlur, {
+    this.simpleShader( s_zoomBlur, {
         center: [centerX+0.5, centerY+0.5],
         strength: strength
     });
@@ -2562,7 +2565,7 @@ filters.zoomBlur=function(centerX, centerY, strength) {
 }
 
 filters.dilate=function(iterations) {
-    shaders.dilate = shaders.dilate || new Shader(this.gl, null, '\
+    let s_dilate = this.getShader('s_dilate',  null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
@@ -2582,7 +2585,7 @@ filters.dilate=function(iterations) {
     ');
 
     for(var i=0; i<iterations; i++)
-      this.simpleShader( shaders.dilate, {texSize: [this.width, this.height]});
+      this.simpleShader( s_dilate, {texSize: [this.width, this.height]});
 
     return this;
 }
@@ -2595,7 +2598,7 @@ filters.dilate=function(iterations) {
  * @param radius The radius of the pyramid convolved with the image.
  */
 filters.localContrast=function(radius,strength) {
-    shaders.localContrastMin = shaders.localContrastMin || new Shader(this.gl, null, '\
+    let s_localContrastMin = this.getShader('s_localContrastMin',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2609,7 +2612,7 @@ filters.localContrast=function(radius,strength) {
             gl_FragColor = color; \
         }\
     ');
-    shaders.localContrastMax = shaders.localContrastMax || new Shader(this.gl, null, '\
+    let s_localContrastMax = this.getShader('s_localContrastMax',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2623,7 +2626,7 @@ filters.localContrast=function(radius,strength) {
             gl_FragColor = color; \
         }\
     ');
-    shaders.localContrast = shaders.localContrast || new Shader(this.gl, null, '\
+    let s_localContrast = this.getShader('s_localContrast',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D min_texture;\
         uniform sampler2D max_texture;\
@@ -2650,14 +2653,14 @@ filters.localContrast=function(radius,strength) {
     var delta=Math.sqrt(radius);
 
     for(var i=0; i<steps; i++)
-      this.simpleShader( shaders.localContrastMin, { delta: [delta/this.width, delta/this.height]}, min_image, min_image);
+      this.simpleShader( s_localContrastMin, { delta: [delta/this.width, delta/this.height]}, min_image, min_image);
 
     for(var i=0; i<steps; i++)
-      this.simpleShader( shaders.localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
+      this.simpleShader( s_localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
 
   
-    shaders.localContrast.textures({min_texture:min_image, max_texture:max_image});
-    this.simpleShader( shaders.localContrast, {strength:strength},original_image);
+    s_localContrast.textures({min_texture:min_image, max_texture:max_image});
+    this.simpleShader( s_localContrast, {strength:strength},original_image);
     
     this.stack_pop();
     this.stack_pop();    
@@ -2668,7 +2671,7 @@ filters.localContrast=function(radius,strength) {
 
 
 filters.erode=function(iterations) {
-    shaders.erode = shaders.erode || new Shader(this.gl, null, '\
+    let s_erode = this.getShader('s_erode',  null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
@@ -2688,13 +2691,13 @@ filters.erode=function(iterations) {
     ');
 
     for(var i=0; i<iterations; i++)
-      this.simpleShader( shaders.erode, {texSize: [this.width, this.height]});
+      this.simpleShader( s_erode, {texSize: [this.width, this.height]});
 
     return this;
 }
 
 filters.fastBlur=filters.blur=function(radius) {
-    shaders.blur = shaders.blur || new Shader(this.gl, null, '\
+    let s_blur = this.getShader('s_blur',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2711,13 +2714,13 @@ filters.fastBlur=filters.blur=function(radius) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2))
     {
-      this.simpleShader( shaders.blur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( s_blur, { delta: [d/this.width, d/this.height]});
     }
     return this;
 }
 
 filters.blur_alpha=function(radius) {
-    shaders.blur_alpha = shaders.blur_alpha || new Shader(this.gl, null, '\
+    let s_blur_alpha = this.getShader('s_blur_alpha',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2733,7 +2736,7 @@ filters.blur_alpha=function(radius) {
         }\
     ');
 
-    sshaders.blur_alpha_post = sshaders.blur_alpha_post || new Shader(this.gl, null, '\
+    let s_blur_alpha_post = this.getShader('s_blur_alpha_post', null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -2744,16 +2747,16 @@ filters.blur_alpha=function(radius) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2.))
     {
-      this.simpleShader( shaders.blur_alpha, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( s_blur_alpha, { delta: [d/this.width, d/this.height]});
     }
-    this.simpleShader(sshaders.blur_alpha_post);
+    this.simpleShader(s_blur_alpha_post);
     return this;
 }
 
 
 
 filters.blur2=function(radius,exponent) {
-    shaders.blur2 = shaders.blur2 || new Shader(this.gl, null, '\
+    let s_blur2 = this.getShader('s_blur2',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         uniform float exponent;\
@@ -2772,7 +2775,7 @@ filters.blur2=function(radius,exponent) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2))
     {
-      this.simpleShader( shaders.blur2, { exponent: exponent, delta: [d/this.width, d/this.height]});
+      this.simpleShader( s_blur2, { exponent: exponent, delta: [d/this.width, d/this.height]});
     }
     return this;
 }
@@ -2786,7 +2789,7 @@ filters.blur2=function(radius,exponent) {
  * @param strength A scale factor where 0 is no effect and higher values cause a stronger effect.
  */
 filters.unsharpMask=function(radius, strength) {
-    shaders.unsharpMask = shaders.unsharpMask || new Shader(this.gl, null, '\
+    let s_unsharpMask = this.getShader('s_unsharpMask',  null, '\
         uniform sampler2D blurredTexture;\
         uniform sampler2D originalTexture;\
         uniform float strength;\
@@ -2804,11 +2807,11 @@ filters.unsharpMask=function(radius, strength) {
 
     // Blur the current texture, then use the stored texture to detect edges
     filters.blur.call(this,radius);
-    shaders.unsharpMask.textures({
+    s_unsharpMask.textures({
         blurredTexture: this.texture,
         originalTexture: this._.extraTexture
     });
-    this.simpleShader( shaders.unsharpMask, {
+    this.simpleShader( s_unsharpMask, {
         strength: strength
     });
 
@@ -2824,7 +2827,7 @@ filters.unsharpMask=function(radius, strength) {
  * @param b          0 to 1 Importance of the Blue Chanel modification
  */
 filters.color=function(alpha,r,g,b) {
-    shaders.color = shaders.color || new Shader(this.gl, null, '\
+    let s_color = this.getShader('s_color',  null, '\
         uniform sampler2D texture;\
         uniform float r;\
         uniform float g;\
@@ -2840,7 +2843,7 @@ filters.color=function(alpha,r,g,b) {
         }\
     ');
 
-    this.simpleShader( shaders.color, {
+    this.simpleShader( s_color, {
        r  : r,
        g  : g,
        b  : b,
@@ -2859,7 +2862,7 @@ filters.color=function(alpha,r,g,b) {
  */
 filters.denoise=function(exponent) {
     // Do a 9x9 bilateral box filter
-    shaders.denoise = shaders.denoise || new Shader(this.gl, null, '\
+    let s_denoise = this.getShader('s_denoise',  null, '\
         uniform sampler2D texture;\
         uniform float exponent;\
         uniform float strength;\
@@ -2884,7 +2887,7 @@ filters.denoise=function(exponent) {
 
     // Perform two iterations for stronger results
     for (var i = 0; i < 2; i++) {
-        this.simpleShader( shaders.denoise, {
+        this.simpleShader( s_denoise, {
             exponent: Math.max(0, exponent),
             texSize: [this.width, this.height]
         });
@@ -2901,7 +2904,7 @@ filters.denoise=function(exponent) {
  * @param amount -1 to 1 (-1 is minimum vibrance, 0 is no change, and 1 is maximum vibrance)
  */
 filters.vibrance=function(amount) {
-    shaders.vibrance = shaders.vibrance || new Shader(this.gl, null, '\
+    let s_vibrance = this.getShader('s_vibrance',  null, '\
         uniform sampler2D texture;\
         uniform float amount;\
         varying vec2 texCoord;\
@@ -2915,7 +2918,7 @@ filters.vibrance=function(amount) {
         }\
     ');
 
-    this.simpleShader( shaders.vibrance, {
+    this.simpleShader( s_vibrance, {
         amount: clamp(-1, amount, 1)
     });
 
@@ -2924,7 +2927,7 @@ filters.vibrance=function(amount) {
 
 // min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0
 filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
-    shaders.levels = shaders.levels || new Shader(this.gl, null, '\
+    let s_levels = this.getShader('s_levels',  null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
         uniform vec3 rgb_min; \
@@ -2941,7 +2944,7 @@ filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamm
         }\
     ');
 
-    this.simpleShader( shaders.levels, {
+    this.simpleShader( s_levels, {
         rgb_min:[r_min+min,g_min+min,b_min+min],
         rgb_gamma:[r_gamma*gamma,g_gamma*gamma,b_gamma*gamma],
         rgb_max:[r_max+max-1.,g_max+max-1.,b_max+max-1.]
@@ -2963,7 +2966,7 @@ filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamm
  * @param saturation -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
 filters.hueSaturation=function(hue, saturation) {
-    shaders.hueSaturation = shaders.hueSaturation || new Shader(this.gl, null, '\
+    let s_hueSaturation = this.getShader('s_hueSaturation',  null, '\
         uniform sampler2D texture;\
         uniform float hue;\
         uniform float saturation;\
@@ -2994,7 +2997,7 @@ filters.hueSaturation=function(hue, saturation) {
         }\
     ');
 
-    this.simpleShader( shaders.hueSaturation, {
+    this.simpleShader( s_hueSaturation, {
         hue: clamp(-1, hue, 1),
         saturation: clamp(-1, saturation, 1)
     });
@@ -3009,7 +3012,7 @@ filters.hueSaturation=function(hue, saturation) {
  * @param contrast   -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
 filters.brightnessContrast=function(brightness, contrast) {
-    shaders.brightnessContrast = shaders.brightnessContrast || new Shader(this.gl, null, '\
+    let s_brightnessContrast = this.getShader('s_brightnessContrast',  null, '\
         uniform sampler2D texture;\
         uniform float brightness;\
         uniform float contrast;\
@@ -3026,7 +3029,7 @@ filters.brightnessContrast=function(brightness, contrast) {
         }\
     ');
 
-    this.simpleShader( shaders.brightnessContrast, {
+    this.simpleShader( s_brightnessContrast, {
         brightness: clamp(-1, brightness, 1),
         contrast: clamp(-1, contrast, 1)
     });
@@ -3035,7 +3038,7 @@ filters.brightnessContrast=function(brightness, contrast) {
 }
 
 filters.contrast_s=function(contrast) {
-    shaders.contrast_s = shaders.contrast_s || new Shader(this.gl, null, '\
+    let s_contrast_s = this.getShader('s_contrast_s',  null, '\
         uniform sampler2D texture;\
         uniform float contrast;\
         varying vec2 texCoord;\
@@ -3049,14 +3052,14 @@ filters.contrast_s=function(contrast) {
         }\
     ');
 
-    this.simpleShader( shaders.contrast_s, {
+    this.simpleShader( s_contrast_s, {
         contrast: -clamp(contrast,-1,1)
     });
 
     return this;
 }
 filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
-    shaders.threshold = shaders.threshold || new Shader(this.gl, null, '\
+    let s_threshold = this.getShader('s_threshold',  null, '\
         uniform sampler2D texture;\
         uniform float threshold;\
         uniform float feather;\
@@ -3070,7 +3073,7 @@ filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
         }\
     ');
     
-    this.simpleShader( shaders.threshold, {threshold:threshold,feather:feather,c0:[r0,g0,b0],c1:[r1,g1,b1]});
+    this.simpleShader( s_threshold, {threshold:threshold,feather:feather,c0:[r0,g0,b0],c1:[r1,g1,b1]});
 
     return this;
 }
@@ -3092,7 +3095,7 @@ filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
  */
 
 filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
-    shaders.sobel = shaders.sobel || new Shader(this.gl, null, '\
+    let s_sobel = this.getShader('s_sobel',  null, '\
         uniform sampler2D texture;\
         uniform float alpha;\
         uniform float r;\
@@ -3139,7 +3142,7 @@ filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
         }\
     ');
 
-    this.simpleShader( shaders.sobel, {
+    this.simpleShader( s_sobel, {
         secondary : secondary,
         coef : coef,
         alpha : alpha,
@@ -3157,7 +3160,7 @@ filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 }
 
 filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
-    shaders.sobel_rgb = shaders.sobel_rgb || new Shader(this.gl, null, '\
+    let s_sobel_rgb = this.getShader('s_sobel_rgb',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         uniform float alpha;\
@@ -3186,7 +3189,7 @@ filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) 
         }\
     ');
 
-    this.simpleShader( shaders.sobel_rgb, {
+    this.simpleShader( s_sobel_rgb, {
         secondary : secondary,
         coef : coef,
         smoothness : smoothness,
@@ -3199,7 +3202,7 @@ filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) 
 }
 
 filters.posterize=function(steps) {
-    shaders.posterize = shaders.posterize || new Shader(this.gl, null, '\
+    let s_posterize = this.getShader('s_posterize',  null, '\
         uniform sampler2D texture;\
         uniform float steps;\
         varying vec2 texCoord;\
@@ -3209,14 +3212,14 @@ filters.posterize=function(steps) {
         }\
     ');
 
-    this.simpleShader( shaders.posterize, { steps: Math.round(steps) });
+    this.simpleShader( s_posterize, { steps: Math.round(steps) });
 
     return this;
 }
 
 
 filters.posterize_hue=function(hue,brightness) {
-    shaders.posterize_hue = shaders.posterize_hue || new Shader(this.gl, null, '\
+    let s_posterize_hue = this.getShader('s_posterize_hue',  null, '\
         uniform sampler2D texture;\
         uniform float hue;\
         uniform float brightness;\
@@ -3231,7 +3234,7 @@ filters.posterize_hue=function(hue,brightness) {
         }\
     ');
 
-    this.simpleShader( shaders.posterize_hue, { hue: Math.round(hue), brightness: Math.round(brightness) });
+    this.simpleShader( s_posterize_hue, { hue: Math.round(hue), brightness: Math.round(brightness) });
 
     return this;
 }
@@ -3247,7 +3250,7 @@ filters.posterize_hue=function(hue,brightness) {
  * @param scale   The width of an individual tile, in pixels.
  */
 filters.hexagonalPixelate=function(centerX, centerY, scale) {
-    shaders.hexagonalPixelate = shaders.hexagonalPixelate || new Shader(this.gl, null, '\
+    let s_hexagonalPixelate = this.getShader('s_hexagonalPixelate',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float scale;\
@@ -3288,7 +3291,7 @@ filters.hexagonalPixelate=function(centerX, centerY, scale) {
         }\
     ');
 
-    this.simpleShader( shaders.hexagonalPixelate, {
+    this.simpleShader( s_hexagonalPixelate, {
         center: [centerX+0.5, centerY+0.5],
         scale: scale
     });
@@ -3297,7 +3300,7 @@ filters.hexagonalPixelate=function(centerX, centerY, scale) {
 }
 
 filters.pixelate=function(sx,sy,coverage,lens) {
-    shaders.pixelate = shaders.pixelate || new Shader(this.gl, null, '\
+    let s_pixelate = this.getShader('s_pixelate',  null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float coverage;\
@@ -3312,7 +3315,7 @@ filters.pixelate=function(sx,sy,coverage,lens) {
         }\
     ');
 
-    this.simpleShader( shaders.pixelate, {
+    this.simpleShader( s_pixelate, {
         size:[sx,sy],
         coverage: coverage/2.0,
         lens: lens
@@ -3333,7 +3336,7 @@ filters.pixelate=function(sx,sy,coverage,lens) {
  * @param size    The diameter of a dot in pixels.
  */
 filters.colorHalftone=function(centerX, centerY, angle, size) {
-    shaders.colorHalftone = shaders.colorHalftone || new Shader(this.gl, null, '\
+    let s_colorHalftone = this.getShader('s_colorHalftone',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float angle;\
@@ -3362,7 +3365,7 @@ filters.colorHalftone=function(centerX, centerY, angle, size) {
         }\
     ');
 
-    this.simpleShader( shaders.colorHalftone, {
+    this.simpleShader( s_colorHalftone, {
         center: [centerX, centerY],
         angle: angle,
         scale: Math.PI / size,
@@ -3377,7 +3380,7 @@ filters.colorHalftone=function(centerX, centerY, angle, size) {
  */
 
 filters.invertColor=filters.invert=function() {
-    shaders.invert = shaders.invert || new Shader(this.gl, null, '\
+    let s_invert = this.getShader('s_invert',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3386,13 +3389,13 @@ filters.invertColor=filters.invert=function() {
             gl_FragColor = color;\
         }\
     ');
-    this.simpleShader( shaders.invert, {});
+    this.simpleShader( s_invert, {});
     return this;
 }
 
 filters.glitch=function(scale,detail,strength,speed) {
     this._.glitch_time=(this._.glitch_time || 0.0)+0.0001*speed;
-    shaders.glitch = shaders.glitch || new Shader(this.gl, null, '\
+    let s_glitch = this.getShader('s_glitch',  null, '\
         uniform sampler2D texture;\
         uniform float time;\
         uniform float strength;\
@@ -3426,7 +3429,7 @@ filters.glitch=function(scale,detail,strength,speed) {
         }\
     ');
 
-    this.simpleShader( shaders.glitch, {
+    this.simpleShader( s_glitch, {
         detail:detail,
         strength: strength,
         texSize: [this.width/scale, this.height/scale],
@@ -3439,7 +3442,7 @@ filters.glitch=function(scale,detail,strength,speed) {
 /* Mirrors the image vertically (useful for webcams) */
 // also used for rendering into the canvas, that seem to display mirrored.
 filters.mirror_y = function() {
-    shaders.mirror_y = shaders.mirror_y || new Shader(this.gl, null, '\
+    let s_mirror_y = this.getShader('s_mirror_y',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3448,13 +3451,13 @@ filters.mirror_y = function() {
         }\
     ');
 
-    this.simpleShader( shaders.mirror_y, {});
+    this.simpleShader( s_mirror_y, {});
     return this;
 }
 
 /* Mirrors the image horizontally */
 filters.mirror_x = function(target) {
-    shaders.mirror_x = shaders.mirror_x || new Shader(this.gl, null, '\
+    let s_mirror_x = this.getShader('s_mirror_x',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3463,7 +3466,7 @@ filters.mirror_x = function(target) {
         }\
     ');
 
-    this.simpleShader( shaders.mirror_x, {}, null, target);
+    this.simpleShader( s_mirror_x, {}, null, target);
     return this;
 }
 
