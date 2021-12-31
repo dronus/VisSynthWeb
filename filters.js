@@ -17,8 +17,7 @@ export let filters={};
 filters.none=function(){};
 
 filters.switch_chain_time=0;
-filters.switch_chain=function(chain_index,time_min,time_max)
-{  
+filters.switch_chain=function(chain_index,time_min,time_max) {
   if(this.switched) 
     this.switch_chain_time=Date.now()+time_min*1000. + Math.random()*(time_max-time_min)*1000.;
   
@@ -57,8 +56,7 @@ filters.resolution=function(w,h,filtering,precision,fps_limit){
   filters.filtering.call(this,filtering=="linear" ? 1 : 0);
 };
 
-filters.filtering=function(linear)
-{
+filters.filtering=function(linear) {
   this._.template.filter=linear>0 ? gl.LINEAR : gl.NEAREST;
 }
 
@@ -287,8 +285,7 @@ filters.superquadric=function(A,B,C,r,s,t,angle) {
     return this;
 }
 
-filters.feedbackIn=function()
-{
+filters.feedbackIn=function() {
     // Store a copy of the current texture in the feedback texture unit
     this._.feedbackTexture=this.getSpareTexture(this._.feedbackTexture);
 
@@ -297,8 +294,7 @@ filters.feedbackIn=function()
     return this;
 }
 
-filters.strobe=function(period)
-{
+filters.strobe=function(period) {
     var t=this._.texture;
     this._.strobeTexture=this.getSpareTexture(this._.strobeTexture);
 
@@ -654,8 +650,7 @@ filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 }
 
 
-filters.video=function(url,play_sound,speed,loop)
-{
+filters.video=function(url,play_sound,speed,loop) {
     if(!this._.videoFilterElement) this._.videoFilterElement={};
     var v=this._.videoFilterElement[url];
     if(!v)
@@ -696,8 +691,7 @@ filters.video=function(url,play_sound,speed,loop)
 }
 
 var image_loaded=[];
-filters.image=function(url)
-{
+filters.image=function(url) {
 
     if(!this._.imageFilterElement) this._.imageFilterElement=[];
     var v=this._.imageFilterElement[url];
@@ -1160,8 +1154,7 @@ filters.noalpha=function() {
     return this;
 }
 
-filters.preview=function()
-{
+filters.preview=function() {
     this.preview_width=640; this.preview_height=400;
     gl.viewport(0,0,this.preview_width,this.preview_height);
     filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
@@ -1586,8 +1579,7 @@ filters.gauze=function(fx,fy,angle,amplitude,x,y) {
 }
 
 
-filters.waveform=function()
-{
+filters.waveform=function() {
     var values=audio_engine.waveform;
     if(!values) return;
     
@@ -1600,8 +1592,7 @@ filters.waveform=function()
 }
 
 
-filters.osciloscope=function(amplitude)
-{
+filters.osciloscope=function(amplitude) {
     shaders.osciloscope = shaders.osciloscope || new Shader(null, '\
       uniform sampler2D waveform;\
       uniform float amplitude; \
@@ -1859,8 +1850,7 @@ filters.polygon=function(sides,x,y,size,angle,aspect) {
 
 
 // TODO check wether we remiplement this by compressed textures or even an encoded video stream (WebRTC APIs or WebAsm codecs)
-filters.timeshift=function(time,clear_on_switch)
-{
+filters.timeshift=function(time,clear_on_switch) {
     // Store a stream of the last seconds in a ring buffer
 
     // calculate a sane frame limit by estimating it's memory needs.
@@ -1897,8 +1887,7 @@ filters.timeshift=function(time,clear_on_switch)
     return this;
 }
 
-filters.capture=function(source_index)
-{
+filters.capture=function(source_index) {
     source_index=Math.floor(source_index);    
     var v=this.video_source(source_index,this.resolution_w,this.resolution_h);
     
@@ -1912,8 +1901,7 @@ filters.capture=function(source_index)
     return this;
 }
 
-filters.webrtc=function(websocket_url)
-{
+filters.webrtc=function(websocket_url) {
     if(!this.webrtc_videos) {
       this.webrtc_videos={};
       this.webrtc_peers={};
@@ -2050,8 +2038,7 @@ filters.denoisefast=function(exponent) {
     return this;
 }
 
-filters.spectrogram=function()
-{
+filters.spectrogram=function() {
     var values=audio_engine.spectrogram;
     if(!values) return;
     
@@ -2285,13 +2272,11 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     return this;
 }
 
-filters.stack_push=function(from_texture)
-{
+filters.stack_push=function(from_texture) {
   this.stack_push(from_texture);
 }
 
-filters.stack_swap=function()
-{
+filters.stack_swap=function() {
   // exchange topmost stack element with current texture
   if(this._.stack.length<1) return;
   
@@ -2300,8 +2285,7 @@ filters.stack_swap=function()
   this._.stack[this._.stack.length-1]=tmp;
 }
 
-filters.stack_prepare=function()
-{
+filters.stack_prepare=function() {
   // make sure the stack is there
   if(!this._.stack) this._.stack=[];
   if(!this._.stackUnused) this._.stackUnused=[];
@@ -3499,8 +3483,7 @@ filters.mirror_x = function(target) {
 }
 
 //canvas._.midi_init=false;
-filters.midi=function(device, rows, cols, toggles)
-{
+filters.midi=function(device, rows, cols, toggles) {
   device=Math.floor(device);
   rows=Math.floor(rows);
   cols=Math.floor(cols);
