@@ -149,6 +149,10 @@ var onSourcesAcquired=function(sources)
   // send out device data to UI
   put('devices',JSON.stringify(sources));
 
+
+}
+
+export var start=function() {
   // start frequent canvas updates
   if(!running)
   {
