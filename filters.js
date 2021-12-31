@@ -9,6 +9,8 @@ function clamp(lo, value, hi) {
     return Math.max(lo, Math.min(value, hi));
 }
 
+let shaders={};
+
 canvas.none=function(){};
 
 canvas.switch_chain_time=0;
@@ -87,7 +89,7 @@ canvas.blend_alpha=function(alpha) {
 
     alpha=alpha||1.0;
 
-    gl.blend_alpha = gl.blend_alpha || new Shader(null, '\
+    shaders.blend_alpha = shaders.blend_alpha || new Shader(null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         uniform float alpha;\
@@ -100,14 +102,14 @@ canvas.blend_alpha=function(alpha) {
     ');
 
     var texture1=this.stack_pop();
-    gl.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
-    this.simpleShader( gl.blend_alpha, {alpha:clamp(0.,alpha,1.)});
+    shaders.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
+    this.simpleShader( shaders.blend_alpha, {alpha:clamp(0.,alpha,1.)});
 
     return this;
 }
 
 canvas.multiply=function() {
-    gl.multiply = gl.multiply || new Shader(null, '\
+    shaders.multiply = shaders.multiply || new Shader(null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         varying vec2 texCoord;\
@@ -119,15 +121,15 @@ canvas.multiply=function() {
     ');
 
     var texture1=this.stack_pop();
-    gl.multiply.textures({texture2: this._.texture, texture1: texture1});
-    this.simpleShader( gl.multiply, {});
+    shaders.multiply.textures({texture2: this._.texture, texture1: texture1});
+    this.simpleShader( shaders.multiply, {});
 
     return this;
 }
 
 
 canvas.blend_mask=function() {
-    gl.blend_mask = gl.blend_mask || new Shader(null, '\
+    shaders.blend_mask = shaders.blend_mask || new Shader(null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         uniform sampler2D mask;\
@@ -142,15 +144,15 @@ canvas.blend_mask=function() {
 
     var texture2=this.stack_pop();
     var texture1=this.stack_pop();
-    gl.blend_mask.textures({mask: this._.texture, texture1: texture1, texture2: texture2});
-    this.simpleShader( gl.blend_mask, {});
+    shaders.blend_mask.textures({mask: this._.texture, texture1: texture1, texture2: texture2});
+    this.simpleShader( shaders.blend_mask, {});
 
     return this;
 }
 
 
 canvas.superquadric=function(A,B,C,r,s,t,angle) {
-    gl.superquadric = gl.superquadric || new Shader('\
+    shaders.superquadric = shaders.superquadric || new Shader('\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -274,8 +276,8 @@ canvas.superquadric=function(A,B,C,r,s,t,angle) {
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
-    gl.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    shaders.superquadric.attributes({vertex:vertices,_texCoord:uvs},{vertex:3,_texCoord:2});
+    shaders.superquadric.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
     gl.disable(gl.DEPTH_TEST);
     this.setTexture(target);
     
@@ -305,7 +307,7 @@ canvas.strobe=function(period)
 }
 
 canvas.tile=function(size,centerx,centery) {
-    gl.tile = gl.tile || new Shader(null, '\
+    shaders.tile = shaders.tile || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
       	uniform float size;\
@@ -316,7 +318,7 @@ canvas.tile=function(size,centerx,centery) {
         }\
     ');
 
-    this.simpleShader( gl.tile, {size:size,center: [centerx,centery]});
+    this.simpleShader( shaders.tile, {size:size,center: [centerx,centery]});
 
     return this;
 }
@@ -324,9 +326,9 @@ canvas.tile=function(size,centerx,centery) {
 
 canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
 
-  if(!gl.supershape)
+  if(!shaders.supershape)
   {
-    gl.supershape = new Shader('\
+    shaders.supershape = new Shader('\
       float superFormula(in float a, in float b, in float m, in float n1, in float n2, in float n3, in float phi)\
       {\
           vec2 ret;\
@@ -411,7 +413,7 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
               uvs.push(u,v2);                  
           }
       }
-      gl.supershape.attributes({_texCoord:uvs},{_texCoord:2});
+      shaders.supershape.attributes({_texCoord:uvs},{_texCoord:2});
     }
        
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -434,7 +436,7 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
-    gl.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
+    shaders.supershape.uniforms(uniforms).drawArrays(gl.TRIANGLE_STRIP);
     gl.disable(gl.DEPTH_TEST);
     this.putTexture(target);
     
@@ -443,7 +445,7 @@ canvas.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n
 
 
 canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
-    gl.superellipse = gl.superellipse || new Shader(null, '\
+    shaders.superellipse = shaders.superellipse || new Shader(null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
       uniform float a;\
@@ -483,14 +485,14 @@ canvas.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
       -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
                         0,                 0,1
     ];
-    this.simpleShader( gl.superellipse, {transform:transform,a:a,b:b,m:m,n1:n1,n2:n2,n3:n3});
+    this.simpleShader( shaders.superellipse, {transform:transform,a:a,b:b,m:m,n1:n1,n2:n2,n3:n3});
 
     return this;
 };
 
 
 canvas.grating=function(size,angle,ax,fx,ay,fy) {
-    gl.grating = gl.grating || new Shader(null, '\
+    shaders.grating = shaders.grating || new Shader(null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
       uniform float ax;\
@@ -510,14 +512,14 @@ canvas.grating=function(size,angle,ax,fx,ay,fy) {
       -Math.cos(angle)/sy,Math.sin(angle)/sy,0,
                         0,                 0,1
     ];
-    this.simpleShader( gl.grating, {transform:transform,ax:ax,fx:fx,ay:ay,fy:fy});
+    this.simpleShader( shaders.grating, {transform:transform,ax:ax,fx:fx,ay:ay,fy:fy});
 
     return this;
 };
 
 
 canvas.colorDisplacement=function(angle,amplitude) {
-    gl.colorDisplacement = gl.colorDisplacement || new Shader(null,'\
+    shaders.colorDisplacement = shaders.colorDisplacement || new Shader(null,'\
     \
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -539,7 +541,7 @@ canvas.colorDisplacement=function(angle,amplitude) {
         } \
     ');
 
-    this.simpleShader( gl.colorDisplacement, {
+    this.simpleShader( shaders.colorDisplacement, {
         angle: angle,    
         amplitude: amplitude,
         texSize: [this.width, this.height]        
@@ -549,20 +551,20 @@ canvas.colorDisplacement=function(angle,amplitude) {
 }
 
 canvas.matte=function(r,g,b,a) {
-    gl.matte = gl.matte || new Shader(null, '\
+    shaders.matte = shaders.matte || new Shader(null, '\
         uniform vec4 color;\
         void main() {\
             gl_FragColor = color;\
         }\
     ');
     if(typeof(a)=='undefined') a=1.; // legacy
-    this.simpleShader( gl.matte, {color:[r,g,b,a]});
+    this.simpleShader( shaders.matte, {color:[r,g,b,a]});
     return this;
 }
 
 
 canvas.noise=function(seed) {
-    gl.noise = gl.noise || new Shader(null, '\
+    shaders.noise = shaders.noise || new Shader(null, '\
         varying vec2 texCoord;\
         uniform float seed;\
         vec3 noise3(vec3 t){\
@@ -577,14 +579,14 @@ canvas.noise=function(seed) {
             gl_FragColor = vec4(noise3(vec3(texCoord,seed)),1.0);\
         }\
     ');
-    this.simpleShader( gl.noise, {seed:seed});
+    this.simpleShader( shaders.noise, {seed:seed});
     return this;
 }
 
 
 canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
-    gl.polygon_matte = gl.polygon_matte || new Shader(null, '\
+    shaders.polygon_matte = shaders.polygon_matte || new Shader(null, '\
         uniform vec4 color;\
         uniform vec2 size;\
         uniform float sides;\
@@ -608,7 +610,7 @@ canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
         }\
     ');
 
-    this.simpleShader( gl.polygon_matte, {
+    this.simpleShader( shaders.polygon_matte, {
         color:[r,g,b,a],
         size:[size*this.height/this.width,size*aspect],
         sides:Math.floor(sides),
@@ -621,7 +623,7 @@ canvas.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
 canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
-    gl.rectangle = gl.rectangle || new Shader(null, '\
+    shaders.rectangle = shaders.rectangle || new Shader(null, '\
         uniform vec4 color;\
         uniform vec2 size;\
         uniform float angle;\
@@ -638,7 +640,7 @@ canvas.rectangle=function(r,g,b,a,x,y,width,height,angle) {
         }\
     ');
 
-    this.simpleShader( gl.rectangle, {
+    this.simpleShader( shaders.rectangle, {
         color:[r,g,b,a],
         size:[width*this.height/this.width,height],
         angle:angle,
@@ -728,7 +730,7 @@ canvas.image=function(url)
 
 
 canvas.ripple=function(fx,fy,angle,amplitude) {
-    gl.ripple = gl.ripple || warpShader('\
+    shaders.ripple = shaders.ripple || warpShader('\
         uniform vec4 xform;\
         uniform float amplitude;\
     ', '\
@@ -736,7 +738,7 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
         coord += amplitude*sin(mat*coord);\
     ');
 
-    this.simpleShader( gl.ripple, {
+    this.simpleShader( shaders.ripple, {
         xform: [
            Math.cos(angle)*fx, Math.sin(angle)*fy,
           -Math.sin(angle)*fx, Math.cos(angle)*fy
@@ -748,7 +750,7 @@ canvas.ripple=function(fx,fy,angle,amplitude) {
 }
 
 canvas.spherical=function(radius,scale) {
-    gl.spherical = gl.spherical || warpShader('\
+    shaders.spherical = shaders.spherical || warpShader('\
         uniform float radius;\
         uniform float scale;\
     ', '\
@@ -758,7 +760,7 @@ canvas.spherical=function(radius,scale) {
         coord*=(l2/l/scale);\
     ');
 
-    this.simpleShader( gl.spherical, {
+    this.simpleShader( shaders.spherical, {
         radius: radius,
         scale : scale,
     });
@@ -790,10 +792,10 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 
     if(!mesh_transforms[mesh_type]) mesh_type="plane";
 
-    if(!gl.mesh_displacement) gl.mesh_displacement={};
-    if(!gl.mesh_displacement[mesh_type])
+    if(!shaders.mesh_displacement) shaders.mesh_displacement={};
+    if(!shaders.mesh_displacement[mesh_type])
     {
-    gl.mesh_displacement[mesh_type] = new Shader('\
+    shaders.mesh_displacement[mesh_type] = new Shader('\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
     uniform mat4 matrix;\
@@ -825,9 +827,9 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
         gridMeshUvs.push(0.0,y-dy);
         gridMeshUvs.push(0.0,y-dy);
     }
-    gl.mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
+    shaders.mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
     }
-    var mesh_shader=gl.mesh_displacement[mesh_type];
+    var mesh_shader=shaders.mesh_displacement[mesh_type];
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -869,7 +871,7 @@ canvas.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 }
 
 canvas.blend=function(alpha,factor,offset) {
-    gl.blend = gl.blend || new Shader(null, '\
+    shaders.blend = shaders.blend || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D texture1;\
         uniform float alpha;\
@@ -883,14 +885,14 @@ canvas.blend=function(alpha,factor,offset) {
         }\
     ');
 
-    gl.blend.textures({texture: this._.texture, texture1: this.stack_pop()});
-    this.simpleShader( gl.blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
+    shaders.blend.textures({texture: this._.texture, texture1: this.stack_pop()});
+    this.simpleShader( shaders.blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
 
     return this;
 }
 
 canvas.kaleidoscope=function(sides,angle,angle2) {
-    gl.kaleidoscope = gl.kaleidoscope || new Shader(null, '\
+    shaders.kaleidoscope = shaders.kaleidoscope || new Shader(null, '\
         uniform sampler2D texture;\
 	uniform float angle;\
 	uniform float angle2;\
@@ -909,7 +911,7 @@ canvas.kaleidoscope=function(sides,angle,angle2) {
 	}\
     ');
 
-    this.simpleShader( gl.kaleidoscope, {sides:Math.round(sides), angle:angle, angle2:angle2});
+    this.simpleShader( shaders.kaleidoscope, {sides:Math.round(sides), angle:angle, angle2:angle2});
 
     return this;
 }
@@ -921,7 +923,7 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
 
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
-    gl.mandelbrot = gl.mandelbrot || new Shader(null, '\
+    shaders.mandelbrot = shaders.mandelbrot || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec4 xform;\
         uniform vec2 center;\
@@ -942,7 +944,7 @@ canvas.mandelbrot=function(x,y,scale,angle,iterations) {
         }\
     ');
 
-    this.simpleShader( gl.mandelbrot, {
+    this.simpleShader( shaders.mandelbrot, {
         xform: [
            Math.cos(angle)*scale, Math.sin(angle)*scale,
           -Math.sin(angle)*scale, Math.cos(angle)*scale
@@ -960,7 +962,7 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
-    gl.julia = gl.julia || new Shader(null, '\
+    shaders.julia = shaders.julia || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec4 xform;\
         uniform vec2 center;\
@@ -981,7 +983,7 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
         }\
     ');
 
-    this.simpleShader( gl.julia, {
+    this.simpleShader( shaders.julia, {
         xform: [
            Math.cos(angle)*scale, Math.sin(angle)*scale,
           -Math.sin(angle)*scale, Math.cos(angle)*scale
@@ -998,7 +1000,7 @@ canvas.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
 canvas.relief=function(scale2,scale4) {
       gl.getExtension('OES_standard_derivatives');
-      gl.relief = gl.relief || new Shader(null,'\n\
+      shaders.relief = shaders.relief || new Shader(null,'\n\
       #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur2;\n\
@@ -1047,7 +1049,7 @@ canvas.relief=function(scale2,scale4) {
     var scales=[scale2,scale4];
     for(var d=1.; !(textures[0] && textures[1] ) ; d*=Math.sqrt(2))
     {
-      this.simpleShader( gl.reaction_blur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( shaders.reaction_blur, { delta: [d/this.width, d/this.height]});
       
       for(var s=0; s<2; s++)
         if(!textures[s] && d>scales[s])
@@ -1056,13 +1058,13 @@ canvas.relief=function(scale2,scale4) {
     for(var s=0; s<=2; s++)
       this.stack_pop();
       
-    gl.relief.textures({
+    shaders.relief.textures({
         texture: texture,
         texture_blur2: textures[0],
         texture_blur4: textures[1]
     });    
     
-    this.simpleShader( gl.relief, {
+    this.simpleShader( shaders.relief, {
         texSize: [1./this.width,1./this.height],
     },texture);
 
@@ -1071,7 +1073,7 @@ canvas.relief=function(scale2,scale4) {
 
 
 canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
-    gl.transform = gl.transform || new Shader(null, '\
+    shaders.transform = shaders.transform || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
         uniform vec4 xform;\
@@ -1090,7 +1092,7 @@ canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
     
     if(!sx) sx=1.0;
     if(!sy) sy=1.0;
-    this.simpleShader( gl.transform, {
+    this.simpleShader( shaders.transform, {
       translation: [x,y],
       xform: [
          Math.cos(angle)/scale/sx, Math.sin(angle)/scale/sy,
@@ -1105,7 +1107,7 @@ canvas.transform=function(x,y,scale,angle,sx,sy,wrap) {
 
 
 canvas.analogize=function(exposure,gamma,glow,radius) {
-    gl.analogize = gl.analogize || new Shader(null,'\
+    shaders.analogize = shaders.analogize || new Shader(null,'\
     \
       uniform sampler2D texture;\
       uniform sampler2D glow_texture;\
@@ -1128,11 +1130,11 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 
     this.blur(radius);
 
-    gl.analogize.textures({
+    shaders.analogize.textures({
         glow_texture: this._.texture,
         texture: this.stack_pop()
     });
-    this.simpleShader( gl.analogize, {
+    this.simpleShader( shaders.analogize, {
         Glow: glow,
         Exposure: exposure,
         Gamma: gamma
@@ -1143,7 +1145,7 @@ canvas.analogize=function(exposure,gamma,glow,radius) {
 
 
 canvas.noalpha=function() {
-    gl.noalpha = gl.noalpha || new Shader(null, '\
+    shaders.noalpha = shaders.noalpha || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1151,7 +1153,7 @@ canvas.noalpha=function() {
             gl_FragColor = vec4(color.rgb,1.);\
         }\
     ');
-    this.simpleShader( gl.noalpha, {});
+    this.simpleShader( shaders.noalpha, {});
     return this;
 }
 
@@ -1166,7 +1168,7 @@ canvas.preview=function()
 }
 
 canvas.feedbackOut=function(blend,clear_on_switch) {
-    gl.feedbackOut = gl.feedbackOut || new Shader(null, '\
+    shaders.feedbackOut = shaders.feedbackOut || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D feedbackTexture;\
         uniform float blend;\
@@ -1183,11 +1185,11 @@ canvas.feedbackOut=function(blend,clear_on_switch) {
     if(clear_on_switch && this.switched)
       this._.feedbackTexture.clear();
 
-    gl.feedbackOut.textures({
+    shaders.feedbackOut.textures({
         texture: this._.texture,
         feedbackTexture: this._.feedbackTexture
     });
-    this.simpleShader( gl.feedbackOut, {
+    this.simpleShader( shaders.feedbackOut, {
         blend: blend
     });
 
@@ -1195,7 +1197,7 @@ canvas.feedbackOut=function(blend,clear_on_switch) {
 }
 
 canvas.motion=function(threshold,interval,damper) {
-    gl.motionBlend = gl.motionBlend || new Shader(null, '\
+    shaders.motionBlend = shaders.motionBlend || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
         uniform float blend;\
@@ -1207,7 +1209,7 @@ canvas.motion=function(threshold,interval,damper) {
         }\
     ');
 
-    gl.motion = gl.motion || new Shader(null, '\
+    shaders.motion = shaders.motion || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
         uniform float threshold;\
@@ -1226,11 +1228,11 @@ canvas.motion=function(threshold,interval,damper) {
     {
       // blend current image into mean motion texture
       var target=this.getSpareTexture();
-      gl.motionBlend.textures({
+      shaders.motionBlend.textures({
           texture: this._.texture,
           motionTexture: this._.motionTexture
       });
-      this.simpleShader( gl.motionBlend, {
+      this.simpleShader( shaders.motionBlend, {
           blend: damper
       },this._.texture,target);
 
@@ -1242,11 +1244,11 @@ canvas.motion=function(threshold,interval,damper) {
     this._.motionCycle++;
 
     // rebind, motionTexture was exchanged by simpleShader
-    gl.motion.textures({
+    shaders.motion.textures({
         texture: this._.texture,
         motionTexture: this._.motionTexture
     });
-    this.simpleShader( gl.motion, {
+    this.simpleShader( shaders.motion, {
         threshold: threshold
     });
 
@@ -1257,7 +1259,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
     gl.getExtension('OES_standard_derivatives');
 
-    gl.reaction_blur = gl.reaction_blur || new Shader(null, '\
+    shaders.reaction_blur = shaders.reaction_blur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -1272,7 +1274,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         }\
     ');
     
-    gl.reaction = gl.reaction || new Shader(null,'\n\
+    shaders.reaction = shaders.reaction || new Shader(null,'\n\
       #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur;\n\
@@ -1420,7 +1422,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     var scales=[scale1,scale2,scale3,scale4];
     for(var d=1.; !(textures[0] && textures[1] && textures[2] && textures[3] ) ; d*=Math.sqrt(2))
     {
-      this.simpleShader( gl.reaction_blur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( shaders.reaction_blur, { delta: [d/this.width, d/this.height]});
       
       for(var s=0; s<4; s++)
         if(!textures[s] && d>scales[s])
@@ -1431,7 +1433,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
     for(var s=0; s<=4; s++)
       this.stack_pop();
       
-    gl.reaction.textures({
+    shaders.reaction.textures({
         texture: texture,
         texture_blur: textures[0],
         texture_blur2: textures[1],
@@ -1439,7 +1441,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         texture_blur4: textures[3]
     });    
     
-    this.simpleShader( gl.reaction, {
+    this.simpleShader( shaders.reaction, {
         texSize: [1./this.width,1./this.height],
         rnd: [Math.random(),Math.random(),Math.random(),Math.random()],
         noise_factor: noise_factor,
@@ -1453,7 +1455,7 @@ canvas.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 canvas.reaction2=function(F,K,D_a,D_b,iterations) {
     iterations=Math.floor(Math.min(iterations,100.));
-    gl.reaction2 = gl.reaction2 || new Shader(null, '\
+    shaders.reaction2 = shaders.reaction2 || new Shader(null, '\
       uniform sampler2D texture;\n\
       uniform float F;\n\
       uniform float K;\n\
@@ -1486,14 +1488,14 @@ canvas.reaction2=function(F,K,D_a,D_b,iterations) {
 
     this._.texture.use(0);
     for(var i=0; i<iterations; i++)
-      this.simpleShader( gl.reaction2, {F:F,K:K,D_a:D_a,D_b:D_b, scale: [this.width,this.height] });
+      this.simpleShader( shaders.reaction2, {F:F,K:K,D_a:D_a,D_b:D_b, scale: [this.width,this.height] });
 
     return this;
 }
 
 
 canvas.displacement=function(strength) {
-    gl.displacement = gl.displacement || new Shader(null, '\
+    shaders.displacement = shaders.displacement || new Shader(null, '\
         uniform sampler2D displacement_map;\
         uniform sampler2D texture;\
         uniform float strength;\
@@ -1505,15 +1507,15 @@ canvas.displacement=function(strength) {
         }\
     ');
 
-    gl.displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
-    this.simpleShader( gl.displacement, { strength: strength });
+    shaders.displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    this.simpleShader( shaders.displacement, { strength: strength });
 
     return this;
 }
 
 
 canvas.address_glitch=function(mask_x,mask_y) {
-    gl.address_glitch = gl.address_glitch || new Shader(null, '\
+    shaders.address_glitch = shaders.address_glitch || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float mask_x;\
         uniform float mask_y;\
@@ -1544,7 +1546,7 @@ canvas.address_glitch=function(mask_x,mask_y) {
     ');
 
 
-    this.simpleShader( gl.address_glitch, { mask_x:mask_x, mask_y:mask_y, texSize: [this.width, this.height]});
+    this.simpleShader( shaders.address_glitch, { mask_x:mask_x, mask_y:mask_y, texSize: [this.width, this.height]});
 
     return this;
 }
@@ -1552,7 +1554,7 @@ canvas.address_glitch=function(mask_x,mask_y) {
 
 canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
 
-    gl.gauze = gl.gauze || new Shader(null, '\
+    shaders.gauze = shaders.gauze || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float amplitude;\
         uniform vec4 xform;\
@@ -1567,7 +1569,7 @@ canvas.gauze=function(fx,fy,angle,amplitude,x,y) {
         }\
     ');
 
-    this.simpleShader( gl.gauze, {
+    this.simpleShader( shaders.gauze, {
         xform: [
            Math.cos(angle)*fx, Math.sin(angle)*fy,
           -Math.sin(angle)*fx, Math.cos(angle)*fy
@@ -1597,7 +1599,7 @@ canvas.waveform=function()
 
 canvas.osciloscope=function(amplitude)
 {
-    gl.osciloscope = gl.osciloscope || new Shader(null, '\
+    shaders.osciloscope = shaders.osciloscope || new Shader(null, '\
       uniform sampler2D waveform;\
       uniform float amplitude; \
       varying vec2 texCoord;\
@@ -1614,7 +1616,7 @@ canvas.osciloscope=function(amplitude)
     var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
     waveformTexture.load(values);
 
-    this.simpleShader( gl.osciloscope, {amplitude:amplitude}, waveformTexture);
+    this.simpleShader( shaders.osciloscope, {amplitude:amplitude}, waveformTexture);
     
     this.releaseTexture(waveformTexture);
 
@@ -1622,7 +1624,7 @@ canvas.osciloscope=function(amplitude)
 }
 
 canvas.vectorscope=function(size,intensity,linewidth) {
-    gl.vectorscope = gl.vectorscope || new Shader('\
+    shaders.vectorscope = shaders.vectorscope || new Shader('\
     attribute vec2 _texCoord;\
     uniform sampler2D waveform;\
     uniform float size;\
@@ -1648,17 +1650,17 @@ canvas.vectorscope=function(size,intensity,linewidth) {
       this._.vectorscopeUVs=[];
       for (var t=0;t<=1.0;t+=1.0/count)
         this._.vectorscopeUVs.push(t);
-      gl.vectorscope.attributes({_texCoord:this._.vectorscopeUVs},{_texCoord:1});
+      shaders.vectorscope.attributes({_texCoord:this._.vectorscopeUVs},{_texCoord:1});
     }
             
     // set shader parameters
-    gl.vectorscope.uniforms({
+    shaders.vectorscope.uniforms({
       size:size, delta: 20.0/count,intensity:intensity
     });    
     // set shader textures    
     var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
     waveformTexture.load(values);
-    gl.vectorscope.textures({waveform: waveformTexture});
+    shaders.vectorscope.textures({waveform: waveformTexture});
 
     // render 3d mesh stored in waveform texture,uvs to texture
     this._.texture.setAsTarget();
@@ -1669,7 +1671,7 @@ canvas.vectorscope=function(size,intensity,linewidth) {
     gl.blendFunc(gl.ONE, gl.ONE);
    // gl.enable(gl.LINE_SMOOTH);
     gl.lineWidth(linewidth);
-    gl.vectorscope.drawArrays(gl.LINE_STRIP);
+    shaders.vectorscope.drawArrays(gl.LINE_STRIP);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);        
  
@@ -1679,7 +1681,7 @@ canvas.vectorscope=function(size,intensity,linewidth) {
 }
 
 canvas.lumakey=canvas.luma_key=function(threshold,feather) {
-    gl.lumakey = gl.lumakey || new Shader(null, '\
+    shaders.lumakey = shaders.lumakey || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform float threshold;\
@@ -1694,14 +1696,14 @@ canvas.lumakey=canvas.luma_key=function(threshold,feather) {
       }\
     ');
 
-    gl.lumakey.textures({texture: this._.texture, texture1: this.stack_pop()});
-    this.simpleShader( gl.lumakey, { threshold: threshold, feather: feather });
+    shaders.lumakey.textures({texture: this._.texture, texture1: this.stack_pop()});
+    this.simpleShader( shaders.lumakey, { threshold: threshold, feather: feather });
 
     return this;
 }
 
 canvas.chroma_key_rgb=function(r,g,b,threshold,feather) {
-    gl.chroma_key_rgb=gl.chroma_key_rgb || new Shader(null, '\
+    shaders.chroma_key_rgb=shaders.chroma_key_rgb || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform vec3 key_color;\
@@ -1723,8 +1725,8 @@ canvas.chroma_key_rgb=function(r,g,b,threshold,feather) {
       }\
     ');
 
-    gl.chroma_key_rgb.textures({texture: this._.texture, texture1: this.stack_pop()});
-    this.simpleShader( gl.chroma_key_rgb, { key_color:[r,g,b], threshold: threshold, feather: feather });
+    shaders.chroma_key_rgb.textures({texture: this._.texture, texture1: this.stack_pop()});
+    this.simpleShader( shaders.chroma_key_rgb, { key_color:[r,g,b], threshold: threshold, feather: feather });
 
     return this;
 }
@@ -1734,7 +1736,7 @@ canvas.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_f
     // legacy chains use chroma_key to denote chroma_key_rgb
     if(arguments.length==5) canvas.chroma_key_rgb.apply(this,arguments);
 
-    gl.chroma_key = gl.chroma_key || new Shader(null, '\
+    shaders.chroma_key = shaders.chroma_key || new Shader(null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform vec3 hsv_key;\
@@ -1763,14 +1765,14 @@ canvas.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_f
     ');
 
     h=Math.max(0.0,Math.min(1.0,h));
-    gl.chroma_key.textures({texture: this._.texture, texture1: this.stack_pop()});
-    this.simpleShader( gl.chroma_key, { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]});
+    shaders.chroma_key.textures({texture: this._.texture, texture1: this.stack_pop()});
+    this.simpleShader( shaders.chroma_key, { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]});
 
     return this;
 }
 
 canvas.life=function(iterations) {
-    gl.life = gl.life || new Shader(null, '\
+    shaders.life = shaders.life || new Shader(null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
       varying vec2 texCoord;\
@@ -1807,7 +1809,7 @@ canvas.life=function(iterations) {
     ');
 
     for(var i=0; i<1 || i<iterations && i<100; i++)
-      this.simpleShader( gl.life, {texSize: [this.width, this.height]});
+      this.simpleShader( shaders.life, {texSize: [this.width, this.height]});
 
     return this;
 }
@@ -1817,7 +1819,7 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
 
     aspect=aspect || 1.;
     
-    gl.polygon = gl.polygon || new Shader(null, '\
+    shaders.polygon = shaders.polygon || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float sides;\
@@ -1842,7 +1844,7 @@ canvas.polygon=function(sides,x,y,size,angle,aspect) {
         }\
     ');
 
-    this.simpleShader( gl.polygon, {
+    this.simpleShader( shaders.polygon, {
         size:[size*this.height/this.width,size*aspect],
         sides:Math.floor(sides),
         angle:angle,
@@ -1934,7 +1936,7 @@ canvas.webrtc=function(websocket_url)
 }
 
 canvas.rainbow=function(size, angle) {
-    gl.rainbow = gl.rainbow || new Shader(null, '\
+    shaders.rainbow = shaders.rainbow || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1949,7 +1951,7 @@ canvas.rainbow=function(size, angle) {
         }\
     ');
 
-    this.simpleShader( gl.rainbow, {});
+    this.simpleShader( shaders.rainbow, {});
 
     return this;
 }
@@ -1960,7 +1962,7 @@ canvas.rainbow=function(size, angle) {
  */
 canvas.grid=function(size, angle, x, y, width) {
     if(!width) width=0.05;
-    gl.grid = gl.grid || new Shader(null, '\
+    shaders.grid = shaders.grid || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float angle;\
@@ -1979,14 +1981,14 @@ canvas.grid=function(size, angle, x, y, width) {
         }\
     ');
 
-    this.simpleShader( gl.grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
+    this.simpleShader( shaders.grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
     });
 
     return this;
 }
 
 canvas.absolute=function(size, angle) {
-    gl.absolute = gl.absolute || new Shader(null, '\
+    shaders.absolute = shaders.absolute || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1996,7 +1998,7 @@ canvas.absolute=function(size, angle) {
         }\
     ');
 
-    this.simpleShader( gl.absolute, {});
+    this.simpleShader( shaders.absolute, {});
 
     return this;
 }
@@ -2011,7 +2013,7 @@ canvas.absolute=function(size, angle) {
  */
 canvas.denoisefast=function(exponent) {
     // Do a 3x3 bilateral box filter
-    gl.denoisefast = gl.denoisefast || new Shader(null, '\
+    shaders.denoisefast = shaders.denoisefast || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float exponent;\
         uniform float strength;\
@@ -2036,7 +2038,7 @@ canvas.denoisefast=function(exponent) {
 
     // Perform five iterations for stronger results
     for (var i = 0; i < 5; i++) {
-        this.simpleShader( gl.denoisefast, {
+        this.simpleShader( shaders.denoisefast, {
             exponent: Math.max(0, exponent),
             texSize: [this.width, this.height]
         });
@@ -2059,7 +2061,7 @@ canvas.spectrogram=function()
 }
 
 canvas.smoothlife=function(birth_min,birth_max,death_min) {
-    gl.smoothlife = gl.smoothlife || new Shader(null, '\
+    shaders.smoothlife = shaders.smoothlife || new Shader(null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
       varying vec2 texCoord;\
@@ -2100,7 +2102,7 @@ canvas.smoothlife=function(birth_min,birth_max,death_min) {
       }\
     ');
 
-    this.simpleShader( gl.smoothlife, {
+    this.simpleShader( shaders.smoothlife, {
       birth_min:birth_min,
       birth_max:birth_max,
       death_min:death_min,
@@ -2111,7 +2113,7 @@ canvas.smoothlife=function(birth_min,birth_max,death_min) {
 }
 
 canvas.soft_life=function(birth_min,birth_max,death_min) {
-    gl.soft_life = gl.soft_life || new Shader(null, '\
+    shaders.soft_life = shaders.soft_life || new Shader(null, '\
       uniform sampler2D inner_texture;\
       uniform sampler2D outer_texture;\
       varying vec2 texCoord;\
@@ -2136,9 +2138,9 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
 
     this.stack_pop();
         
-    gl.soft_life.textures({inner_texture: inner_texture, outer_texture: this._.texture});
+    shaders.soft_life.textures({inner_texture: inner_texture, outer_texture: this._.texture});
     
-    this.simpleShader( gl.soft_life, {
+    this.simpleShader( shaders.soft_life, {
       birth_min:birth_min,
       birth_max:birth_max,
       death_min:death_min,
@@ -2149,7 +2151,7 @@ canvas.soft_life=function(birth_min,birth_max,death_min) {
 
 
 canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
-    gl.particles = gl.particles || new Shader('\
+    shaders.particles = shaders.particles || new Shader('\
     attribute vec2 _texCoord;\
     uniform sampler2D texture;\
     uniform mat4 matrix;\
@@ -2174,7 +2176,7 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     }\
     ');
 
-    gl.particle_update = gl.particle_update || new Shader(null,'\
+    shaders.particle_update = shaders.particle_update || new Shader(null,'\
         uniform sampler2D texture;\
         uniform sampler2D displacement_texture;\
         uniform float homing; \
@@ -2214,7 +2216,7 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
               this._.particleUvs.push(x,y);
           }
       }
-      gl.particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
+      shaders.particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
       
       // generate particle data double buffer
       if(!this._.particleTextureA) {
@@ -2232,16 +2234,16 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
    
     [this._.particleTextureB,this._.particleTextureA]=[this._.particleTextureA,this._.particleTextureB];
 
-    gl.particle_update.uniforms({
+    shaders.particle_update.uniforms({
       homing:homing,
       noise:noise,
       displacement:displacement
     });             
     var texture=this.stack_pop();
-    gl.particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
+    shaders.particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
         
     this._.particleTextureA.setAsTarget();
-    gl.particle_update.drawRect();
+    shaders.particle_update.drawRect();
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -2257,14 +2259,14 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     
         
     // set shader parameters
-    gl.particles.uniforms({
+    shaders.particles.uniforms({
       matrix:matrix,
       strength:strength,
       size:size
     });
     
     // set shader textures    
-    gl.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
+    shaders.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture()
@@ -2272,7 +2274,7 @@ canvas.particles=function(anglex,angley,anglez,size,strength,homing,noise,displa
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.particles.drawArrays(gl.POINTS);
+    shaders.particles.drawArrays(gl.POINTS);
     gl.disable(gl.DEPTH_TEST);
     // replace current texture by spare texture
     this.putTexture(target);
@@ -2350,7 +2352,7 @@ canvas.stack_prepare=function()
 
 
 canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
-    gl.patch_displacement = gl.patch_displacement || new Shader('\
+    shaders.patch_displacement = shaders.patch_displacement || new Shader('\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -2390,7 +2392,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
               this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
           }
       }
-      gl.patch_displacement.attributes({vertex: this._.gridPatchesVertices,_texCoord:this._.gridPatchesUvs},{vertex: 3, _texCoord:2});
+      shaders.patch_displacement.attributes({vertex: this._.gridPatchesVertices,_texCoord:this._.gridPatchesUvs},{vertex: 3, _texCoord:2});
     }
 
     // perspective projection matrix
@@ -2406,7 +2408,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     mat4.multiply(proj,matrix,matrix);
     
     // set shader parameters
-    gl.patch_displacement.uniforms({
+    shaders.patch_displacement.uniforms({
       matrix:matrix,
       strength: [sx,sy,sz],
       scale: scale,
@@ -2414,7 +2416,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     });
     
     // set shader textures
-    gl.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    shaders.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture();
@@ -2422,7 +2424,7 @@ canvas.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate)
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.patch_displacement.drawArrays(gl.TRIANGLES);
+    shaders.patch_displacement.drawArrays(gl.TRIANGLES);
     gl.disable(gl.DEPTH_TEST);
 
     this.putTexture(target);
@@ -2482,14 +2484,14 @@ canvas.perspective=function(before, after) {
  *                        to use for simple operations like flipping and rotating.
  */
 canvas.matrixWarp=function(matrix, inverse) {
-    gl.matrixWarp = gl.matrixWarp || warpShader('\
+    shaders.matrixWarp = shaders.matrixWarp || warpShader('\
         uniform mat3 matrix;\
     ', '\
         vec3 warp = matrix * vec3(coord, 1.0);\
         coord = warp.xy / warp.z;\
     ');
 
-    this.simpleShader( gl.matrixWarp, {
+    this.simpleShader( shaders.matrixWarp, {
         matrix: inverse ? getInverse(matrix) : matrix
     });
 
@@ -2506,7 +2508,7 @@ canvas.matrixWarp=function(matrix, inverse) {
  *                the circular region will be rotated by.
  */
 canvas.swirl=function(centerX, centerY, radius, angle) {
-    gl.swirl = gl.swirl || warpShader('\
+    shaders.swirl = shaders.swirl || warpShader('\
         uniform float radius;\
         uniform float angle;\
         uniform vec2 center;\
@@ -2526,7 +2528,7 @@ canvas.swirl=function(centerX, centerY, radius, angle) {
         coord += center;\
     ');
 
-    this.simpleShader( gl.swirl, {
+    this.simpleShader( shaders.swirl, {
         radius: radius,
         center: [centerX, centerY],
         angle: angle
@@ -2544,7 +2546,7 @@ canvas.swirl=function(centerX, centerY, radius, angle) {
  * @param strength -1 to 1 (-1 is strong pinch, 0 is no effect, 1 is strong bulge)
  */
 canvas.bulgePinch=function(centerX, centerY, radius, strength) {
-    gl.bulgePinch = gl.bulgePinch || warpShader('\
+    shaders.bulgePinch = shaders.bulgePinch || warpShader('\
         uniform float radius;\
         uniform float strength;\
         uniform vec2 center;\
@@ -2562,7 +2564,7 @@ canvas.bulgePinch=function(centerX, centerY, radius, strength) {
         coord += center;\
     ');
 
-    this.simpleShader( gl.bulgePinch, {
+    this.simpleShader( shaders.bulgePinch, {
         radius: radius,
         strength: clamp(-1, strength, 1),
         center: [centerX, centerY]
@@ -2580,7 +2582,7 @@ canvas.bulgePinch=function(centerX, centerY, radius, strength) {
  *                 where 0 doesn't change the image and 1 creates a highly blurred image.
  */
 canvas.zoomBlur=function(centerX, centerY, strength) {
-    gl.zoomBlur = gl.zoomBlur || new Shader(null, '\
+    shaders.zoomBlur = shaders.zoomBlur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float strength;\
@@ -2612,7 +2614,7 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
         }\
     ');
 
-    this.simpleShader( gl.zoomBlur, {
+    this.simpleShader( shaders.zoomBlur, {
         center: [centerX+0.5, centerY+0.5],
         strength: strength
     });
@@ -2621,7 +2623,7 @@ canvas.zoomBlur=function(centerX, centerY, strength) {
 }
 
 canvas.dilate=function(iterations) {
-    gl.dilate = gl.dilate || new Shader(null, '\
+    shaders.dilate = shaders.dilate || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
@@ -2641,7 +2643,7 @@ canvas.dilate=function(iterations) {
     ');
 
     for(var i=0; i<iterations; i++)
-      this.simpleShader( gl.dilate, {texSize: [this.width, this.height]});
+      this.simpleShader( shaders.dilate, {texSize: [this.width, this.height]});
 
     return this;
 }
@@ -2654,7 +2656,7 @@ canvas.dilate=function(iterations) {
  * @param radius The radius of the pyramid convolved with the image.
  */
 canvas.localContrast=function(radius,strength) {
-    gl.localContrastMin = gl.localContrastMin || new Shader(null, '\
+    shaders.localContrastMin = shaders.localContrastMin || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2668,7 +2670,7 @@ canvas.localContrast=function(radius,strength) {
             gl_FragColor = color; \
         }\
     ');
-    gl.localContrastMax = gl.localContrastMax || new Shader(null, '\
+    shaders.localContrastMax = shaders.localContrastMax || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2682,7 +2684,7 @@ canvas.localContrast=function(radius,strength) {
             gl_FragColor = color; \
         }\
     ');
-    gl.localContrast = gl.localContrast || new Shader(null, '\
+    shaders.localContrast = shaders.localContrast || new Shader(null, '\
         uniform sampler2D texture;\
         uniform sampler2D min_texture;\
         uniform sampler2D max_texture;\
@@ -2709,14 +2711,14 @@ canvas.localContrast=function(radius,strength) {
     var delta=Math.sqrt(radius);
 
     for(var i=0; i<steps; i++)
-      this.simpleShader( gl.localContrastMin, { delta: [delta/this.width, delta/this.height]}, min_image, min_image);
+      this.simpleShader( shaders.localContrastMin, { delta: [delta/this.width, delta/this.height]}, min_image, min_image);
 
     for(var i=0; i<steps; i++)
-      this.simpleShader( gl.localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
+      this.simpleShader( shaders.localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
 
   
-    gl.localContrast.textures({min_texture:min_image, max_texture:max_image});
-    this.simpleShader( gl.localContrast, {strength:strength},original_image);
+    shaders.localContrast.textures({min_texture:min_image, max_texture:max_image});
+    this.simpleShader( shaders.localContrast, {strength:strength},original_image);
     
     this.stack_pop();
     this.stack_pop();    
@@ -2727,7 +2729,7 @@ canvas.localContrast=function(radius,strength) {
 
 
 canvas.erode=function(iterations) {
-    gl.erode = gl.erode || new Shader(null, '\
+    shaders.erode = shaders.erode || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
@@ -2747,13 +2749,13 @@ canvas.erode=function(iterations) {
     ');
 
     for(var i=0; i<iterations; i++)
-      this.simpleShader( gl.erode, {texSize: [this.width, this.height]});
+      this.simpleShader( shaders.erode, {texSize: [this.width, this.height]});
 
     return this;
 }
 
 canvas.blur=function(radius) {
-    gl.blur = gl.blur || new Shader(null, '\
+    shaders.blur = shaders.blur || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2770,7 +2772,7 @@ canvas.blur=function(radius) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2))
     {
-      this.simpleShader( gl.blur, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( shaders.blur, { delta: [d/this.width, d/this.height]});
     }
     return this;
 }
@@ -2778,7 +2780,7 @@ canvas.blur=function(radius) {
 canvas.fastBlur=canvas.blur; // legacy name for old filter chains
 
 canvas.blur_alpha=function(radius) {
-    gl.blur_alpha = gl.blur_alpha || new Shader(null, '\
+    shaders.blur_alpha = shaders.blur_alpha || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2794,7 +2796,7 @@ canvas.blur_alpha=function(radius) {
         }\
     ');
 
-    gl.blur_alpha_post = gl.blur_alpha_post || new Shader(null, '\
+    sshaders.blur_alpha_post = sshaders.blur_alpha_post || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -2805,16 +2807,16 @@ canvas.blur_alpha=function(radius) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2.))
     {
-      this.simpleShader( gl.blur_alpha, { delta: [d/this.width, d/this.height]});
+      this.simpleShader( shaders.blur_alpha, { delta: [d/this.width, d/this.height]});
     }
-    this.simpleShader(gl.blur_alpha_post);
+    this.simpleShader(sshaders.blur_alpha_post);
     return this;
 }
 
 
 
 canvas.blur2=function(radius,exponent) {
-    gl.blur2 = gl.blur2 || new Shader(null, '\
+    shaders.blur2 = shaders.blur2 || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         uniform float exponent;\
@@ -2833,7 +2835,7 @@ canvas.blur2=function(radius,exponent) {
 
     for(var d=1.; d<=radius; d*=Math.sqrt(2))
     {
-      this.simpleShader( gl.blur2, { exponent: exponent, delta: [d/this.width, d/this.height]});
+      this.simpleShader( shaders.blur2, { exponent: exponent, delta: [d/this.width, d/this.height]});
     }
     return this;
 }
@@ -2847,7 +2849,7 @@ canvas.blur2=function(radius,exponent) {
  * @param strength A scale factor where 0 is no effect and higher values cause a stronger effect.
  */
 canvas.unsharpMask=function(radius, strength) {
-    gl.unsharpMask = gl.unsharpMask || new Shader(null, '\
+    shaders.unsharpMask = shaders.unsharpMask || new Shader(null, '\
         uniform sampler2D blurredTexture;\
         uniform sampler2D originalTexture;\
         uniform float strength;\
@@ -2865,11 +2867,11 @@ canvas.unsharpMask=function(radius, strength) {
 
     // Blur the current texture, then use the stored texture to detect edges
     this.blur(radius);
-    gl.unsharpMask.textures({
+    shaders.unsharpMask.textures({
         blurredTexture: this._.texture,
         originalTexture: this._.extraTexture
     });
-    this.simpleShader( gl.unsharpMask, {
+    this.simpleShader( shaders.unsharpMask, {
         strength: strength
     });
 
@@ -2885,7 +2887,7 @@ canvas.unsharpMask=function(radius, strength) {
  * @param b          0 to 1 Importance of the Blue Chanel modification
  */
 canvas.color=function(alpha,r,g,b) {
-    gl.color = gl.color || new Shader(null, '\
+    shaders.color = shaders.color || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float r;\
         uniform float g;\
@@ -2901,7 +2903,7 @@ canvas.color=function(alpha,r,g,b) {
         }\
     ');
 
-    this.simpleShader( gl.color, {
+    this.simpleShader( shaders.color, {
        r  : r,
        g  : g,
        b  : b,
@@ -2920,7 +2922,7 @@ canvas.color=function(alpha,r,g,b) {
  */
 canvas.denoise=function(exponent) {
     // Do a 9x9 bilateral box filter
-    gl.denoise = gl.denoise || new Shader(null, '\
+    shaders.denoise = shaders.denoise || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float exponent;\
         uniform float strength;\
@@ -2945,7 +2947,7 @@ canvas.denoise=function(exponent) {
 
     // Perform two iterations for stronger results
     for (var i = 0; i < 2; i++) {
-        this.simpleShader( gl.denoise, {
+        this.simpleShader( shaders.denoise, {
             exponent: Math.max(0, exponent),
             texSize: [this.width, this.height]
         });
@@ -2962,7 +2964,7 @@ canvas.denoise=function(exponent) {
  * @param amount -1 to 1 (-1 is minimum vibrance, 0 is no change, and 1 is maximum vibrance)
  */
 canvas.vibrance=function(amount) {
-    gl.vibrance = gl.vibrance || new Shader(null, '\
+    shaders.vibrance = shaders.vibrance || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float amount;\
         varying vec2 texCoord;\
@@ -2976,7 +2978,7 @@ canvas.vibrance=function(amount) {
         }\
     ');
 
-    this.simpleShader( gl.vibrance, {
+    this.simpleShader( shaders.vibrance, {
         amount: clamp(-1, amount, 1)
     });
 
@@ -2985,7 +2987,7 @@ canvas.vibrance=function(amount) {
 
 // min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0
 canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
-    gl.levels = gl.levels || new Shader(null, '\
+    shaders.levels = shaders.levels || new Shader(null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
         uniform vec3 rgb_min; \
@@ -3002,7 +3004,7 @@ canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma
         }\
     ');
 
-    this.simpleShader( gl.levels, {
+    this.simpleShader( shaders.levels, {
         rgb_min:[r_min+min,g_min+min,b_min+min],
         rgb_gamma:[r_gamma*gamma,g_gamma*gamma,b_gamma*gamma],
         rgb_max:[r_max+max-1.,g_max+max-1.,b_max+max-1.]
@@ -3024,7 +3026,7 @@ canvas.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma
  * @param saturation -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
 canvas.hueSaturation=function(hue, saturation) {
-    gl.hueSaturation = gl.hueSaturation || new Shader(null, '\
+    shaders.hueSaturation = shaders.hueSaturation || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float hue;\
         uniform float saturation;\
@@ -3055,7 +3057,7 @@ canvas.hueSaturation=function(hue, saturation) {
         }\
     ');
 
-    this.simpleShader( gl.hueSaturation, {
+    this.simpleShader( shaders.hueSaturation, {
         hue: clamp(-1, hue, 1),
         saturation: clamp(-1, saturation, 1)
     });
@@ -3070,7 +3072,7 @@ canvas.hueSaturation=function(hue, saturation) {
  * @param contrast   -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
 canvas.brightnessContrast=function(brightness, contrast) {
-    gl.brightnessContrast = gl.brightnessContrast || new Shader(null, '\
+    shaders.brightnessContrast = shaders.brightnessContrast || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float brightness;\
         uniform float contrast;\
@@ -3087,7 +3089,7 @@ canvas.brightnessContrast=function(brightness, contrast) {
         }\
     ');
 
-    this.simpleShader( gl.brightnessContrast, {
+    this.simpleShader( shaders.brightnessContrast, {
         brightness: clamp(-1, brightness, 1),
         contrast: clamp(-1, contrast, 1)
     });
@@ -3096,7 +3098,7 @@ canvas.brightnessContrast=function(brightness, contrast) {
 }
 
 canvas.contrast_s=function(contrast) {
-    gl.contrast_s = gl.contrast_s || new Shader(null, '\
+    shaders.contrast_s = shaders.contrast_s || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float contrast;\
         varying vec2 texCoord;\
@@ -3110,14 +3112,14 @@ canvas.contrast_s=function(contrast) {
         }\
     ');
 
-    this.simpleShader( gl.contrast_s, {
+    this.simpleShader( shaders.contrast_s, {
         contrast: -clamp(contrast,-1,1)
     });
 
     return this;
 }
 canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
-    gl.threshold = gl.threshold || new Shader(null, '\
+    shaders.threshold = shaders.threshold || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float threshold;\
         uniform float feather;\
@@ -3131,7 +3133,7 @@ canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
         }\
     ');
     
-    this.simpleShader( gl.threshold, {threshold:threshold,feather:feather,c0:[r0,g0,b0],c1:[r1,g1,b1]});
+    this.simpleShader( shaders.threshold, {threshold:threshold,feather:feather,c0:[r0,g0,b0],c1:[r1,g1,b1]});
 
     return this;
 }
@@ -3153,7 +3155,7 @@ canvas.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
  */
 
 canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
-    gl.sobel = gl.sobel || new Shader(null, '\
+    shaders.sobel = shaders.sobel || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float alpha;\
         uniform float r;\
@@ -3200,7 +3202,7 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
         }\
     ');
 
-    this.simpleShader( gl.sobel, {
+    this.simpleShader( shaders.sobel, {
         secondary : secondary,
         coef : coef,
         alpha : alpha,
@@ -3218,7 +3220,7 @@ canvas.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 }
 
 canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
-    gl.sobel_rgb = gl.sobel_rgb || new Shader(null, '\
+    shaders.sobel_rgb = shaders.sobel_rgb || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         uniform float alpha;\
@@ -3247,7 +3249,7 @@ canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
         }\
     ');
 
-    this.simpleShader( gl.sobel_rgb, {
+    this.simpleShader( shaders.sobel_rgb, {
         secondary : secondary,
         coef : coef,
         smoothness : smoothness,
@@ -3260,7 +3262,7 @@ canvas.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
 }
 
 canvas.posterize=function(steps) {
-    gl.posterize = gl.posterize || new Shader(null, '\
+    shaders.posterize = shaders.posterize || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float steps;\
         varying vec2 texCoord;\
@@ -3270,14 +3272,14 @@ canvas.posterize=function(steps) {
         }\
     ');
 
-    this.simpleShader( gl.posterize, { steps: Math.round(steps) });
+    this.simpleShader( shaders.posterize, { steps: Math.round(steps) });
 
     return this;
 }
 
 
 canvas.posterize_hue=function(hue,brightness) {
-    gl.posterize_hue = gl.posterize_hue || new Shader(null, '\
+    shaders.posterize_hue = shaders.posterize_hue || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float hue;\
         uniform float brightness;\
@@ -3292,7 +3294,7 @@ canvas.posterize_hue=function(hue,brightness) {
         }\
     ');
 
-    this.simpleShader( gl.posterize_hue, { hue: Math.round(hue), brightness: Math.round(brightness) });
+    this.simpleShader( shaders.posterize_hue, { hue: Math.round(hue), brightness: Math.round(brightness) });
 
     return this;
 }
@@ -3308,7 +3310,7 @@ canvas.posterize_hue=function(hue,brightness) {
  * @param scale   The width of an individual tile, in pixels.
  */
 canvas.hexagonalPixelate=function(centerX, centerY, scale) {
-    gl.hexagonalPixelate = gl.hexagonalPixelate || new Shader(null, '\
+    shaders.hexagonalPixelate = shaders.hexagonalPixelate || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float scale;\
@@ -3349,7 +3351,7 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
         }\
     ');
 
-    this.simpleShader( gl.hexagonalPixelate, {
+    this.simpleShader( shaders.hexagonalPixelate, {
         center: [centerX+0.5, centerY+0.5],
         scale: scale
     });
@@ -3358,7 +3360,7 @@ canvas.hexagonalPixelate=function(centerX, centerY, scale) {
 }
 
 canvas.pixelate=function(sx,sy,coverage,lens) {
-    gl.pixelate = gl.pixelate || new Shader(null, '\
+    shaders.pixelate = shaders.pixelate || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float coverage;\
@@ -3373,7 +3375,7 @@ canvas.pixelate=function(sx,sy,coverage,lens) {
         }\
     ');
 
-    this.simpleShader( gl.pixelate, {
+    this.simpleShader( shaders.pixelate, {
         size:[sx,sy],
         coverage: coverage/2.0,
         lens: lens
@@ -3394,7 +3396,7 @@ canvas.pixelate=function(sx,sy,coverage,lens) {
  * @param size    The diameter of a dot in pixels.
  */
 canvas.colorHalftone=function(centerX, centerY, angle, size) {
-    gl.colorHalftone = gl.colorHalftone || new Shader(null, '\
+    shaders.colorHalftone = shaders.colorHalftone || new Shader(null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float angle;\
@@ -3423,7 +3425,7 @@ canvas.colorHalftone=function(centerX, centerY, angle, size) {
         }\
     ');
 
-    this.simpleShader( gl.colorHalftone, {
+    this.simpleShader( shaders.colorHalftone, {
         center: [centerX, centerY],
         angle: angle,
         scale: Math.PI / size,
@@ -3438,7 +3440,7 @@ canvas.colorHalftone=function(centerX, centerY, angle, size) {
  */
 
 canvas.invert=function() {
-    gl.invert = gl.invert || new Shader(null, '\
+    shaders.invert = shaders.invert || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3447,7 +3449,7 @@ canvas.invert=function() {
             gl_FragColor = color;\
         }\
     ');
-    this.simpleShader( gl.invert, {});
+    this.simpleShader( shaders.invert, {});
     return this;
 }
 
@@ -3455,7 +3457,7 @@ canvas.invertColor=canvas.invert; // legacy name
 
 canvas.glitch=function(scale,detail,strength,speed) {
     canvas.glitch_time=(canvas.glitch_time || 0.0)+0.0001*speed;
-    gl.glitch = gl.glitch || new Shader(null, '\
+    shaders.glitch = shaders.glitch || new Shader(null, '\
         uniform sampler2D texture;\
         uniform float time;\
         uniform float strength;\
@@ -3489,7 +3491,7 @@ canvas.glitch=function(scale,detail,strength,speed) {
         }\
     ');
 
-    this.simpleShader( gl.glitch, {
+    this.simpleShader( shaders.glitch, {
         detail:detail,
         strength: strength,
         texSize: [this.width/scale, this.height/scale],
@@ -3502,7 +3504,7 @@ canvas.glitch=function(scale,detail,strength,speed) {
 /* Mirrors the image vertically (useful for webcams) */
 // also used for rendering into the canvas, that seem to display mirrored.
 canvas.mirror_y = function() {
-    gl.mirror_y = gl.mirror_y || new Shader(null, '\
+    shaders.mirror_y = shaders.mirror_y || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3511,13 +3513,13 @@ canvas.mirror_y = function() {
         }\
     ');
 
-    this.simpleShader( gl.mirror_y, {});
+    this.simpleShader( shaders.mirror_y, {});
     return this;
 }
 
 /* Mirrors the image horizontally */
 canvas.mirror_x = function(target) {
-    gl.mirror_x = gl.mirror_x || new Shader(null, '\
+    shaders.mirror_x = shaders.mirror_x || new Shader(null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3526,7 +3528,7 @@ canvas.mirror_x = function(target) {
         }\
     ');
 
-    this.simpleShader( gl.mirror_x, {}, null, target);
+    this.simpleShader( shaders.mirror_x, {}, null, target);
     return this;
 }
 
