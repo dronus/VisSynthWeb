@@ -3,9 +3,10 @@ import {Shader} from "./shader.js";
 
 // canvas and gl are available at global scope
 
-export let canvas = document.getElementById('canvas');
-export let gl = canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
+export let canvas = {}; //document.getElementById('canvas');
 
+canvas.canvas=document.getElementById('canvas');
+export let gl = canvas.canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
 
 canvas.texture=function(element) {
     return Texture.fromElement(element);
@@ -23,6 +24,8 @@ canvas.update=function() {
     {
       this.width =this._.texture.width;
       this.height=this._.texture.height;
+      this.canvas.width=this.width;
+      this.canvas.height=this.height;
     }
 
     gl.viewport(0,0, this.width, this.height);

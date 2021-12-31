@@ -1,4 +1,4 @@
-import "./canvas.js"
+import {canvas} from "./canvas.js"
 import "./filters.js"
 import {initAudioAnalysers} from "./audio.js"
 import {generators,prepare} from "./generators.js"
