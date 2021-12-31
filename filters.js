@@ -1,4 +1,3 @@
-import {gl} from "./canvas.js";
 import {Shader} from "./shader.js";
 import {Texture} from "./texture.js"
 import {audio_engine} from "./audio.js"
@@ -33,13 +32,13 @@ filters.fps=function(fps){
 };
 
 filters.type_byte=function(){
-  this._.template.type=gl.UNSIGNED_BYTE;
+  this._.template.type=this.gl.UNSIGNED_BYTE;
 };
 
 filters.type_float=function(){
 
-  var ext=gl.getExtension('OES_texture_half_float');
-  gl.getExtension('OES_texture_half_float_linear');  
+  var ext=this.gl.getExtension('OES_texture_half_float');
+  this.gl.getExtension('OES_texture_half_float_linear');  
   this._.template.type=ext.HALF_FLOAT_OES;
 };
 
@@ -57,12 +56,12 @@ filters.resolution=function(w,h,filtering,precision,fps_limit){
 };
 
 filters.filtering=function(linear) {
-  this._.template.filter=linear>0 ? gl.LINEAR : gl.NEAREST;
+  this._.template.filter=linear>0 ? this.gl.LINEAR : this.gl.NEAREST;
 }
 
 // TODO check if clamping can be done by texture border modes in today's WebGL implementations
-var warpShader=function(uniforms, warp) {
-    return new Shader(null, uniforms + '\
+var warpShader=function(gl, uniforms, warp) {
+    return new Shader(gl, null, uniforms + '\
     uniform sampler2D texture;\
     varying vec2 texCoord;\
     void main() {\
@@ -90,7 +89,7 @@ filters.blend_alpha=function(alpha) {
 
     alpha=alpha||1.0;
 
-    shaders.blend_alpha = shaders.blend_alpha || new Shader(null, '\
+    shaders.blend_alpha = shaders.blend_alpha || new Shader(this.gl, null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         uniform float alpha;\
@@ -110,7 +109,7 @@ filters.blend_alpha=function(alpha) {
 }
 
 filters.multiply=function() {
-    shaders.multiply = shaders.multiply || new Shader(null, '\
+    shaders.multiply = shaders.multiply || new Shader(this.gl, null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         varying vec2 texCoord;\
@@ -130,7 +129,7 @@ filters.multiply=function() {
 
 
 filters.blend_mask=function() {
-    shaders.blend_mask = shaders.blend_mask || new Shader(null, '\
+    shaders.blend_mask = shaders.blend_mask || new Shader(this.gl, null, '\
         uniform sampler2D texture1;\
         uniform sampler2D texture2;\
         uniform sampler2D mask;\
@@ -153,7 +152,7 @@ filters.blend_mask=function() {
 
 
 filters.superquadric=function(A,B,C,r,s,t,angle) {
-    shaders.superquadric = shaders.superquadric || new Shader('\
+    shaders.superquadric = shaders.superquadric || new Shader(this.gl, '\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -274,6 +273,7 @@ filters.superquadric=function(A,B,C,r,s,t,angle) {
     this._.texture.use(0);
     var target=this.getSpareTexture();
     target.setAsTarget();
+    let gl=this.gl;
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -306,7 +306,7 @@ filters.strobe=function(period) {
 }
 
 filters.tile=function(size,centerx,centery) {
-    shaders.tile = shaders.tile || new Shader(null, '\
+    shaders.tile = shaders.tile || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
       	uniform float size;\
@@ -327,7 +327,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
 
   if(!shaders.supershape)
   {
-    shaders.supershape = new Shader('\
+    shaders.supershape = new Shader(this.gl, '\
       float superFormula(in float a, in float b, in float m, in float n1, in float n2, in float n3, in float phi)\
       {\
           vec2 ret;\
@@ -432,6 +432,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
     this._.texture.use(0);
     var target=this.getSpareTexture();
     target.setAsTarget();
+    let gl=this.gl;
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
@@ -444,7 +445,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
 
 
 filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
-    shaders.superellipse = shaders.superellipse || new Shader(null, '\
+    shaders.superellipse = shaders.superellipse || new Shader(this.gl, null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
       uniform float a;\
@@ -491,7 +492,7 @@ filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
 
 
 filters.grating=function(size,angle,ax,fx,ay,fy) {
-    shaders.grating = shaders.grating || new Shader(null, '\
+    shaders.grating = shaders.grating || new Shader(this.gl, null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
       uniform float ax;\
@@ -518,7 +519,7 @@ filters.grating=function(size,angle,ax,fx,ay,fy) {
 
 
 filters.colorDisplacement=function(angle,amplitude) {
-    shaders.colorDisplacement = shaders.colorDisplacement || new Shader(null,'\
+    shaders.colorDisplacement = shaders.colorDisplacement || new Shader(this.gl, null,'\
     \
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -550,7 +551,7 @@ filters.colorDisplacement=function(angle,amplitude) {
 }
 
 filters.matte=function(r,g,b,a) {
-    shaders.matte = shaders.matte || new Shader(null, '\
+    shaders.matte = shaders.matte || new Shader(this.gl, null, '\
         uniform vec4 color;\
         void main() {\
             gl_FragColor = color;\
@@ -563,7 +564,7 @@ filters.matte=function(r,g,b,a) {
 
 
 filters.noise=function(seed) {
-    shaders.noise = shaders.noise || new Shader(null, '\
+    shaders.noise = shaders.noise || new Shader(this.gl, null, '\
         varying vec2 texCoord;\
         uniform float seed;\
         vec3 noise3(vec3 t){\
@@ -585,7 +586,7 @@ filters.noise=function(seed) {
 
 filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
-    shaders.polygon_matte = shaders.polygon_matte || new Shader(null, '\
+    shaders.polygon_matte = shaders.polygon_matte || new Shader(this.gl, null, '\
         uniform vec4 color;\
         uniform vec2 size;\
         uniform float sides;\
@@ -622,7 +623,7 @@ filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
 filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
-    shaders.rectangle = shaders.rectangle || new Shader(null, '\
+    shaders.rectangle = shaders.rectangle || new Shader(this.gl, null, '\
         uniform vec4 color;\
         uniform vec2 size;\
         uniform float angle;\
@@ -681,7 +682,7 @@ filters.video=function(url,play_sound,speed,loop) {
     // make sure the video has adapted to the video source
     if(v.currentTime==0 || !v.videoWidth) return this;
 
-    if(!this._.videoTexture) this._.videoTexture=Texture.fromElement(v);
+    if(!this._.videoTexture) this._.videoTexture=this.texture(v);
     this._.videoTexture.loadContentsOf(v);
     var target=this.getSpareTexture();
     this._.videoTexture.copyTo(target);
@@ -727,7 +728,7 @@ filters.image=function(url) {
 
 
 filters.ripple=function(fx,fy,angle,amplitude) {
-    shaders.ripple = shaders.ripple || warpShader('\
+    shaders.ripple = shaders.ripple || warpShader(this.gl, '\
         uniform vec4 xform;\
         uniform float amplitude;\
     ', '\
@@ -747,7 +748,7 @@ filters.ripple=function(fx,fy,angle,amplitude) {
 }
 
 filters.spherical=function(radius,scale) {
-    shaders.spherical = shaders.spherical || warpShader('\
+    shaders.spherical = shaders.spherical || warpShader(this.gl, '\
         uniform float radius;\
         uniform float scale;\
     ', '\
@@ -792,7 +793,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     if(!shaders.mesh_displacement) shaders.mesh_displacement={};
     if(!shaders.mesh_displacement[mesh_type])
     {
-    shaders.mesh_displacement[mesh_type] = new Shader('\
+    shaders.mesh_displacement[mesh_type] = new Shader(this.gl, '\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
     uniform mat4 matrix;\
@@ -853,6 +854,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture();
     target.setAsTarget();
+    let gl=this.gl;
     gl.enable(gl.DEPTH_TEST);
 //        gl.enable(gl.CULL_FACE);
     gl.frontFace(gl.CCW);
@@ -868,7 +870,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 }
 
 filters.blend=function(alpha,factor,offset) {
-    shaders.blend = shaders.blend || new Shader(null, '\
+    shaders.blend = shaders.blend || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform sampler2D texture1;\
         uniform float alpha;\
@@ -889,7 +891,7 @@ filters.blend=function(alpha,factor,offset) {
 }
 
 filters.kaleidoscope=function(sides,angle,angle2) {
-    shaders.kaleidoscope = shaders.kaleidoscope || new Shader(null, '\
+    shaders.kaleidoscope = shaders.kaleidoscope || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
 	uniform float angle;\
 	uniform float angle2;\
@@ -920,7 +922,7 @@ filters.mandelbrot=function(x,y,scale,angle,iterations) {
 
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
-    shaders.mandelbrot = shaders.mandelbrot || new Shader(null, '\
+    shaders.mandelbrot = shaders.mandelbrot || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec4 xform;\
         uniform vec2 center;\
@@ -959,7 +961,7 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
     // use a single shader.
     // another implementation used one shaderi source per int(iterations), but Odroid XU4 crashed on that. On U3, it was fine.
-    shaders.julia = shaders.julia || new Shader(null, '\
+    shaders.julia = shaders.julia || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec4 xform;\
         uniform vec2 center;\
@@ -996,8 +998,8 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
 
 filters.relief=function(scale2,scale4) {
-      gl.getExtension('OES_standard_derivatives');
-      shaders.relief = shaders.relief || new Shader(null,'\n\
+      this.gl.getExtension('OES_standard_derivatives');
+      shaders.relief = shaders.relief || new Shader(this.gl, null,'\n\
       #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur2;\n\
@@ -1070,7 +1072,7 @@ filters.relief=function(scale2,scale4) {
 
 
 filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
-    shaders.transform = shaders.transform || new Shader(null, '\
+    shaders.transform = shaders.transform || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
         uniform vec4 xform;\
@@ -1104,7 +1106,7 @@ filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
 
 
 filters.analogize=function(exposure,gamma,glow,radius) {
-    shaders.analogize = shaders.analogize || new Shader(null,'\
+    shaders.analogize = shaders.analogize || new Shader(this.gl, null,'\
     \
       uniform sampler2D texture;\
       uniform sampler2D glow_texture;\
@@ -1142,7 +1144,7 @@ filters.analogize=function(exposure,gamma,glow,radius) {
 
 
 filters.noalpha=function() {
-    shaders.noalpha = shaders.noalpha || new Shader(null, '\
+    shaders.noalpha = shaders.noalpha || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1156,15 +1158,15 @@ filters.noalpha=function() {
 
 filters.preview=function() {
     this.preview_width=640; this.preview_height=400;
-    gl.viewport(0,0,this.preview_width,this.preview_height);
+    this.gl.viewport(0,0,this.preview_width,this.preview_height);
     filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
-    gl.viewport(0,0,this.width,this.height);
+    this.gl.viewport(0,0,this.width,this.height);
 
     return this;
 }
 
 filters.feedbackOut=function(blend,clear_on_switch) {
-    shaders.feedbackOut = shaders.feedbackOut || new Shader(null, '\
+    shaders.feedbackOut = shaders.feedbackOut || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform sampler2D feedbackTexture;\
         uniform float blend;\
@@ -1193,7 +1195,7 @@ filters.feedbackOut=function(blend,clear_on_switch) {
 }
 
 filters.motion=function(threshold,interval,damper) {
-    shaders.motionBlend = shaders.motionBlend || new Shader(null, '\
+    shaders.motionBlend = shaders.motionBlend || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
         uniform float blend;\
@@ -1205,7 +1207,7 @@ filters.motion=function(threshold,interval,damper) {
         }\
     ');
 
-    shaders.motion = shaders.motion || new Shader(null, '\
+    shaders.motion = shaders.motion || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
         uniform float threshold;\
@@ -1253,9 +1255,9 @@ filters.motion=function(threshold,interval,damper) {
 
 filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
-    gl.getExtension('OES_standard_derivatives');
+    this.gl.getExtension('OES_standard_derivatives');
 
-    shaders.reaction_blur = shaders.reaction_blur || new Shader(null, '\
+    shaders.reaction_blur = shaders.reaction_blur || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -1270,7 +1272,7 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
         }\
     ');
     
-    shaders.reaction = shaders.reaction || new Shader(null,'\n\
+    shaders.reaction = shaders.reaction || new Shader(this.gl, null,'\n\
       #extension GL_OES_standard_derivatives : enable\n\
       uniform sampler2D texture;\n\
       uniform sampler2D texture_blur;\n\
@@ -1451,7 +1453,7 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 filters.reaction2=function(F,K,D_a,D_b,iterations) {
     iterations=Math.floor(Math.min(iterations,100.));
-    shaders.reaction2 = shaders.reaction2 || new Shader(null, '\
+    shaders.reaction2 = shaders.reaction2 || new Shader(this.gl, null, '\
       uniform sampler2D texture;\n\
       uniform float F;\n\
       uniform float K;\n\
@@ -1491,7 +1493,7 @@ filters.reaction2=function(F,K,D_a,D_b,iterations) {
 
 
 filters.displacement=function(strength) {
-    shaders.displacement = shaders.displacement || new Shader(null, '\
+    shaders.displacement = shaders.displacement || new Shader(this.gl, null, '\
         uniform sampler2D displacement_map;\
         uniform sampler2D texture;\
         uniform float strength;\
@@ -1511,7 +1513,7 @@ filters.displacement=function(strength) {
 
 
 filters.address_glitch=function(mask_x,mask_y) {
-    shaders.address_glitch = shaders.address_glitch || new Shader(null, '\
+    shaders.address_glitch = shaders.address_glitch || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float mask_x;\
         uniform float mask_y;\
@@ -1550,7 +1552,7 @@ filters.address_glitch=function(mask_x,mask_y) {
 
 filters.gauze=function(fx,fy,angle,amplitude,x,y) {
 
-    shaders.gauze = shaders.gauze || new Shader(null, '\
+    shaders.gauze = shaders.gauze || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float amplitude;\
         uniform vec4 xform;\
@@ -1584,7 +1586,7 @@ filters.waveform=function() {
     if(!values) return;
     
     // TODO using this effect seems to create TWO textures of this format. Why? Do other filters suffer this as well?
-    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    var waveformTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
     waveformTexture.load(values);
     this.putTexture(waveformTexture);
         
@@ -1593,7 +1595,7 @@ filters.waveform=function() {
 
 
 filters.osciloscope=function(amplitude) {
-    shaders.osciloscope = shaders.osciloscope || new Shader(null, '\
+    shaders.osciloscope = shaders.osciloscope || new Shader(this.gl, null, '\
       uniform sampler2D waveform;\
       uniform float amplitude; \
       varying vec2 texCoord;\
@@ -1607,7 +1609,7 @@ filters.osciloscope=function(amplitude) {
     var values=audio_engine.waveform;
     if(!values) return;
 
-    var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    var waveformTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
     waveformTexture.load(values);
 
     this.simpleShader( shaders.osciloscope, {amplitude:amplitude}, waveformTexture);
@@ -1618,7 +1620,7 @@ filters.osciloscope=function(amplitude) {
 }
 
 filters.vectorscope=function(size,intensity,linewidth) {
-    shaders.vectorscope = shaders.vectorscope || new Shader('\
+    shaders.vectorscope = shaders.vectorscope || new Shader(this.gl, '\
     attribute vec2 _texCoord;\
     uniform sampler2D waveform;\
     uniform float size;\
@@ -1652,6 +1654,7 @@ filters.vectorscope=function(size,intensity,linewidth) {
       size:size, delta: 20.0/count,intensity:intensity
     });    
     // set shader textures    
+    let gl=this.gl;
     var waveformTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
     waveformTexture.load(values);
     shaders.vectorscope.textures({waveform: waveformTexture});
@@ -1675,7 +1678,7 @@ filters.vectorscope=function(size,intensity,linewidth) {
 }
 
 filters.lumakey=filters.luma_key=function(threshold,feather) {
-    shaders.lumakey = shaders.lumakey || new Shader(null, '\
+    shaders.lumakey = shaders.lumakey || new Shader(this.gl, null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform float threshold;\
@@ -1697,7 +1700,7 @@ filters.lumakey=filters.luma_key=function(threshold,feather) {
 }
 
 filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
-    shaders.chroma_key_rgb=shaders.chroma_key_rgb || new Shader(null, '\
+    shaders.chroma_key_rgb=shaders.chroma_key_rgb || new Shader(this.gl, null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform vec3 key_color;\
@@ -1730,7 +1733,7 @@ filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_
     // legacy chains use chroma_key to denote chroma_key_rgb
     if(arguments.length==5) filters.chroma_key_rgb.apply(this,arguments);
 
-    shaders.chroma_key = shaders.chroma_key || new Shader(null, '\
+    shaders.chroma_key = shaders.chroma_key || new Shader(this.gl, null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
       uniform vec3 hsv_key;\
@@ -1766,7 +1769,7 @@ filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_
 }
 
 filters.life=function(iterations) {
-    shaders.life = shaders.life || new Shader(null, '\
+    shaders.life = shaders.life || new Shader(this.gl, null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
       varying vec2 texCoord;\
@@ -1813,7 +1816,7 @@ filters.polygon=function(sides,x,y,size,angle,aspect) {
 
     aspect=aspect || 1.;
     
-    shaders.polygon = shaders.polygon || new Shader(null, '\
+    shaders.polygon = shaders.polygon || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float sides;\
@@ -1856,8 +1859,8 @@ filters.timeshift=function(time,clear_on_switch) {
     // calculate a sane frame limit by estimating it's memory needs.
     //
     var t=this._.texture;
-    // TODO gl.FLOAT is a wrong identifier, it is oes.HALF_FLOAT with 2 or oes.FLOAT with 4 bytes.
-    var frame_bytes = t.width * t.height * 4 * (t.type==gl.FLOAT ? 2 : 1);
+    // TODO this.gl.FLOAT is a wrong identifier, it is oes.HALF_FLOAT with 2 or oes.FLOAT with 4 bytes.
+    var frame_bytes = t.width * t.height * 4 * (t.type==this.gl.FLOAT ? 2 : 1);
     var max_buffer_bytes=256000000;
     var max_frames=Math.floor(max_buffer_bytes / frame_bytes);
 
@@ -1927,7 +1930,7 @@ filters.webrtc=function(websocket_url) {
 }
 
 filters.rainbow=function(size, angle) {
-    shaders.rainbow = shaders.rainbow || new Shader(null, '\
+    shaders.rainbow = shaders.rainbow || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -1953,7 +1956,7 @@ filters.rainbow=function(size, angle) {
  */
 filters.grid=function(size, angle, x, y, width) {
     if(!width) width=0.05;
-    shaders.grid = shaders.grid || new Shader(null, '\
+    shaders.grid = shaders.grid || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float angle;\
@@ -1979,7 +1982,7 @@ filters.grid=function(size, angle, x, y, width) {
 }
 
 filters.absolute=function(size, angle) {
-    shaders.absolute = shaders.absolute || new Shader(null, '\
+    shaders.absolute = shaders.absolute || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -2004,7 +2007,7 @@ filters.absolute=function(size, angle) {
  */
 filters.denoisefast=function(exponent) {
     // Do a 3x3 bilateral box filter
-    shaders.denoisefast = shaders.denoisefast || new Shader(null, '\
+    shaders.denoisefast = shaders.denoisefast || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float exponent;\
         uniform float strength;\
@@ -2042,7 +2045,7 @@ filters.spectrogram=function() {
     var values=audio_engine.spectrogram;
     if(!values) return;
     
-    var spectrogramTexture=this.getSpareTexture(null,values.length,1,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    var spectrogramTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
     spectrogramTexture.load(values);
     this.putTexture(spectrogramTexture);
     
@@ -2051,7 +2054,7 @@ filters.spectrogram=function() {
 }
 
 filters.smoothlife=function(birth_min,birth_max,death_min) {
-    shaders.smoothlife = shaders.smoothlife || new Shader(null, '\
+    shaders.smoothlife = shaders.smoothlife || new Shader(this.gl, null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
       varying vec2 texCoord;\
@@ -2103,7 +2106,7 @@ filters.smoothlife=function(birth_min,birth_max,death_min) {
 }
 
 filters.soft_life=function(birth_min,birth_max,death_min) {
-    shaders.soft_life = shaders.soft_life || new Shader(null, '\
+    shaders.soft_life = shaders.soft_life || new Shader(this.gl, null, '\
       uniform sampler2D inner_texture;\
       uniform sampler2D outer_texture;\
       varying vec2 texCoord;\
@@ -2141,7 +2144,7 @@ filters.soft_life=function(birth_min,birth_max,death_min) {
 
 
 filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
-    shaders.particles = shaders.particles || new Shader('\
+    shaders.particles = shaders.particles || new Shader(this.gl, '\
     attribute vec2 _texCoord;\
     uniform sampler2D texture;\
     uniform mat4 matrix;\
@@ -2166,7 +2169,7 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     }\
     ');
 
-    shaders.particle_update = shaders.particle_update || new Shader(null,'\
+    shaders.particle_update = shaders.particle_update || new Shader(this.gl, null,'\
         uniform sampler2D texture;\
         uniform sampler2D displacement_texture;\
         uniform float homing; \
@@ -2211,14 +2214,14 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
       // generate particle data double buffer
       if(!this._.particleTextureA) {
         var type;
-        var oes=gl.getExtension( 'OES_texture_float' );
+        var oes=this.gl.getExtension( 'OES_texture_float' );
         if (!oes) {
           console.log('particle effect recommends gl.FLOAT textures, falling back to gl.BYTE');
-          type=gl.UNSIGNED_BYTE;
+          type=this.gl.UNSIGNED_BYTE;
         }else
           type=oes.FLOAT;
-        this._.particleTextureA=this.getSpareTexture(null, w,h, gl.RGBA, type);
-        this._.particleTextureB=this.getSpareTexture(null, w,h, gl.RGBA, type);
+        this._.particleTextureA=this.getSpareTexture(null, w,h, this.gl.RGBA, type);
+        this._.particleTextureB=this.getSpareTexture(null, w,h, this.gl.RGBA, type);
       }
     }
    
@@ -2261,6 +2264,7 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture()
     target.setAsTarget();
+    let gl=this.gl;
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -2306,7 +2310,7 @@ filters.stack_prepare=function() {
 
 
 filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
-    shaders.patch_displacement = shaders.patch_displacement || new Shader('\
+    shaders.patch_displacement = shaders.patch_displacement || new Shader(this.gl, '\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
@@ -2375,6 +2379,7 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture();
     target.setAsTarget();
+    let gl=this.gl;
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -2438,7 +2443,7 @@ filters.perspective=function(before, after) {
  *                        to use for simple operations like flipping and rotating.
  */
 filters.matrixWarp=function(matrix, inverse) {
-    shaders.matrixWarp = shaders.matrixWarp || warpShader('\
+    shaders.matrixWarp = shaders.matrixWarp || warpShader(this.gl, '\
         uniform mat3 matrix;\
     ', '\
         vec3 warp = matrix * vec3(coord, 1.0);\
@@ -2462,7 +2467,7 @@ filters.matrixWarp=function(matrix, inverse) {
  *                the circular region will be rotated by.
  */
 filters.swirl=function(centerX, centerY, radius, angle) {
-    shaders.swirl = shaders.swirl || warpShader('\
+    shaders.swirl = shaders.swirl || warpShader(this.gl, '\
         uniform float radius;\
         uniform float angle;\
         uniform vec2 center;\
@@ -2500,7 +2505,7 @@ filters.swirl=function(centerX, centerY, radius, angle) {
  * @param strength -1 to 1 (-1 is strong pinch, 0 is no effect, 1 is strong bulge)
  */
 filters.bulgePinch=function(centerX, centerY, radius, strength) {
-    shaders.bulgePinch = shaders.bulgePinch || warpShader('\
+    shaders.bulgePinch = shaders.bulgePinch || warpShader(this.gl, '\
         uniform float radius;\
         uniform float strength;\
         uniform vec2 center;\
@@ -2536,7 +2541,7 @@ filters.bulgePinch=function(centerX, centerY, radius, strength) {
  *                 where 0 doesn't change the image and 1 creates a highly blurred image.
  */
 filters.zoomBlur=function(centerX, centerY, strength) {
-    shaders.zoomBlur = shaders.zoomBlur || new Shader(null, '\
+    shaders.zoomBlur = shaders.zoomBlur || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float strength;\
@@ -2577,7 +2582,7 @@ filters.zoomBlur=function(centerX, centerY, strength) {
 }
 
 filters.dilate=function(iterations) {
-    shaders.dilate = shaders.dilate || new Shader(null, '\
+    shaders.dilate = shaders.dilate || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
@@ -2610,7 +2615,7 @@ filters.dilate=function(iterations) {
  * @param radius The radius of the pyramid convolved with the image.
  */
 filters.localContrast=function(radius,strength) {
-    shaders.localContrastMin = shaders.localContrastMin || new Shader(null, '\
+    shaders.localContrastMin = shaders.localContrastMin || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2624,7 +2629,7 @@ filters.localContrast=function(radius,strength) {
             gl_FragColor = color; \
         }\
     ');
-    shaders.localContrastMax = shaders.localContrastMax || new Shader(null, '\
+    shaders.localContrastMax = shaders.localContrastMax || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2638,7 +2643,7 @@ filters.localContrast=function(radius,strength) {
             gl_FragColor = color; \
         }\
     ');
-    shaders.localContrast = shaders.localContrast || new Shader(null, '\
+    shaders.localContrast = shaders.localContrast || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform sampler2D min_texture;\
         uniform sampler2D max_texture;\
@@ -2683,7 +2688,7 @@ filters.localContrast=function(radius,strength) {
 
 
 filters.erode=function(iterations) {
-    shaders.erode = shaders.erode || new Shader(null, '\
+    shaders.erode = shaders.erode || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
         varying vec2 texCoord;\
@@ -2709,7 +2714,7 @@ filters.erode=function(iterations) {
 }
 
 filters.fastBlur=filters.blur=function(radius) {
-    shaders.blur = shaders.blur || new Shader(null, '\
+    shaders.blur = shaders.blur || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2732,7 +2737,7 @@ filters.fastBlur=filters.blur=function(radius) {
 }
 
 filters.blur_alpha=function(radius) {
-    shaders.blur_alpha = shaders.blur_alpha || new Shader(null, '\
+    shaders.blur_alpha = shaders.blur_alpha || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         varying vec2 texCoord;\
@@ -2748,7 +2753,7 @@ filters.blur_alpha=function(radius) {
         }\
     ');
 
-    sshaders.blur_alpha_post = sshaders.blur_alpha_post || new Shader(null, '\
+    sshaders.blur_alpha_post = sshaders.blur_alpha_post || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -2768,7 +2773,7 @@ filters.blur_alpha=function(radius) {
 
 
 filters.blur2=function(radius,exponent) {
-    shaders.blur2 = shaders.blur2 || new Shader(null, '\
+    shaders.blur2 = shaders.blur2 || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
         uniform float exponent;\
@@ -2801,7 +2806,7 @@ filters.blur2=function(radius,exponent) {
  * @param strength A scale factor where 0 is no effect and higher values cause a stronger effect.
  */
 filters.unsharpMask=function(radius, strength) {
-    shaders.unsharpMask = shaders.unsharpMask || new Shader(null, '\
+    shaders.unsharpMask = shaders.unsharpMask || new Shader(this.gl, null, '\
         uniform sampler2D blurredTexture;\
         uniform sampler2D originalTexture;\
         uniform float strength;\
@@ -2839,7 +2844,7 @@ filters.unsharpMask=function(radius, strength) {
  * @param b          0 to 1 Importance of the Blue Chanel modification
  */
 filters.color=function(alpha,r,g,b) {
-    shaders.color = shaders.color || new Shader(null, '\
+    shaders.color = shaders.color || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float r;\
         uniform float g;\
@@ -2874,7 +2879,7 @@ filters.color=function(alpha,r,g,b) {
  */
 filters.denoise=function(exponent) {
     // Do a 9x9 bilateral box filter
-    shaders.denoise = shaders.denoise || new Shader(null, '\
+    shaders.denoise = shaders.denoise || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float exponent;\
         uniform float strength;\
@@ -2916,7 +2921,7 @@ filters.denoise=function(exponent) {
  * @param amount -1 to 1 (-1 is minimum vibrance, 0 is no change, and 1 is maximum vibrance)
  */
 filters.vibrance=function(amount) {
-    shaders.vibrance = shaders.vibrance || new Shader(null, '\
+    shaders.vibrance = shaders.vibrance || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float amount;\
         varying vec2 texCoord;\
@@ -2939,7 +2944,7 @@ filters.vibrance=function(amount) {
 
 // min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0
 filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
-    shaders.levels = shaders.levels || new Shader(null, '\
+    shaders.levels = shaders.levels || new Shader(this.gl, null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
         uniform vec3 rgb_min; \
@@ -2978,7 +2983,7 @@ filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamm
  * @param saturation -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
 filters.hueSaturation=function(hue, saturation) {
-    shaders.hueSaturation = shaders.hueSaturation || new Shader(null, '\
+    shaders.hueSaturation = shaders.hueSaturation || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float hue;\
         uniform float saturation;\
@@ -3024,7 +3029,7 @@ filters.hueSaturation=function(hue, saturation) {
  * @param contrast   -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
  */
 filters.brightnessContrast=function(brightness, contrast) {
-    shaders.brightnessContrast = shaders.brightnessContrast || new Shader(null, '\
+    shaders.brightnessContrast = shaders.brightnessContrast || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float brightness;\
         uniform float contrast;\
@@ -3050,7 +3055,7 @@ filters.brightnessContrast=function(brightness, contrast) {
 }
 
 filters.contrast_s=function(contrast) {
-    shaders.contrast_s = shaders.contrast_s || new Shader(null, '\
+    shaders.contrast_s = shaders.contrast_s || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float contrast;\
         varying vec2 texCoord;\
@@ -3071,7 +3076,7 @@ filters.contrast_s=function(contrast) {
     return this;
 }
 filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
-    shaders.threshold = shaders.threshold || new Shader(null, '\
+    shaders.threshold = shaders.threshold || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float threshold;\
         uniform float feather;\
@@ -3107,7 +3112,7 @@ filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
  */
 
 filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
-    shaders.sobel = shaders.sobel || new Shader(null, '\
+    shaders.sobel = shaders.sobel || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float alpha;\
         uniform float r;\
@@ -3172,7 +3177,7 @@ filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 }
 
 filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
-    shaders.sobel_rgb = shaders.sobel_rgb || new Shader(null, '\
+    shaders.sobel_rgb = shaders.sobel_rgb || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         uniform float alpha;\
@@ -3214,7 +3219,7 @@ filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) 
 }
 
 filters.posterize=function(steps) {
-    shaders.posterize = shaders.posterize || new Shader(null, '\
+    shaders.posterize = shaders.posterize || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float steps;\
         varying vec2 texCoord;\
@@ -3231,7 +3236,7 @@ filters.posterize=function(steps) {
 
 
 filters.posterize_hue=function(hue,brightness) {
-    shaders.posterize_hue = shaders.posterize_hue || new Shader(null, '\
+    shaders.posterize_hue = shaders.posterize_hue || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float hue;\
         uniform float brightness;\
@@ -3262,7 +3267,7 @@ filters.posterize_hue=function(hue,brightness) {
  * @param scale   The width of an individual tile, in pixels.
  */
 filters.hexagonalPixelate=function(centerX, centerY, scale) {
-    shaders.hexagonalPixelate = shaders.hexagonalPixelate || new Shader(null, '\
+    shaders.hexagonalPixelate = shaders.hexagonalPixelate || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float scale;\
@@ -3312,7 +3317,7 @@ filters.hexagonalPixelate=function(centerX, centerY, scale) {
 }
 
 filters.pixelate=function(sx,sy,coverage,lens) {
-    shaders.pixelate = shaders.pixelate || new Shader(null, '\
+    shaders.pixelate = shaders.pixelate || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
         uniform float coverage;\
@@ -3348,7 +3353,7 @@ filters.pixelate=function(sx,sy,coverage,lens) {
  * @param size    The diameter of a dot in pixels.
  */
 filters.colorHalftone=function(centerX, centerY, angle, size) {
-    shaders.colorHalftone = shaders.colorHalftone || new Shader(null, '\
+    shaders.colorHalftone = shaders.colorHalftone || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float angle;\
@@ -3392,7 +3397,7 @@ filters.colorHalftone=function(centerX, centerY, angle, size) {
  */
 
 filters.invertColor=filters.invert=function() {
-    shaders.invert = shaders.invert || new Shader(null, '\
+    shaders.invert = shaders.invert || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3407,7 +3412,7 @@ filters.invertColor=filters.invert=function() {
 
 filters.glitch=function(scale,detail,strength,speed) {
     this._.glitch_time=(this._.glitch_time || 0.0)+0.0001*speed;
-    shaders.glitch = shaders.glitch || new Shader(null, '\
+    shaders.glitch = shaders.glitch || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         uniform float time;\
         uniform float strength;\
@@ -3454,7 +3459,7 @@ filters.glitch=function(scale,detail,strength,speed) {
 /* Mirrors the image vertically (useful for webcams) */
 // also used for rendering into the canvas, that seem to display mirrored.
 filters.mirror_y = function() {
-    shaders.mirror_y = shaders.mirror_y || new Shader(null, '\
+    shaders.mirror_y = shaders.mirror_y || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3469,7 +3474,7 @@ filters.mirror_y = function() {
 
 /* Mirrors the image horizontally */
 filters.mirror_x = function(target) {
-    shaders.mirror_x = shaders.mirror_x || new Shader(null, '\
+    shaders.mirror_x = shaders.mirror_x || new Shader(this.gl, null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
         void main() {\
@@ -3492,7 +3497,7 @@ filters.midi=function(device, rows, cols, toggles) {
   if(!this._.midiState)
   {
     this._.midiState  =new Uint8Array(rows*cols);
-    this._.midiTexture=new Texture(rows,cols,gl.LUMINANCE,gl.UNSIGNED_BYTE);
+    this._.midiTexture=new Texture(this.gl, rows,cols,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
   }
 
   this._.midiState.fill(0);

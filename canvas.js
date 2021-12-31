@@ -7,10 +7,10 @@ import {filters} from "./filters.js";
 export let canvas = {}; //document.getElementById('canvas');
 
 canvas.canvas=document.getElementById('canvas');
-export let gl = canvas.canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
+canvas.gl = canvas.canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
 
 canvas.texture=function(element) {
-    return Texture.fromElement(element);
+    return Texture.fromElement(this.gl, element);
 }
 
 canvas.for_all_textures=function(callback){
@@ -29,7 +29,7 @@ canvas.update=function() {
       this.canvas.height=this.height;
     }
 
-    gl.viewport(0,0, this.width, this.height);
+    this.gl.viewport(0,0, this.width, this.height);
     filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
     //this._.texture.copyTo(this);
 
@@ -58,7 +58,7 @@ canvas.simpleShader=function(shader, uniforms, textureIn, textureOut) {
 };
 
 canvas.setAsTarget=function(){
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)
 }
 
 // Retrieve a working texture matched to this canvas or size settings.
@@ -76,7 +76,7 @@ canvas.getSpareTexture=function(candidate_texture,width,height,format,type)
   var t;
 
   if(width && height)
-    t={width:width, height:height, format:format || gl.RGBA, type: type || gl.UNSIGNED_BYTE};
+    t={width:width, height:height, format:format || this.gl.RGBA, type: type || this.gl.UNSIGNED_BYTE};
   else
     t=this._.template;
 
@@ -95,7 +95,7 @@ canvas.getSpareTexture=function(candidate_texture,width,height,format,type)
     return this._.spareTextures[k].pop();
   else{
     console.log("canvas.getSpareTexture "+k);
-    return new Texture(t.width, t.height, t.format, t.type, t.filter);
+    return new Texture(this.gl, t.width, t.height, t.format, t.type, t.filter);
   }
 }
 
@@ -166,7 +166,7 @@ canvas.stack_pop=function()
 canvas._={};
 // initialize (use browser canvas size as default. may be changed by user-defined via "resolution"-filter)
 // create a template texture manually as template for future ones
-canvas._.template = new Texture(canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE);
+canvas._.template = new Texture(canvas.gl, canvas.width, canvas.height, canvas.gl.RGBA, canvas.gl.UNSIGNED_BYTE);
 // hold a list of managed spare textures
 canvas._.spareTextures=[];
 // hold a list of garbage collected textures

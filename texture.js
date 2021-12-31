@@ -1,8 +1,7 @@
 import {Shader} from "./shader.js";
-import {gl} from "./canvas.js";
 
-Texture.fromElement = function(element) {
-    var texture = new Texture(0, 0, gl.RGBA, gl.UNSIGNED_BYTE);
+Texture.fromElement = function(gl,element) {
+    var texture = new Texture(gl,0, 0, gl.RGBA, gl.UNSIGNED_BYTE);
     texture.loadContentsOf(element);
     return texture;
 };
@@ -12,7 +11,8 @@ Texture.formatKey=function(template)
       return template.width+"_"+template.height+"_"+template.format+"_"+template.type;
 }
 
-export function Texture(width, height, format, type, filter) {
+export function Texture(gl, width, height, format, type, filter) {
+    this.gl = gl;
     this.id = gl.createTexture();
 
     gl.bindTexture(gl.TEXTURE_2D, this.id);
@@ -26,6 +26,7 @@ export function Texture(width, height, format, type, filter) {
 Texture.prototype.setFilter=function(filter)
 {
   this.filter=filter;
+  let gl=this.gl;
   gl.bindTexture(gl.TEXTURE_2D, this.id);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
@@ -39,16 +40,19 @@ Texture.prototype.getFormatKey=function()
 Texture.prototype.loadContentsOf = function(element) {
     this.width = element.width || element.videoWidth;
     this.height = element.height || element.videoHeight;
+    let gl=this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.id);
     gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, element);
 };
 
 Texture.prototype.load = function(data) {
+    let gl=this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.id);
     gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, data);
 };
 
 Texture.prototype.use = function(unit) {
+    let gl=this.gl;
     gl.activeTexture(gl.TEXTURE0 + (unit || 0));
     gl.bindTexture(gl.TEXTURE_2D, this.id);
 };
@@ -60,6 +64,7 @@ Texture.prototype.setFormat = function(width, height, format, type) {
         this.height = height;
         this.format = format;
         this.type = type;
+        let gl=this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.id);
         gl.texImage2D(gl.TEXTURE_2D, 0, this.format, width, height, 0, this.format, this.type, null);
     }
@@ -67,6 +72,7 @@ Texture.prototype.setFormat = function(width, height, format, type) {
 
 Texture.prototype.setAsTarget = function(with_depth) {
     // start rendering to this texture
+    let gl=this.gl;
     gl.framebuffer = gl.framebuffer || gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, gl.framebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.id, 0);
@@ -94,6 +100,7 @@ Texture.prototype.setAsTarget = function(with_depth) {
 Texture.prototype.copyTo = function(target) {
     this.use();
     target.setAsTarget();
-    gl.copyShader = gl.copyShader || new Shader();
+    let gl=this.gl;
+    gl.copyShader = gl.copyShader || new Shader(gl);
     gl.copyShader.drawRect();
 };

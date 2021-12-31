@@ -1,6 +1,5 @@
-import {gl} from "./canvas.js"
 
-function compileSource(type, source) {
+function compileSource(gl, type, source) {
     var shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
@@ -27,7 +26,8 @@ void main() {\
     gl_FragColor = texture2D(texture, texCoord);\
 }';
 
-export function Shader(vertexSource, fragmentSource) {
+export function Shader(gl, vertexSource, fragmentSource) {
+    this.gl=gl;
     this.vertexAttribute = null;
     this.texCoordAttribute = null;
     this._attributes={};
@@ -36,8 +36,8 @@ export function Shader(vertexSource, fragmentSource) {
     vertexSource = vertexSource || defaultVertexSource;
     fragmentSource = fragmentSource || defaultFragmentSource;
     fragmentSource = 'precision mediump float;' + fragmentSource; // annoying requirement is annoying
-    gl.attachShader(this.program, compileSource(gl.VERTEX_SHADER, vertexSource));
-    gl.attachShader(this.program, compileSource(gl.FRAGMENT_SHADER, fragmentSource));
+    gl.attachShader(this.program, compileSource(gl,gl.VERTEX_SHADER, vertexSource));
+    gl.attachShader(this.program, compileSource(gl,gl.FRAGMENT_SHADER, fragmentSource));
     gl.linkProgram(this.program);
     if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
         throw 'link error: ' + gl.getProgramInfoLog(this.program);
@@ -45,6 +45,7 @@ export function Shader(vertexSource, fragmentSource) {
 }
 
 Shader.prototype.uniforms = function(uniforms) {
+    let gl=this.gl;
     gl.useProgram(this.program);
     for (var name in uniforms) {
         if (!uniforms.hasOwnProperty(name)) continue;
@@ -74,6 +75,7 @@ Shader.prototype.uniforms = function(uniforms) {
 // textures are uniforms too but for some reason can't be specified by gl.uniform1f,
 // even though floating point numbers represent the integers 0 through 7 exactly
 Shader.prototype.textures = function(textures) {
+    let gl=this.gl;
     gl.useProgram(this.program);
     var i=0;
     for (var name in textures) {
@@ -87,7 +89,7 @@ Shader.prototype.textures = function(textures) {
 };
 
 Shader.prototype.drawRect = function() {
-    
+    let gl=this.gl;
     if (gl.vertexBuffer == null) {
       gl.vertexBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, gl.vertexBuffer);
@@ -104,6 +106,7 @@ Shader.prototype.drawRect = function() {
 };
 
 Shader.prototype.attributes=function(attributes,sizes){
+  let gl=this.gl;
   for(let key in attributes)
   {
     var attribute=this._attributes[key];
@@ -124,7 +127,7 @@ Shader.prototype.attributes=function(attributes,sizes){
 }
 
 Shader.prototype.drawArrays = function(mode){
-
+    let gl=this.gl;
     gl.useProgram(this.program);
     for(let key in this._attributes)
     {
