@@ -1,4 +1,4 @@
-import {canvas} from "./canvas.js"
+import {Canvas} from "./canvas.js"
 import {filters} from "./filters.js"
 import {initAudioAnalysers} from "./audio.js"
 import {generators,prepare} from "./generators.js"
@@ -50,6 +50,8 @@ var preview_enabled=false;
 var screenshot_cycle=0;
 var preview_canvas=null;
 var chain=null;
+
+var canvas=new Canvas('#canvas');
 
 // main update function, shows video frames via glfx.js canvas
 var update = function()
