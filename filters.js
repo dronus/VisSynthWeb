@@ -32,20 +32,20 @@ filters.fps=function(fps){
 };
 
 filters.type_byte=function(){
-  this._.template.type=this.gl.UNSIGNED_BYTE;
+  this.template.type=this.gl.UNSIGNED_BYTE;
 };
 
 filters.type_float=function(){
 
   var ext=this.gl.getExtension('OES_texture_half_float');
   this.gl.getExtension('OES_texture_half_float_linear');  
-  this._.template.type=ext.HALF_FLOAT_OES;
+  this.template.type=ext.HALF_FLOAT_OES;
 };
 
 filters.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
   this.proposed_fps=fps_limit;
-  var t=this._.template;
+  var t=this.template;
   t.width=w;
   t.height=h;
 
@@ -56,7 +56,7 @@ filters.resolution=function(w,h,filtering,precision,fps_limit){
 };
 
 filters.filtering=function(linear) {
-  this._.template.filter=linear>0 ? this.gl.LINEAR : this.gl.NEAREST;
+  this.template.filter=linear>0 ? this.gl.LINEAR : this.gl.NEAREST;
 }
 
 // TODO check if clamping can be done by texture border modes in today's WebGL implementations
@@ -102,7 +102,7 @@ filters.blend_alpha=function(alpha) {
     ');
 
     var texture1=this.stack_pop();
-    shaders.blend_alpha.textures({texture2: this._.texture, texture1: texture1});
+    shaders.blend_alpha.textures({texture2: this.texture, texture1: texture1});
     this.simpleShader( shaders.blend_alpha, {alpha:clamp(0.,alpha,1.)});
 
     return this;
@@ -121,7 +121,7 @@ filters.multiply=function() {
     ');
 
     var texture1=this.stack_pop();
-    shaders.multiply.textures({texture2: this._.texture, texture1: texture1});
+    shaders.multiply.textures({texture2: this.texture, texture1: texture1});
     this.simpleShader( shaders.multiply, {});
 
     return this;
@@ -144,7 +144,7 @@ filters.blend_mask=function() {
 
     var texture2=this.stack_pop();
     var texture1=this.stack_pop();
-    shaders.blend_mask.textures({mask: this._.texture, texture1: texture1, texture2: texture2});
+    shaders.blend_mask.textures({mask: this.texture, texture1: texture1, texture2: texture2});
     this.simpleShader( shaders.blend_mask, {});
 
     return this;
@@ -270,7 +270,7 @@ filters.superquadric=function(A,B,C,r,s,t,angle) {
     };
 
   
-    this._.texture.use(0);
+    this.texture.use(0);
     var target=this.getSpareTexture();
     target.setAsTarget();
     let gl=this.gl;
@@ -289,18 +289,18 @@ filters.feedbackIn=function() {
     // Store a copy of the current texture in the feedback texture unit
     this._.feedbackTexture=this.getSpareTexture(this._.feedbackTexture);
 
-    this._.texture.copyTo(this._.feedbackTexture);
+    this.texture.copyTo(this._.feedbackTexture);
 
     return this;
 }
 
 filters.strobe=function(period) {
-    var t=this._.texture;
+    var t=this.texture;
     this._.strobeTexture=this.getSpareTexture(this._.strobeTexture);
 
     this._.strobePhase=((this._.strobePhase|0)+1.) % period;
-    if(this._.strobePhase==0) this._.texture.copyTo(this._.strobeTexture);
-    else                      this._.strobeTexture.copyTo(this._.texture);
+    if(this._.strobePhase==0) this.texture.copyTo(this._.strobeTexture);
+    else                      this._.strobeTexture.copyTo(this.texture);
 
     return this;
 }
@@ -429,7 +429,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
     };
 
     var supershapeMeshUVs=this._.supershapeMeshUVs;
-    this._.texture.use(0);
+    this.texture.use(0);
     var target=this.getSpareTexture();
     target.setAsTarget();
     let gl=this.gl;
@@ -682,7 +682,7 @@ filters.video=function(url,play_sound,speed,loop) {
     // make sure the video has adapted to the video source
     if(v.currentTime==0 || !v.videoWidth) return this;
 
-    if(!this._.videoTexture) this._.videoTexture=this.texture(v);
+    if(!this._.videoTexture) this._.videoTexture=this.toTexture(v);
     this._.videoTexture.loadContentsOf(v);
     var target=this.getSpareTexture();
     this._.videoTexture.copyTo(target);
@@ -849,7 +849,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     });
     
     // set shader textures
-    mesh_shader.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    mesh_shader.textures({displacement_map: this.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture();
@@ -884,7 +884,7 @@ filters.blend=function(alpha,factor,offset) {
         }\
     ');
 
-    shaders.blend.textures({texture: this._.texture, texture1: this.stack_pop()});
+    shaders.blend.textures({texture: this.texture, texture1: this.stack_pop()});
     this.simpleShader( shaders.blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
 
     return this;
@@ -1130,7 +1130,7 @@ filters.analogize=function(exposure,gamma,glow,radius) {
     filters.blur.call(this,radius);
 
     shaders.analogize.textures({
-        glow_texture: this._.texture,
+        glow_texture: this.texture,
         texture: this.stack_pop()
     });
     this.simpleShader( shaders.analogize, {
@@ -1180,11 +1180,11 @@ filters.feedbackOut=function(blend,clear_on_switch) {
 
     if(!this._.feedbackTexture) return this;
     
-    if(clear_on_switch && this.switched)
+    if(clear_on_switch && this.switched && this._.feedbackTexture)
       this._.feedbackTexture.clear();
 
     shaders.feedbackOut.textures({
-        texture: this._.texture,
+        texture: this.texture,
         feedbackTexture: this._.feedbackTexture
     });
     this.simpleShader( shaders.feedbackOut, {
@@ -1227,12 +1227,12 @@ filters.motion=function(threshold,interval,damper) {
       // blend current image into mean motion texture
       var target=this.getSpareTexture();
       shaders.motionBlend.textures({
-          texture: this._.texture,
+          texture: this.texture,
           motionTexture: this._.motionTexture
       });
       this.simpleShader( shaders.motionBlend, {
           blend: damper
-      },this._.texture,target);
+      },this.texture,target);
 
       this.releaseTexture(this._.motionTexture);
       this._.motionTexture=target;
@@ -1243,7 +1243,7 @@ filters.motion=function(threshold,interval,damper) {
 
     // rebind, motionTexture was exchanged by simpleShader
     shaders.motion.textures({
-        texture: this._.texture,
+        texture: this.texture,
         motionTexture: this._.motionTexture
     });
     this.simpleShader( shaders.motion, {
@@ -1484,7 +1484,7 @@ filters.reaction2=function(F,K,D_a,D_b,iterations) {
       }\n\
     ');
 
-    this._.texture.use(0);
+    this.texture.use(0);
     for(var i=0; i<iterations; i++)
       this.simpleShader( shaders.reaction2, {F:F,K:K,D_a:D_a,D_b:D_b, scale: [this.width,this.height] });
 
@@ -1505,7 +1505,7 @@ filters.displacement=function(strength) {
         }\
     ');
 
-    shaders.displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    shaders.displacement.textures({displacement_map: this.texture, texture: this.stack_pop()});
     this.simpleShader( shaders.displacement, { strength: strength });
 
     return this;
@@ -1660,7 +1660,7 @@ filters.vectorscope=function(size,intensity,linewidth) {
     shaders.vectorscope.textures({waveform: waveformTexture});
 
     // render 3d mesh stored in waveform texture,uvs to texture
-    this._.texture.setAsTarget();
+    this.texture.setAsTarget();
     //gl.enable(gl.DEPTH_TEST);
     ///gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -1693,7 +1693,7 @@ filters.lumakey=filters.luma_key=function(threshold,feather) {
       }\
     ');
 
-    shaders.lumakey.textures({texture: this._.texture, texture1: this.stack_pop()});
+    shaders.lumakey.textures({texture: this.texture, texture1: this.stack_pop()});
     this.simpleShader( shaders.lumakey, { threshold: threshold, feather: feather });
 
     return this;
@@ -1722,7 +1722,7 @@ filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
       }\
     ');
 
-    shaders.chroma_key_rgb.textures({texture: this._.texture, texture1: this.stack_pop()});
+    shaders.chroma_key_rgb.textures({texture: this.texture, texture1: this.stack_pop()});
     this.simpleShader( shaders.chroma_key_rgb, { key_color:[r,g,b], threshold: threshold, feather: feather });
 
     return this;
@@ -1762,7 +1762,7 @@ filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_
     ');
 
     h=Math.max(0.0,Math.min(1.0,h));
-    shaders.chroma_key.textures({texture: this._.texture, texture1: this.stack_pop()});
+    shaders.chroma_key.textures({texture: this.texture, texture1: this.stack_pop()});
     this.simpleShader( shaders.chroma_key, { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]});
 
     return this;
@@ -1858,7 +1858,7 @@ filters.timeshift=function(time,clear_on_switch) {
 
     // calculate a sane frame limit by estimating it's memory needs.
     //
-    var t=this._.texture;
+    var t=this.texture;
     // TODO this.gl.FLOAT is a wrong identifier, it is oes.HALF_FLOAT with 2 or oes.FLOAT with 4 bytes.
     var frame_bytes = t.width * t.height * 4 * (t.type==this.gl.FLOAT ? 2 : 1);
     var max_buffer_bytes=256000000;
@@ -1877,14 +1877,14 @@ filters.timeshift=function(time,clear_on_switch) {
       nt=this._.pastTextures.pop();
       
     nt=this.getSpareTexture(nt);
-    this._.texture.copyTo(nt);
+    this.texture.copyTo(nt);
     this._.pastTextures.unshift(nt);
 
     // copy past frame from the queue to the current texture, if available
     var j=Math.abs(Math.floor(time) % max_frames);
     if(this._.pastTextures[j]) 
     {
-      this._.pastTextures[j].copyTo(this._.texture);
+      this._.pastTextures[j].copyTo(this.texture);
     }
 
     return this;
@@ -1922,9 +1922,9 @@ filters.webrtc=function(websocket_url) {
     let v=this.webrtc_videos[websocket_url];
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this;
-    if(!this._.videoTexture) this._.videoTexture=this.texture(v);
+    if(!this._.videoTexture) this._.videoTexture=this.toTexture(v);
     this._.videoTexture.loadContentsOf(v);
-    this._.videoTexture.copyTo(this._.texture);
+    this._.videoTexture.copyTo(this.texture);
 
     return this;
 }
@@ -2131,7 +2131,7 @@ filters.soft_life=function(birth_min,birth_max,death_min) {
 
     this.stack_pop();
         
-    shaders.soft_life.textures({inner_texture: inner_texture, outer_texture: this._.texture});
+    shaders.soft_life.textures({inner_texture: inner_texture, outer_texture: this.texture});
     
     this.simpleShader( shaders.soft_life, {
       birth_min:birth_min,
@@ -2259,7 +2259,7 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     });
     
     // set shader textures    
-    shaders.particles.textures({particles: this._.particleTextureA, texture: this._.texture});
+    shaders.particles.textures({particles: this._.particleTextureA, texture: this.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture()
@@ -2282,32 +2282,12 @@ filters.stack_push=function(from_texture) {
 
 filters.stack_swap=function() {
   // exchange topmost stack element with current texture
-  if(this._.stack.length<1) return;
+  if(this.stack.length<1) return;
   
-  var tmp=this._.texture;
-  this._.texture=this._.stack[this._.stack.length-1];
-  this._.stack[this._.stack.length-1]=tmp;
+  var tmp=this.texture;
+  this.texture=this.stack[this.stack.length-1];
+  this.stack[this.stack.length-1]=tmp;
 }
-
-filters.stack_prepare=function() {
-  // make sure the stack is there
-  if(!this._.stack) this._.stack=[];
-  if(!this._.stackUnused) this._.stackUnused=[];
-
-  // report if stack is still full
-  if(this._.stack.length)
-    console.log("glfx.js video stack leaks "+this._.stack.length+" elements.");
-
-  // pop any remaining elements
-  while(this._.stack.length)
-    this.releaseTexture(this._.stack.pop());
-    
-  // release all freed elements
-  while(this._.stackUnused.length)
-    this.releaseTexture(this._.stackUnused.pop());
-}
-
-
 
 filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     shaders.patch_displacement = shaders.patch_displacement || new Shader(this.gl, '\
@@ -2374,7 +2354,7 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
     });
     
     // set shader textures
-    shaders.patch_displacement.textures({displacement_map: this._.texture, texture: this.stack_pop()});
+    shaders.patch_displacement.textures({displacement_map: this.texture, texture: this.stack_pop()});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture();
@@ -2820,12 +2800,12 @@ filters.unsharpMask=function(radius, strength) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this._.texture.copyTo(this._.extraTexture);
+    this.texture.copyTo(this._.extraTexture);
 
     // Blur the current texture, then use the stored texture to detect edges
     filters.blur.call(this,radius);
     shaders.unsharpMask.textures({
-        blurredTexture: this._.texture,
+        blurredTexture: this.texture,
         originalTexture: this._.extraTexture
     });
     this.simpleShader( shaders.unsharpMask, {
@@ -3509,7 +3489,7 @@ filters.midi=function(device, rows, cols, toggles) {
     }
 
   this._.midiTexture.load(this._.midiState);
-  this._.midiTexture.copyTo(this._.texture);
+  this._.midiTexture.copyTo(this.texture);
 }
 
 

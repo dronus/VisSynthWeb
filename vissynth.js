@@ -276,6 +276,7 @@ var run_effect=function(effect,canvas,t)
 
 var run_chain=function(chain,canvas,t)
 {
+  canvas.stack_prepare();
   for(var i=0; i<chain.length; i++)
     run_effect(chain[i],canvas,t);
 }
@@ -286,7 +287,6 @@ window.remote_cmds={};
 // set effect chain to render
 remote_cmds.setChain=function (effects)
 {
-  effects.unshift({'effect':'stack_prepare'});
   var havePreview=false;
   for(var i=0; i<effects.length; i++)
     if(effects[i].effect=='preview')

@@ -70,6 +70,12 @@ Texture.prototype.setFormat = function(width, height, format, type) {
     }
 };
 
+Texture.prototype.clear = function() {
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.id);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.format, this.width, this.height, 0, this.format, this.type, null);
+};
+
+
 Texture.prototype.setAsTarget = function(with_depth) {
     // start rendering to this texture
     let gl=this.gl;

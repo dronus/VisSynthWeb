@@ -8,42 +8,40 @@ export let Canvas = function(selector) {
     this.canvas=document.querySelector(selector);
     this.gl = this.canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
 
+    // container for filter state variables..
+    // filters should not add properties outside of this.
     this._={};
     // initialize (use browser canvas size as default. may be changed by user-defined via "resolution"-filter)
     // create a template texture manually as template for future ones
-    this._.template = new Texture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
+    this.template = new Texture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
     // hold a list of managed spare textures
-    this._.spareTextures=[];
+    this.spareTextures=[];
     // hold a list of garbage collected textures
-    this._.tempTextures=[];
+    this.tempTextures=[];
     // create default texture for simpleShader
-    this._.texture = this.getSpareTexture();
+    this.texture = this.getSpareTexture();
+    // create stack
+    this.stack=[];
+    this.stackUnused=[];
 }
 
-
-Canvas.prototype.texture=function(element) {
+Canvas.prototype.toTexture=function(element) {
     return Texture.fromElement(this.gl, element);
 }
 
-Canvas.prototype.for_all_textures=function(callback){
-    callback(this._.texture);
-    callback(this._.spareTexture);
-    callback(this._.extraTexture);
-};
-
 Canvas.prototype.update=function() {
     // update canvas size to texture size...
-    if(this.width!=this._.texture.width || this.height!=this._.texture.width)
+    if(this.width!=this.texture.width || this.height!=this.texture.width)
     {
-      this.width =this._.texture.width;
-      this.height=this._.texture.height;
+      this.width =this.texture.width;
+      this.height=this.texture.height;
       this.canvas.width=this.width;
       this.canvas.height=this.height;
     }
 
     this.gl.viewport(0,0, this.width, this.height);
     filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
-    //this._.texture.copyTo(this);
+    //this.texture.copyTo(this);
 
     this.gc();
 
@@ -53,12 +51,12 @@ Canvas.prototype.update=function() {
 // exchange output and input texture
 Canvas.prototype.putTexture=function(texture)
 {
-    this.releaseTexture(this._.texture);
-    this._.texture=texture;
+    this.releaseTexture(this.texture);
+    this.texture=texture;
 }
 
 Canvas.prototype.simpleShader=function(shader, uniforms, textureIn, textureOut) {
-    var texture=(textureIn  || this._.texture        );
+    var texture=(textureIn  || this.texture        );
     var target =(textureOut || this.getSpareTexture());
 
     texture.use();
@@ -90,7 +88,7 @@ Canvas.prototype.getSpareTexture=function(candidate_texture,width,height,format,
   if(width && height)
     t={width:width, height:height, format:format || this.gl.RGBA, type: type || this.gl.UNSIGNED_BYTE};
   else
-    t=this._.template;
+    t=this.template;
 
   var k=Texture.formatKey(t);
 
@@ -100,27 +98,21 @@ Canvas.prototype.getSpareTexture=function(candidate_texture,width,height,format,
     else
       this.releaseTexture(candidate_texture);
 
-  if(!this._.spareTextures[k])
-    this._.spareTextures[k]=[];
+  if(!this.spareTextures[k])
+    this.spareTextures[k]=[];
 
-  if(this._.spareTextures[k].length)
-    return this._.spareTextures[k].pop();
+  if(this.spareTextures[k].length)
+    return this.spareTextures[k].pop();
   else{
     console.log("canvas.getSpareTexture "+k);
     return new Texture(this.gl, t.width, t.height, t.format, t.type, t.filter);
   }
 }
 
-Canvas.prototype.getTemporaryTexture=function()
-{
-  var texture=getSpareTexture.apply(this,arguments);
-  this._.temporary.push(texture);
-}
-
 Canvas.prototype.gc=function()
 {
   var texture;
-  while(texture=this._.tempTextures.pop())
+  while(texture=this.tempTextures.pop())
     this.releaseTexture(texture);
 }
 
@@ -131,47 +123,63 @@ Canvas.prototype.gc=function()
 Canvas.prototype.releaseTexture=function(texture)
 {
   var k=texture .getFormatKey();
-  if(!this._.spareTextures[k])
-    this._.spareTextures[k]=[];
+  if(!this.spareTextures[k])
+    this.spareTextures[k]=[];
 
-  this._.spareTextures[k].push(texture);
+  this.spareTextures[k].push(texture);
 }
 
 Canvas.prototype.stack_push=function(from_texture)
 {
   // push given or current image onto stack
-  if(!from_texture) from_texture=this._.texture;
+  if(!from_texture) from_texture=this.texture;
 
 
   // add another texture to empty stack pool if needed
-  if(!this._.stackUnused.length)
-    this._.stackUnused.push(this.getSpareTexture());
+  if(!this.stackUnused.length)
+    this.stackUnused.push(this.getSpareTexture());
 
   // check for stack overflow
-  if(this._.stack.length>10) 
+  if(this.stack.length>10) 
   {
     console.log('glfx.js video stack overflow!');
     return this;
   }
   
   // copy current frame on top of the stack
-  var nt=this._.stackUnused.pop();
+  var nt=this.stackUnused.pop();
   from_texture.copyTo(nt);
-  this._.stack.push(nt);
+  this.stack.push(nt);
 
   return nt;
 }
 
 Canvas.prototype.stack_pop=function()
 {
-  var texture=this._.stack.pop();
+  var texture=this.stack.pop();
   if(!texture)
   {
     console.log('glfx.js video stack underflow!');
-    return this._.texture;
+    return this.texture;
   }
-  this._.stackUnused.push(texture);
+  this.stackUnused.push(texture);
 
   return texture;
 }
+
+Canvas.prototype.stack_prepare=function() {
+  // report if stack is still full
+  if(this.stack.length)
+    console.log("glfx.js video stack leaks "+this.stack.length+" elements.");
+
+  // pop any remaining elements
+  while(this.stack.length)
+    this.releaseTexture(this.stack.pop());
+    
+  // release all freed elements
+  while(this.stackUnused.length)
+    this.releaseTexture(this.stackUnused.pop());
+}
+
+
 
