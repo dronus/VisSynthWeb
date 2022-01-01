@@ -1,11 +1,15 @@
 import {Texture} from "./texture.js";
 import {Shader} from "./shader.js";
 import {filters} from "./filters.js";
+import * as Generators from "./generators.js"
 
 // canvas and gl are available at global scope
 
-export let Canvas = function(selector) {
+export let Canvas = function(selector, session_url) {
     this.canvas=document.querySelector(selector);
+    
+    this.session_url=session_url;
+    
     this.gl = this.canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
 
     // container for filter state variables..
@@ -25,6 +29,24 @@ export let Canvas = function(selector) {
     // create stack
     this.stack=[];
     this.stackUnused=[];
+
+    this.chain={};
+
+    this.preview_cycle=0;
+    this.preview_enabled=false;
+    this.screenshot_cycle=0;
+    this.preview_canvas=null;
+    this.mediaRecorder;
+    this.recordedBlobs = [];
+    this.recorderContext=null;
+    this.recorderCanvas=null;
+    
+    this.frame_time=0;
+    this.last_time=0;
+    this.effect_time=0;
+
+    this.remote = null;
+    this.proposed_fps=0;
 }
 
 Canvas.prototype.toTexture=function(element) {
@@ -32,6 +54,59 @@ Canvas.prototype.toTexture=function(element) {
 }
 
 Canvas.prototype.update=function() {
+
+    // get animation time
+    var current_time=Date.now();
+    this.frame_time=this.frame_time*0.9 + (current_time-this.last_time)*0.1;
+    this.last_time=current_time;
+    this.effect_time=current_time*0.001; // 1 units per second
+
+    // enqueue next update
+    var update_handler=this.update.bind(this);
+    if(this.proposed_fps)
+      
+      setTimeout(function(){
+        requestAnimationFrame(update_handler);
+      },1000/this.proposed_fps);
+    else
+      requestAnimationFrame(update_handler);
+
+    this.run_chain();
+
+    // provide preview if requested
+    // the preview is a downscaled image provided by the 'preview' effect
+    // we crop the preview pixels of the canvas just BEFORE canvas.update, which will redraw the full resolution canvas.
+    //
+    // in repsect to just downsizing the final image this has two benefits:
+    //
+    // 1) it is much faster, as rescaling is done in WebGL context and not by 2d context drawImage
+    //
+    // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
+    //
+    if(this.preview_enabled && this.preview_cycle==1)
+    {
+      if(!this.preview_canvas)
+      {
+        this.preview_canvas=document.createElement('canvas');
+        this.preview_canvas.width=this.preview_width; 
+        this.preview_canvas.height=this.preview_height;
+      }
+      var ctx=this.preview_canvas.getContext('2d');
+      ctx.drawImage(this.canvas,0,this.height-this.preview_height,this.preview_width,this.preview_height, 0, 0, this.preview_width,this.preview_height);
+    }
+    else if(this.preview_cycle==0)
+    {
+      var jpeg=this.preview_enabled ? this.preview_canvas.toDataURL('image/jpeg') : null;
+      var data={frame_time:this.frame_time, jpeg:jpeg};
+      var json=JSON.stringify(data);
+      this.remote.put('preview',json);
+
+      // only provide data every other frame if a preview image is send.
+      // if only frame rate data is send, we keep the network calm.
+      this.preview_cycle=this.preview_enabled ? 2 : 2;
+    }
+    this.preview_cycle--;
+
     // update canvas size to texture size...
     if(this.width!=this.texture.width || this.height!=this.texture.width)
     {
@@ -46,6 +121,25 @@ Canvas.prototype.update=function() {
     //this.texture.copyTo(this);
 
     this.gc();
+    
+    // reset switched flag, it is used by some filters to clear buffers on chain switch
+    this.switched=false;
+
+    // take screenshot if requested
+    if(this.screenshot_cycle==1)
+    {
+      var pixels=canvas.toDataURL('image/jpeg');
+      this.remote.put('screenshot',pixels);
+      this.screenshot_cycle=0;
+    }
+
+    // take movie stream export frame if requested
+    if(this.recorderContext)
+    {
+      // TODO if this is done for WebRTC, only do this copy if stream is actually running.
+      this.recorderContext.drawImage(canvas,0,0);
+      if(this.mediaRecorder) this.mediaRecorder.stream.getVideoTracks()[0].requestFrame();
+    }
 
     return this;
 }
@@ -190,6 +284,165 @@ Canvas.prototype.stack_prepare=function() {
     this.releaseTexture(this.stackUnused.pop());
 }
 
+// helper functions for chain code generation
 
+var get_param_values=function(param,t)
+{
+  var args=[];
+  if(!(param instanceof Object)) return param;
+  var fn=Generators.generators[param.type];
+  return fn.call(window,t,param);
+}
+
+Canvas.prototype.run_effect=function(effect,t)
+{
+  if(typeof effect == "string") return;
+  var args=[];
+  var fn=filters[effect.effect] ? filters[effect.effect] : window[effect.effect];
+  for(var key in effect)
+  {
+    if(key=='effect') continue;
+    args=args.concat(get_param_values(effect[key],t));
+  }
+  fn.apply(this,args);
+}
+
+Canvas.prototype.run_chain=function()
+{
+  Generators.prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
+  this.stack_prepare();
+  for(var i=0; i<this.chain.length; i++)
+    this.run_effect(this.chain[i],this.effect_time);
+}
+
+Canvas.prototype.setChain=function (effects)
+{
+  var havePreview=false;
+  for(var i=0; i<effects.length; i++)
+    if(effects[i].effect=='preview')
+      havePreview=true;
+  if(!havePreview)
+    effects.push({'effect':'preview'});
+
+  // set chain
+  this.chain=effects;
+
+  // set canvas 'switched' flag, that can be used by filters to reset buffers
+  this.switched=true;
+}
+
+// receive preview request from remote
+// called by UI
+Canvas.prototype.preview=function(enabled)
+{
+  // engage preview process
+  this.preview_enabled=enabled;
+  this.preview_cycle=2;
+}
+
+// receive screenshot request from remote
+// called by UI
+Canvas.prototype.screenshot=function()
+{
+  // engage screenshot process
+  this.screenshot_cycle=1;
+}
+
+// start canvas capture stream and deliver video to UI on stop,
+// called by UI
+Canvas.prototype.recording=function(enabled) {
+  if(enabled)
+  {
+    var options = {mimeType: 'video/webm'};
+
+    if(!this.recorderCanvas) {
+      this.recorderCanvas=document.createElement('canvas');
+      this.recorderCanvas.width=this.width;
+      this.recorderCanvas.height=this.height;
+      this.recorderContext=this.recorderCanvas.getContext('2d');
+    }
+
+    const stream = this.recorderCanvas.captureStream(0);
+    stream.getVideoTracks()[0].contentHint="detail";
+    console.log('Started stream capture from canvas element: ', stream);
+    this.mediaRecorder = new MediaRecorder(stream, options);
+    console.log('Created MediaRecorder', this.mediaRecorder, 'with options', options);
+
+    let recordedBlobs=[];
+
+    let remote = this.remote;
+    this.mediaRecorder.onstop = function(event)
+    {
+      console.log('Recorder stopped: ', event);
+      const blob = new Blob(recordedBlobs, {type: 'video/webm'});
+      const a = new FileReader();
+      a.onload = function(e) {
+        remote.put('screenshot',e.target.result);
+      }
+      a.readAsDataURL(blob);
+      recordedBlobs = [];
+    };
+
+    this.mediaRecorder.ondataavailable = function(event)
+    {
+      if (event.data && event.data.size > 0) {
+        recordedBlobs.push(event.data);
+      }
+    }
+    this.mediaRecorder.start(1000);
+    console.log('MediaRecorder started', this.mediaRecorder);
+  }
+  else
+  {
+    this.mediaRecorder.stop();
+    this.mediaRecorder=null;
+  }
+}
+
+// start canvas WebRTC stream
+// called by UI
+Canvas.prototype.webrtc=function(enabled) {
+  if(enabled)
+  {
+    if(!this.recorderContext) {
+      this.recorderCanvas=document.createElement('canvas');
+      this.recorderCanvas.width=this.width;
+      this.recorderCanvas.height=this.height;
+      this.recorderContext=this.recorderCanvas.getContext('2d');
+    }
+    if(!this.webrtcOut) {
+      this.webrtcOut=true;
+      import("./webrtc.js").then(async(webrtc) => {
+        this.webrtcOut=await webrtc.WebRTC("",this.recorderCanvas);
+      });
+    }
+  }else{
+    this.webrtcOut.hangup();
+    this.webrtcOut=null;
+    this.recorderContext=null;
+  }
+}
+
+// switch chain by index,
+// called by UI
+Canvas.prototype.switchChain=function(chain_index)
+{
+  chain_index+=2;
+
+  // load startup chain (first three of chains.json : setup pre, current, setup after)
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.open('GET','saves'+this.session_url+'chains.json',true);
+  xmlHttp.send(null);
+  xmlHttp.onreadystatechange=function(){
+    if(xmlHttp.readyState!=4) return;
+    if(xmlHttp.responseText)
+    {
+      var chains=JSON.parse(xmlHttp.responseText);
+      if(chain_index>=chains.length) return;
+      var full_chain=chains[0].concat(chains[chain_index],chains[1]);
+      this.setChain(full_chain);
+    }
+  }
+}
 
 

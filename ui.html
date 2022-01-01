@@ -112,7 +112,7 @@
     {
       recording=!recording;
 
-      send('recording('+(recording ? 'true' : 'false')+')');
+      send('canvas.recording('+(recording ? 'true' : 'false')+')');
       // put(recording ? '/recorder/start' : '/recorder/stop' , '');
 
       $('#recorder_button').html(recording ? 'STOP RECORDING' : 'START RECORDING');
@@ -125,7 +125,7 @@
     {
       streaming=!streaming;
 
-      send('webrtc('+(streaming ? 'true' : 'false')+')');
+      send('canvas.webrtc('+(streaming ? 'true' : 'false')+')');
 
       $('#stream_button').html(streaming ? 'STOP STREAMING' : 'START STREAMING');
       if(recording) $('#stream_button').addClass   ('active');
@@ -495,7 +495,7 @@
       $('#chains .active').data('chain',chain);
 
       // send out to control server
-      send('context.setChain('+JSON.stringify(full_chain)+')');
+      send('canvas.setChain('+JSON.stringify(full_chain)+')');
     }
 
     $('#chain,#pre_chain,#post_chain').sortable({
@@ -913,12 +913,12 @@
       preview=!preview;
       if(preview) $('#preview_button').addClass   ('active');
       else        $('#preview_button').removeClass('active');
-      send('preview('+preview+')');
+      send('canvas.preview('+preview+')');
     }
       
     // screenshot button      
     function screenshot(){
-      send('screenshot()');
+      send('canvas.screenshot()');
     }
     
     // double tap quirk for touch screens
