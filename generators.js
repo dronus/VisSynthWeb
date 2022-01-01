@@ -15,16 +15,21 @@ var flatten=function(t,args)
   return vals;
 }
 
-// effect argument value generators...    
+// an index to distinguish the time-dependent random number sequences for multiple parameters
 let random_index=0;
 export function prepare() {
   random_index=0;
 }
+
+// oscillators provide time-dependent parameter changes by provided waveforms
 var oscillators={
   sine  : Math.sin,
   saw   : function(t){return (t % (2*Math.PI))/Math.PI-1.},
   square: function(t,d){return (t % (2*Math.PI)<Math.PI*2.*d) ? 1. : -1.},
   random: function(t){
+    // interpolate lineary over time between two random values
+    // thus creating a somewhat bandwith limited (smoothed) 
+    // random sequence. 
     t=t/Math.PI;
     var i0=Math.floor(t);
     var i1=i0+1;
@@ -42,14 +47,23 @@ var oscillators={
 
 var clamp=function(x,a,b){
   return Math.min(b,Math.max(a,x));
-}  
+}
 
+// generators provide user-selectable effect parameter value sources
 export let generators={
-  perspective:function(t,args){return [[-0.5,-0.5, -0.5,0.5, 0.5,-0.5, 0.5,0.5],flatten(t,args)]},
+  // a tunable oscillator with selectable waveform, see above.
   osc:function(t,args){return args.a*oscillators[args.waveform ? args.waveform : 'sine'](t*args.f+args.p,args.duty?args.duty:0.5)+args.o;},
+  // provide a sound-dependend parameter (beat detection or instantaneous amplitude)
   beat:function(t,args) { return audio_engine.beatValue.apply(null,flatten(t,args));},
+  // provide MIDI CC input parameters
   midi:function(t,args){return clamp( (args.infinite?window.midi.controllers_infinite:window.midi.controllers)[args.channel|0]*args.a+args.o, args.min, args.max)},
+  // provide MIDI Note input parameters
   midi_note:function(t,args){return (window.midi.notes[args.channel+" "+args.note]|0)*args.a+args.o},
+
+  // compound data types (mainly for UI purposes)
+  // a perspective adjustment (four corners) data type 
+  perspective:function(t,args){return [[-0.5,-0.5, -0.5,0.5, 0.5,-0.5, 0.5,0.5],flatten(t,args)]},
+  // provide some vector-like value types for parameters:
   pos:flatten,
   size:flatten,
   rgb:flatten,

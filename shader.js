@@ -1,3 +1,4 @@
+//  Manage a WebGL GLSL shader program
 
 function compileSource(gl, type, source) {
     var shader = gl.createShader(type);
@@ -88,6 +89,8 @@ Shader.prototype.textures = function(textures) {
     return this;
 };
 
+// draw a rectangle using this shader. 
+// This is by far the most way to render effects, by drawing a full image using a single GLSL shader.
 Shader.prototype.drawRect = function() {
     let gl=this.gl;
     if (gl.vertexBuffer == null) {
@@ -105,6 +108,7 @@ Shader.prototype.drawRect = function() {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 };
 
+// set shader attributes. Vector sizes needs to be defined by "sizes" in the same order!
 Shader.prototype.attributes=function(attributes,sizes){
   let gl=this.gl;
   for(let key in attributes)
@@ -126,6 +130,8 @@ Shader.prototype.attributes=function(attributes,sizes){
   }
 }
 
+// draw vertex arrays 
+// this is used for mesh rendering (displacements or 3D-rendering)
 Shader.prototype.drawArrays = function(mode){
     let gl=this.gl;
     gl.useProgram(this.program);

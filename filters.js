@@ -1,3 +1,16 @@
+// Implement all video filters ("effects").
+//
+// -filters may be "sources", that don't use any input despite their own, eg. "capture" a video camera
+// -filters may be filters, thus reading one or more textures to produce their output, eg. "invert"
+// -filters may be "setting"-filters, that change some Canvas settings without rendering anything, eg. "resolution".
+//
+// Filters are implemented as functions called with "this" being the Canvas. 
+// The most of them are just calling "simpleShader" to render a WebGL GLSL shader into their output texture.
+//
+// State (eg. caches) can be stored at this._.FILTERNAME_... . 
+// There is NO individual state for multiple instances in a single effect chain.
+//
+
 import {Shader} from "./shader.js";
 import {Texture} from "./texture.js"
 import {audio_engine} from "./audio.js"
@@ -8,11 +21,14 @@ function clamp(lo, value, hi) {
     return Math.max(lo, Math.min(value, hi));
 }
 
-
+// collection of filter functions.
+// filters will be called with "this" pointing to the calling Canvas.
 export let filters={};
 
+// no-op filter for UI purposes.
 filters.none=function(){};
 
+// side-effect filter to switch to another chain
 filters.switch_chain_time=0;
 filters.switch_chain=function(chain_index,time_min,time_max) {
   if(this.switched) 

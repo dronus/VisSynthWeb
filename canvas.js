@@ -3,8 +3,7 @@ import {Shader} from "./shader.js";
 import {filters} from "./filters.js";
 import * as Generators from "./generators.js"
 
-// canvas and gl are available at global scope
-
+// create a VisSynthWeb Canvas from given HTML canvas element, session_url (for remote control)
 export let Canvas = function(selector, session_url) {
     this.canvas=document.querySelector(selector);
     
@@ -15,6 +14,7 @@ export let Canvas = function(selector, session_url) {
     // container for filter state variables..
     // filters should not add properties outside of this.
     this._={};
+
     // initialize (use browser canvas size as default. may be changed by user-defined via "resolution"-filter)
     // create a template texture manually as template for future ones
     this.template = new Texture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
@@ -30,8 +30,10 @@ export let Canvas = function(selector, session_url) {
     this.stack=[];
     this.stackUnused=[];
 
+    // the currently running effect chain
     this.chain={};
 
+    // states for delivery of preview, screenshots and stream recordings
     this.preview_cycle=0;
     this.preview_enabled=false;
     this.screenshot_cycle=0;
@@ -41,18 +43,26 @@ export let Canvas = function(selector, session_url) {
     this.recorderContext=null;
     this.recorderCanvas=null;
     
+    // time for stats and time-dependent effects
     this.frame_time=0;
     this.last_time=0;
     this.effect_time=0;
 
-    this.remote = null;
+    // the proposed fps can be set to limit the rendering fps
     this.proposed_fps=0;
+
+    // the remote control handle (for replying to remote commands)
+    this.remote = null;
 }
 
+// create a texture from a given HTML element
 Canvas.prototype.toTexture=function(element) {
     return Texture.fromElement(this.gl, element);
 }
 
+// render a frame, 
+// provide streaming / preview / screenshot output and
+// update the visible canvas element.
 Canvas.prototype.update=function() {
 
     // get animation time
@@ -144,13 +154,14 @@ Canvas.prototype.update=function() {
     return this;
 }
 
-// exchange output and input texture
+// replace current working texture
 Canvas.prototype.putTexture=function(texture)
 {
     this.releaseTexture(this.texture);
     this.texture=texture;
 }
 
+// render canvas-sized rectangle to apply a given shader to every pixel
 Canvas.prototype.simpleShader=function(shader, uniforms, textureIn, textureOut) {
     var texture=(textureIn  || this.texture        );
     var target =(textureOut || this.getSpareTexture());
@@ -163,6 +174,7 @@ Canvas.prototype.simpleShader=function(shader, uniforms, textureIn, textureOut) 
       this.putTexture(target);
 };
 
+// set the visible canvas as render target
 Canvas.prototype.setAsTarget=function(){
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); // remove framebuffer binding left from last offscreen rendering (as set by Texture.setAsTarget)
 }
@@ -175,7 +187,7 @@ Canvas.prototype.setAsTarget=function(){
 // -if there is no candidate or it is not matching the current format, a valid texture is returned (either recycled or created). The image is undefined then.
 //
 // If the texture is for transient use, it should be freed later by releaseTexture().
-// Otherwise filters are encouraged to pass their private working textures here every frame, ensuring chain updates are adopted (transiently losing the image).
+// Otherwise filters are encouraged to pass their private working textures here every frame, ensuring format updates are adopted (transiently losing the image).
 //
 Canvas.prototype.getSpareTexture=function(candidate_texture,width,height,format,type)
 {
@@ -205,6 +217,7 @@ Canvas.prototype.getSpareTexture=function(candidate_texture,width,height,format,
   }
 }
 
+// release all temporary textures (called after each rendering)
 Canvas.prototype.gc=function()
 {
   var texture;
@@ -232,6 +245,7 @@ Canvas.prototype.getShader=function(name, vertexSource, fragmentSource){
   return this.shaders[name];
 }
 
+// push (copy) a texture to the "stack"
 Canvas.prototype.stack_push=function(from_texture)
 {
   // push given or current image onto stack
@@ -257,6 +271,7 @@ Canvas.prototype.stack_push=function(from_texture)
   return nt;
 }
 
+// fetch and remove the topmost texture from the "stack"
 Canvas.prototype.stack_pop=function()
 {
   var texture=this.stack.pop();
@@ -270,6 +285,8 @@ Canvas.prototype.stack_pop=function()
   return texture;
 }
 
+// prepare stack in front of running a chain.
+// checks for textures still left on the stack.
 Canvas.prototype.stack_prepare=function() {
   // report if stack is still full
   if(this.stack.length)
@@ -284,8 +301,9 @@ Canvas.prototype.stack_prepare=function() {
     this.releaseTexture(this.stackUnused.pop());
 }
 
-// helper functions for chain code generation
 
+// helper functions for chain code generation
+// fetch parameters from effect, and optionally execute "generator" assigned to.
 var get_param_values=function(param,t)
 {
   var args=[];
@@ -294,6 +312,7 @@ var get_param_values=function(param,t)
   return fn.call(window,t,param);
 }
 
+// render a single effect
 Canvas.prototype.run_effect=function(effect,t)
 {
   if(typeof effect == "string") return;
@@ -307,6 +326,7 @@ Canvas.prototype.run_effect=function(effect,t)
   fn.apply(this,args);
 }
 
+// render the whole effect chain
 Canvas.prototype.run_chain=function()
 {
   Generators.prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
@@ -315,8 +335,12 @@ Canvas.prototype.run_chain=function()
     this.run_effect(this.chain[i],this.effect_time);
 }
 
+// set current effect chain
 Canvas.prototype.setChain=function (effects)
 {
+  // make sure there is always a "preview" output,
+  // if there is none in the chain, it is appended to the end
+  // (showing the final output)
   var havePreview=false;
   for(var i=0; i<effects.length; i++)
     if(effects[i].effect=='preview')
@@ -348,7 +372,9 @@ Canvas.prototype.screenshot=function()
   this.screenshot_cycle=1;
 }
 
-// start canvas capture stream and deliver video to UI on stop,
+// start canvas capture stream and deliver video to UI on stop.
+// this records compressed video to RAM, until stop is called,
+// the video is sent to the UI then as a single file.
 // called by UI
 Canvas.prototype.recording=function(enabled) {
   if(enabled)
