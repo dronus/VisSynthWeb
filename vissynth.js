@@ -1,106 +1,143 @@
 import {Canvas} from "./canvas.js"
 import {filters} from "./filters.js"
 import {initAudioAnalysers} from "./audio.js"
-import {generators,prepare} from "./generators.js"
+import * as Generators from "./generators.js"
 import {WebsocketRemote} from "./websocket_remote.js"
 
 
-let command_handler=function(js) {
-  return window.eval("with(remote_cmds){"+js+"}");
-}
-
-let remote;
 
 
-var time=0,frame_time=0; // running time
-var preview_cycle=0;
-var preview_enabled=false;
-var screenshot_cycle=0;
-var preview_canvas=null;
+
+let remotes=[];
+
 var chain=null;
 
-var canvas;
 
-// main update function, shows video frames via glfx.js canvas
-var update = function()
-{
-  // enqueue next update
-  if(canvas.proposed_fps)
-    setTimeout(function(){
+export let VisSynth = function(selector, session_url) {
+
+  let remote;
+
+  var time=0,frame_time=0; // running time
+  var preview_cycle=0;
+  var preview_enabled=false;
+  var screenshot_cycle=0;
+  var preview_canvas=null;
+
+  let mediaRecorder;
+  let recordedBlobs = [];
+  let recorderContext=null;
+  let recorderCanvas=null;
+
+
+  var running=false;
+
+  var canvas;
+  
+  // main update function, shows video frames via glfx.js canvas
+  var update = function()
+  {
+    // enqueue next update
+    if(canvas.proposed_fps)
+      setTimeout(function(){
+        requestAnimationFrame(update);
+      },1000/canvas.proposed_fps);
+    else
       requestAnimationFrame(update);
-    },1000/canvas.proposed_fps);
-  else
-    requestAnimationFrame(update);
 
-  // get animation time
-  var current_time=Date.now();
-  frame_time=frame_time*0.9 + (current_time-time)*0.1;
-  time=current_time;
-  var effect_time=time*0.001; // 1 units per second
+    // get animation time
+    var current_time=Date.now();
+    frame_time=frame_time*0.9 + (current_time-time)*0.1;
+    time=current_time;
+    var effect_time=time*0.001; // 1 units per second
 
-  // run effect chain
-  prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
-  if(chain) run_chain(chain,canvas,effect_time);
+    // run effect chain
+    if(chain) run_chain(chain,canvas,effect_time);
 
-  // provide preview if requested
-  // the preview is a downscaled image provided by the 'preview' effect
-  // we crop the preview pixels of the canvas just BEFORE canvas.update, which will redraw the full resolution canvas.
-  //
-  // in repsect to just downsizing the final image this has two benefits:
-  //
-  // 1) it is much faster, as rescaling is done in WebGL context and not by 2d context drawImage
-  //
-  // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
-  //
-  if(preview_enabled && preview_cycle==1)
-  {
-    if(!preview_canvas)
+    // provide preview if requested
+    // the preview is a downscaled image provided by the 'preview' effect
+    // we crop the preview pixels of the canvas just BEFORE canvas.update, which will redraw the full resolution canvas.
+    //
+    // in repsect to just downsizing the final image this has two benefits:
+    //
+    // 1) it is much faster, as rescaling is done in WebGL context and not by 2d context drawImage
+    //
+    // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
+    //
+    if(preview_enabled && preview_cycle==1)
     {
-      preview_canvas=document.createElement('canvas');
-      preview_canvas.width=canvas.preview_width; preview_canvas.height=canvas.preview_height;
+      if(!preview_canvas)
+      {
+        preview_canvas=document.createElement('canvas');
+        preview_canvas.width=canvas.preview_width; preview_canvas.height=canvas.preview_height;
+      }
+      var ctx=preview_canvas.getContext('2d');
+      ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
     }
-    var ctx=preview_canvas.getContext('2d');
-    ctx.drawImage(canvas,0,canvas.height-canvas.preview_height,canvas.preview_width,canvas.preview_height, 0, 0, canvas.preview_width,canvas.preview_height);
-  }
-  else if(preview_cycle==0)
+    else if(preview_cycle==0)
+    {
+      var jpeg=preview_enabled ? preview_canvas.toDataURL('image/jpeg') : null;
+      var data={frame_time:frame_time, jpeg:jpeg};
+      var json=JSON.stringify(data);
+      remote.put('preview',json);
+
+      // only provide data every other frame if a preview image is send.
+      // if only frame rate data is send, we keep the network calm.
+      preview_cycle=preview_enabled ? 2 : 2;
+    }
+    preview_cycle--;
+
+    // redraw visible canvas
+    canvas.update();
+
+    // reset switched flag, it is used by some filters to clear buffers on chain switch
+    canvas.switched=false;
+
+    // take screenshot if requested
+    if(screenshot_cycle==1)
+    {
+      var pixels=canvas.toDataURL('image/jpeg');
+      remote.put('screenshot',pixels);
+      screenshot_cycle=0;
+    }
+
+    // take movie stream export frame if requested
+    if(recorderContext)
+    {
+      // TODO if this is done for WebRTC, only do this copy if stream is actually running.
+      recorderContext.drawImage(canvas,0,0);
+      if(mediaRecorder) mediaRecorder.stream.getVideoTracks()[0].requestFrame();
+    }
+  };
+
+  // initialize canvas
+  canvas=new Canvas(selector);
+  
+  // remote context
+  let context = createRemoteContext(canvas);
+  let command_handler=function(js) {
+    return eval(js);
+  };
+
+
+  // initialize remote
+  remote = new WebsocketRemote(session_url, command_handler);
+  remotes.push(remote);
+  
+  // set video handler.
+  // the video devices are started on demand.
+  // this is used by the 'capture' effect to acquire the camera.
+  canvas.video_source=get_video;
+
+  // start frequent canvas updates
+  if(!running)
   {
-    var jpeg=preview_enabled ? preview_canvas.toDataURL('image/jpeg') : null;
-    var data={frame_time:frame_time, jpeg:jpeg};
-    var json=JSON.stringify(data);
-    remote.put('preview',json);
-
-    // only provide data every other frame if a preview image is send.
-    // if only frame rate data is send, we keep the network calm.
-    preview_cycle=preview_enabled ? 2 : 2;
+    running=true;
+    update();
   }
-  preview_cycle--;
-
-  // redraw visible canvas
-  canvas.update();
-
-  // reset switched flag, it is used by some filters to clear buffers on chain switch
-  canvas.switched=false;
-
-  // take screenshot if requested
-  if(screenshot_cycle==1)
-  {
-    var pixels=canvas.toDataURL('image/jpeg');
-    remote.put('screenshot',pixels);
-    screenshot_cycle=0;
-  }
-
-  // take movie stream export frame if requested
-  if(recorderContext)
-  {
-    // TODO if this is done for WebRTC, only do this copy if stream is actually running.
-    recorderContext.drawImage(canvas,0,0);
-    if(mediaRecorder) mediaRecorder.stream.getVideoTracks()[0].requestFrame();
-  }
-};
+}
 
 // enumerate the available sources at startup
 var source_ids={audio:[],video:[]};
-var running=false;
 var onSourcesAcquired=function(sources)
 {
   source_ids={audio:[],video:[]};
@@ -117,26 +154,8 @@ var onSourcesAcquired=function(sources)
     }
   }
   // send out device data to UI
-  remote.put('devices',JSON.stringify(sources));
-}
-
-export var start=function(selector, session_url) {
-  // initialize remote
-  remote  = new WebsocketRemote(session_url, command_handler);
-  
-  // initialize canvas
-  canvas=new Canvas(selector);
-  // set video handler.
-  // the video devices are started on demand.
-  // this is used by the 'capture' effect to acquire the camera.
-  canvas.video_source=get_video;
-
-  // start frequent canvas updates
-  if(!running)
-  {
-    running=true;
-    update();
-  }
+  for(let remote of remotes)
+    remote.put('devices',JSON.stringify(sources));
 }
 
 // let the remote change the audio source
@@ -228,7 +247,7 @@ var get_param_values=function(param,canvas,t)
 {
   var args=[];
   if(!(param instanceof Object)) return param;
-  var fn=generators[param.type]; // from generators.js
+  var fn=Generators.generators[param.type];
   return fn.call(window,t,param);
 }
 
@@ -247,13 +266,17 @@ var run_effect=function(effect,canvas,t)
 
 var run_chain=function(chain,canvas,t)
 {
+  Generators.prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
   canvas.stack_prepare();
   for(var i=0; i<chain.length; i++)
     run_effect(chain[i],canvas,t);
 }
 
+
+let createRemoteContext=function(canvas) {
+
 // functions called by remote control
-window.remote_cmds={};
+let remote_cmds={};
 
 // set effect chain to render
 remote_cmds.setChain=function (effects)
@@ -281,7 +304,6 @@ remote_cmds.devices=function()
     onSourcesAcquired([]);
 }
 // fetch available capture devices for the first time and report them to UI.
-// Also starts the rendering engine after device enumeration.
 remote_cmds.devices();
 
 // receive preview request from remote
@@ -298,11 +320,6 @@ remote_cmds.screenshot=function()
   // engage screenshot process
   screenshot_cycle=1;
 }
-
-let mediaRecorder;
-let recordedBlobs = [];
-let recorderContext=null;
-let recorderCanvas=null;
 
 remote_cmds.stream=function(enabled) {
   if(enabled)
@@ -393,3 +410,5 @@ remote_cmds.switchChain=function(chain_index)
   }
 }
 
+return remote_cmds;
+}

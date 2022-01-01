@@ -495,7 +495,7 @@
       $('#chains .active').data('chain',chain);
 
       // send out to control server
-      send('setChain('+JSON.stringify(full_chain)+')');
+      send('context.setChain('+JSON.stringify(full_chain)+')');
     }
 
     $('#chain,#pre_chain,#post_chain').sortable({
