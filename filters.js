@@ -1599,6 +1599,9 @@ filters.gauze=function(fx,fy,angle,amplitude,x,y) {
     return this;
 }
 
+filters.select_audio=function(device_index) {
+  audio_engine.set_device(device_index);
+}
 
 filters.waveform=function() {
     var values=audio_engine.waveform;

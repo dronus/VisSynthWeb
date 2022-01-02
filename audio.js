@@ -48,7 +48,6 @@ var beatAnalysers=[];
 // helper function for retrieving beat values. creates analysers on demand.
 audio_engine.beatValue=function()
 {
-
   // TODO prevent leaking, how to remove dumped analysers? 
   // We only may know they aren't used to analyse for some time..
   // maybe push on .analyse(), remove after 1s of .update 
@@ -60,10 +59,47 @@ audio_engine.beatValue=function()
   return beatAnalysers[0].analyse.apply(beatAnalysers[0],arguments);
 }
 
+let context=null;
+let analyser=null;
+let source_node=null;
+let current_device=-1;
+let streams={};
+audio_engine.source_ids={};
 audio_engine.spectrogram=false;
 audio_engine.waveform=false;
+audio_engine.set_device=function(device_index) {
+  let i=parseInt(device_index);
 
-export function initAudioAnalysers(stream)
+  if(i==current_device) return;
+  current_device=i;
+
+  if(streams[i]) {
+    setStream(streams[i]);
+    return;
+  }
+
+  var constraints = {
+    video: false,
+    audio:{deviceId:audio_engine. source_ids.audio[i]}
+  };
+  navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+    console.log("Got audio: "+constraints.audio.deviceId);
+    // capture device was successfully acquired
+    if(stream.getAudioTracks().length) {
+      streams[i]=stream;
+      setStream(stream);
+    }
+  });
+}
+
+let setStream=function(stream) {
+    if(source_node) source_node.disconnect(analyser);
+    source_node = context.createMediaStreamSource(stream);
+    source_node.connect(analyser);
+    context.resume();
+}
+
+var initAudioAnalysers=function()
 {
     // show audio histogram for debug purpose, if canvas exists
     var canvas,audio_canvas_ctx;
@@ -73,28 +109,26 @@ export function initAudioAnalysers(stream)
       audio_canvas_ctx.fillStyle='#fff';
     }
 
-    // create the audio context (chrome only for now)
+    // create the audio context
     if (!window.AudioContext) 
       window.AudioContext = window.webkitAudioContext;
-    var context = new AudioContext();
+    context = new AudioContext();
     
     var samples=512;
 
     var scriptNode = context.createScriptProcessor(samples, 1, 1);
     scriptNode.connect(context.destination);
 
-    var analyser = context.createAnalyser();
+    analyser = context.createAnalyser();
     analyser.smoothingTimeConstant = 0.0;
     analyser.fftSize = samples;
     analyser.connect(scriptNode);
-    
-    var source = context.createMediaStreamSource(stream);
-    source.connect(analyser);
+
 
     // workaround for Webkit bug gc'ing the audio nodes if not referenced from JS side
     // audio processing stops then.
     // see http://code.google.com/p/chromium/issues/detail?id=82795
-    window.audioReferencesFix=[scriptNode,analyser,source,context];
+    window.audioReferencesFix=[scriptNode,analyser,context];
 
     // store time domain waveform
     var waveform    =  new Uint8Array  (analyser.fftSize);
@@ -146,4 +180,4 @@ export function initAudioAnalysers(stream)
     audio_engine.waveform   =waveform;
     audio_engine.spectrogram=spectrogram;
 }
-
+initAudioAnalysers();

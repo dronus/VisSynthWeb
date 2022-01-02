@@ -1,6 +1,6 @@
 import {Canvas} from "./canvas.js"
-import {initAudioAnalysers} from "./audio.js"
 import {WebsocketRemote} from "./websocket_remote.js"
+import {audio_engine} from "./audio.js"
 
 
 
@@ -52,30 +52,8 @@ var onSourcesAcquired=function(sources)
   // send out device data to UI
   for(let remote of remotes)
     remote.put('devices',JSON.stringify(sources));
-}
-
-// let the remote change the audio source
-//
-// this is a global function that is therefore available as a setup function in the filter chain
-// TODO find a cleaner way to provide this function
-//
-var audio_device_index=0;
-var audio_found=-1;
-window.select_audio=function(device_index)
-{
-  audio_device_index=parseInt(device_index);
-  if(audio_found==audio_device_index) return;
-  audio_found=audio_device_index;
-
-  var constraints = {
-    video: false,
-    audio:{deviceId:source_ids.audio[audio_device_index]}
-  };
-  navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
-    console.log("Got audio: "+constraints.audio.deviceId);
-    // capture device was successfully acquired
-    if(stream.getAudioTracks().length) initAudioAnalysers(stream);
-  });
+  // pass to audio_engine
+  audio_engine.source_ids=source_ids;
 }
 
 // get the video feed from a capture device name by source_index into source_ids
