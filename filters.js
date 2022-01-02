@@ -41,21 +41,24 @@ filters.switch_chain=function(chain_index,time_min,time_max) {
   }
 }
 
+// set canvas update proposed fps
 filters.fps=function(fps){
   this.proposed_fps=fps;
 };
 
+// switch to use 8bit textures for the next effects
 filters.type_byte=function(){
   this.template.type=this.gl.UNSIGNED_BYTE;
 };
 
+// switch to use float32 textures for the next effects
 filters.type_float=function(){
-
   var ext=this.gl.getExtension('OES_texture_half_float');
   this.gl.getExtension('OES_texture_half_float_linear');  
   this.template.type=ext.HALF_FLOAT_OES;
 };
 
+// set resolution, filtering, texture type, fps limit at once
 filters.resolution=function(w,h,filtering,precision,fps_limit){
   this.resolution_w=w; this.resolution_h=h;
   this.proposed_fps=fps_limit;
@@ -69,11 +72,12 @@ filters.resolution=function(w,h,filtering,precision,fps_limit){
   filters.filtering.call(this,filtering=="linear" ? 1 : 0);
 };
 
+// set filtering (>0: linear, <0 nearest)
 filters.filtering=function(linear) {
   this.template.filter=linear>0 ? this.gl.LINEAR : this.gl.NEAREST;
 }
 
-// TODO check if clamping can be done by texture border modes in today's WebGL implementations
+// warping shader template used by several effects 
 var warpShader=function(canvas, name, uniforms, warp) {
     return canvas.getShader(name, null, uniforms + '\
     uniform sampler2D texture;\
@@ -91,14 +95,7 @@ var warpShader=function(canvas, name, uniforms, warp) {
     }');
 }
 
-// returns a random number between 0 and 1
-var randomShaderFunc = '\
-    float random(vec3 scale, float seed) {\
-        /* use the fragment position for a different seed per-pixel */\
-        return fract(sin(dot(gl_FragCoord.xyz + seed, scale)) * 43758.5453 + seed);\
-    }\
-';
-
+// blend two images using the second one's alpha channel
 filters.blend_alpha=function(alpha) {
 
     alpha=alpha||1.0;
@@ -122,6 +119,7 @@ filters.blend_alpha=function(alpha) {
     return this;
 }
 
+// multiply color values of two images
 filters.multiply=function() {
     let s_multiply = this.getShader('s_multiply',  null, '\
         uniform sampler2D texture1;\
@@ -141,7 +139,7 @@ filters.multiply=function() {
     return this;
 }
 
-
+// blend two additonal images using the current one as mask
 filters.blend_mask=function() {
     let s_blend_mask = this.getShader('s_blend_mask', null, '\
         uniform sampler2D texture1;\
@@ -164,7 +162,7 @@ filters.blend_mask=function() {
     return this;
 }
 
-
+// render superquadric mesh objects, textured by the given image
 filters.superquadric=function(A,B,C,r,s,t,angle) {
     let s_superquadric = this.getShader('s_superquadric',  '\
     attribute vec3 vertex;\
@@ -223,19 +221,8 @@ filters.superquadric=function(A,B,C,r,s,t,angle) {
       else return 0;
   }
 
-
-
     var vertices=[];
     var uvs=[];
-
-
-
-
-
-
-
-
-
 
     // squad = [];
     // squad.scaling = {A:1, B:1, C:1};
@@ -261,15 +248,6 @@ filters.superquadric=function(A,B,C,r,s,t,angle) {
                 
         }
     }
-
-
-
-
-
-
-
-
-
 
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
 
@@ -299,6 +277,7 @@ filters.superquadric=function(A,B,C,r,s,t,angle) {
     return this;
 }
 
+// store current image into "feedback" buffer, to reuse it when rendering the next frame
 filters.feedbackIn=function() {
     // Store a copy of the current texture in the feedback texture unit
     this._.feedbackTexture=this.getSpareTexture(this._.feedbackTexture);
@@ -308,6 +287,7 @@ filters.feedbackIn=function() {
     return this;
 }
 
+// blank out image periodically
 filters.strobe=function(period) {
     var t=this.texture;
     this._.strobeTexture=this.getSpareTexture(this._.strobeTexture);
@@ -319,6 +299,7 @@ filters.strobe=function(period) {
     return this;
 }
 
+// fill image with tiled copys of current image
 filters.tile=function(size,centerx,centery) {
     let s_tile = this.getShader('s_tile',  null, '\
         uniform sampler2D texture;\
@@ -336,7 +317,7 @@ filters.tile=function(size,centerx,centery) {
     return this;
 }
 
-
+// render "supershape" mesh using the current image as texture
 filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
 
   if(!this.shaders['s_supershape'])
@@ -457,7 +438,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
     return this;
 }
 
-
+// render 2d "superelipse" transform of current image
 filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
     let s_superellipse = this.getShader('s_superellipse',  null, '\
       varying vec2 texCoord;\
@@ -504,7 +485,7 @@ filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
     return this;
 };
 
-
+// apply a grating on top off the image
 filters.grating=function(size,angle,ax,fx,ay,fy) {
     let s_grating = this.getShader('s_grating',  null, '\
       varying vec2 texCoord;\
@@ -531,7 +512,7 @@ filters.grating=function(size,angle,ax,fx,ay,fy) {
     return this;
 };
 
-
+// replace a pixels color by some neighbour pixels depending on its color
 filters.colorDisplacement=function(angle,amplitude) {
     let s_colorDisplacement = this.getShader('s_colorDisplacement',  null,'\
     \
@@ -564,6 +545,7 @@ filters.colorDisplacement=function(angle,amplitude) {
     return this;
 }
 
+// single colored matte
 filters.matte=function(r,g,b,a) {
     let s_matte = this.getShader('s_matte',  null, '\
         uniform vec4 color;\
@@ -576,7 +558,7 @@ filters.matte=function(r,g,b,a) {
     return this;
 }
 
-
+// static noise
 filters.noise=function(seed) {
     let s_noise = this.getShader('s_noise',  null, '\
         varying vec2 texCoord;\
@@ -597,7 +579,7 @@ filters.noise=function(seed) {
     return this;
 }
 
-
+// draw a single-colored polygon
 filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 
     let s_polygon_matte = this.getShader('s_polygon_matte',  null, '\
@@ -635,6 +617,7 @@ filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
     return this;
 }
 
+// draw a single colored rectangle
 filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 
     let s_rectangle = this.getShader('s_rectangle',  null, '\
@@ -664,7 +647,7 @@ filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
     return this;
 }
 
-
+// video clip source.
 filters.video=function(url,play_sound,speed,loop) {
     if(!this._.videoFilterElement) this._.videoFilterElement={};
     var v=this._.videoFilterElement[url];
@@ -705,7 +688,9 @@ filters.video=function(url,play_sound,speed,loop) {
     return this;
 }
 
+
 var image_loaded=[];
+// a static image source
 filters.image=function(url) {
 
     if(!this._.imageFilterElement) this._.imageFilterElement=[];
@@ -740,7 +725,7 @@ filters.image=function(url) {
     return this;
 }
 
-
+// ripple displacement
 filters.ripple=function(fx,fy,angle,amplitude) {
     let s_ripple = warpShader(this, 's_ripple', '\
         uniform vec4 xform;\
@@ -761,6 +746,7 @@ filters.ripple=function(fx,fy,angle,amplitude) {
     return this;
 }
 
+// spherical distortion
 filters.spherical=function(radius,scale) {
     let s_spherical = warpShader(this, 's_spherical', '\
         uniform float radius;\
@@ -780,7 +766,7 @@ filters.spherical=function(radius,scale) {
     return this;
 }
 
-
+// geometric shapes for transforms
 var mesh_transforms={
   'plane':'pos.xy=pos.xy+vec2(-0.5,-0.5);',
   'cylinder':"\
@@ -800,6 +786,7 @@ var mesh_transforms={
   ",
 };
 
+// displace pixels in 3d depending on their color
 filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 
     if(!mesh_transforms[mesh_type]) mesh_type="plane";
@@ -883,6 +870,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
     return this;
 }
 
+// blend two images together
 filters.blend=function(alpha,factor,offset) {
     let s_blend = this.getShader('s_blend',  null, '\
         uniform sampler2D texture;\
@@ -904,6 +892,7 @@ filters.blend=function(alpha,factor,offset) {
     return this;
 }
 
+// circular arangement of symmetric copys of the image
 filters.kaleidoscope=function(sides,angle,angle2) {
     let s_kaleidoscope = this.getShader('s_kaleidoscope',  null, '\
         uniform sampler2D texture;\
@@ -929,7 +918,7 @@ filters.kaleidoscope=function(sides,angle,angle2) {
     return this;
 }
 
-
+// map image to mandelbrot set (map image by mandelbrot iteration)
 filters.mandelbrot=function(x,y,scale,angle,iterations) {
 
     iterations=Math.min(15,Math.abs(iterations));
@@ -969,6 +958,7 @@ filters.mandelbrot=function(x,y,scale,angle,iterations) {
     return this;
 }
 
+// map image into julia set (map pixels by julia iterations)
 filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
     iterations=Math.min(15,Math.abs(iterations));
@@ -1010,7 +1000,7 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
     return this;
 }
 
-
+// relief filter - add shaded look by ofsetting bright vs. dark pixels
 filters.relief=function(scale2,scale4) {
       this.gl.getExtension('OES_standard_derivatives');
       let s_blur = simpleBlurShader(this);
@@ -1085,7 +1075,7 @@ filters.relief=function(scale2,scale4) {
     return this;
 }
 
-
+// affine transform - translate, rotate, scale, shear image
 filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
     let s_transform = this.getShader('s_transform',  null, '\
         uniform sampler2D texture;\
@@ -1119,7 +1109,7 @@ filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
     return this;
 }
 
-
+// simulate chemical film exposure and development
 filters.analogize=function(exposure,gamma,glow,radius) {
     let s_analogize = this.getShader('s_analogize',  null,'\
     \
@@ -1157,7 +1147,7 @@ filters.analogize=function(exposure,gamma,glow,radius) {
     return this;
 }
 
-
+// remove alpha channel from image
 filters.noalpha=function() {
     let s_noalpha = this.getShader('s_noalpha',  null, '\
         uniform sampler2D texture;\
@@ -1171,6 +1161,9 @@ filters.noalpha=function() {
     return this;
 }
 
+// store image for preview. this does not affect the output image,
+// but stores a copy of the current image "under construction" 
+// to send as preview. 
 filters.preview=function() {
     this.preview_width=640; this.preview_height=400;
     this.gl.viewport(0,0,this.preview_width,this.preview_height);
@@ -1180,6 +1173,8 @@ filters.preview=function() {
     return this;
 }
 
+// pull image from "feedback" buffer 
+// where it needs to be copied by "feedbackIn" on rendering the frame before.
 filters.feedbackOut=function(blend,clear_on_switch) {
     let s_feedbackOut = this.getShader('s_feedbackOut',  null, '\
         uniform sampler2D texture;\
@@ -1209,6 +1204,9 @@ filters.feedbackOut=function(blend,clear_on_switch) {
     return this;
 }
 
+// detect parts of the image in motion by pixel-wise comparison 
+// with a slowly updated background image.
+// remove non-moving image parts (alpha channel)
 filters.motion=function(threshold,interval,damper) {
     let s_motionBlend = this.getShader('s_motionBlend',  null, '\
         uniform sampler2D texture;\
@@ -1268,6 +1266,7 @@ filters.motion=function(threshold,interval,damper) {
     return this;
 }
 
+// a simple blur shader, used by several effects.
 var simpleBlurShader=function(canvas){
   return canvas.getShader('s_reaction_blur',  null, '\
       uniform sampler2D texture;\
@@ -1285,6 +1284,9 @@ var simpleBlurShader=function(canvas){
   ');
 }
 
+// simulate a reaction-diffusion-system (like chemical ones), using the pixel
+// colors to encode the state. 
+// if sandwiched between feedbackOut and feedbackIn, a cellular automaton is created.
 filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
     this.gl.getExtension('OES_standard_derivatives');
@@ -1444,7 +1446,7 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
       for(var s=0; s<4; s++)
         if(!textures[s] && d>scales[s])
         {
-          textures[s]=this.stack_push();          
+          textures[s]=this.stack_push();
         }
     }
     for(var s=0; s<=4; s++)
@@ -1469,7 +1471,8 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 }
 
 
-
+// another reaction-diffusion simulation
+// sandwich between feedbackOut and feedbackIn to create a cellular automaton.
 filters.reaction2=function(F,K,D_a,D_b,iterations) {
     iterations=Math.floor(Math.min(iterations,100.));
     let s_reaction2 = this.getShader('s_reaction2',  null, '\
@@ -1510,7 +1513,9 @@ filters.reaction2=function(F,K,D_a,D_b,iterations) {
     return this;
 }
 
-
+// displace pixels depending on their brightness
+// each pixel is replaced by some neighbouring pixel depending on it's own color.
+// to move every pixel depening on it's own color, use mesh_displacement instead.
 filters.displacement=function(strength) {
     let s_displacement = this.getShader('s_displacement',  null, '\
         uniform sampler2D displacement_map;\
@@ -1530,7 +1535,8 @@ filters.displacement=function(strength) {
     return this;
 }
 
-
+// pertubate image row and collumn adressing,
+// thus simulating graphic RAM address bus errors
 filters.address_glitch=function(mask_x,mask_y) {
     let s_address_glitch = this.getShader('s_address_glitch',  null, '\
         uniform sampler2D texture;\
@@ -1568,7 +1574,7 @@ filters.address_glitch=function(mask_x,mask_y) {
     return this;
 }
 
-
+// add a gauze-like overlay to the image
 filters.gauze=function(fx,fy,angle,amplitude,x,y) {
 
     let s_gauze = this.getShader('s_gauze',  null, '\
@@ -1599,10 +1605,12 @@ filters.gauze=function(fx,fy,angle,amplitude,x,y) {
     return this;
 }
 
+// choose which audio device to use for audio-dependent effects and parameter generators.
 filters.select_audio=function(device_index) {
   audio_engine.set_device(device_index);
 }
 
+// create 1D image from audio waveform data.
 filters.waveform=function() {
     var values=audio_engine.waveform;
     if(!values) return;
@@ -1615,7 +1623,9 @@ filters.waveform=function() {
     return this;
 }
 
-
+// display waveform osciloscope from audio waveform data.
+// the waveform is displayed as linear spread, so "threshold" can be used 
+// to isolate a thin / thick line-like waveform display.
 filters.osciloscope=function(amplitude) {
     let s_osciloscope = this.getShader('s_osciloscope',  null, '\
       uniform sampler2D waveform;\
@@ -1641,6 +1651,7 @@ filters.osciloscope=function(amplitude) {
     return this;
 }
 
+// plot audio data against phase-shift audio data
 filters.vectorscope=function(size,intensity,linewidth) {
     let s_vectorscope = this.getShader('s_vectorscope',  '\
     attribute vec2 _texCoord;\
@@ -1699,6 +1710,7 @@ filters.vectorscope=function(size,intensity,linewidth) {
     return this;
 }
 
+// create a luma keying, making darker parts of the image transparent (alpha channel)
 filters.lumakey=filters.luma_key=function(threshold,feather) {
     let s_lumakey = this.getShader('s_lumakey',  null, '\
       uniform sampler2D texture;\
@@ -1721,6 +1733,7 @@ filters.lumakey=filters.luma_key=function(threshold,feather) {
     return this;
 }
 
+// create a color key, making colors similiar to a given rgb color transparent (alpha channel)
 filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
     let s_chroma_key_rgb = this.getShader('s_chroma_key_rgb',  null, '\
       uniform sampler2D texture;\
@@ -1750,6 +1763,7 @@ filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
     return this;
 }
 
+// create a color key, making colors inside a given hsl range transparent (alpha channel)
 filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_feather) {
  
     // legacy chains use chroma_key to denote chroma_key_rgb
@@ -1790,6 +1804,8 @@ filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_
     return this;
 }
 
+// compute a new image by applying Conway's "game of life" rules to the pixels.
+// sandwich this between feedbackOut, feedbackIn to create a game of life automaton
 filters.life=function(iterations) {
     let s_life = this.getShader('s_life',  null, '\
       uniform sampler2D texture;\
@@ -1833,7 +1849,7 @@ filters.life=function(iterations) {
     return this;
 }
 
-
+// draw a polygon on top of the image
 filters.polygon=function(sides,x,y,size,angle,aspect) {
 
     aspect=aspect || 1.;
@@ -1874,6 +1890,8 @@ filters.polygon=function(sides,x,y,size,angle,aspect) {
 }
 
 
+// create an adjustable delay by storing one or more past images.
+// the time offset can by animated by parameters to temporarely speed up / slow down / yerk time by some frames.
 // TODO check wether we remiplement this by compressed textures or even an encoded video stream (WebRTC APIs or WebAsm codecs)
 filters.timeshift=function(time,clear_on_switch) {
     // Store a stream of the last seconds in a ring buffer
@@ -1912,6 +1930,7 @@ filters.timeshift=function(time,clear_on_switch) {
     return this;
 }
 
+// a video device capture source
 filters.capture=function(source_index) {
     source_index=Math.floor(source_index);    
     var v=this.video_source(source_index,this.resolution_w,this.resolution_h);
@@ -1926,6 +1945,7 @@ filters.capture=function(source_index) {
     return this;
 }
 
+// a WebRTC video stream source
 filters.webrtc=function(websocket_url) {
     if(!this.webrtc_videos) {
       this.webrtc_videos={};
@@ -1951,6 +1971,7 @@ filters.webrtc=function(websocket_url) {
     return this;
 }
 
+// change image to false colors selected from all rainbow colors depending on their brightness
 filters.rainbow=function(size, angle) {
     let s_rainbow = this.getShader('s_rainbow',  null, '\
         uniform sampler2D texture;\
@@ -1972,10 +1993,7 @@ filters.rainbow=function(size, angle) {
     return this;
 }
 
-/**
- * @filter         Grid
- * @description    Adds a grid to the image
- */
+// draw a grid on top of the image
 filters.grid=function(size, angle, x, y, width) {
     if(!width) width=0.05;
     let s_grid = this.getShader('s_grid',  null, '\
@@ -2019,14 +2037,7 @@ filters.absolute=function(size, angle) {
     return this;
 }
 
-/**
- * @filter         Denoise Fast
- * @description    Smooths over grainy noise in dark images using an 9x9 box filter
- *                 weighted by color intensity, similar to a bilateral filter.
- * @param exponent The exponent of the color intensity difference, should be greater
- *                 than zero. A value of zero just gives an 9x9 box blur and high values
- *                 give the original image, but ideal values are usually around 10-100.
- */
+// remove image noise by combining adjacent pixels
 filters.denoisefast=function(exponent) {
     // Do a 3x3 bilateral box filter
     let s_denoisefast = this.getShader('s_denoisefast',  null, '\
@@ -2063,6 +2074,7 @@ filters.denoisefast=function(exponent) {
     return this;
 }
 
+// audio spectrogram video source
 filters.spectrogram=function() {
     var values=audio_engine.spectrogram;
     if(!values) return;
@@ -2075,6 +2087,8 @@ filters.spectrogram=function() {
     return this;
 }
 
+// "smooth" version of game-of-life like rules.
+// sandwich this between feedbackOut, feedbackIn to create a cellular automaton
 filters.smoothlife=function(birth_min,birth_max,death_min) {
     let s_smoothlife = this.getShader('s_smoothlife',  null, '\
       uniform sampler2D texture;\
@@ -2127,6 +2141,8 @@ filters.smoothlife=function(birth_min,birth_max,death_min) {
     return this;
 }
 
+// "soft", eg. analog version of game-of-life like rules.
+// sandwich this between feedbackOut, feedbackIn to create a cellular automaton
 filters.soft_life=function(birth_min,birth_max,death_min) {
     let s_soft_life = this.getShader('s_soft_life',  null, '\
       uniform sampler2D inner_texture;\
@@ -2164,7 +2180,8 @@ filters.soft_life=function(birth_min,birth_max,death_min) {
     return this;
 }
 
-
+// replace image by a cloud of particles colored by the original image
+// and moving to some physical rules
 filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
     let s_particles = this.getShader('s_particles',  '\
     attribute vec2 _texCoord;\
@@ -2298,10 +2315,12 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
     return this;
 }
 
+// push a copy of the current image to the "stack"
 filters.stack_push=function(from_texture) {
   this.stack_push(from_texture);
 }
 
+// exchage the current image with the one on top of the "stack"
 filters.stack_swap=function() {
   // exchange topmost stack element with current texture
   if(this.stack.length<1) return;
@@ -2311,6 +2330,8 @@ filters.stack_swap=function() {
   this.stack[this.stack.length-1]=tmp;
 }
 
+// slice image to a lot of small patches, displaced by their original position
+// according to the colors of another image
 filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
     let s_patch_displacement = this.getShader('s_patch_displacement',  '\
     attribute vec3 vertex;\
@@ -2393,16 +2414,8 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
     return this;
 }
 
-/**
- * @filter       Perspective
- * @description  Warps one quadrangle to another with a perspective transform. This can be used to
- *               make a 2D image look 3D or to recover a 2D image captured in a 3D environment.
- * @param before The x and y coordinates of four points before the transform in a flat list. This
- *               would look like [ax, ay, bx, by, cx, cy, dx, dy] for four points (ax, ay), (bx, by),
- *               (cx, cy), and (dx, dy).
- * @param after  The x and y coordinates of four points after the transform in a flat list, just
- *               like the other argument.
- */
+// warps one quadrangle to another with a perspective transform. This can be used to
+// make a 2D image look 3D or to recover a 2D image captured in a 3D environment.
 filters.perspective=function(before, after) {
     function getSquareToQuad(x0, y0, x1, y1, x2, y2, x3, y3) {
         var dx1 = x1 - x2;
@@ -2429,21 +2442,8 @@ filters.perspective=function(before, after) {
     return filters.matrixWarp.call(this,d,false);
 }
 
-/**
- * @filter                Matrix Warp
- * @description           Transforms an image by a 2x2 or 3x3 matrix. The coordinates used in
- *                        the transformation are (x, y) for a 2x2 matrix or (x, y, 1) for a
- *                        3x3 matrix, where x and y are in units of pixels.
- * @param matrix          A 2x2 or 3x3 matrix represented as either a list or a list of lists.
- *                        For example, the 3x3 matrix [[2,0,0],[0,3,0],[0,0,1]] can also be
- *                        represented as [2,0,0,0,3,0,0,0,1] or just [2,0,0,3].
- * @param inverse         A boolean value that, when true, applies the inverse transformation
- *                        instead. (optional, defaults to false)
- * @param useTextureSpace A boolean value that, when true, uses texture-space coordinates
- *                        instead of screen-space coordinates. Texture-space coordinates range
- *                        from -1 to 1 instead of 0 to width - 1 or height - 1, and are easier
- *                        to use for simple operations like flipping and rotating.
- */
+// transform image according to a transformation matrix. 
+// used as building block for transformation effects.
 filters.matrixWarp=function(matrix, inverse) {
     let s_matrixWarp = warpShader(this, 's_matrixWarp', '\
         uniform mat3 matrix;\
@@ -2459,15 +2459,7 @@ filters.matrixWarp=function(matrix, inverse) {
     return this;
 }
 
-/**
- * @filter        Swirl
- * @description   Warps a circular region of the image in a swirl.
- * @param centerX The x coordinate of the center of the circular region.
- * @param centerY The y coordinate of the center of the circular region.
- * @param radius  The radius of the circular region.
- * @param angle   The angle in radians that the pixels in the center of
- *                the circular region will be rotated by.
- */
+// warps the image in a swirl-like fashion around it's center
 filters.swirl=function(centerX, centerY, radius, angle) {
     let s_swirl = warpShader(this, 's_swirl', '\
         uniform float radius;\
@@ -2498,14 +2490,7 @@ filters.swirl=function(centerX, centerY, radius, angle) {
     return this;
 }
 
-/**
- * @filter         Bulge / Pinch
- * @description    Bulges or pinches the image in a circle.
- * @param centerX  The x coordinate of the center of the circle of effect.
- * @param centerY  The y coordinate of the center of the circle of effect.
- * @param radius   The radius of the circle of effect.
- * @param strength -1 to 1 (-1 is strong pinch, 0 is no effect, 1 is strong bulge)
- */
+// bulge or pinch the image around the center
 filters.bulgePinch=function(centerX, centerY, radius, strength) {
     let s_bulgePinch = warpShader(this, 's_bulgePinch', '\
         uniform float radius;\
@@ -2534,21 +2519,18 @@ filters.bulgePinch=function(centerX, centerY, radius, strength) {
     return this;
 }
 
-/**
- * @filter         Zoom Blur
- * @description    Blurs the image away from a certain point, which looks like radial motion blur.
- * @param centerX  The x coordinate of the blur origin.
- * @param centerY  The y coordinate of the blur origin.
- * @param strength The strength of the blur. Values in the range 0 to 1 are usually sufficient,
- *                 where 0 doesn't change the image and 1 creates a highly blurred image.
- */
+// blur the image in direction of its center, 
+// as it was exposed for some time while moving in or out.
 filters.zoomBlur=function(centerX, centerY, strength) {
     let s_zoomBlur = this.getShader('s_zoomBlur',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
         uniform float strength;\
         varying vec2 texCoord;\
-        ' + randomShaderFunc + '\
+        float random(vec3 scale, float seed) {\
+            /* use the fragment position for a different seed per-pixel */\
+            return fract(sin(dot(gl_FragCoord.xyz + seed, scale)) * 43758.5453 + seed);\
+        }\
         void main() {\
             vec4 color = vec4(0.0);\
             float total = 0.0;\
@@ -2583,6 +2565,7 @@ filters.zoomBlur=function(centerX, centerY, strength) {
     return this;
 }
 
+// grow bright regions of an image
 filters.dilate=function(iterations) {
     let s_dilate = this.getShader('s_dilate',  null, '\
         uniform sampler2D texture;\
@@ -2609,13 +2592,9 @@ filters.dilate=function(iterations) {
     return this;
 }
 
-/**
- * @filter       Fast Blur
- * @description  This is the most basic blur filter, which convolves the image with a
- *               pyramid filter. The pyramid filter is separable and is applied as two
- *               perpendicular triangle filters.
- * @param radius The radius of the pyramid convolved with the image.
- */
+// maximise contrast on local parts of the image independently.
+// this can be used to give an everywhere strong image from images
+// lacking contrast in some parts or spanning a large brightness range.
 filters.localContrast=function(radius,strength) {
     let s_localContrastMin = this.getShader('s_localContrastMin',  null, '\
         uniform sampler2D texture;\
@@ -2688,7 +2667,7 @@ filters.localContrast=function(radius,strength) {
     return this;
 }
 
-
+// shrink bright regions of an image
 filters.erode=function(iterations) {
     let s_erode = this.getShader('s_erode',  null, '\
         uniform sampler2D texture;\
@@ -2715,6 +2694,9 @@ filters.erode=function(iterations) {
     return this;
 }
 
+// effectively compute a blur of the image.
+// uses several stages, which may create some artifacts but allows for
+// very fast blur even with larger radius.
 filters.fastBlur=filters.blur=function(radius) {
     let s_blur = this.getShader('s_blur',  null, '\
         uniform sampler2D texture;\
@@ -2738,6 +2720,7 @@ filters.fastBlur=filters.blur=function(radius) {
     return this;
 }
 
+// blur image alpha channel only
 filters.blur_alpha=function(radius) {
     let s_blur_alpha = this.getShader('s_blur_alpha',  null, '\
         uniform sampler2D texture;\
@@ -2772,8 +2755,8 @@ filters.blur_alpha=function(radius) {
     return this;
 }
 
-
-
+// another blur filter, providing an adjustable exponent for
+// pixel weighting.
 filters.blur2=function(radius,exponent) {
     let s_blur2 = this.getShader('s_blur2',  null, '\
         uniform sampler2D texture;\
@@ -2800,13 +2783,8 @@ filters.blur2=function(radius,exponent) {
 }
 
 
-/**
- * @filter         Unsharp Mask
- * @description    A form of image sharpening that amplifies high-frequencies in the image. It
- *                 is implemented by scaling pixels away from the average of their neighbors.
- * @param radius   The blur radius that calculates the average of the neighboring pixels.
- * @param strength A scale factor where 0 is no effect and higher values cause a stronger effect.
- */
+// the infamous "unsharp mask" image sharpening.
+// amplifies high frequency image parts.
 filters.unsharpMask=function(radius, strength) {
     let s_unsharpMask = this.getShader('s_unsharpMask',  null, '\
         uniform sampler2D blurredTexture;\
@@ -2837,14 +2815,8 @@ filters.unsharpMask=function(radius, strength) {
     return this;
 }
 
-/**
- * @filter           Color
- * @description      Give more or less importance to a color
- * @param alpha      0 to 1 Importance of the color modification
- * @param r          0 to 1 Importance of the Red Chanel modification
- * @param g          0 to 1 Importance of the Green Chanel modification
- * @param b          0 to 1 Importance of the Blue Chanel modification
- */
+
+// colorize image by adding a static color to all pixel color values.
 filters.color=function(alpha,r,g,b) {
     let s_color = this.getShader('s_color',  null, '\
         uniform sampler2D texture;\
@@ -2871,14 +2843,9 @@ filters.color=function(alpha,r,g,b) {
 
     return this;
 }
-/**
- * @filter         Denoise
- * @description    Smooths over grainy noise in dark images using an 9x9 box filter
- *                 weighted by color intensity, similar to a bilateral filter.
- * @param exponent The exponent of the color intensity difference, should be greater
- *                 than zero. A value of zero just gives an 9x9 box blur and high values
- *                 give the original image, but ideal values are usually around 10-20.
- */
+
+// denoise image by applying a median-like filter.
+// see denoiseFast for a preumable faster algorithm.
 filters.denoise=function(exponent) {
     // Do a 9x9 bilateral box filter
     let s_denoise = this.getShader('s_denoise',  null, '\
@@ -2917,11 +2884,7 @@ filters.denoise=function(exponent) {
 
 
 
-/**
- * @filter       Vibrance
- * @description  Modifies the saturation of desaturated colors, leaving saturated colors unmodified.
- * @param amount -1 to 1 (-1 is minimum vibrance, 0 is no change, and 1 is maximum vibrance)
- */
+// amplify saturation of low-saturated pixels.
 filters.vibrance=function(amount) {
     let s_vibrance = this.getShader('s_vibrance',  null, '\
         uniform sampler2D texture;\
@@ -2944,7 +2907,7 @@ filters.vibrance=function(amount) {
     return this;
 }
 
-// min:0.0,gamma:1.0,max:1.0, r_min:0.0,g_min:0.0,b_min:0.0, r_gamma:1.0,g_gamma:1.0,b_gamma:1.0, r_max:1.0,g_max:1.0,b_max:1.0
+// remap colors of all pixels by mapping an input range to a given output range and gamma correction.
 filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
     let s_levels = this.getShader('s_levels',  null, '\
         varying vec2 texCoord;\
@@ -2972,18 +2935,7 @@ filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamm
     return this;
 }
 
-/**
- * @filter           Hue / Saturation
- * @description      Provides rotational hue and multiplicative saturation control. RGB color space
- *                   can be imagined as a cube where the axes are the red, green, and blue color
- *                   values. Hue changing works by rotating the color vector around the grayscale
- *                   line, which is the straight line from black (0, 0, 0) to white (1, 1, 1).
- *                   Saturation is implemented by scaling all color channel values either toward
- *                   or away from the average color channel value.
- * @param hue        -1 to 1 (-1 is 180 degree rotation in the negative direction, 0 is no change,
- *                   and 1 is 180 degree rotation in the positive direction)
- * @param saturation -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
- */
+// change hue angle and saturation of the image
 filters.hueSaturation=function(hue, saturation) {
     let s_hueSaturation = this.getShader('s_hueSaturation',  null, '\
         uniform sampler2D texture;\
@@ -3024,12 +2976,7 @@ filters.hueSaturation=function(hue, saturation) {
     return this;
 }
 
-/**
- * @filter           Brightness / Contrast
- * @description      Provides additive brightness and multiplicative contrast control.
- * @param brightness -1 to 1 (-1 is solid black, 0 is no change, and 1 is solid white)
- * @param contrast   -1 to 1 (-1 is solid gray, 0 is no change, and 1 is maximum contrast)
- */
+// adjust brightness and contrast of the image
 filters.brightnessContrast=function(brightness, contrast) {
     let s_brightnessContrast = this.getShader('s_brightnessContrast',  null, '\
         uniform sampler2D texture;\
@@ -3056,6 +3003,8 @@ filters.brightnessContrast=function(brightness, contrast) {
     return this;
 }
 
+// change contrast of the image by applying a s-curve to the pixels brightness
+// this gives wider range and more natural contrast changes without clipping
 filters.contrast_s=function(contrast) {
     let s_contrast_s = this.getShader('s_contrast_s',  null, '\
         uniform sampler2D texture;\
@@ -3077,6 +3026,9 @@ filters.contrast_s=function(contrast) {
 
     return this;
 }
+
+// apply a threshold to the image, changing every rgb channel to full dark or bright
+// depending on a given  threshold
 filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
     let s_threshold = this.getShader('s_threshold',  null, '\
         uniform sampler2D texture;\
@@ -3097,22 +3049,8 @@ filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
     return this;
 }
 
-
-/**
- * @description Sobel implementation of image with alpha and line color control
- * @param secondary (0 to 1), indice of sobel strength
- * @param coef (0 to 1), indice of sobel strength coeficient
- * @param alpha (0 to 1) how strong is the sobel result draw in top of image. (0 image is unchanged, 1 image is replace by sobel representation)
- * @param r (0 to 1) R chanel color of the sobel line
- * @param g (0 to 1) G chanel color of the sobel line
- * @param b (0 to 1) B chanel color of the sobel line
- * @param a (0 to 1) alpha chanel color of the sobel line
- * @param r2 (0 to 1) R chanel color of the sobel area
- * @param g2 (0 to 1) G chanel color of the sobel area
- * @param b2 (0 to 1) B chanel color of the sobel area
- * @param a2 (0 to 1) alpha chanel color of the sobel area
- */
-
+// apply sobel edge detection to the image, highlighting the contours in it
+// or even replace the image by the contours only.
 filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
     let s_sobel = this.getShader('s_sobel',  null, '\
         uniform sampler2D texture;\
@@ -3178,6 +3116,9 @@ filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
     return this;
 }
 
+// apply sobel edge detection to the image, highlighting the contours in it
+// or even replace the image by the contours only.
+// handle all rgb channels seperately.
 filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
     let s_sobel_rgb = this.getShader('s_sobel_rgb',  null, '\
         uniform sampler2D texture;\
@@ -3220,6 +3161,7 @@ filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) 
     return this;
 }
 
+// "posterize" image by replace each pixel with a color from a smaller palette.
 filters.posterize=function(steps) {
     let s_posterize = this.getShader('s_posterize',  null, '\
         uniform sampler2D texture;\
@@ -3236,7 +3178,7 @@ filters.posterize=function(steps) {
     return this;
 }
 
-
+// "posterize" image by replace each pixel with a color from a smaller palette, selected by hue distance.
 filters.posterize_hue=function(hue,brightness) {
     let s_posterize_hue = this.getShader('s_posterize_hue',  null, '\
         uniform sampler2D texture;\
@@ -3259,15 +3201,7 @@ filters.posterize_hue=function(hue,brightness) {
 }
 
 
-
-/**
- * @filter        Hexagonal Pixelate
- * @description   Renders the image using a pattern of hexagonal tiles. Tile colors
- *                are nearest-neighbor sampled from the centers of the tiles.
- * @param centerX The x coordinate of the pattern center.
- * @param centerY The y coordinate of the pattern center.
- * @param scale   The width of an individual tile, in pixels.
- */
+// renders the image using a pattern of hexagonal tiles
 filters.hexagonalPixelate=function(centerX, centerY, scale) {
     let s_hexagonalPixelate = this.getShader('s_hexagonalPixelate',  null, '\
         uniform sampler2D texture;\
@@ -3318,6 +3252,7 @@ filters.hexagonalPixelate=function(centerX, centerY, scale) {
     return this;
 }
 
+// render the image using larger rectangular tiles (large "pixels")
 filters.pixelate=function(sx,sy,coverage,lens) {
     let s_pixelate = this.getShader('s_pixelate',  null, '\
         uniform sampler2D texture;\
@@ -3344,16 +3279,7 @@ filters.pixelate=function(sx,sy,coverage,lens) {
 }
 
 
-/**
- * @filter        Color Halftone
- * @description   Simulates a CMYK halftone rendering of the image by multiplying pixel values
- *                with a four rotated 2D sine wave patterns, one each for cyan, magenta, yellow,
- *                and black.
- * @param centerX The x coordinate of the pattern origin.
- * @param centerY The y coordinate of the pattern origin.
- * @param angle   The rotation of the pattern in radians.
- * @param size    The diameter of a dot in pixels.
- */
+// simulate color dithering used in CMYK printing.
 filters.colorHalftone=function(centerX, centerY, angle, size) {
     let s_colorHalftone = this.getShader('s_colorHalftone',  null, '\
         uniform sampler2D texture;\
@@ -3394,10 +3320,7 @@ filters.colorHalftone=function(centerX, centerY, angle, size) {
     return this;
 }
 
-/**
- * @description Invert the colors!
- */
-
+// invert the image's pixel colors.
 filters.invertColor=filters.invert=function() {
     let s_invert = this.getShader('s_invert',  null, '\
         uniform sampler2D texture;\
@@ -3412,6 +3335,8 @@ filters.invertColor=filters.invert=function() {
     return this;
 }
 
+// simulate glitches well known from faults in JPEG image compression
+// eg. block-wise displacement of image parts or strong colorful DCT-patterns
 filters.glitch=function(scale,detail,strength,speed) {
     this._.glitch_time=(this._.glitch_time || 0.0)+0.0001*speed;
     let s_glitch = this.getShader('s_glitch',  null, '\
@@ -3458,8 +3383,7 @@ filters.glitch=function(scale,detail,strength,speed) {
     return this;
 }
 
-/* Mirrors the image vertically (useful for webcams) */
-// also used for rendering into the canvas, that seem to display mirrored.
+// mirror the image vertically (replace left and right)
 filters.mirror_y = function() {
     let s_mirror_y = this.getShader('s_mirror_y',  null, '\
         uniform sampler2D texture;\
@@ -3474,7 +3398,7 @@ filters.mirror_y = function() {
     return this;
 }
 
-/* Mirrors the image horizontally */
+// mirror the image horizontally (replace top and bottom)
 filters.mirror_x = function(target) {
     let s_mirror_x = this.getShader('s_mirror_x',  null, '\
         uniform sampler2D texture;\
@@ -3490,6 +3414,8 @@ filters.mirror_x = function(target) {
 }
 
 //canvas._.midi_init=false;
+// MIDI note input source
+// render a rows by cols grid showing the state of each MIDI note (eg. keyboard keys)
 filters.midi=function(device, rows, cols, toggles) {
   device=Math.floor(device);
   rows=Math.floor(rows);
