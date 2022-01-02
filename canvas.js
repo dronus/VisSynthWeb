@@ -36,7 +36,7 @@ export let Canvas = function(selector, session_url) {
     // states for delivery of preview, screenshots and stream recordings
     this.preview_cycle=0;
     this.preview_enabled=false;
-    this.screenshot_cycle=0;
+    this.screenshot_flag=false;
     this.preview_canvas=null;
     this.mediaRecorder;
     this.recordedBlobs = [];
@@ -46,7 +46,6 @@ export let Canvas = function(selector, session_url) {
     // time for stats and time-dependent effects
     this.frame_time=0;
     this.last_time=0;
-    this.effect_time=0;
 
     // the proposed fps can be set to limit the rendering fps
     this.proposed_fps=0;
@@ -64,17 +63,14 @@ Canvas.prototype.toTexture=function(element) {
 // provide streaming / preview / screenshot output and
 // update the visible canvas element.
 Canvas.prototype.update=function() {
-
     // compute frame and animation time
     var current_time=Date.now();
     this.frame_time=this.frame_time*0.9 + (current_time-this.last_time)*0.1;
     this.last_time=current_time;
-    this.effect_time=current_time*0.001; // 1 units per second
 
     // enqueue next update
     var update_handler=this.update.bind(this);
     if(this.proposed_fps)
-      
       setTimeout(function(){
         requestAnimationFrame(update_handler);
       },1000/this.proposed_fps);
@@ -82,7 +78,7 @@ Canvas.prototype.update=function() {
       requestAnimationFrame(update_handler);
 
     // render effect chain !
-    this.run_chain();
+    this.run_chain(current_time);
 
     // provide preview if requested
     if(this.preview_enabled && this.preview_cycle==1)
@@ -108,7 +104,7 @@ Canvas.prototype.update=function() {
     this.gc();
     
     // take screenshot if requested
-    if(this.screenshot_cycle==1)
+    if(this.screenshot_flag)
       this.sendScreenshot();
 
     // capture frame for stream sender / recorder if requested
@@ -149,7 +145,7 @@ Canvas.prototype.sendStatsAndPreview=function() {
 Canvas.prototype.sendScreenshot=function() {
   var pixels=canvas.toDataURL('image/jpeg');
   this.remote.put('screenshot',pixels);
-  this.screenshot_cycle=0;
+  this.screenshot_flag=false;
 }
 
 Canvas.prototype.captureStream=function() {
@@ -335,12 +331,12 @@ Canvas.prototype.run_effect=function(effect,t)
 }
 
 // render the whole effect chain
-Canvas.prototype.run_chain=function()
+Canvas.prototype.run_chain=function(current_time)
 {
   Generators.prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
   this.stack_prepare();
   for(var i=0; i<this.chain.length; i++)
-    this.run_effect(this.chain[i],this.effect_time);
+    this.run_effect(this.chain[i],current_time*0.001);
   // reset switched flag, it is used by some filters to clear buffers on chain switch
   this.switched=false;
 }
@@ -367,18 +363,16 @@ Canvas.prototype.setChain=function (effects)
 
 // receive preview request from remote
 // called by UI
-Canvas.prototype.preview=function(enabled)
-{
+Canvas.prototype.preview=function(enabled) {
   // engage preview process
   this.preview_enabled=enabled;
 }
 
 // receive screenshot request from remote
 // called by UI
-Canvas.prototype.screenshot=function()
-{
+Canvas.prototype.screenshot=function() {
   // engage screenshot process
-  this.screenshot_cycle=1;
+  this.screenshot_flag=true;
 }
 
 // start canvas capture stream and deliver video to UI on stop.
