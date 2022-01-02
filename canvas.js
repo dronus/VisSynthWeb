@@ -65,7 +65,7 @@ Canvas.prototype.toTexture=function(element) {
 // update the visible canvas element.
 Canvas.prototype.update=function() {
 
-    // get animation time
+    // compute frame and animation time
     var current_time=Date.now();
     this.frame_time=this.frame_time*0.9 + (current_time-this.last_time)*0.1;
     this.last_time=current_time;
@@ -81,43 +81,18 @@ Canvas.prototype.update=function() {
     else
       requestAnimationFrame(update_handler);
 
+    // render effect chain !
     this.run_chain();
 
     // provide preview if requested
-    // the preview is a downscaled image provided by the 'preview' effect
-    // we crop the preview pixels of the canvas just BEFORE canvas.update, which will redraw the full resolution canvas.
-    //
-    // in repsect to just downsizing the final image this has two benefits:
-    //
-    // 1) it is much faster, as rescaling is done in WebGL context and not by 2d context drawImage
-    //
-    // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
-    //
     if(this.preview_enabled && this.preview_cycle==1)
-    {
-      if(!this.preview_canvas)
-      {
-        this.preview_canvas=document.createElement('canvas');
-        this.preview_canvas.width=this.preview_width; 
-        this.preview_canvas.height=this.preview_height;
-      }
-      var ctx=this.preview_canvas.getContext('2d');
-      ctx.drawImage(this.canvas,0,this.height-this.preview_height,this.preview_width,this.preview_height, 0, 0, this.preview_width,this.preview_height);
-    }
-    else if(this.preview_cycle==0)
-    {
-      var jpeg=this.preview_enabled ? this.preview_canvas.toDataURL('image/jpeg') : null;
-      var data={frame_time:this.frame_time, jpeg:jpeg};
-      var json=JSON.stringify(data);
-      this.remote.put('preview',json);
+      this.capturePreview();
+    if(this.preview_cycle==0)
+      this.sendStatsAndPreview();
+    this.preview_cycle^=1;
 
-      // only provide data every other frame if a preview image is send.
-      // if only frame rate data is send, we keep the network calm.
-      this.preview_cycle=this.preview_enabled ? 2 : 2;
-    }
-    this.preview_cycle--;
-
-    // update canvas size to texture size...
+    // render final image to visible canvas.
+    // update canvas size to texture size, if needed
     if(this.width!=this.texture.width || this.height!=this.texture.width)
     {
       this.width =this.texture.width;
@@ -125,34 +100,67 @@ Canvas.prototype.update=function() {
       this.canvas.width=this.width;
       this.canvas.height=this.height;
     }
-
     this.gl.viewport(0,0, this.width, this.height);
-    filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
-    //this.texture.copyTo(this);
+    // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
+    filters.mirror_x.call(this,this);
 
+    // release temporary textures
     this.gc();
     
-    // reset switched flag, it is used by some filters to clear buffers on chain switch
-    this.switched=false;
-
     // take screenshot if requested
     if(this.screenshot_cycle==1)
-    {
-      var pixels=canvas.toDataURL('image/jpeg');
-      this.remote.put('screenshot',pixels);
-      this.screenshot_cycle=0;
-    }
+      this.sendScreenshot();
 
-    // take movie stream export frame if requested
+    // capture frame for stream sender / recorder if requested
     if(this.recorderContext)
-    {
-      // TODO if this is done for WebRTC, only do this copy if stream is actually running.
-      this.recorderContext.drawImage(canvas,0,0);
-      if(this.mediaRecorder) this.mediaRecorder.stream.getVideoTracks()[0].requestFrame();
-    }
+      this.captureStream();
 
     return this;
 }
+
+Canvas.prototype.capturePreview=function() {
+  // the preview is a downscaled image provided by the 'preview' effect
+  // we crop the preview pixels out of the canvas just BEFORE canvas is finally drawn, which will redraw full resolution.
+  //
+  // in repsect to just downsizing the final image this has two benefits:
+  //
+  // 1) it is much faster, as rescaling is done in WebGL context and not by 2d context drawImage
+  // TODO check if this still holds 2022. 2d context is using GPU scaling too.
+  //
+  // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
+  //
+  if(!this.preview_canvas)
+  {
+    this.preview_canvas=document.createElement('canvas');
+    this.preview_canvas.width=this.preview_width; 
+    this.preview_canvas.height=this.preview_height;
+  }
+  var ctx=this.preview_canvas.getContext('2d');
+  ctx.drawImage(this.canvas,0,this.height-this.preview_height,this.preview_width,this.preview_height, 0, 0, this.preview_width,this.preview_height);
+}
+
+Canvas.prototype.sendStatsAndPreview=function() {
+  var jpeg=(this.preview_canvas && this.preview_enabled) ? this.preview_canvas.toDataURL('image/jpeg') : null;
+  var data={frame_time:this.frame_time, jpeg:jpeg};
+  var json=JSON.stringify(data);
+  this.remote.put('preview',json);
+}
+
+Canvas.prototype.sendScreenshot=function() {
+  var pixels=canvas.toDataURL('image/jpeg');
+  this.remote.put('screenshot',pixels);
+  this.screenshot_cycle=0;
+}
+
+Canvas.prototype.captureStream=function() {
+  // capture canvas for stream recording or WebRTC streaming
+  // TODO if this is done for WebRTC only, do not do this copy if stream is not actually running.
+  if(this.recorderContext) this.recorderContext.drawImage(this.canvas,0,0);
+  
+  // encode frame, if recording
+  if(this.mediaRecorder) this.mediaRecorder.stream.getVideoTracks()[0].requestFrame();
+}
+
 
 // replace current working texture
 Canvas.prototype.putTexture=function(texture)
@@ -333,6 +341,8 @@ Canvas.prototype.run_chain=function()
   this.stack_prepare();
   for(var i=0; i<this.chain.length; i++)
     this.run_effect(this.chain[i],this.effect_time);
+  // reset switched flag, it is used by some filters to clear buffers on chain switch
+  this.switched=false;
 }
 
 // set current effect chain
@@ -361,7 +371,6 @@ Canvas.prototype.preview=function(enabled)
 {
   // engage preview process
   this.preview_enabled=enabled;
-  this.preview_cycle=2;
 }
 
 // receive screenshot request from remote
