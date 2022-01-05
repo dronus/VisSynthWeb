@@ -9,7 +9,11 @@ export let Canvas = function(selector, session_url) {
     
     this.session_url=session_url;
     
-    this.gl = this.canvas.getContext('experimental-webgl', { alpha: false, premultipliedAlpha: false });
+    // preserveDrawingBuffer is needed on Chrome to make canvas.captureStream work with requestAnimationFrame:
+    // - when using requestAnimationFrame to schedule canvas updates, captureStream delivers a black image
+    // - using setTimeout to schedule update provides a working captureStream
+    // - so does using preserveDrawingBuffer:true here.
+    this.gl = this.canvas.getContext('webgl', {'alpha':false, 'preserveDrawingBuffer':true});
 
     // container for filter state variables..
     // filters should not add properties outside of this.
@@ -39,9 +43,6 @@ export let Canvas = function(selector, session_url) {
     this.screenshot_flag=false;
     this.preview_canvas=null;
     this.mediaRecorder;
-    this.recordedBlobs = [];
-    this.recorderContext=null;
-    this.recorderCanvas=null;
     
     // time for stats and time-dependent effects
     this.frame_time=0;
@@ -105,9 +106,9 @@ Canvas.prototype.update=function() {
     if(this.screenshot_flag)
       this.sendScreenshot();
 
-    // capture frame for stream sender / recorder if requested
-    if(this.recorderContext)
-      this.captureStream();
+    // encode stream for recording if requested
+    if(this.mediaRecorder)
+      this.mediaRecorder.stream.getVideoTracks()[0].requestFrame();
 
     return this;
 }
@@ -145,16 +146,6 @@ Canvas.prototype.sendScreenshot=function() {
   this.remote.put('screenshot',pixels);
   this.screenshot_flag=false;
 }
-
-Canvas.prototype.captureStream=function() {
-  // capture canvas for stream recording or WebRTC streaming
-  // TODO if this is done for WebRTC only, do not do this copy if stream is not actually running.
-  if(this.recorderContext) this.recorderContext.drawImage(this.canvas,0,0);
-  
-  // encode frame, if recording
-  if(this.mediaRecorder) this.mediaRecorder.stream.getVideoTracks()[0].requestFrame();
-}
-
 
 // replace current working texture
 Canvas.prototype.putTexture=function(texture)
@@ -382,14 +373,7 @@ Canvas.prototype.recording=function(enabled) {
   {
     var options = {mimeType: 'video/webm'};
 
-    if(!this.recorderCanvas) {
-      this.recorderCanvas=document.createElement('canvas');
-      this.recorderCanvas.width=this.width;
-      this.recorderCanvas.height=this.height;
-      this.recorderContext=this.recorderCanvas.getContext('2d');
-    }
-
-    const stream = this.recorderCanvas.captureStream(0);
+    const stream = this.canvas.captureStream(0);
     stream.getVideoTracks()[0].contentHint="detail";
     console.log('Started stream capture from canvas element: ', stream);
     this.mediaRecorder = new MediaRecorder(stream, options);
@@ -431,22 +415,15 @@ Canvas.prototype.recording=function(enabled) {
 Canvas.prototype.webrtc=function(enabled) {
   if(enabled)
   {
-    if(!this.recorderContext) {
-      this.recorderCanvas=document.createElement('canvas');
-      this.recorderCanvas.width=this.width;
-      this.recorderCanvas.height=this.height;
-      this.recorderContext=this.recorderCanvas.getContext('2d');
-    }
     if(!this.webrtcOut) {
       this.webrtcOut=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.webrtcOut=await webrtc.WebRTC("",this.recorderCanvas);
+        this.webrtcOut=await webrtc.WebRTC("",this.canvas);
       });
     }
   }else{
     this.webrtcOut.hangup();
     this.webrtcOut=null;
-    this.recorderContext=null;
   }
 }
 
