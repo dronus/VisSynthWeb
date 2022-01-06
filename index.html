@@ -10,9 +10,9 @@
     import {VisSynth} from './vissynth.js';
     
     // get session url, if any
-    var session_url='/';
+    var session_url='';
     if(document.location.hash)
-      session_url+=document.location.hash.substring(1)+'_';
+      session_url=document.location.hash.substring(1);
 
     VisSynth('#canvas', session_url);
   </script>

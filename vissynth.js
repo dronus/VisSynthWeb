@@ -12,6 +12,8 @@ let remotes=[];
 // session_url can be used to run multiple remote control sessions on the same server.
 export let VisSynth = function(selector, session_url) {
 
+  session_url="/"+(session_url ? session_url+'_' : "");
+  
   // initialize canvas
   let canvas=new Canvas(selector,session_url);
   
