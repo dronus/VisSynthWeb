@@ -768,7 +768,7 @@
     $('#chains').on('change','.chain_token>input',updateChain);
 
     // clone current chain 
-    function clone_chain()
+    window.clone_chain=function()
     {
       var chain=$('#chains .active');
       var new_chain=chain.clone(true); // clone with data appended
@@ -777,7 +777,7 @@
     }
 
     // create new chain buttom
-    function new_chain(){
+    window.new_chain=function(){
         var chain_token=token.clone();
         $('#chains').prepend(chain_token);
         chain_token.data('chain',[""]);
@@ -792,7 +792,7 @@
       chain_token.click(); // trigger UI refresh
     }
 
-    function toggle_code(e){
+    window.toggle_code=function (e){
       var textarea=$('<textarea class="chain_code container" spellcheck=false></textarea>');
       var data=$('#chain').data('chain');
       var json=JSON.stringify(data,' ',2);
