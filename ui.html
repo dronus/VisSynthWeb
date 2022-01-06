@@ -67,8 +67,8 @@
   
   <div id=help></div>
 
-  <script>
-  
+  <script type="module">
+
     // get session url, if any
     var session_url='/';
     if(document.location.hash)
@@ -101,14 +101,14 @@
       put('/feeds'+session_url+'command',command+';\n');
     }
 
-    function restart()
+    window.restart=function()
     {
       send('document.location.reload()');
       setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
     }
 
     var recording=false;
-    function toggle_recorder()
+    window.toggle_recorder=function()
     {
       recording=!recording;
 
@@ -121,7 +121,7 @@
     }
 
     var streaming=false;
-    function toggle_stream()
+    window.toggle_stream=function()
     {
       streaming=!streaming;
 
@@ -216,7 +216,7 @@
         li.addClass('effect');
         var effect_template=effects[effect.effect];
         li.attr('ui_effect',effect.effect);
-        for(key in effect_template)
+        for(let key in effect_template)
           if(key!='args')
             li.attr('ui_'+key, effect_template[key]);
         return li;
@@ -558,7 +558,7 @@
     }
 
     /* pop last undo state */    
-    function undo(){
+    window.undo=function(){
       undo_history.pop(); // pop last "same" state
       // pop last state
       var last_state=undo_history.pop();
@@ -581,7 +581,7 @@
     get('/effects.json',function(data){
       effects=JSON.parse(data); 
       var new_effects=[];
-      for(key in effects)
+      for(let key in effects)
       {
         // create flat object with the effect name in 'effect'
         // like the ones send to the server
@@ -599,13 +599,14 @@
       listFiles();
     });
 
+    let effects=[];
 
     var listFiles=function()
     {
       get('/files',function(data){
         var files=JSON.parse(data); 
         var new_effects=[];
-        for(key in files)
+        for(let key in files)
         {
           // create flat object with the effect name in 'effect'
           // like the ones send to the server
@@ -662,7 +663,7 @@
       send('devices()');
     }
 
-    show_panel=function(panel)
+    window.show_panel=function(panel)
     {
       if(panel=='files') listFiles();
       if(panel=='devices') fetchDevices();
@@ -677,11 +678,11 @@
       var modes=JSON.parse(data);
       var screens_popup;
 
-      show_screens=function()
+      window.show_screens=function()
       {
         var screens_container=$('<div id=screens class="screens container">');
 
-        for(key in modes)
+        for(let key in modes)
         {
           var mode=modes[key];
           var button=$('<button>'+mode+'</button>');
@@ -696,7 +697,7 @@
       }
     });
     
-    set_mode=function(mode)
+    window.set_mode=function(mode)
     {
       console.log("set_mode: "+mode);
       put('/screens/'+mode,'');
@@ -909,7 +910,7 @@
 
 
     
-    function toggle_preview(){
+    window.toggle_preview=async function(){
       preview=!preview;
       if(preview) $('#preview_button').addClass   ('active');
       else        $('#preview_button').removeClass('active');
@@ -938,7 +939,7 @@
 		var post=function(data)
 		{
 			var formData = new FormData();
-			for(key in data)
+			for(let key in data)
 				formData.append(key, data[key]);
 			var xhr = new XMLHttpRequest();
 			xhr.open('POST', 'save.php');
