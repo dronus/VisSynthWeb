@@ -360,7 +360,7 @@ Canvas.prototype.preview=function(enabled) {
     if(!this.previewOut) {
       this.previewOut=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.previewOut=await webrtc.WebRTC("","/webrtc_preview",this.preview_canvas);
+        this.previewOut=await webrtc.WebRTC("","/webrtc_preview"+this.session_url,this.preview_canvas);
       });
     }
   }else{
@@ -433,7 +433,7 @@ Canvas.prototype.webrtc=function(enabled) {
     if(!this.webrtcOut) {
       this.webrtcOut=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.webrtcOut=await webrtc.WebRTC("","/webrtc_out",this.canvas);
+        this.webrtcOut=await webrtc.WebRTC("","/webrtc_out"+this.session_url,this.canvas);
       });
     }
   }else{

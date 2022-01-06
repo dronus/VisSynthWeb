@@ -915,7 +915,7 @@
       send('canvas.preview('+preview+')');
       if(preview) {
         $('#preview_button').addClass   ('active');
-        webrtc=await WebRTC("","/webrtc_preview",null, document.getElementById('preview'));
+        webrtc=await WebRTC("","/webrtc_preview"+session_url,null, document.getElementById('preview'));
         setTimeout(webrtc.call, 1000);
       } else {
         $('#preview_button').removeClass('active');

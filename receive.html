@@ -10,7 +10,12 @@
 
 <script type="module">
 import {WebRTC} from './webrtc.js';
-const webrtc=await WebRTC("","/webrtc_out",null, remoteVideo);
+
+var session_url='/';
+if(document.location.hash)
+  session_url+=document.location.hash.substring(1)+'_';
+
+const webrtc=await WebRTC("","/webrtc_out"+session_url,null, remoteVideo);
 
 setTimeout(webrtc.call, 1000); // why this delay is needed?
 
