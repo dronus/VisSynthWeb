@@ -1,3 +1,4 @@
+import {devices} from "./devices.js"
 
 export let audio_engine={};
 
@@ -64,7 +65,6 @@ let analyser=null;
 let source_node=null;
 let current_device=-1;
 let streams={};
-audio_engine.source_ids={};
 audio_engine.spectrogram=false;
 audio_engine.waveform=false;
 audio_engine.set_device=function(device_index) {
@@ -80,7 +80,7 @@ audio_engine.set_device=function(device_index) {
 
   var constraints = {
     video: false,
-    audio:{deviceId:audio_engine. source_ids.audio[i]}
+    audio:{deviceId:devices.audio[i].deviceId}
   };
   navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
     console.log("Got audio: "+constraints.audio.deviceId);

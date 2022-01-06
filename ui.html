@@ -633,8 +633,7 @@
     }
 
     // provide list of device names for convenient selection
-    var device_list={video:[],audio:[]};
-    var listDevices=function(){
+    var listDevices=function(device_list){
       var new_effects=[];
       var add_effect=function(type,device_id,name){
           // create flat object with the effect name in 'effect'
@@ -648,10 +647,10 @@
           new_effects.push(new_effect);
       }
       device_list.video.forEach(function(device,index){
-        add_effect('capture',index,device);
+        add_effect('capture',index,device.label);
       });
       device_list.audio.forEach(function(device,index){
-        add_effect('select_audio',index,device);
+        add_effect('select_audio',index,device.label);
       });
 
         listEffects(new_effects,'#devices','draggable');
@@ -661,7 +660,7 @@
 
     // tell server to rescan devices and report to us
     var fetchDevices=function(){
-      send('devices()');
+      send('get_devices()');
     }
 
     window.show_panel=function(panel)
@@ -869,13 +868,9 @@
         
         if(path=='/feeds'+session_url+'devices')
         {
-          device_list={video:[],audio:[]};
-          var devices=JSON.parse(message);
-          for(var i=0; i<devices.length; i++)
-            if     (devices[i].kind=='videoinput') device_list.video.push(devices[i].label);
-            else if(devices[i].kind=='audioinput') device_list.audio.push(devices[i].label);
+          var device_list=JSON.parse(message);
           // refresh visible device list 
-          listDevices();
+          listDevices(device_list);
         }
         else if(path=='/feeds'+session_url+'stats')
         {

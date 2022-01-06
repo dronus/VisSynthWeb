@@ -13,6 +13,7 @@
 
 import {Shader} from "./shader.js";
 import {Texture} from "./texture.js"
+import {devices} from "./devices.js"
 import {audio_engine} from "./audio.js"
 import {midi} from "./midi.js"
 import {vec3, mat3, mat4, quat4} from "./glmatrix.js"
@@ -1931,10 +1932,45 @@ filters.timeshift=function(time,clear_on_switch) {
 }
 
 // a video device capture source
+// get the video feed from a capture device name by source index
+// opens the capture device and starts streaming on demand
+var videos={};
 filters.capture=function(source_index) {
-    source_index=Math.floor(source_index);    
-    var v=this.video_source(source_index,this.resolution_w,this.resolution_h);
+
+    source_index=Math.floor(source_index);
+
+    // just return video, if already started
+    if(!videos[source_index]) {
+
+      console.log("Acquire stream for device index "+source_index);
+
+      // create a new <video> element for decoding the capture stream
+      var video = document.createElement('video');
+      videos[source_index]=video;
+
+      var constraints = {
+        video: { deviceId: devices.video[source_index].deviceId},
+        audio:false
+      };
+
+      // enforce resolution, if asked to
+      if(this.resolution_w && this.resolution_w)
+      {
+          constraints.video.width=this.resolution_w;  constraints.video.height=this.resolution_h;
+      }
+
+      window.navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+        console.log("Got camera!");
+
+        // capture device was successfully acquired
+        video.muted=true;
+        video.srcObject = stream;
+        video.play();
+      });
+    }
     
+    let v=videos[source_index];
+
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
     
