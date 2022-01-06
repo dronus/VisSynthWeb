@@ -13,7 +13,7 @@ export let Canvas = function(selector, session_url) {
     // - when using requestAnimationFrame to schedule canvas updates, captureStream delivers a black image
     // - using setTimeout to schedule update provides a working captureStream
     // - so does using preserveDrawingBuffer:true here.
-    this.gl = this.canvas.getContext('webgl', {'alpha':false, 'preserveDrawingBuffer':true});
+    this.gl = this.canvas.getContext('webgl', {'preserveDrawingBuffer':true});
 
     // container for filter state variables..
     // filters should not add properties outside of this.
