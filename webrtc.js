@@ -63,6 +63,7 @@ export async function WebRTC(server_url, source_el, target_el, close_listener) {
   pc.addEventListener('track', e => {
     if (target_el.srcObject !== e.streams[0]) {
       target_el.srcObject = e.streams[0];
+      target_el.play();
       if(close_listener)
         e.streams[0].getVideoTracks()[0].onended=close_listener;
       console.log('pc received remote stream');

@@ -1165,10 +1165,10 @@ filters.noalpha=function() {
 // but stores a copy of the current image "under construction" 
 // to send as preview. 
 filters.preview=function() {
-    this.preview_width=640; this.preview_height=400;
-    this.gl.viewport(0,0,this.preview_width,this.preview_height);
+    this.preview_width=320; this.preview_height=200;
+    // this.gl.viewport(0,0,this.preview_width,this.preview_height);
     filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
-    this.gl.viewport(0,0,this.width,this.height);
+    //this.gl.viewport(0,0,this.width,this.height);
 
     return this;
 }

@@ -62,12 +62,13 @@
 
   <div class="preview container" onclick="toggle_preview()">
     <button id=preview_button>PREVIEW</button>
-    <img id=preview></img>
+    <video id=preview></video>
   </div>
   
   <div id=help></div>
 
   <script type="module">
+    import {WebRTC} from './webrtc.js';
 
     // get session url, if any
     var session_url='/';
@@ -849,7 +850,7 @@
 
     // preview pane
     var preview=false;
-    var preview_offline_timeout=false;
+    var offline_timeout=false;
 
     var open_socket=function()
     {
@@ -857,7 +858,7 @@
       websocket.onopen=function(){
         // opt in for preview and screenshot feeds
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'devices',data:''}));
-        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'preview',data:''}));
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'stats',data:''}));
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'screenshot',data:''}));       
         websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'update',data:''})); 
       };
@@ -876,16 +877,15 @@
           // refresh visible device list 
           listDevices();
         }
-        else if(path=='/feeds'+session_url+'preview')
+        else if(path=='/feeds'+session_url+'stats')
         {
           var json=message;
           var data=JSON.parse(json);
-          document.getElementById('preview').src=data.jpeg ? data.jpeg : "";
           document.getElementById('stats').innerHTML='online, running '+(Math.round(10000./data.frame_time)/10.)+' fps';
-          if(preview_offline_timeout) clearTimeout(preview_offline_timeout);
-          preview_offline_timeout=setTimeout(function(){
+          if(offline_timeout) clearTimeout(offline_timeout);
+          offline_timeout=setTimeout(function(){
             document.getElementById('stats').innerHTML='offline';
-            preview_offline_timeout=false;
+            offline_timeout=false;
           },1000);
         }
         else if(path=='/feeds'+session_url+'screenshot'){
@@ -912,9 +912,13 @@
     
     window.toggle_preview=async function(){
       preview=!preview;
-      if(preview) $('#preview_button').addClass   ('active');
-      else        $('#preview_button').removeClass('active');
       send('canvas.preview('+preview+')');
+      if(preview) {
+        $('#preview_button').addClass   ('active');
+        const webrtc=await WebRTC("",null, document.getElementById('preview'));
+        setTimeout(webrtc.call, 1000);
+      }
+      else        $('#preview_button').removeClass('active');
     }
       
     // screenshot button      

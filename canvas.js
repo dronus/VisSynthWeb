@@ -83,7 +83,7 @@ Canvas.prototype.update=function() {
     if(this.preview_enabled && this.preview_cycle==1)
       this.capturePreview();
     if(this.preview_cycle==0)
-      this.sendStatsAndPreview();
+      this.sendStats();
     this.preview_cycle^=1;
 
     // render final image to visible canvas.
@@ -115,30 +115,21 @@ Canvas.prototype.update=function() {
 
 Canvas.prototype.capturePreview=function() {
   // the preview is a downscaled image provided by the 'preview' effect
-  // we crop the preview pixels out of the canvas just BEFORE canvas is finally drawn, which will redraw full resolution.
+  // we copy the preview pixels from the canvas just BEFORE canvas is finally drawn, which will redraw the final image.
   //
-  // in repsect to just downsizing the final image this has two benefits:
+  // The 'preview' filter may be added to any chain position manually to tap the preview image between effects
   //
-  // 1) it is much faster, as rescaling is done in WebGL context and not by 2d context drawImage
-  // TODO check if this still holds 2022. 2d context is using GPU scaling too.
+  // TODO skip preview filter, if it would be the last image
   //
-  // 2) The 'preview' filter may be added to any chain position manually to tap the preview image between effects
-  //
-  if(!this.preview_canvas)
-  {
-    this.preview_canvas=document.createElement('canvas');
-    this.preview_canvas.width=this.preview_width; 
-    this.preview_canvas.height=this.preview_height;
-  }
   var ctx=this.preview_canvas.getContext('2d');
-  ctx.drawImage(this.canvas,0,this.height-this.preview_height,this.preview_width,this.preview_height, 0, 0, this.preview_width,this.preview_height);
+  // draw downsaled version
+  ctx.drawImage(this.canvas,0,0,this.width,this.height, 0, 0, this.preview_width,this.preview_height);
 }
 
-Canvas.prototype.sendStatsAndPreview=function() {
-  var jpeg=(this.preview_canvas && this.preview_enabled) ? this.preview_canvas.toDataURL('image/jpeg') : null;
-  var data={frame_time:this.frame_time, jpeg:jpeg};
+Canvas.prototype.sendStats=function() {
+  var data={frame_time:this.frame_time};
   var json=JSON.stringify(data);
-  this.remote.put('preview',json);
+  this.remote.put('stats',json);
 }
 
 Canvas.prototype.sendScreenshot=function() {
@@ -353,6 +344,27 @@ Canvas.prototype.setChain=function (effects)
 // receive preview request from remote
 // called by UI
 Canvas.prototype.preview=function(enabled) {
+
+  if(enabled)
+  {
+    if(!this.preview_canvas)
+    {
+      this.preview_canvas=document.createElement('canvas');
+      this.preview_canvas.width=this.preview_width; 
+      this.preview_canvas.height=this.preview_height;
+    }
+  
+    if(!this.previewOut) {
+      this.previewOut=true;
+      import("./webrtc.js").then(async(webrtc) => {
+        this.previewOut=await webrtc.WebRTC("",this.preview_canvas);
+      });
+    }
+  }else{
+    this.previewOut.hangup();
+    this.previewOut=null;
+  }
+
   // engage preview process
   this.preview_enabled=enabled;
 }
