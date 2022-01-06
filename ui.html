@@ -588,7 +588,7 @@
         // like the ones send to the server
         var new_effect={effect:key};
         if(effects[key].args)
-          for(i in effects[key].args)
+          for(let i in effects[key].args)
             new_effect[i]=effects[key].args[i];
         new_effects.push(new_effect);
       }
@@ -621,7 +621,7 @@
           // like the ones send to the server
           var new_effect={effect:type};
           if(effects[type].args)
-            for(i in effects[type].args)
+            for(let i in effects[type].args)
               new_effect[i]=effects[type].args[i];
 
           new_effect.url="files/"+file;
@@ -641,7 +641,7 @@
           // like the ones send to the server
           var new_effect={effect:type};
           if(effects[type].args)
-            for(i in effects[type].args)
+            for(let i in effects[type].args)
               new_effect[i]=effects[type].args[i];
           new_effect.name  =name;
           new_effect.device=device_id;
