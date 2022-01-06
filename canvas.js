@@ -53,6 +53,9 @@ export let Canvas = function(selector, session_url) {
 
     // the remote control handle (for replying to remote commands)
     this.remote = null;
+    
+    // load initial chain
+    this.switchChain(0);
 }
 
 // create a texture from a given HTML element
@@ -449,7 +452,7 @@ Canvas.prototype.switchChain=function(chain_index)
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.open('GET','saves'+this.session_url+'chains.json',true);
   xmlHttp.send(null);
-  xmlHttp.onreadystatechange=function(){
+  xmlHttp.onreadystatechange=() => {
     if(xmlHttp.readyState!=4) return;
     if(xmlHttp.responseText)
     {
