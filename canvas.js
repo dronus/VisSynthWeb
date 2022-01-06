@@ -53,9 +53,6 @@ export let Canvas = function(selector, session_url) {
 
     // the remote control handle (for replying to remote commands)
     this.remote = null;
-    
-    // load initial chain
-    this.switchChain(0);
 }
 
 // create a texture from a given HTML element

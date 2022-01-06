@@ -1,0 +1,16 @@
+<!DOCTYPE  html>
+<html>
+<body>
+  <canvas id=canvas></canvas>
+  <script type=module>
+    import {VisSynth} from './vissynth.js';
+
+    let canvas=VisSynth('#canvas', "");
+    canvas.setChain([{"effect": "capture","device": 0},{"effect": "invert"}]);
+  </script>
+</body>
+</html>
+
+
+
+

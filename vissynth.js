@@ -32,6 +32,8 @@ export let VisSynth = function(selector, session_url) {
 
   // start frequent canvas updates
   canvas.update();
+  
+  return canvas;
 }
 
 // enumerate the available sources at startup

@@ -14,7 +14,10 @@
     if(document.location.hash)
       session_url=document.location.hash.substring(1);
 
-    VisSynth('#canvas', session_url);
+    let canvas=VisSynth('#canvas', session_url);
+
+    // load initial chain 0 from saves/chains.json
+    canvas.switchChain(0);
   </script>
 </body>
 </html>
