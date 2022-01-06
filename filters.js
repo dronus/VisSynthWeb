@@ -1956,7 +1956,7 @@ filters.webrtc=function(websocket_url) {
       v.muted=true;
       v.autoplay=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.webrtc_peers[websocket_url]=await  webrtc.WebRTC(websocket_url, null, v, null);
+        this.webrtc_peers[websocket_url]=await  webrtc.WebRTC(websocket_url, '/webrtc', null, v, null);
         v.play();
       });
     }

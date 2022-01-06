@@ -1,14 +1,14 @@
 
-export async function WebRTC(server_url, source_el, target_el, close_listener) {
-  
+export async function WebRTC(server_url, path, source_el, target_el, close_listener) {
+
   var websocket;
   var open_socket=function()
   {
     websocket=new WebSocket(server_url ? server_url : (document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html',''));
     websocket.onopen=function(){
       // opt in for webrtc 
-      websocket.send(JSON.stringify({'method':'get', path:'/webrtc',data:''}));
-      if(server_url) webrtc.call();
+      websocket.send(JSON.stringify({'method':'get', 'path':path, 'data':''}));
+      if(target_el) webrtc.call();
     };
     websocket.onerror=function()
     {
@@ -17,9 +17,9 @@ export async function WebRTC(server_url, source_el, target_el, close_listener) {
   }
   open_socket();
 
-  var put=function(path,data){
+  var put=function(data){
     if(websocket.readyState)
-      websocket.send(JSON.stringify({'method':'put', 'path':path,'data':data}));
+      websocket.send(JSON.stringify({'method':'put', 'path':path, 'data':data}));
   }  
   
   
@@ -34,7 +34,7 @@ export async function WebRTC(server_url, source_el, target_el, close_listener) {
   }
   
   pc.addEventListener('icecandidate', e => {
-    if(e.candidate != null) put("/webrtc",JSON.stringify({"type": "new-ice-candidate", "candidate": e.candidate}));
+    if(e.candidate != null) put(JSON.stringify({"type": "new-ice-candidate", "candidate": e.candidate}));
     console.log(`ICE candidate:\n${e.candidate ? e.candidate.candidate : '(null)'}`);
   });
   pc.addEventListener('iceconnectionstatechange', e => {
@@ -75,27 +75,24 @@ export async function WebRTC(server_url, source_el, target_el, close_listener) {
   {
     var packet=JSON.parse(event.data.text ? await event.data.text() : event.data);
     var path=packet.path, message=packet.data;
-    
-    if(path=='/webrtc')
-    {
-      var msg=JSON.parse(message);
-      // TODO handle offer, answer,  ICE
-      if(msg.type=="offer"){
-        console.log(`incoming offer:${msg.sdp}`);
-        await pc.setRemoteDescription(msg);
-        const answer = await pc.createAnswer();
-        console.log(`createAnswer:\n${answer.sdp}`);
-        await pc.setLocalDescription(answer);
-        put("/webrtc",JSON.stringify(answer));
-      }
-      if(msg.type=="answer"){
-        console.log(`incoming answer ${msg.sdp}`);
-        await pc.setRemoteDescription(msg);
-      }
-      if(msg.type=="new-ice-candidate"){
-        console.log(`addIceCandidate ${msg.candidate}`);
-        await pc.addIceCandidate(msg.candidate);
-      }
+
+    var msg=JSON.parse(message);
+    // TODO handle offer, answer,  ICE
+    if(msg.type=="offer"){
+      console.log(`incoming offer:${msg.sdp}`);
+      await pc.setRemoteDescription(msg);
+      const answer = await pc.createAnswer();
+      console.log(`createAnswer:\n${answer.sdp}`);
+      await pc.setLocalDescription(answer);
+      put(JSON.stringify(answer));
+    }
+    if(msg.type=="answer"){
+      console.log(`incoming answer ${msg.sdp}`);
+      await pc.setRemoteDescription(msg);
+    }
+    if(msg.type=="new-ice-candidate"){
+      console.log(`addIceCandidate ${msg.candidate}`);
+      await pc.addIceCandidate(msg.candidate);
     }
   }
 
@@ -115,7 +112,7 @@ export async function WebRTC(server_url, source_el, target_el, close_listener) {
     const offer = await pc.createOffer(offerOptions);
     console.log(`createOffer:\n${offer.sdp}`);
     await pc.setLocalDescription(offer);
-    put("/webrtc",JSON.stringify(offer));
+    put(JSON.stringify(offer));
   }
 
   return webrtc;

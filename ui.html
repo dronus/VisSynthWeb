@@ -909,16 +909,18 @@
     open_socket();
 
 
-    
+    let webrtc=null;
     window.toggle_preview=async function(){
       preview=!preview;
       send('canvas.preview('+preview+')');
       if(preview) {
         $('#preview_button').addClass   ('active');
-        const webrtc=await WebRTC("",null, document.getElementById('preview'));
+        webrtc=await WebRTC("","/webrtc_preview",null, document.getElementById('preview'));
         setTimeout(webrtc.call, 1000);
+      } else {
+        $('#preview_button').removeClass('active');
+        if(webrtc) webrtc.hangup();
       }
-      else        $('#preview_button').removeClass('active');
     }
       
     // screenshot button      

@@ -10,7 +10,7 @@
 
 <script type="module">
 import {WebRTC} from './webrtc.js';
-const webrtc=await WebRTC("",null, remoteVideo);
+const webrtc=await WebRTC("","/webrtc_out",null, remoteVideo);
 
 setTimeout(webrtc.call, 1000); // why this delay is needed?
 
