@@ -67,7 +67,6 @@ Canvas.prototype.update=function() {
     // compute frame and animation time
     var current_time=Date.now();
     this.frame_time=this.frame_time*0.9 + (current_time-this.last_time)*0.1;
-    this.last_time=current_time;
 
     // enqueue next update
     var update_handler=this.update.bind(this);
@@ -82,9 +81,11 @@ Canvas.prototype.update=function() {
     // provide preview if requested
     if(this.preview_enabled && this.preview_cycle==1)
       this.capturePreview();
-    if(this.preview_cycle==0)
-      this.sendStats();
     this.preview_cycle^=1;
+
+    if(current_time % 500 > 250 && this.last_time % 500 <= 250)
+      this.sendStats();
+
 
     // render final image to visible canvas.
     // update canvas size to texture size, if needed
@@ -103,12 +104,16 @@ Canvas.prototype.update=function() {
     this.gc();
     
     // take screenshot if requested
-    if(this.screenshot_flag)
+    if(this.screenshot_flag) {
       this.sendScreenshot();
+      this.screenshot_flag=false;
+    }
 
     // encode stream for recording if requested
     if(this.mediaRecorder)
       this.mediaRecorder.stream.getVideoTracks()[0].requestFrame();
+
+    this.last_time=current_time;
 
     return this;
 }
@@ -135,7 +140,6 @@ Canvas.prototype.sendStats=function() {
 Canvas.prototype.sendScreenshot=function() {
   var pixels=canvas.toDataURL('image/jpeg');
   this.remote.put('screenshot',pixels);
-  this.screenshot_flag=false;
 }
 
 // replace current working texture
