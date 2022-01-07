@@ -660,7 +660,7 @@
 
     // tell server to rescan devices and report to us
     var fetchDevices=function(){
-      send('get_devices()');
+      send('devices.update()');
     }
 
     window.show_panel=function(panel)

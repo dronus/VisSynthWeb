@@ -61,11 +61,10 @@ filters.type_float=function(){
 
 // set resolution, filtering, texture type, fps limit at once
 filters.resolution=function(w,h,filtering,precision,fps_limit){
-  this.resolution_w=w; this.resolution_h=h;
   this.proposed_fps=fps_limit;
   var t=this.template;
-  t.width=w;
-  t.height=h;
+  this.width=t.width=w;
+  this.height=t.height=h;
 
   if(precision=='linear') this.type_byte();
   if(precision=='float')  this.type_float();
@@ -1949,15 +1948,13 @@ filters.capture=function(source_index) {
       videos[source_index]=video;
 
       var constraints = {
-        video: { deviceId: devices.video[source_index].deviceId},
+        video: { 
+          deviceId: devices.video[source_index].deviceId,
+          width: this. width,
+          height: this.height
+        },
         audio:false
       };
-
-      // enforce resolution, if asked to
-      if(this.resolution_w && this.resolution_w)
-      {
-          constraints.video.width=this.resolution_w;  constraints.video.height=this.resolution_h;
-      }
 
       window.navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
         console.log("Got camera!");

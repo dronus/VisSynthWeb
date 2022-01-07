@@ -18,4 +18,3 @@ devices.update=async function()
 }
 
 navigator.mediaDevices.ondevicechange=devices.update;
-devices.update();
