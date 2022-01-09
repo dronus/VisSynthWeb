@@ -1,0 +1,4 @@
+VisSynthWeb related utility stuff
+
+-allowcrossorigin: a Chrome / Chromium extension to generally allow cross-origin requests. This can be used in case media should be streamed to VisSynthWeb when running from a local server.
+-vissynthweb.desktop: Example desktop / autostart file for Linux desktop operating systems. Path needs to be adapted to user home directory.
