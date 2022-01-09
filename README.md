@@ -1,0 +1,110 @@
+VisSynthWeb - web based visual synthesizer and effects
+======================================================
+
+VisSynthWeb is a browser-based realtime video effect and synthesizer platform. It creates or transforms a live video (captured by an connected camera, stream) by user defined chains made of user adjustable effects. The live video can be controlled in realtime by another browser device.
+
+The user interface is provided by an integrated control server and may be accessed on any decent internet browser. Effects can be sorted from the collection into several chains, which can be switched on the fly. Effect parameters may be twiddled in realtime by sliders. A stack-based image memory allows the creation of more complex effect networks inside the linear chain. New effects chains can be prepared side by side and switched if ready, but it is also possible to drop effects into the running chain. As the chain paradigm does not require manual interconnecting of the effects the new effect becames active immediately. 
+
+It runs well in lower resolutions even on small hardware like the Odroid XU4 or Nvidia Jetson. Such small computers can be tucked to screens or projectors. They will run the saved effect chain on power-up and can then be accessed as needed to tweak or replace the effect.
+
+
+
+## Requirements
+
+- A computer with an web browser featuring a reliable WebGL implementation, working camera access, and a working node.js installation. Small EGL-supporting ARM devices are feasable. Mobile devices may work, but would require another device to run the control server.
+- Another screen or computer with an up-to-date web browser for remote control. No fun without control!
+- A webcam or embedded camera (not neccessary in any case, but a lot of fun)
+
+
+## Installation
+
+- Clone this repository to the device sporting the camera and screen:
+  git clone  https://github.com/dronus/VisSynthWeb.git
+- Run 'node server.js' inside the repository
+- Run the devices browser and enter 127.0.0.1:8082/index.html . The browser asks to allow camera access and the live image should appear after confirmation.
+- Run up a browser on another device or second screen, and enter the IP of the video machine, followed by :8082/ui.html . The user interface should appear. Try to drag effects into the active chain (highlighted green) to see if it works. 
+
+## Usage
+
+- Open the remote interface ui.html.
+- The upper list consist of "chains", one of them is running at a time. Click on their title to make another one active. The chains may be reordered by dragging on their title. A chain may be deleted by dragging it out of the vertical chain list.
+- The lower list contains effect modules, that can be added to any chain by dragging them into certain position in the chain. The chained effects can be reordered by dragging them to a new position inside the chain. An effect is removed of the chain by dragging it out of the chain.
+- An effect can clicked to reveal sliders that allow adjustment of its parameters. The sliders are sporting a large range of numbers, and a finer grained control near the middle.
+- Any parameter can be animated by adding an oscilator OSC or audio beat analyser BEAT using the buttons next to the slider. OSC and BEAT add new sliders, and can be removed again with the respective buttons.
+- An OSC makes the value going up and down repeatedly. Four new parameters can be adjusted:
+ - f: Set the frequency of the value change
+ - a: Set the amplitude, that is how much the value will change in every swing
+ - p: Sets the phase, this can be used to move the swing in respect to another OSC
+ - o: Sets the offset, that is the center value of the swing. 
+Usually you may first try an low "a" and set "o" to the old static value to achive a similiar effect.
+- An BEAT makes the value react to sound. Five parameters can be adjusted:
+ - pulse: Set the direct reaction to audio amplitude pulses
+ - f: Set the guessed beat frequency of the audio, if any. For music, this is BPM / 60.
+ - a: Set the amplitude, that is how much the value will change with the beat.
+ - p: Sets the phase, this can be used to move the swing in respect to the beat.
+ - o: Sets the offset, that is the lowest value of the swing.
+- Effect types: Most effects modify incoming images and have no further effects. Others are special:
+ - capture: Has no input and discards the image of the chain above. Outputs the raw camera image like on top of the chain.
+ - preview: Has no effect, but feeds the image to the preview if enabled. Allows to check intermediate images in long chains.
+ - push_stack: Does not modify the image at all, but places a copy onto a stack. Effects with more then one input use these.
+ - blend, blend_alpha, colorkey, displace: This effects require two input images, and works best another image was put to the stack before, which they take off.
+ - feedbackOut, feedbackIn: feedbackIn stores one image that is hold onto the next video frame. Use feedbackOut above of it to create a feedback loop.
+ - motion, timeshift: These effects keep internal copys of images over some time. 
+- Any change to the active chain (add, order, adjust effects)  takes effect instantly.
+- Any change is saved almost immediately.
+
+## Best practices
+
+- As camera setups may change or sometimes video clips or images serve as input to test the effect chains, it is advised
+ to never use the capture, image and video source effects directly in the chains. 
+ Better place one of them or more using the stack in the before-setup, and just depend any chain on an initial source and 
+ maybe further ones from the stack.
+
+- As any change is saved immediately, feel free to clone effect chains as often as practical while experimenting, to not lose
+ well made old effects.
+ 
+- Do not use the setup effects in any other place then the "setup before" chain. Using more then one setup of the same kind
+ may degrade the performance, as the setup is changed twice or more on every video frame then.
+ 
+- Always use type_byte setup effect if there is no special need for float color precision. Performance is much better doing so.
+ Only some effects may look substantially different using float, like 'reaction' and 'smoothlife', if used in feedback loops.
+ Float precision may exhibit weird behaviour in feedback loops, as it may store infinite values, that usually appear as bright 
+ or black areas in the image never going away again.
+
+
+## Issues / TODO
+
+- The START and STOP RECORDING buttons act on server-side vide capturing dependend on the avconv utility. 
+ This is not applicable to the online version, as it would record the server-side desktop screen.
+
+- Exceptions due to missing WebGL capabilities of the current machine are not caught reliable, so some effects or settings
+ (like type_float color precision and high resolutions) may crash the video screen and require a click on RESTART after fixing.
+ As the error condition is only debuggagle at the video screen machine and no error message is passed to the UI, direct access
+ to the video machine is needed to find out about those problems.
+
+- The audio input mapping done with the select_audio setting effect need a click on RESTART to apply. 
+
+- Video and audio sources are mapped by abitraty enumeration (0, 1, ...) and do not reflect their device names. 
+ It may take some effort to find out which audio source number identifies the built-in microphone of certain camera, 
+ especially if there are several more audio-only devices like internal microphones or inputs on the machine.
+ 
+- The UI doesn't synchronizes to the server after startup. Using two UIs connected to the same video screen results in 
+ mutual override of the changes made by each other UI. If more then one UIs are used, after every change all other UIs
+ should be reloaded in the browser to adapt the changes made.
+
+
+## Troubleshooting
+
+- Video display or UI does not start up as expected. Check the browsers console and report the bug. Check if the control server is running. Check the connection between the devices.
+
+- Drag and Drop in the UI works not like expected. Try another browser or device, or fix the bug and file a pull request.
+
+- Video display freezes. Try hit the RELOAD button in the remote UI's header. Check the video machine browser's console and report the bug.
+
+## Technical details
+TO BE DONE
+
+
+## Credits
+
+Originally used and now losely based on WebCamVidja: https://github.com/johanan/WebCamVidja.git , glfx.js:  http://evanw.github.com/glfx.js/
