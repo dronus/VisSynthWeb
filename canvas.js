@@ -98,7 +98,7 @@ Canvas.prototype.update=function() {
     }
     this.gl.viewport(0,0, this.width, this.height);
     // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
-    filters.mirror_x.call(this,this);
+    filters.mirror_x.call(this,{target:this});
 
     // release temporary textures
     this.gc();
@@ -297,6 +297,7 @@ var get_param_values=function(param,t)
   var args=[];
   if(!(param instanceof Object)) return param;
   var fn=Generators.generators[param.type];
+  if(!fn) return param;
   return fn.call(window,t,param);
 }
 
@@ -304,14 +305,14 @@ var get_param_values=function(param,t)
 Canvas.prototype.run_effect=function(effect,t)
 {
   if(typeof effect == "string") return;
-  var args=[];
+  var args={};
   var fn=filters[effect.effect] ? filters[effect.effect] : window[effect.effect];
   for(var key in effect)
   {
     if(key=='effect') continue;
-    args=args.concat(get_param_values(effect[key],t));
+    args[key]=get_param_values(effect[key],t);
   }
-  fn.apply(this,args);
+  fn.apply(this,[args]);
 }
 
 // render the whole effect chain

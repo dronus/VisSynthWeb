@@ -27,8 +27,9 @@ It runs well in lower resolutions even on small hardware like the Odroid XU4 or 
 ## Usage
 
 - Open the remote interface ui.html.
-- The upper list consist of "chains", one of them is running at a time. Click on their title to make another one active. The chains may be reordered by dragging on their title. A chain may be deleted by dragging it out of the vertical chain list.
-- The lower list contains effect modules, that can be added to any chain by dragging them into certain position in the chain. The chained effects can be reordered by dragging them to a new position inside the chain. An effect is removed of the chain by dragging it out of the chain.
+- The left list consist of "chains", one of them is running at a time. Click on them to make another one active. The chains may be reordered by dragging them. A chain may be deleted by dragging it out of the vertical chain list.
+- The second panel show the current chain. 
+- The third list contains effect modules, that can be added to the chain by dragging them into certain position in the chain. The chained effects can be reordered by dragging them to a new position inside the chain. An effect is removed of the chain by dragging it out of the chain.
 - An effect can clicked to reveal sliders that allow adjustment of its parameters. The sliders are sporting a large range of numbers, and a finer grained control near the middle.
 - Any parameter can be animated by adding an oscilator OSC or audio beat analyser BEAT using the buttons next to the slider. OSC and BEAT add new sliders, and can be removed again with the respective buttons.
 - An OSC makes the value going up and down repeatedly. Four new parameters can be adjusted:
@@ -43,15 +44,18 @@ Usually you may first try an low "a" and set "o" to the old static value to achi
  - a: Set the amplitude, that is how much the value will change with the beat.
  - p: Sets the phase, this can be used to move the swing in respect to the beat.
  - o: Sets the offset, that is the lowest value of the swing.
-- Effect types: Most effects modify incoming images and have no further effects. Others are special:
- - capture: Has no input and discards the image of the chain above. Outputs the raw camera image like on top of the chain.
- - preview: Has no effect, but feeds the image to the preview if enabled. Allows to check intermediate images in long chains.
+- Effect types: Most effects modify the incoming image. Others are special, some examples:
+ - Sources (colored green), eg. capture - Has no input (so discards the image of the chain above). Outputs the raw camera image on top of the chain.
+ - preview: Has no effect on the image itself, but feeds the image to the preview if enabled. Allows to check intermediate images in long chains.
  - push_stack: Does not modify the image at all, but places a copy onto a stack. Effects with more then one input use these.
- - blend, blend_alpha, colorkey, displace: This effects require two input images, and works best another image was put to the stack before, which they take off.
+ - Two-input effects, like blend, blend_alpha, colorkey, displace: These effects require two input images, require another image to be put on the stack before, which they take off and use.
  - feedbackOut, feedbackIn: feedbackIn stores one image that is hold onto the next video frame. Use feedbackOut above of it to create a feedback loop.
  - motion, timeshift: These effects keep internal copys of images over some time. 
 - Any change to the active chain (add, order, adjust effects)  takes effect instantly.
 - Any change is saved almost immediately.
+
+## Sessions
+By adding a hash mark '#' and some name to the end of the URL, a session is created. All ui.html and index.html from the same server using the same session will be synced to each other, the index.html showing the chain modified by all ui.html currently connected to this session.
 
 ## Best practices
 
@@ -71,27 +75,21 @@ Usually you may first try an low "a" and set "o" to the old static value to achi
  Float precision may exhibit weird behaviour in feedback loops, as it may store infinite values, that usually appear as bright 
  or black areas in the image never going away again.
 
+## Library use
+
+VisSynthWeb can be used as part of other web applications. Just include vissynth.js to your web page (plain JS modules, NO need for build systems like npm, yarn). This way, you can:
+- add animated video effects to images, webcam or canvas-rendered graphics
+- synthesize images on the fly
+For a minimal example, see minimal_example.html. 
+- VisSynthWeb will run from any static web server this way, however to tweak the effects by its own UI, the VisSynthWeb nodejs server is needed.
+- You can still create effects in an UI-capable instance, and copy the effect chain code over to your own static application.
 
 ## Issues / TODO
-
-- The START and STOP RECORDING buttons act on server-side vide capturing dependend on the avconv utility. 
- This is not applicable to the online version, as it would record the server-side desktop screen.
 
 - Exceptions due to missing WebGL capabilities of the current machine are not caught reliable, so some effects or settings
  (like type_float color precision and high resolutions) may crash the video screen and require a click on RESTART after fixing.
  As the error condition is only debuggagle at the video screen machine and no error message is passed to the UI, direct access
  to the video machine is needed to find out about those problems.
-
-- The audio input mapping done with the select_audio setting effect need a click on RESTART to apply. 
-
-- Video and audio sources are mapped by abitraty enumeration (0, 1, ...) and do not reflect their device names. 
- It may take some effort to find out which audio source number identifies the built-in microphone of certain camera, 
- especially if there are several more audio-only devices like internal microphones or inputs on the machine.
- 
-- The UI doesn't synchronizes to the server after startup. Using two UIs connected to the same video screen results in 
- mutual override of the changes made by each other UI. If more then one UIs are used, after every change all other UIs
- should be reloaded in the browser to adapt the changes made.
-
 
 ## Troubleshooting
 

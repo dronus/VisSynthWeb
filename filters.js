@@ -31,7 +31,7 @@ filters.none=function(){};
 
 // side-effect filter to switch to another chain
 filters.switch_chain_time=0;
-filters.switch_chain=function(chain_index,time_min,time_max) {
+filters.switch_chain=function({chain_index,time_min,time_max}) {
   if(this.switched) 
     this.switch_chain_time=Date.now()+time_min*1000. + Math.random()*(time_max-time_min)*1000.;
   
@@ -43,7 +43,7 @@ filters.switch_chain=function(chain_index,time_min,time_max) {
 }
 
 // set canvas update proposed fps
-filters.fps=function(fps){
+filters.fps=function({fps}){
   this.proposed_fps=fps;
 };
 
@@ -60,20 +60,20 @@ filters.type_float=function(){
 };
 
 // set resolution, filtering, texture type, fps limit at once
-filters.resolution=function(w,h,filtering,precision,fps_limit){
+filters.resolution=function({x,y,filtering,precision,fps_limit}){
   this.proposed_fps=fps_limit;
   var t=this.template;
-  this.width=t.width=w;
-  this.height=t.height=h;
+  this.width=t.width=x;
+  this.height=t.height=y;
 
   if(precision=='linear') this.type_byte();
   if(precision=='float')  this.type_float();
 
-  filters.filtering.call(this,filtering=="linear" ? 1 : 0);
+  filters.filtering.call(this,{linear: filtering=="linear" ? 1 : 0});
 };
 
 // set filtering (>0: linear, <0 nearest)
-filters.filtering=function(linear) {
+filters.filtering=function({linear}) {
   this.template.filter=linear>0 ? this.gl.LINEAR : this.gl.NEAREST;
 }
 
@@ -96,7 +96,7 @@ var warpShader=function(canvas, name, uniforms, warp) {
 }
 
 // blend two images using the second one's alpha channel
-filters.blend_alpha=function(alpha) {
+filters.blend_alpha=function({alpha}) {
 
     alpha=alpha||1.0;
 
@@ -163,7 +163,7 @@ filters.blend_mask=function() {
 }
 
 // render superquadric mesh objects, textured by the given image
-filters.superquadric=function(A,B,C,r,s,t,angle) {
+filters.superquadric=function({A,B,C,r,s,t,angle}) {
     let s_superquadric = this.getShader('s_superquadric',  '\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
@@ -288,7 +288,7 @@ filters.feedbackIn=function() {
 }
 
 // blank out image periodically
-filters.strobe=function(period) {
+filters.strobe=function({period}) {
     var t=this.texture;
     this._.strobeTexture=this.getSpareTexture(this._.strobeTexture);
 
@@ -300,7 +300,7 @@ filters.strobe=function(period) {
 }
 
 // fill image with tiled copys of current image
-filters.tile=function(size,centerx,centery) {
+filters.tile=function({divisions,center:{x,y}}) {
     let s_tile = this.getShader('s_tile',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -312,13 +312,13 @@ filters.tile=function(size,centerx,centery) {
         }\
     ');
 
-    this.simpleShader( s_tile, {size:size,center: [centerx,centery]});
+    this.simpleShader( s_tile, {size:divisions,center: [x,y]});
 
     return this;
 }
 
 // render "supershape" mesh using the current image as texture
-filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32) {
+filters.supershape=function({angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,n32}) {
 
   if(!this.shaders['s_supershape'])
   {
@@ -439,7 +439,7 @@ filters.supershape=function(angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22,
 }
 
 // render 2d "superelipse" transform of current image
-filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
+filters.superellipse=function({size,angle,a,b,m,n1,n2,n3}) {
     let s_superellipse = this.getShader('s_superellipse',  null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
@@ -486,7 +486,7 @@ filters.superellipse=function(size,angle,a,b,m,n1,n2,n3) {
 };
 
 // apply a grating on top off the image
-filters.grating=function(size,angle,ax,fx,ay,fy) {
+filters.grating=function({size,angle,ax,fx,ay,fy}) {
     let s_grating = this.getShader('s_grating',  null, '\
       varying vec2 texCoord;\
       uniform mat3 transform;\
@@ -513,7 +513,7 @@ filters.grating=function(size,angle,ax,fx,ay,fy) {
 };
 
 // replace a pixels color by some neighbour pixels depending on its color
-filters.colorDisplacement=function(angle,amplitude) {
+filters.colorDisplacement=function({angle,strength}) {
     let s_colorDisplacement = this.getShader('s_colorDisplacement',  null,'\
     \
         uniform sampler2D texture;\
@@ -538,7 +538,7 @@ filters.colorDisplacement=function(angle,amplitude) {
 
     this.simpleShader( s_colorDisplacement, {
         angle: angle,    
-        amplitude: amplitude,
+        amplitude: strength,
         texSize: [this.width, this.height]        
     });
 
@@ -546,7 +546,7 @@ filters.colorDisplacement=function(angle,amplitude) {
 }
 
 // single colored matte
-filters.matte=function(r,g,b,a) {
+filters.matte=function({rgb:{r,g,b,a}}) {
     let s_matte = this.getShader('s_matte',  null, '\
         uniform vec4 color;\
         void main() {\
@@ -559,7 +559,7 @@ filters.matte=function(r,g,b,a) {
 }
 
 // static noise
-filters.noise=function(seed) {
+filters.noise=function({seed}) {
     let s_noise = this.getShader('s_noise',  null, '\
         varying vec2 texCoord;\
         uniform float seed;\
@@ -580,7 +580,7 @@ filters.noise=function(seed) {
 }
 
 // draw a single-colored polygon
-filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
+filters.polygon_matte=function({color:{r,g,b,a},sides,x,y,size,angle,aspect}) {
 
     let s_polygon_matte = this.getShader('s_polygon_matte',  null, '\
         uniform vec4 color;\
@@ -618,7 +618,7 @@ filters.polygon_matte=function(r,g,b,a,sides,x,y,size,angle,aspect) {
 }
 
 // draw a single colored rectangle
-filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
+filters.rectangle=function({color:{r,g,b,a},x,y,width,height,angle}) {
 
     let s_rectangle = this.getShader('s_rectangle',  null, '\
         uniform vec4 color;\
@@ -648,7 +648,7 @@ filters.rectangle=function(r,g,b,a,x,y,width,height,angle) {
 }
 
 // video clip source.
-filters.video=function(url,play_sound,speed,loop) {
+filters.video=function({url,play_sound,speed,loop}) {
     if(!this._.videoFilterElement) this._.videoFilterElement={};
     var v=this._.videoFilterElement[url];
     if(!v)
@@ -691,7 +691,7 @@ filters.video=function(url,play_sound,speed,loop) {
 
 var image_loaded=[];
 // a static image source
-filters.image=function(url) {
+filters.image=function({url}) {
 
     if(!this._.imageFilterElement) this._.imageFilterElement=[];
     var v=this._.imageFilterElement[url];
@@ -726,7 +726,7 @@ filters.image=function(url) {
 }
 
 // ripple displacement
-filters.ripple=function(fx,fy,angle,amplitude) {
+filters.ripple=function({width,length,angle,strength}) {
     let s_ripple = warpShader(this, 's_ripple', '\
         uniform vec4 xform;\
         uniform float amplitude;\
@@ -737,17 +737,17 @@ filters.ripple=function(fx,fy,angle,amplitude) {
 
     this.simpleShader( s_ripple, {
         xform: [
-           Math.cos(angle)*fx, Math.sin(angle)*fy,
-          -Math.sin(angle)*fx, Math.cos(angle)*fy
+           Math.cos(angle)*width, Math.sin(angle)*length,
+          -Math.sin(angle)*width, Math.cos(angle)*length
         ],
-        amplitude: amplitude,
+        amplitude: strength,
     });
 
     return this;
 }
 
 // spherical distortion
-filters.spherical=function(radius,scale) {
+filters.spherical=function({radius,scale}) {
     let s_spherical = warpShader(this, 's_spherical', '\
         uniform float radius;\
         uniform float scale;\
@@ -787,14 +787,14 @@ var mesh_transforms={
 };
 
 // displace pixels in 3d depending on their color
-filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
+filters.mesh_displacement=function({sx,sy,sz,anglex,angley,anglez,mesh}) {
 
-    if(!mesh_transforms[mesh_type]) mesh_type="plane";
+    if(!mesh_transforms[mesh]) mesh="plane";
 
     if(!this.shaders.s_mesh_displacement) this.shaders.s_mesh_displacement={};
-    if(!this.shaders.s_mesh_displacement[mesh_type])
+    if(!this.shaders.s_mesh_displacement[mesh])
     {
-    this.shaders.s_mesh_displacement[mesh_type] = new Shader(this.gl, '\
+    this.shaders.s_mesh_displacement[mesh] = new Shader(this.gl, '\
     attribute vec2 _texCoord;\
     varying vec2 texCoord;\
     uniform mat4 matrix;\
@@ -804,7 +804,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
         texCoord = _texCoord;\
         vec3 dis = texture2D(displacement_map, _texCoord).xyz-0.5;\
         vec4 pos= (vec4(vec3(_texCoord,0.0)+dis*strength,1.0));\
-        '+mesh_transforms[mesh_type]+' \
+        '+mesh_transforms[mesh]+' \
         pos=matrix * pos;\
         gl_Position = pos/pos.w;\
     }');
@@ -826,9 +826,9 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
         gridMeshUvs.push(0.0,y-dy);
         gridMeshUvs.push(0.0,y-dy);
     }
-    this.shaders.s_mesh_displacement[mesh_type].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
+    this.shaders.s_mesh_displacement[mesh].attributes({_texCoord:gridMeshUvs},{_texCoord:2});
     }
-    var mesh_shader=this.shaders.s_mesh_displacement[mesh_type];
+    var mesh_shader=this.shaders.s_mesh_displacement[mesh];
 
     // perspective projection matrix
     var proj=mat4.perspective(45.,this.width/this.height,1.,100.);
@@ -871,7 +871,7 @@ filters.mesh_displacement=function(sx,sy,sz,anglex,angley,anglez,mesh_type) {
 }
 
 // blend two images together
-filters.blend=function(alpha,factor,offset) {
+filters.blend=function({alpha,factor,offset}) {
     let s_blend = this.getShader('s_blend',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D texture1;\
@@ -893,7 +893,7 @@ filters.blend=function(alpha,factor,offset) {
 }
 
 // circular arangement of symmetric copys of the image
-filters.kaleidoscope=function(sides,angle,angle2) {
+filters.kaleidoscope=function({sides,angle,angle2}) {
     let s_kaleidoscope = this.getShader('s_kaleidoscope',  null, '\
         uniform sampler2D texture;\
 	uniform float angle;\
@@ -919,7 +919,7 @@ filters.kaleidoscope=function(sides,angle,angle2) {
 }
 
 // map image to mandelbrot set (map image by mandelbrot iteration)
-filters.mandelbrot=function(x,y,scale,angle,iterations) {
+filters.mandelbrot=function({center:{x,y},size,angle,iterations}) {
 
     iterations=Math.min(15,Math.abs(iterations));
 
@@ -948,8 +948,8 @@ filters.mandelbrot=function(x,y,scale,angle,iterations) {
 
     this.simpleShader( s_mandelbrot, {
         xform: [
-           Math.cos(angle)*scale, Math.sin(angle)*scale,
-          -Math.sin(angle)*scale, Math.cos(angle)*scale
+           Math.cos(angle)*size, Math.sin(angle)*size,
+          -Math.sin(angle)*size, Math.cos(angle)*size
         ],
         iterations  : iterations,
         center: [x,y]
@@ -959,7 +959,7 @@ filters.mandelbrot=function(x,y,scale,angle,iterations) {
 }
 
 // map image into julia set (map pixels by julia iterations)
-filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
+filters.julia=function({cx,cy,center:{x,y},size,angle,iterations}) {
 
     iterations=Math.min(15,Math.abs(iterations));
 
@@ -988,8 +988,8 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
 
     this.simpleShader( s_julia, {
         xform: [
-           Math.cos(angle)*scale, Math.sin(angle)*scale,
-          -Math.sin(angle)*scale, Math.cos(angle)*scale
+           Math.cos(angle)*size, Math.sin(angle)*size,
+          -Math.sin(angle)*size, Math.cos(angle)*size
         ],
         iterations  : iterations,
         c: [cx,cy], 
@@ -1001,7 +1001,7 @@ filters.julia=function(cx,cy,x,y,scale,angle,iterations) {
 }
 
 // relief filter - add shaded look by ofsetting bright vs. dark pixels
-filters.relief=function(scale2,scale4) {
+filters.relief=function({scale2,scale4}) {
       this.gl.getExtension('OES_standard_derivatives');
       let s_blur = simpleBlurShader(this);
       let s_relief = this.getShader('s_relief',  null,'\n\
@@ -1076,7 +1076,7 @@ filters.relief=function(scale2,scale4) {
 }
 
 // affine transform - translate, rotate, scale, shear image
-filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
+filters.transform=function({x,y,scale,angle,sx,sy,wrap}) {
     let s_transform = this.getShader('s_transform',  null, '\
         uniform sampler2D texture;\
         uniform vec2 translation;\
@@ -1110,7 +1110,7 @@ filters.transform=function(x,y,scale,angle,sx,sy,wrap) {
 }
 
 // simulate chemical film exposure and development
-filters.analogize=function(exposure,gamma,glow,radius) {
+filters.analogize=function({exposure,gamma,glow,glow_radius}) {
     let s_analogize = this.getShader('s_analogize',  null,'\
     \
       uniform sampler2D texture;\
@@ -1132,7 +1132,7 @@ filters.analogize=function(exposure,gamma,glow,radius) {
     // Store a copy of the current texture in the second texture unit
     this.stack_push();
 
-    filters.blur.call(this,radius);
+    filters.blur.call(this,{radius:glow_radius});
 
     s_analogize.textures({
         glow_texture: this.texture,
@@ -1167,7 +1167,7 @@ filters.noalpha=function() {
 filters.preview=function() {
     this.preview_width=320; this.preview_height=200;
     // this.gl.viewport(0,0,this.preview_width,this.preview_height);
-    filters.mirror_x.call(this,this); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
+    filters.mirror_x.call(this,{target:this}); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
     //this.gl.viewport(0,0,this.width,this.height);
 
     return this;
@@ -1175,7 +1175,7 @@ filters.preview=function() {
 
 // pull image from "feedback" buffer 
 // where it needs to be copied by "feedbackIn" on rendering the frame before.
-filters.feedbackOut=function(blend,clear_on_switch) {
+filters.feedbackOut=function({blend,clear_on_switch}) {
     let s_feedbackOut = this.getShader('s_feedbackOut',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D feedbackTexture;\
@@ -1207,7 +1207,7 @@ filters.feedbackOut=function(blend,clear_on_switch) {
 // detect parts of the image in motion by pixel-wise comparison 
 // with a slowly updated background image.
 // remove non-moving image parts (alpha channel)
-filters.motion=function(threshold,interval,damper) {
+filters.motion=function({threshold,interval,damper}) {
     let s_motionBlend = this.getShader('s_motionBlend',  null, '\
         uniform sampler2D texture;\
         uniform sampler2D motionTexture;\
@@ -1287,7 +1287,7 @@ var simpleBlurShader=function(canvas){
 // simulate a reaction-diffusion-system (like chemical ones), using the pixel
 // colors to encode the state. 
 // if sandwiched between feedbackOut and feedbackIn, a cellular automaton is created.
-filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
+filters.reaction=function({noise_factor,zoom_speed,scale1,scale2,scale3,scale4}) {
 
     this.gl.getExtension('OES_standard_derivatives');
 
@@ -1473,8 +1473,8 @@ filters.reaction=function(noise_factor,zoom_speed,scale1,scale2,scale3,scale4) {
 
 // another reaction-diffusion simulation
 // sandwich between feedbackOut and feedbackIn to create a cellular automaton.
-filters.reaction2=function(F,K,D_a,D_b,iterations) {
-    iterations=Math.floor(Math.min(iterations,100.));
+filters.reaction2=function({F,K,D_a,D_b,speed}) {
+    speed=Math.floor(Math.min(speed,100.));
     let s_reaction2 = this.getShader('s_reaction2',  null, '\
       uniform sampler2D texture;\n\
       uniform float F;\n\
@@ -1507,7 +1507,7 @@ filters.reaction2=function(F,K,D_a,D_b,iterations) {
     ');
 
     this.texture.use(0);
-    for(var i=0; i<iterations; i++)
+    for(var i=0; i<speed; i++)
       this.simpleShader( s_reaction2, {F:F,K:K,D_a:D_a,D_b:D_b, scale: [this.width,this.height] });
 
     return this;
@@ -1516,7 +1516,7 @@ filters.reaction2=function(F,K,D_a,D_b,iterations) {
 // displace pixels depending on their brightness
 // each pixel is replaced by some neighbouring pixel depending on it's own color.
 // to move every pixel depening on it's own color, use mesh_displacement instead.
-filters.displacement=function(strength) {
+filters.displacement=function({strength}) {
     let s_displacement = this.getShader('s_displacement',  null, '\
         uniform sampler2D displacement_map;\
         uniform sampler2D texture;\
@@ -1537,7 +1537,7 @@ filters.displacement=function(strength) {
 
 // pertubate image row and collumn adressing,
 // thus simulating graphic RAM address bus errors
-filters.address_glitch=function(mask_x,mask_y) {
+filters.address_glitch=function({mask_x,mask_y}) {
     let s_address_glitch = this.getShader('s_address_glitch',  null, '\
         uniform sampler2D texture;\
         uniform float mask_x;\
@@ -1575,7 +1575,7 @@ filters.address_glitch=function(mask_x,mask_y) {
 }
 
 // add a gauze-like overlay to the image
-filters.gauze=function(fx,fy,angle,amplitude,x,y) {
+filters.gauze=function({width,length,angle,strength,center:{x,y}}) {
 
     let s_gauze = this.getShader('s_gauze',  null, '\
         uniform sampler2D texture;\
@@ -1594,10 +1594,10 @@ filters.gauze=function(fx,fy,angle,amplitude,x,y) {
 
     this.simpleShader( s_gauze, {
         xform: [
-           Math.cos(angle)*fx, Math.sin(angle)*fy,
-          -Math.sin(angle)*fx, Math.cos(angle)*fy
+           Math.cos(angle)*width, Math.sin(angle)*length,
+          -Math.sin(angle)*width, Math.cos(angle)*length
         ],
-        amplitude: amplitude,
+        amplitude: strength,
         center: [x,y],
         texSize: [this.width, this.height]
     });
@@ -1606,8 +1606,9 @@ filters.gauze=function(fx,fy,angle,amplitude,x,y) {
 }
 
 // choose which audio device to use for audio-dependent effects and parameter generators.
-filters.select_audio=function(device_index) {
-  audio_engine.set_device(device_index);
+// "select_audio":{"device":0.0}
+filters.select_audio=function({device}) {
+  audio_engine.set_device(device);
 }
 
 // create 1D image from audio waveform data.
@@ -1626,7 +1627,7 @@ filters.waveform=function() {
 // display waveform osciloscope from audio waveform data.
 // the waveform is displayed as linear spread, so "threshold" can be used 
 // to isolate a thin / thick line-like waveform display.
-filters.osciloscope=function(amplitude) {
+filters.osciloscope=function({amplitude}) {
     let s_osciloscope = this.getShader('s_osciloscope',  null, '\
       uniform sampler2D waveform;\
       uniform float amplitude; \
@@ -1652,7 +1653,7 @@ filters.osciloscope=function(amplitude) {
 }
 
 // plot audio data against phase-shift audio data
-filters.vectorscope=function(size,intensity,linewidth) {
+filters.vectorscope=function({size,intensity,linewidth}) {
     let s_vectorscope = this.getShader('s_vectorscope',  '\
     attribute vec2 _texCoord;\
     uniform sampler2D waveform;\
@@ -1711,7 +1712,7 @@ filters.vectorscope=function(size,intensity,linewidth) {
 }
 
 // create a luma keying, making darker parts of the image transparent (alpha channel)
-filters.lumakey=filters.luma_key=function(threshold,feather) {
+filters.lumakey=filters.luma_key=function({threshold,feather}) {
     let s_lumakey = this.getShader('s_lumakey',  null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
@@ -1734,7 +1735,7 @@ filters.lumakey=filters.luma_key=function(threshold,feather) {
 }
 
 // create a color key, making colors similiar to a given rgb color transparent (alpha channel)
-filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
+filters.chroma_key_rgb=function({color:{r,g,b},threshold,feather}) {
     let s_chroma_key_rgb = this.getShader('s_chroma_key_rgb',  null, '\
       uniform sampler2D texture;\
       uniform sampler2D texture1;\
@@ -1764,7 +1765,7 @@ filters.chroma_key_rgb=function(r,g,b,threshold,feather) {
 }
 
 // create a color key, making colors inside a given hsl range transparent (alpha channel)
-filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_feather) {
+filters.chroma_key=function({h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_feather}) {
  
     // legacy chains use chroma_key to denote chroma_key_rgb
     if(arguments.length==5) filters.chroma_key_rgb.apply(this,arguments);
@@ -1806,7 +1807,7 @@ filters.chroma_key=function(h,s,l,h_width,s_width,l_width,h_feather,s_feather,l_
 
 // compute a new image by applying Conway's "game of life" rules to the pixels.
 // sandwich this between feedbackOut, feedbackIn to create a game of life automaton
-filters.life=function(iterations) {
+filters.life=function({iterations}) {
     let s_life = this.getShader('s_life',  null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
@@ -1850,7 +1851,7 @@ filters.life=function(iterations) {
 }
 
 // draw a polygon on top of the image
-filters.polygon=function(sides,x,y,size,angle,aspect) {
+filters.polygon=function({sides,x,y,size,angle,aspect}) {
 
     aspect=aspect || 1.;
     
@@ -1893,7 +1894,7 @@ filters.polygon=function(sides,x,y,size,angle,aspect) {
 // create an adjustable delay by storing one or more past images.
 // the time offset can by animated by parameters to temporarely speed up / slow down / yerk time by some frames.
 // TODO check wether we remiplement this by compressed textures or even an encoded video stream (WebRTC APIs or WebAsm codecs)
-filters.timeshift=function(time,clear_on_switch) {
+filters.timeshift=function({time,clear_on_switch}) {
     // Store a stream of the last seconds in a ring buffer
 
     // calculate a sane frame limit by estimating it's memory needs.
@@ -1907,7 +1908,7 @@ filters.timeshift=function(time,clear_on_switch) {
     if(!this._.pastTextures) this._.pastTextures=[];
   
     if(clear_on_switch && this.switched)
-      for(key in this._.pastTextures)
+      for(let key in this._.pastTextures)
         this._.pastTextures[key].clear();
 
     // copy current frame to the start of the queue, pushing all frames back
@@ -1934,22 +1935,22 @@ filters.timeshift=function(time,clear_on_switch) {
 // get the video feed from a capture device name by source index
 // opens the capture device and starts streaming on demand
 var videos={};
-filters.capture=function(source_index) {
+filters.capture=function({device}) {
 
-    source_index=Math.floor(source_index);
+    device=Math.floor(device);
 
     // just return video, if already started
-    if(!videos[source_index]) {
+    if(!videos[device]) {
 
-      console.log("Acquire stream for device index "+source_index);
+      console.log("Acquire stream for device index "+device);
 
       // create a new <video> element for decoding the capture stream
       var video = document.createElement('video');
-      videos[source_index]=video;
+      videos[device]=video;
 
       var constraints = {
         video: { 
-          deviceId: devices.video[source_index].deviceId,
+          deviceId: devices.video[device].deviceId,
           width: this. width,
           height: this.height
         },
@@ -1966,9 +1967,9 @@ filters.capture=function(source_index) {
       });
     }
     
-    let v=videos[source_index];
+    let v=videos[device];
 
-    // make sure the video has adapted to the capture source
+    // make sure the video has adapted to the capture device
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
     
     var videoTexture=this.getSpareTexture(null,v.videoWidth, v.videoHeight);
@@ -1979,7 +1980,7 @@ filters.capture=function(source_index) {
 }
 
 // a WebRTC video stream source
-filters.webrtc=function(websocket_url) {
+filters.webrtc=function({websocket_url}) {
     if(!this.webrtc_videos) {
       this.webrtc_videos={};
       this.webrtc_peers={};
@@ -2005,7 +2006,7 @@ filters.webrtc=function(websocket_url) {
 }
 
 // change image to false colors selected from all rainbow colors depending on their brightness
-filters.rainbow=function(size, angle) {
+filters.rainbow=function({size, angle}) {
     let s_rainbow = this.getShader('s_rainbow',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -2027,8 +2028,7 @@ filters.rainbow=function(size, angle) {
 }
 
 // draw a grid on top of the image
-filters.grid=function(size, angle, x, y, width) {
-    if(!width) width=0.05;
+filters.grid=function({size, angle, x, y, linewidth=0.05}) {
     let s_grid = this.getShader('s_grid',  null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
@@ -2048,13 +2048,13 @@ filters.grid=function(size, angle, x, y, width) {
         }\
     ');
 
-    this.simpleShader( s_grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:width, offset:[x,y]
+    this.simpleShader( s_grid, {size: [size*10.,size/this.width*this.height*10.], angle:angle, width:linewidth, offset:[x,y]
     });
 
     return this;
 }
 
-filters.absolute=function(size, angle) {
+filters.absolute=function({size, angle}) {
     let s_absolute = this.getShader('s_absolute',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -2071,7 +2071,7 @@ filters.absolute=function(size, angle) {
 }
 
 // remove image noise by combining adjacent pixels
-filters.denoisefast=function(exponent) {
+filters.denoisefast=function({strength}) {
     // Do a 3x3 bilateral box filter
     let s_denoisefast = this.getShader('s_denoisefast',  null, '\
         uniform sampler2D texture;\
@@ -2099,7 +2099,7 @@ filters.denoisefast=function(exponent) {
     // Perform five iterations for stronger results
     for (var i = 0; i < 5; i++) {
         this.simpleShader( s_denoisefast, {
-            exponent: Math.max(0, exponent),
+            exponent: Math.max(0, strength),
             texSize: [this.width, this.height]
         });
     }
@@ -2122,7 +2122,7 @@ filters.spectrogram=function() {
 
 // "smooth" version of game-of-life like rules.
 // sandwich this between feedbackOut, feedbackIn to create a cellular automaton
-filters.smoothlife=function(birth_min,birth_max,death_min) {
+filters.smoothlife=function({birth_min,birth_max,death_min}) {
     let s_smoothlife = this.getShader('s_smoothlife',  null, '\
       uniform sampler2D texture;\
       uniform vec2 texSize;\
@@ -2176,7 +2176,7 @@ filters.smoothlife=function(birth_min,birth_max,death_min) {
 
 // "soft", eg. analog version of game-of-life like rules.
 // sandwich this between feedbackOut, feedbackIn to create a cellular automaton
-filters.soft_life=function(birth_min,birth_max,death_min) {
+filters.soft_life=function({birth_min,birth_max,death_min}) {
     let s_soft_life = this.getShader('s_soft_life',  null, '\
       uniform sampler2D inner_texture;\
       uniform sampler2D outer_texture;\
@@ -2196,9 +2196,9 @@ filters.soft_life=function(birth_min,birth_max,death_min) {
       }\
     ');
 
-    filters.blur.call(this,5.);
+    filters.blur.call(this,{radius:5.});
     var inner_texture=this.stack_push();
-    filters.blur.call(this,10.);
+    filters.blur.call(this,{radius:10.});
 
     this.stack_pop();
         
@@ -2215,7 +2215,7 @@ filters.soft_life=function(birth_min,birth_max,death_min) {
 
 // replace image by a cloud of particles colored by the original image
 // and moving to some physical rules
-filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displacement) {
+filters.particles=function({anglex,angley,anglez,size,strength,homing,noise,displacement}) {
     let s_particles = this.getShader('s_particles',  '\
     attribute vec2 _texCoord;\
     uniform sampler2D texture;\
@@ -2349,7 +2349,7 @@ filters.particles=function(anglex,angley,anglez,size,strength,homing,noise,displ
 }
 
 // push a copy of the current image to the "stack"
-filters.stack_push=function(from_texture) {
+filters.stack_push=function({from_texture}) {
   this.stack_push(from_texture);
 }
 
@@ -2365,7 +2365,7 @@ filters.stack_swap=function() {
 
 // slice image to a lot of small patches, displaced by their original position
 // according to the colors of another image
-filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate) {
+filters.patch_displacement=function({sx,sy,sz,anglex,angley,anglez,scale,pixelate}) {
     let s_patch_displacement = this.getShader('s_patch_displacement',  '\
     attribute vec3 vertex;\
     attribute vec2 _texCoord;\
@@ -2449,7 +2449,8 @@ filters.patch_displacement=function(sx,sy,sz,anglex,angley,anglez,scale,pixelate
 
 // warps one quadrangle to another with a perspective transform. This can be used to
 // make a 2D image look 3D or to recover a 2D image captured in a 3D environment.
-filters.perspective=function(before, after) {
+filters.perspective=function({perspective:{x1, y1, x2, y2, x3, y3, x4, y4}}) {
+
     function getSquareToQuad(x0, y0, x1, y1, x2, y2, x3, y3) {
         var dx1 = x1 - x2;
         var dy1 = y1 - y2;
@@ -2468,8 +2469,9 @@ filters.perspective=function(before, after) {
         ];
     }
 
-    var a = getSquareToQuad.apply(null, after);
-    var b = getSquareToQuad.apply(null, before);
+
+    var a = getSquareToQuad.apply(null, [x1, y1, x2, y2, x3, y3, x4, y4]);
+    var b = getSquareToQuad.apply(null, [-0.5,-0.5, -0.5,0.5, 0.5,-0.5, 0.5,0.5]);
     var c = mat4.multiply( b,mat4.inverse(a));
     var d = mat4.toMat3(c);
     return filters.matrixWarp.call(this,d,false);
@@ -2493,7 +2495,7 @@ filters.matrixWarp=function(matrix, inverse) {
 }
 
 // warps the image in a swirl-like fashion around it's center
-filters.swirl=function(centerX, centerY, radius, angle) {
+filters.swirl=function({center:{x,y}, radius, strength}) {
     let s_swirl = warpShader(this, 's_swirl', '\
         uniform float radius;\
         uniform float angle;\
@@ -2516,15 +2518,15 @@ filters.swirl=function(centerX, centerY, radius, angle) {
 
     this.simpleShader( s_swirl, {
         radius: radius,
-        center: [centerX, centerY],
-        angle: angle
+        center: [x, y],
+        angle: strength
     });
 
     return this;
 }
 
 // bulge or pinch the image around the center
-filters.bulgePinch=function(centerX, centerY, radius, strength) {
+filters.bulgePinch=function({center:{x,y}, radius, strength}) {
     let s_bulgePinch = warpShader(this, 's_bulgePinch', '\
         uniform float radius;\
         uniform float strength;\
@@ -2546,7 +2548,7 @@ filters.bulgePinch=function(centerX, centerY, radius, strength) {
     this.simpleShader( s_bulgePinch, {
         radius: radius,
         strength: clamp(-1, strength, 1),
-        center: [centerX, centerY]
+        center: [x, y]
     });
 
     return this;
@@ -2554,7 +2556,7 @@ filters.bulgePinch=function(centerX, centerY, radius, strength) {
 
 // blur the image in direction of its center, 
 // as it was exposed for some time while moving in or out.
-filters.zoomBlur=function(centerX, centerY, strength) {
+filters.zoomBlur=function({center:{x, y}, size}) {
     let s_zoomBlur = this.getShader('s_zoomBlur',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -2591,15 +2593,15 @@ filters.zoomBlur=function(centerX, centerY, strength) {
     ');
 
     this.simpleShader( s_zoomBlur, {
-        center: [centerX+0.5, centerY+0.5],
-        strength: strength
+        center: [x+0.5, y+0.5],
+        strength: size
     });
 
     return this;
 }
 
 // grow bright regions of an image
-filters.dilate=function(iterations) {
+filters.dilate=function({iterations}) {
     let s_dilate = this.getShader('s_dilate',  null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
@@ -2628,7 +2630,7 @@ filters.dilate=function(iterations) {
 // maximise contrast on local parts of the image independently.
 // this can be used to give an everywhere strong image from images
 // lacking contrast in some parts or spanning a large brightness range.
-filters.localContrast=function(radius,strength) {
+filters.localContrast=function({size,strength}) {
     let s_localContrastMin = this.getShader('s_localContrastMin',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -2676,12 +2678,12 @@ filters.localContrast=function(radius,strength) {
     // save current image to stack
     var original_image=this.stack_push();
     
-    filters.blur.call(this,radius);    
+    filters.blur.call(this,{radius:size});
     var min_image=this.stack_push();
     var max_image=this.stack_push();
 
-    var steps=radius/2;
-    var delta=Math.sqrt(radius);
+    var steps=size/2;
+    var delta=Math.sqrt(size);
 
     for(var i=0; i<steps; i++)
       this.simpleShader( s_localContrastMin, { delta: [delta/this.width, delta/this.height]}, min_image, min_image);
@@ -2694,14 +2696,14 @@ filters.localContrast=function(radius,strength) {
     this.simpleShader( s_localContrast, {strength:strength},original_image);
     
     this.stack_pop();
-    this.stack_pop();    
+    this.stack_pop();
     this.stack_pop();
   
     return this;
 }
 
 // shrink bright regions of an image
-filters.erode=function(iterations) {
+filters.erode=function({iterations}) {
     let s_erode = this.getShader('s_erode',  null, '\
         uniform sampler2D texture;\
         uniform vec2 texSize;\
@@ -2730,7 +2732,7 @@ filters.erode=function(iterations) {
 // effectively compute a blur of the image.
 // uses several stages, which may create some artifacts but allows for
 // very fast blur even with larger radius.
-filters.fastBlur=filters.blur=function(radius) {
+filters.fastBlur=filters.blur=function({radius}) {
     let s_blur = this.getShader('s_blur',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -2754,7 +2756,7 @@ filters.fastBlur=filters.blur=function(radius) {
 }
 
 // blur image alpha channel only
-filters.blur_alpha=function(radius) {
+filters.blur_alpha=function({radius}) {
     let s_blur_alpha = this.getShader('s_blur_alpha',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -2790,7 +2792,7 @@ filters.blur_alpha=function(radius) {
 
 // another blur filter, providing an adjustable exponent for
 // pixel weighting.
-filters.blur2=function(radius,exponent) {
+filters.blur2=function({radius,exponent}) {
     let s_blur2 = this.getShader('s_blur2',  null, '\
         uniform sampler2D texture;\
         uniform vec2 delta;\
@@ -2818,7 +2820,7 @@ filters.blur2=function(radius,exponent) {
 
 // the infamous "unsharp mask" image sharpening.
 // amplifies high frequency image parts.
-filters.unsharpMask=function(radius, strength) {
+filters.unsharpMask=function({size, strength}) {
     let s_unsharpMask = this.getShader('s_unsharpMask',  null, '\
         uniform sampler2D blurredTexture;\
         uniform sampler2D originalTexture;\
@@ -2836,7 +2838,7 @@ filters.unsharpMask=function(radius, strength) {
     this.texture.copyTo(this._.extraTexture);
 
     // Blur the current texture, then use the stored texture to detect edges
-    filters.blur.call(this,radius);
+    filters.blur.call(this,{radius:size});
     s_unsharpMask.textures({
         blurredTexture: this.texture,
         originalTexture: this._.extraTexture
@@ -2850,7 +2852,7 @@ filters.unsharpMask=function(radius, strength) {
 
 
 // colorize image by adding a static color to all pixel color values.
-filters.color=function(alpha,r,g,b) {
+filters.color=function({strength,rgb:{r,g,b}}) {
     let s_color = this.getShader('s_color',  null, '\
         uniform sampler2D texture;\
         uniform float r;\
@@ -2871,7 +2873,7 @@ filters.color=function(alpha,r,g,b) {
        r  : r,
        g  : g,
        b  : b,
-       a  : alpha
+       a  : strength
     });
 
     return this;
@@ -2879,7 +2881,7 @@ filters.color=function(alpha,r,g,b) {
 
 // denoise image by applying a median-like filter.
 // see denoiseFast for a preumable faster algorithm.
-filters.denoise=function(exponent) {
+filters.denoise=function({strength}) {
     // Do a 9x9 bilateral box filter
     let s_denoise = this.getShader('s_denoise',  null, '\
         uniform sampler2D texture;\
@@ -2907,7 +2909,7 @@ filters.denoise=function(exponent) {
     // Perform two iterations for stronger results
     for (var i = 0; i < 2; i++) {
         this.simpleShader( s_denoise, {
-            exponent: Math.max(0, exponent),
+            exponent: Math.max(0, strength),
             texSize: [this.width, this.height]
         });
     }
@@ -2918,7 +2920,7 @@ filters.denoise=function(exponent) {
 
 
 // amplify saturation of low-saturated pixels.
-filters.vibrance=function(amount) {
+filters.vibrance=function({strength}) {
     let s_vibrance = this.getShader('s_vibrance',  null, '\
         uniform sampler2D texture;\
         uniform float amount;\
@@ -2934,14 +2936,14 @@ filters.vibrance=function(amount) {
     ');
 
     this.simpleShader( s_vibrance, {
-        amount: clamp(-1, amount, 1)
+        amount: clamp(-1, strength, 1)
     });
 
     return this;
 }
 
 // remap colors of all pixels by mapping an input range to a given output range and gamma correction.
-filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max) {
+filters.levels=function({min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamma, r_max,g_max,b_max}) {
     let s_levels = this.getShader('s_levels',  null, '\
         varying vec2 texCoord;\
         uniform sampler2D texture;\
@@ -2969,7 +2971,7 @@ filters.levels=function(min,gamma,max, r_min,g_min,b_min, r_gamma,g_gamma,b_gamm
 }
 
 // change hue angle and saturation of the image
-filters.hueSaturation=function(hue, saturation) {
+filters.hueSaturation=function({hue, saturation}) {
     let s_hueSaturation = this.getShader('s_hueSaturation',  null, '\
         uniform sampler2D texture;\
         uniform float hue;\
@@ -3010,7 +3012,7 @@ filters.hueSaturation=function(hue, saturation) {
 }
 
 // adjust brightness and contrast of the image
-filters.brightnessContrast=function(brightness, contrast) {
+filters.brightnessContrast=function({brightness, contrast}) {
     let s_brightnessContrast = this.getShader('s_brightnessContrast',  null, '\
         uniform sampler2D texture;\
         uniform float brightness;\
@@ -3038,7 +3040,7 @@ filters.brightnessContrast=function(brightness, contrast) {
 
 // change contrast of the image by applying a s-curve to the pixels brightness
 // this gives wider range and more natural contrast changes without clipping
-filters.contrast_s=function(contrast) {
+filters.contrast_s=function({contrast}) {
     let s_contrast_s = this.getShader('s_contrast_s',  null, '\
         uniform sampler2D texture;\
         uniform float contrast;\
@@ -3062,7 +3064,7 @@ filters.contrast_s=function(contrast) {
 
 // apply a threshold to the image, changing every rgb channel to full dark or bright
 // depending on a given  threshold
-filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
+filters.threshold=function({threshold,feather,r0,g0,b0,r1,g1,b1}) {
     let s_threshold = this.getShader('s_threshold',  null, '\
         uniform sampler2D texture;\
         uniform float threshold;\
@@ -3084,7 +3086,7 @@ filters.threshold=function(threshold,feather,r0,g0,b0,r1,g1,b1) {
 
 // apply sobel edge detection to the image, highlighting the contours in it
 // or even replace the image by the contours only.
-filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
+filters.sobel=function({secondary, coeff, alpha, areas, edges}) {
     let s_sobel = this.getShader('s_sobel',  null, '\
         uniform sampler2D texture;\
         uniform float alpha;\
@@ -3134,16 +3136,16 @@ filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 
     this.simpleShader( s_sobel, {
         secondary : secondary,
-        coef : coef,
+        coef : coeff,
         alpha : alpha,
-        r : r,
-        g : g,
-        b : b,
-        a : a,
-        r2 : r2,
-        g2 : g2,
-        b2 : b2,
-        a2: a2
+        r : areas.r,
+        g : areas.g,
+        b : areas.b,
+        a : areas.a,
+        r2 : edges.r,
+        g2 : edges.g,
+        b2 : edges.b,
+        a2: edges.a
     });
 
     return this;
@@ -3152,7 +3154,7 @@ filters.sobel=function(secondary, coef, alpha, r,g,b,a, r2,g2,b2, a2) {
 // apply sobel edge detection to the image, highlighting the contours in it
 // or even replace the image by the contours only.
 // handle all rgb channels seperately.
-filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) {
+filters.sobel_rgb=function({secondary, coeff, smoothness, alpha, areas, edges}) {
     let s_sobel_rgb = this.getShader('s_sobel_rgb',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -3176,7 +3178,7 @@ filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) 
             vec3 v = -secondary * bottomLeftIntensity - coef * leftIntensity - secondary * topLeftIntensity + secondary * bottomRightIntensity + coef * rightIntensity + secondary * topRightIntensity;\
 \
             vec3 mag = vec3( length(vec2(h.r, v.r)) , length(vec2(h.g, v.g)) , length(vec2(h.b, v.b)) );\
-            vec3 c = mix(c_edge,c_area,smoothstep(.5-smoothness*.5,.5+smoothness*.5,mag));\
+            vec3 c = mix(c_area,c_edge,smoothstep(.5-smoothness*.5,.5+smoothness*.5,mag));\
             color.rgb = mix(color.rgb,c,alpha);\
             gl_FragColor = color;\
         }\
@@ -3184,18 +3186,18 @@ filters.sobel_rgb=function(secondary, coef, smoothness, alpha, r,g,b, r2,g2,b2) 
 
     this.simpleShader( s_sobel_rgb, {
         secondary : secondary,
-        coef : coef,
+        coef : coeff,
         smoothness : smoothness,
         alpha : alpha,
-        c_edge : [r,g,b],
-        c_area : [r2,g2,b2]
+        c_edge : [edges.r,edges.g,edges.b],
+        c_area : [areas.r,areas.g,areas.b]
     });
 
     return this;
 }
 
 // "posterize" image by replace each pixel with a color from a smaller palette.
-filters.posterize=function(steps) {
+filters.posterize=function({steps}) {
     let s_posterize = this.getShader('s_posterize',  null, '\
         uniform sampler2D texture;\
         uniform float steps;\
@@ -3212,7 +3214,7 @@ filters.posterize=function(steps) {
 }
 
 // "posterize" image by replace each pixel with a color from a smaller palette, selected by hue distance.
-filters.posterize_hue=function(hue,brightness) {
+filters.posterize_hue=function({hue,brightness}) {
     let s_posterize_hue = this.getShader('s_posterize_hue',  null, '\
         uniform sampler2D texture;\
         uniform float hue;\
@@ -3235,7 +3237,7 @@ filters.posterize_hue=function(hue,brightness) {
 
 
 // renders the image using a pattern of hexagonal tiles
-filters.hexagonalPixelate=function(centerX, centerY, scale) {
+filters.hexagonalPixelate=function({center:{x,y}, size}) {
     let s_hexagonalPixelate = this.getShader('s_hexagonalPixelate',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -3278,15 +3280,15 @@ filters.hexagonalPixelate=function(centerX, centerY, scale) {
     ');
 
     this.simpleShader( s_hexagonalPixelate, {
-        center: [centerX+0.5, centerY+0.5],
-        scale: scale
+        center: [x+0.5, y+0.5],
+        scale: size
     });
 
     return this;
 }
 
 // render the image using larger rectangular tiles (large "pixels")
-filters.pixelate=function(sx,sy,coverage,lens) {
+filters.pixelate=function({sx,sy,coverage,lens}) {
     let s_pixelate = this.getShader('s_pixelate',  null, '\
         uniform sampler2D texture;\
         uniform vec2 size;\
@@ -3313,7 +3315,7 @@ filters.pixelate=function(sx,sy,coverage,lens) {
 
 
 // simulate color dithering used in CMYK printing.
-filters.colorHalftone=function(centerX, centerY, angle, size) {
+filters.colorHalftone=function({center:{x,y}, angle, size}) {
     let s_colorHalftone = this.getShader('s_colorHalftone',  null, '\
         uniform sampler2D texture;\
         uniform vec2 center;\
@@ -3344,7 +3346,7 @@ filters.colorHalftone=function(centerX, centerY, angle, size) {
     ');
 
     this.simpleShader( s_colorHalftone, {
-        center: [centerX, centerY],
+        center: [x,y],
         angle: angle,
         scale: Math.PI / size,
         texSize: [this.width, this.height]
@@ -3370,7 +3372,7 @@ filters.invertColor=filters.invert=function() {
 
 // simulate glitches well known from faults in JPEG image compression
 // eg. block-wise displacement of image parts or strong colorful DCT-patterns
-filters.glitch=function(scale,detail,strength,speed) {
+filters.glitch=function({scale,detail,strength,speed}) {
     this._.glitch_time=(this._.glitch_time || 0.0)+0.0001*speed;
     let s_glitch = this.getShader('s_glitch',  null, '\
         uniform sampler2D texture;\
@@ -3432,7 +3434,7 @@ filters.mirror_y = function() {
 }
 
 // mirror the image horizontally (replace top and bottom)
-filters.mirror_x = function(target) {
+filters.mirror_x = function({target}) {
     let s_mirror_x = this.getShader('s_mirror_x',  null, '\
         uniform sampler2D texture;\
         varying vec2 texCoord;\
@@ -3449,11 +3451,11 @@ filters.mirror_x = function(target) {
 //canvas._.midi_init=false;
 // MIDI note input source
 // render a rows by cols grid showing the state of each MIDI note (eg. keyboard keys)
-filters.midi=function(device, rows, cols, toggles) {
+filters.midi=function({device, rows, cols, echo}) {
   device=Math.floor(device);
   rows=Math.floor(rows);
   cols=Math.floor(cols);
-  midi.echo_toggles=!!toggles;
+  midi.echo_toggles=!!echo;
 
   if(!this._.midiState)
   {

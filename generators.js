@@ -59,15 +59,5 @@ export let generators={
   midi:function(t,args){return clamp( (args.infinite?window.midi.controllers_infinite:window.midi.controllers)[args.channel|0]*args.a+args.o, args.min, args.max)},
   // provide MIDI Note input parameters
   midi_note:function(t,args){return (window.midi.notes[args.channel+" "+args.note]|0)*args.a+args.o},
-
-  // compound data types (mainly for UI purposes)
-  // a perspective adjustment (four corners) data type 
-  perspective:function(t,args){return [[-0.5,-0.5, -0.5,0.5, 0.5,-0.5, 0.5,0.5],flatten(t,args)]},
-  // provide some vector-like value types for parameters:
-  pos:flatten,
-  size:flatten,
-  rgb:flatten,
-  rgba:flatten,
-  rgb_range:flatten
 };
 

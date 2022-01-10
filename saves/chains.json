@@ -10,21 +10,60 @@
    "fps_limit": 10
   },
   {
-   "effect": "capture",
-   "device": 0,
-   "name": "Integrated Camera (5986:2113)"
-  },
-  {
    "effect": "select_audio",
    "device": 1,
    "name": "Eingebautes Tongerät Analog Stereo"
+  },
+  {
+   "effect": "capture",
+   "device": 0,
+   "name": "Integrated Camera (5986:2113)"
   }
  ],
  [
   "POST"
  ],
  [
-  ""
+  "",
+  "",
+  "",
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 0.775,
+    "g": 0.581,
+    "b": 0.726,
+    "a": 0.135
+   }
+  }
+ ],
+ [
+  "",
+  "",
+  "",
+  "",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "webrtc",
+   "websocket_url": ""
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 1,
+   "offset": 0
+  },
+  {
+   "effect": "capture",
+   "device": 0,
+   "name": "Integrated Camera (5986:2113)"
+  },
+  {
+   "effect": "invert"
+  }
  ],
  [
   "rainbow run mul",
@@ -47,30 +86,6 @@
   },
   {
    "effect": "multiply"
-  }
- ],
- [
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "webrtc",
-   "websocket_url": ""
-  },
-  {
-   "effect": "blend",
-   "alpha": 0.5,
-   "factor": 1,
-   "offset": 0
   }
  ],
  [
@@ -129,7 +144,7 @@
    "strength": 1,
    "rgb": {
     "type": "rgb",
-    " r": 0.343,
+    "r": 0.343,
     "g": 0,
     "b": 0.283
    }
@@ -267,7 +282,7 @@
    "angle": 0,
    "x": 0,
    "y": 0,
-   "linewidth": 0
+   "linewidth": 0.09
   }
  ],
  [
@@ -286,7 +301,7 @@
    "effect": "matte",
    "rgb": {
     "type": "rgba",
-    " r": 1.041,
+    "r": 1.041,
     "g": 1,
     "b": 11,
     "a": 1
@@ -298,7 +313,7 @@
    "angle": 0,
    "x": 0,
    "y": 0,
-   "linewidth": 0
+   "linewidth": 0.105
   }
  ],
  [
@@ -395,8 +410,8 @@
   {
    "effect": "vectorscope",
    "size": 3,
-   " intensity": 1,
-   " linewidth": 3
+   "intensity": 1,
+   "linewidth": 3
   },
   {
    "effect": "luma_key",
@@ -519,7 +534,7 @@
    "anglex": 0.221,
    "angley": 0,
    "anglez": 0,
-   "size": 10.466,
+   "size": 1.477,
    "strength": 0.466,
    "homing": 0.086,
    "noise": {
@@ -541,7 +556,7 @@
     "x": 0.5,
     "y": 0.5
    },
-   "size": 3,
+   "size": 0.3,
    "angle": 0,
    "iterations": {
     "type": "beat",
@@ -692,13 +707,13 @@
    "min": 0,
    "gamma": 1,
    "max": 1,
-   " r_min": 0,
+   "r_min": 0,
    "g_min": 0,
    "b_min": 0,
-   " r_gamma": 1,
+   "r_gamma": 1,
    "g_gamma": 1,
    "b_gamma": 1,
-   " r_max": 1,
+   "r_max": 1,
    "g_max": 1,
    "b_max": 1
   },
@@ -710,6 +725,9 @@
    "glow_radius": 50
   },
   {
+   "effect": "preview"
+  },
+  {
    "effect": "posterize",
    "steps": 5
   },
@@ -718,7 +736,7 @@
    "secondary": 1.998,
    "coeff": 1.964,
    "smoothness": 0.3,
-   " alpha": 1,
+   "alpha": 1,
    "areas": {
     "type": "rgb",
     "r": 0,
@@ -824,13 +842,13 @@
    "min": 0,
    "gamma": 1,
    "max": 1,
-   " r_min": 0,
+   "r_min": 0,
    "g_min": 1,
    "b_min": 1,
-   " r_gamma": 1,
+   "r_gamma": 1,
    "g_gamma": 1,
    "b_gamma": 1,
-   " r_max": 1,
+   "r_max": 1,
    "g_max": 1,
    "b_max": 1
   },
@@ -855,7 +873,7 @@
    "effect": "matte",
    "rgb": {
     "type": "rgba",
-    " r": 0,
+    "r": 0,
     "g": 0,
     "b": 0,
     "a": 1
@@ -907,7 +925,7 @@
    "effect": "polygon_matte",
    "color": {
     "type": "rgba",
-    " r": 0,
+    "r": 0,
     "g": 0,
     "b": 0,
     "a": 1
@@ -966,7 +984,7 @@
    "effect": "polygon_matte",
    "color": {
     "type": "rgba",
-    " r": 1,
+    "r": 1,
     "g": 0,
     "b": 0,
     "a": 1
@@ -1028,7 +1046,7 @@
    "effect": "polygon_matte",
    "color": {
     "type": "rgba",
-    " r": 1,
+    "r": 1,
     "g": 0,
     "b": 0,
     "a": 1
@@ -1123,7 +1141,7 @@
    "effect": "matte",
    "rgb": {
     "type": "rgba",
-    " r": 0,
+    "r": 0,
     "g": 0,
     "b": 1,
     "a": 1
@@ -1238,7 +1256,7 @@
     "x": 0,
     "y": 0
    },
-   "radius": 1000,
+   "radius": 0.826,
    "strength": {
     "type": "osc",
     "f": 1.059,
@@ -1332,7 +1350,7 @@
    "effect": "rectangle",
    "color": {
     "type": "rgba",
-    " r": 1,
+    "r": 1,
     "g": 1,
     "b": 1,
     "a": 1
@@ -1358,7 +1376,7 @@
    "effect": "rectangle",
    "color": {
     "type": "rgba",
-    " r": 1,
+    "r": 1,
     "g": 1,
     "b": 1,
     "a": 1
@@ -1419,8 +1437,8 @@
   {
    "effect": "vectorscope",
    "size": 2,
-   " intensity": 1,
-   " linewidth": 4
+   "intensity": 1,
+   "linewidth": 4
   },
   {
    "effect": "luma_key",
@@ -1509,7 +1527,7 @@
     "o": 0.3
    },
    "angle": 0,
-   "strength": 2
+   "strength": 0.007
   },
   {
    "effect": "hexagonalPixelate",
@@ -1684,6 +1702,9 @@
  [
   "shimmering",
   {
+   "effect": "stack_push"
+  },
+  {
    "effect": "displacement",
    "strength": {
     "type": "osc",
@@ -1793,6 +1814,9 @@
    "gamma": 1.5,
    "glow": 1.379,
    "glow_radius": 195.073
+  },
+  {
+   "effect": "preview"
   }
  ],
  [
@@ -1823,8 +1847,8 @@
    "effect": "hueSaturation",
    "hue": {
     "type": "osc",
-    "f": 9.963,
-    "a": -0.768,
+    "f": 3.834,
+    "a": -0.255,
     "p": 0,
     "o": 0
    },
@@ -2215,13 +2239,13 @@
    "min": 0,
    "gamma": 1,
    "max": 1,
-   " r_min": 0,
+   "r_min": 0,
    "g_min": 1,
    "b_min": 1,
-   " r_gamma": 1,
+   "r_gamma": 1,
    "g_gamma": 1,
    "b_gamma": 1,
-   " r_max": 1,
+   "r_max": 1,
    "g_max": 1,
    "b_max": 1
   },
@@ -2246,7 +2270,7 @@
    "effect": "matte",
    "rgb": {
     "type": "rgba",
-    " r": 0,
+    "r": 0,
     "g": 0,
     "b": 0,
     "a": 1
@@ -2423,13 +2447,13 @@
    "min": 0,
    "gamma": 1,
    "max": 1,
-   " r_min": 0,
+   "r_min": 0,
    "g_min": 1,
    "b_min": 1,
-   " r_gamma": 1,
+   "r_gamma": 1,
    "g_gamma": 1,
    "b_gamma": 1,
-   " r_max": 1,
+   "r_max": 1,
    "g_max": 1,
    "b_max": 1
   },
@@ -2454,7 +2478,7 @@
    "effect": "matte",
    "rgb": {
     "type": "rgba",
-    " r": 0,
+    "r": 0,
     "g": 0,
     "b": 0,
     "a": 1
@@ -2492,7 +2516,7 @@
    "effect": "matte",
    "rgb": {
     "type": "rgba",
-    " r": 0,
+    "r": 0,
     "g": 0,
     "b": 0,
     "a": 1
@@ -2607,7 +2631,7 @@
    "effect": "polygon_matte",
    "color": {
     "type": "rgba",
-    " r": 0,
+    "r": 0,
     "g": 0,
     "b": 0,
     "a": 1
@@ -2666,7 +2690,7 @@
    "effect": "polygon_matte",
    "color": {
     "type": "rgba",
-    " r": 1,
+    "r": 1,
     "g": 0,
     "b": 0,
     "a": 1
@@ -2728,7 +2752,7 @@
    "effect": "polygon_matte",
    "color": {
     "type": "rgba",
-    " r": 1,
+    "r": 1,
     "g": 0,
     "b": 0,
     "a": 1
@@ -2935,13 +2959,13 @@
    "min": 0,
    "gamma": 1,
    "max": 1,
-   " r_min": 0,
+   "r_min": 0,
    "g_min": 0,
    "b_min": 0,
-   " r_gamma": 1,
+   "r_gamma": 1,
    "g_gamma": 1,
    "b_gamma": 1,
-   " r_max": 4.124,
+   "r_max": 4.124,
    "g_max": 1.788,
    "b_max": 1
   },
@@ -4264,13 +4288,13 @@
    "min": 0,
    "gamma": 1,
    "max": 1,
-   " r_min": 0,
+   "r_min": 0,
    "g_min": 0,
    "b_min": 0,
-   " r_gamma": 0.851,
+   "r_gamma": 0.851,
    "g_gamma": 1.059,
    "b_gamma": 1.168,
-   " r_max": 1,
+   "r_max": 1,
    "g_max": 1,
    "b_max": 1
   },
@@ -4428,13 +4452,13 @@
    "min": 0,
    "gamma": 1,
    "max": 1,
-   " r_min": 0,
+   "r_min": 0,
    "g_min": 0,
    "b_min": 0.089,
-   " r_gamma": 0.179,
+   "r_gamma": 0.179,
    "g_gamma": 1,
    "b_gamma": 1,
-   " r_max": 1,
+   "r_max": 1,
    "g_max": 1,
    "b_max": 1
   },
@@ -5906,12 +5930,12 @@
    "saturation": 0.83
   },
   {
+   "effect": "preview"
+  },
+  {
    "effect": "ripple",
-   "sizes": {
-    "type": "pos",
-    "x": 0.37,
-    "y": 0.37
-   },
+   "width": 0.37,
+   "length": 0.37,
    "angle": 1.62,
    "strength": 2
   },
@@ -5964,11 +5988,8 @@
   },
   {
    "effect": "ripple",
-   "sizes": {
-    "type": "pos",
-    "x": 0.37,
-    "y": 0.37
-   },
+   "width": 0.37,
+   "length": 0.37,
    "angle": 1.62,
    "strength": 2
   },
