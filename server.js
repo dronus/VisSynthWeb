@@ -12,10 +12,6 @@
  -REST-like value store
   PUT requests to any location below the saves/ path store the data given as the request body to disk
   
- -Recorder tool
-  the pathes recorder/start and recorder/stop allow to run and stop a hardwired avconv tool process to record the current
-  screen content.
- 
 */
 
 var http = require('http');
@@ -43,16 +39,6 @@ var mime_types={
 };
 var data={};
 var pending={};
-
-//var recorder_cmd="avconv -f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov";
-//var recorder_cmd="avconv";
-//var recorder_args="-f x11grab -r 25 -s 1600x900 -i :0.0+0,0 -vcodec libx264 -pre lossless_ultrafast -threads 4 -y video.mov".split(" ");
-var recorder_cmd="gst-launch-1.0";
-//var recorder_args="-e ximagesrc use-damage=0 ! ffmpegcolorspace ! nv_omx_h264enc bitrate=16000000 ! qtmux ! filesink location={FILENAME}";
-var recorder_args="-e ximagesrc use-damage=0 ! nvvidconv ! omxh264enc bitrate=16000000 ! video/x-h264,framerate=6/1 ! qtmux ! filesink location={FILENAME}";
-
-
-var recorder=false;
 
 // HTTP server for delivering the client and handle server-side commands
 var server=http.createServer(function (req, res) {
@@ -93,7 +79,7 @@ var server=http.createServer(function (req, res) {
 			{
 				console.log("parse:" +err);
 				res.write("upload failed: "+err);
-      				res.end();				
+				res.end();
 			}
 			console.log('parse: '+util.inspect({fields: fields, files: files}));
     });
@@ -127,9 +113,6 @@ var server=http.createServer(function (req, res) {
 // WebSocket server to forward command requests between the clients
 var wss=new ws.Server({server:server});
 wss.on('connection', function connection(ws) {
-  // var location = url.parse(ws.upgradeReq.url, true);
-  // you might use location.query.access_token to authenticate or share sessions
-  // or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
   ws.on('message', function incoming(message) {
     var packet=JSON.parse(message);
     var method=packet.method, path=packet.path, data=packet.data;
@@ -150,27 +133,12 @@ wss.on('connection', function connection(ws) {
       fs.writeFileSync(key,data);
       console.log(key+' stored.');
     }
-    else if(key.match(/recorder\/.*/))
-    {
-      if(!recorder && key.match(/recorder\/start/)){
-        var args=recorder_args.replace('{FILENAME}',"recorded/"+Math.random()+".mov").split(' ');
-        recorder=child_process.spawn(recorder_cmd,args, {stdio:'inherit'});
-      }
-      if(recorder && key.match(/recorder\/stop/)) {
-        recorder.kill('SIGINT');
-        recorder=false;
-      }
-    }
     else if(key.match(/screens\/.*/))
     {      
       var mode=key.split('/')[1];
       console.log('/screens: try to set mode '+mode);
       child_process.spawn('sh',['set_mode.sh',mode], {stdio:'inherit'});
     }
-    else if(key.match(/shutdown/))
-      child_process.spawn('sh',['shutdown.sh'], {stdio:'inherit'});
-    else if(key.match(/restart/))
-      child_process.spawn('sh',['run_chrome.sh'], {stdio:'inherit'});
     else if(method=='put')
     {
       // if it denotes a feed in feeds/ answer pending requests for this key
@@ -188,7 +156,7 @@ wss.on('connection', function connection(ws) {
       }
     }
     else
-      console.log('Invalid Websocket path:'+path);      
+      console.log('Invalid Websocket path:'+path);
   });
   ws.on('close',function(){
     // remove all opts for this socket
