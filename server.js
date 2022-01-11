@@ -18,7 +18,6 @@ var http = require('http');
 var ws = require('ws');
 var fs=require('fs');
 var path=require('path');
-var child_process = require('child_process');
 var multiparty = require('multiparty');
 
 //debug:
@@ -91,21 +90,6 @@ var server=http.createServer(function (req, res) {
       res.end();
     })
   }
-  else if(key=='screens')
-  {
-    child_process.exec('DISPLAY=:0 xrandr |grep -E -o  "[0-9]+x[0-9]+ "',function(err,stdout,stderr){
-      var modes_text=stdout.split('\n');
-      var modes=[];
-      for(var key in modes_text)
-      {
-        var mode_text=modes_text[key];
-        if(!mode_text) continue;
-        modes.push(mode_text.trim());
-      }
-      res.write(JSON.stringify(modes));
-      res.end();
-    });
-  }
   else
     res.end();
 });
@@ -132,12 +116,6 @@ wss.on('connection', function connection(ws) {
       // if it denotes a file in saves/, store it to disk
       fs.writeFileSync(key,data);
       console.log(key+' stored.');
-    }
-    else if(key.match(/screens\/.*/))
-    {      
-      var mode=key.split('/')[1];
-      console.log('/screens: try to set mode '+mode);
-      child_process.spawn('sh',['set_mode.sh',mode], {stdio:'inherit'});
     }
     else if(method=='put')
     {

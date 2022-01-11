@@ -15,10 +15,9 @@
     <h1>VIS SYNTH MCP</h1>
     <button id=restart onclick="restart()">RESTART</button>
     <button id=screenshot onclick="screenshot()">SCREENSHOT</button>
-    <button id=undo onclick="undo()">UNDO</button>
     <button id=recorder_button onclick="toggle_recorder()">START RECORDING</button>
     <button id=stream_button onclick="toggle_stream()">START STREAM</button>
-    <button id=screens_button onclick="show_screens()">SCREEN</button>
+    <button id=undo onclick="undo()">UNDO</button>
     <span id=stats>offline</span>
   </div>
 
@@ -672,36 +671,6 @@
       $('.effects>h2').html(panel);
     };
     show_panel('effects');
-
-    // create list of possible screen modes
-    get('/screens',function(data){
-      var modes=JSON.parse(data);
-      var screens_popup;
-
-      window.show_screens=function()
-      {
-        var screens_container=$('<div id=screens class="screens container">');
-
-        for(let key in modes)
-        {
-          var mode=modes[key];
-          var button=$('<button>'+mode+'</button>');
-          button.on('click',function(){
-            screens_popup.remove();
-            set_mode($(this).html());
-          });
-          screens_container.append(button);        
-        }
-
-        screens_popup=create_popup('screens',$('#screens_button'),screens_container);
-      }
-    });
-    
-    window.set_mode=function(mode)
-    {
-      console.log("set_mode: "+mode);
-      put('/screens/'+mode,'');
-    }
 
     // the effects in the current chain may be clicked to display adjust UI
     $('#chain,#pre_chain,#post_chain').on('click','.effect',function(){
