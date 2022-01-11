@@ -71,7 +71,9 @@ Canvas.prototype.update=function() {
     // enqueue next update
     var update_handler=this.update.bind(this);
     if(this.proposed_fps)
-      setTimeout(update_handler,1000/this.proposed_fps);
+      setTimeout(function(){
+        requestAnimationFrame(update_handler);
+      },1000/this.proposed_fps);
     else
       requestAnimationFrame(update_handler);
 
