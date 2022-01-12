@@ -7,12 +7,12 @@
    "y": 1080,
    "filtering": "linear",
    "precision": "byte",
-   "fps_limit": 10
+   "fps_limit": 35
   },
   {
    "effect": "select_audio",
-   "device": 1,
-   "name": "Eingebautes Tongerät Analog Stereo"
+   "device": 0,
+   "name": ""
   },
   {
    "effect": "capture",
@@ -24,49 +24,11 @@
   "POST"
  ],
  [
-  "",
-  "",
-  "",
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgba",
-    "r": 0.775,
-    "g": 0.581,
-    "b": 0.726,
-    "a": 0.135
-   }
-  }
- ],
- [
-  "",
-  "",
-  "",
-  "",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "webrtc",
-   "websocket_url": ""
-  },
-  {
-   "effect": "blend",
-   "alpha": 0.5,
-   "factor": 1,
-   "offset": 0
-  },
-  {
-   "effect": "capture",
-   "device": 0,
-   "name": "Integrated Camera (5986:2113)"
-  },
-  {
-   "effect": "invert"
-  }
- ],
- [
   "rainbow run mul",
+  {
+   "effect": "none",
+   "comment": "just walk around the color circle..."
+  },
   {
    "effect": "stack_push"
   },
@@ -89,104 +51,28 @@
   }
  ],
  [
-  "midi pad test"
- ],
- [
-  "nogame of life",
+  "rainbow run",
   {
-   "effect": "feedbackOut",
-   "blend": 1,
-   "clear_on_switch": 0
+   "effect": "rainbow"
   },
   {
-   "effect": "threshold",
-   "threshold": 1.399,
-   "feather": 0,
-   "r0": 0,
-   "g0": 0,
-   "b0": 0,
-   "r1": 1,
-   "g1": 1,
-   "b1": 1
-  },
-  {
-   "effect": "life"
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "midi",
-   "device": 0,
-   "rows": 16,
-   "cols": 16,
-   "echo": 1
-  },
-  {
-   "effect": "brightnessContrast",
-   "brightness": {
-    "type": "midi_note",
-    "channel": 2,
-    "note": 119,
-    "a": 0.01,
-    "o": -1
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "osc",
+    "f": 0.402,
+    "a": -0.768,
+    "p": 0,
+    "o": 0
    },
-   "contrast": 0
-  },
-  {
-   "effect": "motion",
-   "threshold": 0.3,
-   "interval": 1,
-   "damper": 0
-  },
-  {
-   "effect": "color",
-   "strength": 1,
-   "rgb": {
-    "type": "rgb",
-    "r": 0.343,
-    "g": 0,
-    "b": 0.283
-   }
-  },
-  {
-   "effect": "transform",
-   "x": {
-    "type": "midi",
-    "channel": 0,
-    "a": 0.000976562,
-    "o": 0,
-    "infinite": 1,
-    "min": 0,
-    "max": 1920
-   },
-   "y": {
-    "type": "midi",
-    "channel": 1,
-    "a": 0.001666667,
-    "o": 0,
-    "infinite": 1,
-    "min": 0,
-    "max": 1080
-   },
-   "scale": 1,
-   "angle": 0,
-   "sx": 0.015625,
-   "sy": 0.026666667,
-   "wrap": 0
-  },
-  {
-   "effect": "blend",
-   "alpha": 0.5,
-   "factor": 2,
-   "offset": 0
-  },
-  {
-   "effect": "feedbackIn"
+   "saturation": 0
   }
  ],
  [
   "grid fever",
+  {
+   "effect": "none",
+   "comment": "a tumbling grid"
+  },
   {
    "effect": "matte",
    "rgb": {
@@ -203,7 +89,7 @@
     "f": 1.696,
     "a": 0,
     "p": 0,
-    "o": 5.1,
+    "o": 2.139,
     "waveform": "random",
     "duty": 0.5
    },
@@ -234,55 +120,10 @@
     "waveform": "random",
     "duty": 0.5
    },
-   "linewidth": 0.01
+   "linewidth": 0.054
   },
   {
    "effect": "invert"
-  }
- ],
- [
-  "midi pad test",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "midi",
-   "device": 0,
-   "rows": 16,
-   "cols": 16,
-   "echo": 1
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 0.283,
-   "angle": 0,
-   "sx": 0.919,
-   "sy": 1.205
-  },
-  {
-   "effect": "blend_alpha",
-   "alpha": 1
-  }
- ],
- [
-  "matte grid 2",
-  {
-   "effect": "grid",
-   "size": {
-    "type": "osc",
-    "f": 5,
-    "a": 0.25,
-    "p": 0,
-    "o": 0.5,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "angle": 0,
-   "x": 0,
-   "y": 0,
-   "linewidth": 0.09
   }
  ],
  [
@@ -296,28 +137,200 @@
   }
  ],
  [
-  "matte grid 2",
+  "waveblast",
   {
-   "effect": "matte",
-   "rgb": {
+   "effect": "none",
+   "comment": "pushed by the beats"
+  },
+  {
+   "effect": "rectangle",
+   "color": {
     "type": "rgba",
-    "r": 1.041,
+    "r": 1.061,
     "g": 1,
-    "b": 11,
-    "a": 1
+    "b": 1.048,
+    "a": 0.954
+   },
+   "x": 0,
+   "y": 0,
+   "width": 1,
+   "height": 0.059,
+   "angle": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "waveform"
+  },
+  {
+   "effect": "mesh_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": 3.139,
+   "anglex": 1,
+   "angley": 0.5,
+   "anglez": 0
+  },
+  {
+   "effect": "kaleidoscope",
+   "sides": 7.166,
+   "angle": {
+    "type": "osc",
+    "f": 0.045,
+    "a": 1,
+    "p": 0,
+    "o": 0
+   },
+   "angle2": {
+    "type": "osc",
+    "f": 0.817,
+    "a": 1,
+    "p": 0,
+    "o": 0
    }
   },
   {
-   "effect": "grid",
-   "size": 0.5,
-   "angle": 0,
+   "effect": "transform",
    "x": 0,
    "y": 0,
-   "linewidth": 0.105
+   "scale": 1,
+   "angle": 0,
+   "sx": 1,
+   "sy": 1
+  }
+ ],
+ [
+  "staffblast",
+  {
+   "effect": "none",
+   "comment": "a more drawn one pushed by the beats"
+  },
+  {
+   "effect": "osciloscope",
+   "amplitude": 0.424
+  },
+  {
+   "effect": "absolute"
+  },
+  {
+   "effect": "kaleidoscope",
+   "sides": {
+    "type": "osc",
+    "f": 0.2,
+    "a": 15,
+    "p": 0,
+    "o": 16,
+    "waveform": "sine",
+    "duty": 0.5
+   },
+   "angle": {
+    "type": "osc",
+    "f": 1.523,
+    "a": 3.14159,
+    "p": 0,
+    "o": 0,
+    "waveform": "saw",
+    "duty": 0.5
+   },
+   "angle2": {
+    "type": "osc",
+    "f": 0.91,
+    "a": -3.14159,
+    "p": 0,
+    "o": 0,
+    "waveform": "saw",
+    "duty": 0.5
+   }
+  },
+  {
+   "effect": "swirl",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "radius": 360,
+   "strength": {
+    "type": "osc",
+    "f": 1.565,
+    "a": 0.703,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "threshold",
+   "threshold": 1.5,
+   "feather": 0,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 0.764
+  },
+  {
+   "effect": "levels",
+   "min": 0,
+   "gamma": 1,
+   "max": 1,
+   "r_min": 0,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1,
+   "g_max": 1,
+   "b_max": 1
+  },
+  {
+   "effect": "analogize",
+   "exposure": 4.743,
+   "gamma": 2.007,
+   "glow": 1.262,
+   "glow_radius": 50
+  },
+  {
+   "effect": "posterize",
+   "steps": 5
+  },
+  {
+   "effect": "sobel_rgb",
+   "secondary": 1.998,
+   "coeff": 1.964,
+   "smoothness": 0.3,
+   "alpha": 1,
+   "areas": {
+    "type": "rgb",
+    "r": 0,
+    "g": 0,
+    "b": 0
+   },
+   "edges": {
+    "type": "rgb",
+    "r": 1,
+    "g": 1,
+    "b": 1
+   }
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": 0,
+   "sx": 1,
+   "sy": 1
   }
  ],
  [
   "spot fever",
+  {
+   "effect": "none",
+   "comment": "just a spotlight without control..."
+  },
   {
    "effect": "matte",
    "rgb": {
@@ -422,6 +435,10 @@
  [
   "dotjulia hard",
   {
+   "effect": "none",
+   "comment": "hard dots dancing to the julia set"
+  },
+  {
    "effect": "vibrance",
    "strength": 1
   },
@@ -502,6 +519,10 @@
  [
   "dotjulia",
   {
+   "effect": "none",
+   "comment": "dots dancing to the julia set resembling the image"
+  },
+  {
    "effect": "vibrance",
    "strength": 1
   },
@@ -577,187 +598,217 @@
   }
  ],
  [
-  "waveblast",
+  "dotjulia soft",
   {
-   "effect": "rectangle",
-   "color": {
-    "type": "rgba",
-    "r": 1.061,
-    "g": 1,
-    "b": 1.048,
-    "a": 0.954
-   },
-   "x": 0,
-   "y": 0,
-   "width": 1,
-   "height": 0.059,
-   "angle": 0
+   "effect": "none",
+   "comment": "dots dancing to the julia set resembling the image"
+  },
+  {
+   "effect": "brightnessContrast",
+   "brightness": 0,
+   "contrast": 0
   },
   {
    "effect": "stack_push"
   },
   {
-   "effect": "waveform"
-  },
-  {
-   "effect": "mesh_displacement",
-   "sx": 0,
-   "sy": 0,
-   "sz": 3.139,
-   "anglex": 1,
-   "angley": 0.5,
-   "anglez": 0
-  },
-  {
-   "effect": "kaleidoscope",
-   "sides": 7.166,
-   "angle": {
-    "type": "osc",
-    "f": 0.045,
-    "a": 1,
-    "p": 0,
-    "o": 0
-   },
-   "angle2": {
-    "type": "osc",
-    "f": 0.817,
-    "a": 1,
-    "p": 0,
-    "o": 0
-   }
+   "effect": "spectrogram"
   },
   {
    "effect": "transform",
-   "x": 0,
+   "x": -0.602,
    "y": 0,
-   "scale": 1,
+   "scale": 2.03,
+   "angle": 0
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": -0.217,
+   "saturation": 0
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "particles",
+   "anglex": 0.221,
+   "angley": 0,
+   "anglez": 0,
+   "size": 10.466,
+   "strength": 0.466,
+   "homing": 0.086,
+   "noise": {
+    "type": "beat",
+    "pulse": -0.934,
+    "f": 0,
+    "a": 0,
+    "p": 0,
+    "o": 0
+   },
+   "displacement": 0.101
+  },
+  {
+   "effect": "julia",
+   "cx": -0.8,
+   "cy": 0.2,
+   "center": {
+    "type": "pos",
+    "x": 0.5,
+    "y": 0.5
+   },
+   "size": 3,
    "angle": 0,
-   "sx": 1,
-   "sy": 1
+   "iterations": {
+    "type": "beat",
+    "pulse": 302.027,
+    "f": 0,
+    "a": 0,
+    "p": 0,
+    "o": 0.193
+   }
   }
  ],
  [
-  "staffblast",
+  "midi nogame of life",
   {
-   "effect": "osciloscope",
-   "amplitude": 0.424
+   "effect": "none",
+   "comment": "MIDI-fed game of ife grid"
   },
   {
-   "effect": "absolute"
-  },
-  {
-   "effect": "kaleidoscope",
-   "sides": {
-    "type": "osc",
-    "f": 0.2,
-    "a": 15,
-    "p": 0,
-    "o": 16,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "angle": {
-    "type": "osc",
-    "f": 1.523,
-    "a": 3.14159,
-    "p": 0,
-    "o": 0,
-    "waveform": "saw",
-    "duty": 0.5
-   },
-   "angle2": {
-    "type": "osc",
-    "f": 0.91,
-    "a": -3.14159,
-    "p": 0,
-    "o": 0,
-    "waveform": "saw",
-    "duty": 0.5
-   }
-  },
-  {
-   "effect": "swirl",
-   "center": {
-    "type": "pos",
-    "x": 0,
-    "y": 0
-   },
-   "radius": 360,
-   "strength": {
-    "type": "osc",
-    "f": 1.565,
-    "a": 0.703,
-    "p": 0,
-    "o": 0
-   }
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
   },
   {
    "effect": "threshold",
-   "threshold": 1.5,
+   "threshold": 1.399,
    "feather": 0,
    "r0": 0,
    "g0": 0,
    "b0": 0,
    "r1": 1,
    "g1": 1,
-   "b1": 0.764
+   "b1": 1
   },
   {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 1,
-   "max": 1,
-   "r_min": 0,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1,
-   "g_max": 1,
-   "b_max": 1
+   "effect": "life"
   },
   {
-   "effect": "analogize",
-   "exposure": 4.743,
-   "gamma": 2.007,
-   "glow": 1.262,
-   "glow_radius": 50
+   "effect": "stack_push"
   },
   {
-   "effect": "preview"
+   "effect": "midi",
+   "device": 0,
+   "rows": 16,
+   "cols": 16,
+   "echo": 1
   },
   {
-   "effect": "posterize",
-   "steps": 5
-  },
-  {
-   "effect": "sobel_rgb",
-   "secondary": 1.998,
-   "coeff": 1.964,
-   "smoothness": 0.3,
-   "alpha": 1,
-   "areas": {
-    "type": "rgb",
-    "r": 0,
-    "g": 0,
-    "b": 0
+   "effect": "brightnessContrast",
+   "brightness": {
+    "type": "midi_note",
+    "channel": 2,
+    "note": 119,
+    "a": 0.01,
+    "o": -1
    },
-   "edges": {
+   "contrast": 0
+  },
+  {
+   "effect": "motion",
+   "threshold": 0.3,
+   "interval": 1,
+   "damper": 0
+  },
+  {
+   "effect": "color",
+   "strength": 1,
+   "rgb": {
     "type": "rgb",
-    "r": 1,
-    "g": 1,
-    "b": 1
+    "r": 0.343,
+    "g": 0,
+    "b": 0.283
    }
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "midi",
+    "channel": 0,
+    "a": 0.000976562,
+    "o": 0,
+    "infinite": 1,
+    "min": 0,
+    "max": 1920
+   },
+   "y": {
+    "type": "midi",
+    "channel": 1,
+    "a": 0.001666667,
+    "o": 0,
+    "infinite": 1,
+    "min": 0,
+    "max": 1080
+   },
+   "scale": 1,
+   "angle": 0,
+   "sx": 0.015625,
+   "sy": 0.026666667,
+   "wrap": 0
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 2,
+   "offset": 0
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "midi pad test"
+ ],
+ [
+  "midi pad test",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "midi",
+   "device": 0,
+   "rows": 16,
+   "cols": 16,
+   "echo": 1
   },
   {
    "effect": "transform",
    "x": 0,
    "y": 0,
-   "scale": 1,
+   "scale": 0.283,
    "angle": 0,
-   "sx": 1,
-   "sy": 1
+   "sx": 0.919,
+   "sy": 1.205
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
+  }
+ ],
+ [
+  "webrtc test",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "webrtc",
+   "websocket_url": ""
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 1,
+   "offset": 0
   }
  ],
  [
@@ -817,102 +868,11 @@
   }
  ],
  [
-  "color zone beat",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "vibrance",
-   "strength": 1
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": {
-    "type": "beat",
-    "pulse": 27.7,
-    "f": 0,
-    "a": 0,
-    "p": 0,
-    "o": 0
-   },
-   "saturation": 0.5
-  },
-  {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 1,
-   "max": 1,
-   "r_min": 0,
-   "g_min": 1,
-   "b_min": 1,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1,
-   "g_max": 1,
-   "b_max": 1
-  },
-  {
-   "effect": "threshold",
-   "threshold": 0.801,
-   "feather": 0.2,
-   "r0": 0,
-   "g0": 0,
-   "b0": 0,
-   "r1": 1,
-   "g1": 1,
-   "b1": 1
-  },
-  {
-   "effect": "multiply"
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   }
-  },
-  {
-   "effect": "stack_swap"
-  },
-  {
-   "effect": "chroma_key",
-   "color": {
-    "type": "rgb",
-    "r": 1,
-    "g": 1,
-    "b": 1
-   },
-   "threshold": 0.044,
-   "feather": 0
-  }
- ],
- [
-  "rainbow run",
-  {
-   "effect": "rainbow"
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": {
-    "type": "osc",
-    "f": 0.402,
-    "a": -0.768,
-    "p": 0,
-    "o": 0
-   },
-   "saturation": 0
-  }
- ],
- [
   "draw zoom",
+  {
+   "effect": "none",
+   "comment": "80s-90s screensaver fantasies"
+  },
   {
    "effect": "feedbackOut",
    "blend": 1,
@@ -1136,7 +1096,36 @@
   }
  ],
  [
+  "plazm crash",
+  {
+   "effect": "feedbackOut",
+   "blend": 0.178
+  },
+  {
+   "effect": "smoothlife",
+   "birth_min": 0.104,
+   "birth_max": 0.359,
+   "death_min": 0.735
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 1,
+   "saturation": 0.784
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.768
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
   "color strobe",
+  {
+   "effect": "none",
+   "comment": "aggressive colored strobe"
+  },
   {
    "effect": "matte",
    "rgb": {
@@ -1175,7 +1164,83 @@
   }
  ],
  [
+  "fungusmirror",
+  {
+   "effect": "none",
+   "comment": "fungus infests the image slowly on a mirror..."
+  },
+  {
+   "effect": "sobel",
+   "secondary": 5.861,
+   "coeff": 5.678,
+   "alpha": 1,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.988
+  },
+  {
+   "effect": "mirror_y"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.3,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "reaction2",
+   "F": 0.0545,
+   "K": 0.062,
+   "D_a": 0.2,
+   "D_b": 0.1,
+   "speed": 19.87
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "levels",
+   "min": 0.268,
+   "gamma": 1,
+   "max": 0.223,
+   "r_min": 0.059,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1.059,
+   "g_max": 1.205,
+   "b_max": 3.101
+  },
+  {
+   "effect": "analogize",
+   "exposure": 2,
+   "gamma": 1.5,
+   "glow": 1.379,
+   "glow_radius": 195.073
+  }
+ ],
+ [
   "recursion",
+  {
+   "effect": "none",
+   "comment": "a tribute to hokusai"
+  },
   {
    "effect": "chroma_key",
    "color": {
@@ -1260,29 +1325,18 @@
    "strength": {
     "type": "osc",
     "f": 1.059,
-    "a": 4.482,
+    "a": 0.628,
     "p": 0,
     "o": 0
    }
-  },
-  {
-   "effect": "ripple",
-   "width": 0.01,
-   "length": 0.01,
-   "angle": {
-    "type": "osc",
-    "f": 0.283,
-    "a": 3.758,
-    "p": 0,
-    "o": -0.253,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "strength": 10
   }
  ],
  [
   "space warp",
+  {
+   "effect": "none",
+   "comment": "move image fragments depending on their color"
+  },
   {
    "effect": "stack_push"
   },
@@ -1295,7 +1349,7 @@
    "strength": {
     "type": "osc",
     "f": 1.859,
-    "a": 0.119,
+    "a": 0.06,
     "p": 0,
     "o": 0,
     "waveform": "sine",
@@ -1304,7 +1358,11 @@
   }
  ],
  [
-  "bloody",
+  "bloody beat",
+  {
+   "effect": "none",
+   "comment": "let the amplitude pump the blood"
+  },
   {
    "effect": "levels",
    "min": 0,
@@ -1345,7 +1403,11 @@
   }
  ],
  [
-  "beam blast",
+  "bar blast",
+  {
+   "effect": "none",
+   "comment": "just white bars blasting around.."
+  },
   {
    "effect": "rectangle",
    "color": {
@@ -1412,6 +1474,10 @@
  ],
  [
   "grid fever scope",
+  {
+   "effect": "none",
+   "comment": "a grid tumbling with vectorscope inside"
+  },
   {
    "effect": "matte",
    "rgb": {
@@ -1488,6 +1554,10 @@
  ],
  [
   "glitter",
+  {
+   "effect": "none",
+   "comment": "add some glitz to contours"
+  },
   {
    "effect": "stack_push"
   },
@@ -1585,7 +1655,68 @@
   }
  ],
  [
+  "fungus",
+  {
+   "effect": "none",
+   "comment": "a slow fungus feeds on bright pixels..."
+  },
+  {
+   "effect": "sobel",
+   "secondary": 5.861,
+   "coeff": 5.678,
+   "alpha": 1,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.988
+  },
+  {
+   "effect": "reaction2",
+   "F": 0.0545,
+   "K": 0.062,
+   "D_a": 0.2,
+   "D_b": 0.1,
+   "speed": 19.87
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "levels",
+   "min": 0.298,
+   "gamma": 1,
+   "max": 0.223,
+   "r_min": 0.059,
+   "g_min": 0,
+   "b_min": 0,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1.059,
+   "g_max": 1.205,
+   "b_max": 3.101
+  }
+ ],
+ [
   "mandeltrip",
+  {
+   "effect": "none",
+   "comment": "trip through mandelbrot iterations"
+  },
   {
    "effect": "vibrance",
    "strength": 1
@@ -1600,14 +1731,14 @@
    "size": 10.202,
    "angle": {
     "type": "osc",
-    "f": 1.399,
-    "a": 0.82,
+    "f": 0.597,
+    "a": 0.999,
     "p": 0,
     "o": 0
    },
    "iterations": {
     "type": "osc",
-    "f": 1.112,
+    "f": 0.71,
     "a": 3.06,
     "p": 0,
     "o": 3.06
@@ -1616,6 +1747,10 @@
  ],
  [
   "wormreactor",
+  {
+   "effect": "none",
+   "comment": "let the worm walk the chemical reaction dish..."
+  },
   {
    "effect": "polygon",
    "sides": 37.59,
@@ -1702,6 +1837,10 @@
  [
   "shimmering",
   {
+   "effect": "none",
+   "comment": "slightly drunk, contours shimmering"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -1729,8 +1868,8 @@
   },
   {
    "effect": "sobel",
-   "secondary": 0.5,
-   "coeff": 0.5,
+   "secondary": 0.71,
+   "coeff": 1.436,
    "alpha": 0.223,
    "areas": {
     "type": "rgba",
@@ -1749,117 +1888,14 @@
   }
  ],
  [
-  "fungusmirror",
-  {
-   "effect": "sobel",
-   "secondary": 5.861,
-   "coeff": 5.678,
-   "alpha": 1,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.988
-  },
-  {
-   "effect": "mirror_y"
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.3,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "reaction2",
-   "F": 0.0545,
-   "K": 0.062,
-   "D_a": 0.2,
-   "D_b": 0.1,
-   "speed": 19.87
-  },
-  {
-   "effect": "feedbackIn"
-  },
-  {
-   "effect": "levels",
-   "min": 0.268,
-   "gamma": 1,
-   "max": 0.223,
-   "r_min": 0.059,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1.059,
-   "g_max": 1.205,
-   "b_max": 3.101
-  },
-  {
-   "effect": "analogize",
-   "exposure": 2,
-   "gamma": 1.5,
-   "glow": 1.379,
-   "glow_radius": 195.073
-  },
-  {
-   "effect": "preview"
-  }
- ],
- [
-  "rupture blue",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "fastBlur",
-   "size": 2.948
-  },
-  {
-   "effect": "mesh_displacement",
-   "sx": 0,
-   "sy": 0,
-   "sz": 0.253,
-   "anglex": 0,
-   "angley": 0,
-   "anglez": 0
-  }
- ],
- [
-  "rainbow run",
-  {
-   "effect": "rainbow"
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": {
-    "type": "osc",
-    "f": 3.834,
-    "a": -0.255,
-    "p": 0,
-    "o": 0
-   },
-   "saturation": 0
-  }
- ],
- [
   "passthru"
  ],
  [
   "rainbowblast",
+  {
+   "effect": "none",
+   "comment": "imprint waveform on kaleidoscopic rainbows"
+  },
   {
    "effect": "osciloscope",
    "amplitude": 0.393
@@ -1893,7 +1929,7 @@
     "x": 0,
     "y": 0
    },
-   "radius": 360,
+   "radius": 0.86,
    "strength": {
     "type": "osc",
     "f": 1.565,
@@ -1935,94 +1971,11 @@
   }
  ],
  [
-  "double fever",
-  {
-   "effect": "image",
-   "url": "files/smiley.png"
-  },
-  {
-   "effect": "transform",
-   "x": {
-    "type": "osc",
-    "f": 2.164,
-    "a": 0.719,
-    "p": 2.986,
-    "o": -0.575,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 1.883,
-    "a": 0.223,
-    "p": 0.497,
-    "o": -0.148,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "scale": 0.21,
-   "angle": {
-    "type": "osc",
-    "f": 5,
-    "a": 0.735,
-    "p": 0,
-    "o": -0.074,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "sx": 0.559,
-   "sy": 1
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgb",
-    "r": 1,
-    "g": 1,
-    "b": 1
-   }
-  },
-  {
-   "effect": "polygon",
-   "sides": 1998.999,
-   "x": 0,
-   "y": 0,
-   "size": 0.5,
-   "angle": 0
-  },
-  {
-   "effect": "transform",
-   "x": {
-    "type": "osc",
-    "f": 2.058,
-    "a": 0.719,
-    "p": 0,
-    "o": -0.3,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 1.565,
-    "a": 0.148,
-    "p": 0,
-    "o": -0.238,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "scale": 0.223,
-   "angle": 0
-  },
-  {
-   "effect": "blend_alpha",
-   "alpha": 1
-  }
- ],
- [
   "hard glitched vectorscope",
+  {
+   "effect": "none",
+   "comment": "strong b/w address-glitched vectorscope"
+  },
   {
    "effect": "vectorscope",
    "size": 5,
@@ -2133,37 +2086,11 @@
   }
  ],
  [
-  "mandeltrip",
+  "zebra beat",
   {
-   "effect": "vibrance",
-   "strength": 1
+   "effect": "none",
+   "comment": "pattern the zebra - clear by the beat"
   },
-  {
-   "effect": "mandelbrot",
-   "center": {
-    "type": "pos",
-    "x": 0.884,
-    "y": 0.374
-   },
-   "size": 10.202,
-   "angle": {
-    "type": "osc",
-    "f": 1.399,
-    "a": 0.82,
-    "p": 0,
-    "o": 0
-   },
-   "iterations": {
-    "type": "osc",
-    "f": 1.112,
-    "a": 3.06,
-    "p": 0,
-    "o": 3.06
-   }
-  }
- ],
- [
-  "zebra bea",
   {
    "effect": "invert"
   },
@@ -2210,6 +2137,84 @@
   },
   {
    "effect": "feedbackIn"
+  }
+ ],
+ [
+  "color zone beat",
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "vibrance",
+   "strength": 1
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": {
+    "type": "beat",
+    "pulse": 27.7,
+    "f": 0,
+    "a": 0,
+    "p": 0,
+    "o": 0
+   },
+   "saturation": 0.5
+  },
+  {
+   "effect": "levels",
+   "min": 0,
+   "gamma": 1,
+   "max": 1,
+   "r_min": 0,
+   "g_min": 1,
+   "b_min": 1,
+   "r_gamma": 1,
+   "g_gamma": 1,
+   "b_gamma": 1,
+   "r_max": 1,
+   "g_max": 1,
+   "b_max": 1
+  },
+  {
+   "effect": "threshold",
+   "threshold": 0.801,
+   "feather": 0.2,
+   "r0": 0,
+   "g0": 0,
+   "b0": 0,
+   "r1": 1,
+   "g1": 1,
+   "b1": 1
+  },
+  {
+   "effect": "multiply"
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   }
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "chroma_key",
+   "color": {
+    "type": "rgb",
+    "r": 1,
+    "g": 1,
+    "b": 1
+   },
+   "threshold": 0.044,
+   "feather": 0
   }
  ],
  [
@@ -2355,6 +2360,10 @@
  [
   "spot fever strobe",
   {
+   "effect": "none",
+   "comment": "fevering follow-spot with erratic blanking"
+  },
+  {
    "effect": "matte",
    "rgb": {
     "type": "rgb",
@@ -2421,7 +2430,98 @@
   }
  ],
  [
+  "double fever",
+  {
+   "effect": "image",
+   "url": "files/smiley.png"
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "osc",
+    "f": 2.164,
+    "a": 0.719,
+    "p": 2.986,
+    "o": -0.575,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1.883,
+    "a": 0.223,
+    "p": 0.497,
+    "o": -0.148,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "scale": 0.21,
+   "angle": {
+    "type": "osc",
+    "f": 5,
+    "a": 0.735,
+    "p": 0,
+    "o": -0.074,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "sx": 0.559,
+   "sy": 1
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgb",
+    "r": 1,
+    "g": 1,
+    "b": 1
+   }
+  },
+  {
+   "effect": "polygon",
+   "sides": 1998.999,
+   "x": 0,
+   "y": 0,
+   "size": 0.5,
+   "angle": 0
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "osc",
+    "f": 2.058,
+    "a": 0.719,
+    "p": 0,
+    "o": -0.3,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "y": {
+    "type": "osc",
+    "f": 1.565,
+    "a": 0.148,
+    "p": 0,
+    "o": -0.238,
+    "waveform": "random",
+    "duty": 0.5
+   },
+   "scale": 0.223,
+   "angle": 0
+  },
+  {
+   "effect": "blend_alpha",
+   "alpha": 1
+  }
+ ],
+ [
   "color zone runner bw",
+  {
+   "effect": "none",
+   "comment": "walk highlighting different zones by color keying, bright withe output - use for projection mapping with original picture"
+  },
   {
    "effect": "stack_push"
   },
@@ -2512,6 +2612,10 @@
  ],
  [
   "smiley fever",
+  {
+   "effect": "none",
+   "comment": "fevering follow-spot  with smiley gobo"
+  },
   {
    "effect": "matte",
    "rgb": {
@@ -2618,274 +2722,80 @@
   }
  ],
  [
-  "draw",
+  "colorclash",
+  {
+   "effect": "none",
+   "comment": "bash the colors out of patterns by using a smooth variant of conways game of life"
+  },
   {
    "effect": "feedbackOut",
-   "blend": 1,
-   "clear_on_switch": 0
+   "blend": 0.178
   },
   {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "polygon_matte",
-   "color": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "sides": {
-    "type": "osc",
-    "f": 141.85,
-    "a": 3,
-    "p": 0,
-    "o": 5,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "x": {
-    "type": "osc",
-    "f": 195.073,
-    "a": 0.5,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 1998.999,
-    "a": 0.5,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "size": {
-    "type": "osc",
-    "f": 48.98,
-    "a": 0.2,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "angle": {
-    "type": "osc",
-    "f": 1998.999,
-    "a": 3.1415,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "aspect": 1
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "polygon_matte",
-   "color": {
-    "type": "rgba",
-    "r": 1,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "sides": {
-    "type": "osc",
-    "f": 141.85,
-    "a": 3,
-    "p": 0,
-    "o": 5,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "x": {
-    "type": "osc",
-    "f": 195.073,
-    "a": 0.5,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 1998.999,
-    "a": 0.5,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "size": {
-    "type": "osc",
-    "f": 48.98,
-    "a": 0.05,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "angle": {
-    "type": "osc",
-    "f": 1998.999,
-    "a": 3.1415,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "aspect": 1
-  },
-  {
-   "effect": "blend_alpha"
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "polygon_matte",
-   "color": {
-    "type": "rgba",
-    "r": 1,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "sides": {
-    "type": "osc",
-    "f": 3.962,
-    "a": 3,
-    "p": 0,
-    "o": 5,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "x": {
-    "type": "osc",
-    "f": 3.565,
-    "a": 0.5,
-    "p": 0,
-    "o": 0,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 2.542,
-    "a": 0.5,
-    "p": 0,
-    "o": 0,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "size": {
-    "type": "osc",
-    "f": 4.124,
-    "a": 0.05,
-    "p": 0,
-    "o": 0,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "angle": {
-    "type": "osc",
-    "f": 2.331,
-    "a": 3.1415,
-    "p": 0,
-    "o": 0,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "aspect": 1
-  },
-  {
-   "effect": "blend_alpha"
+   "effect": "smoothlife",
+   "birth_min": 0.163,
+   "birth_max": 0.236,
+   "death_min": 0.671
   },
   {
    "effect": "hueSaturation",
-   "hue": {
-    "type": "osc",
-    "f": 1998.999,
-    "a": 1,
-    "p": 0,
-    "o": 0,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "saturation": 0
+   "hue": 0.389,
+   "saturation": 0.768
   },
   {
-   "effect": "blend_alpha",
-   "alpha": 1
+   "effect": "feedbackOut",
+   "blend": 0.884
   },
   {
    "effect": "feedbackIn"
   }
  ],
  [
-  "grid fever fast",
+  "rupture blue",
   {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgb",
-    "r": 1,
-    "g": 1,
-    "b": 1
-   }
+   "effect": "none",
+   "comment": "shift time, space and colors. great on TV news footage..."
   },
   {
-   "effect": "grid",
-   "size": 2.48,
-   "angle": 0
-  },
-  {
-   "effect": "invert"
-  },
-  {
-   "effect": "transform",
-   "x": {
+   "effect": "timeshift",
+   "time": {
     "type": "osc",
-    "f": 7.065,
-    "a": 0.5,
-    "p": 0,
-    "o": -0.3,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "y": {
-    "type": "osc",
-    "f": 8.061,
-    "a": 0.1115,
+    "f": 6.818,
+    "a": 60.333,
     "p": 0,
     "o": 0,
-    "waveform": "random",
+    "waveform": "sine",
     "duty": 0.5
    },
-   "scale": {
-    "type": "osc",
-    "f": 6.257,
-    "a": 0,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "fastBlur",
+   "size": 2.948
+  },
+  {
+   "effect": "mesh_displacement",
+   "sx": 0,
+   "sy": 0,
+   "sz": {
+    "type": "beat",
+    "pulse": 0.954,
+    "f": 0,
+    "a": 0.073,
     "p": 0,
-    "o": 2.083,
-    "waveform": "random",
-    "duty": 0.5
+    "o": 0.148
    },
-   "angle": {
-    "type": "osc",
-    "f": 11.524,
-    "a": 1.243,
-    "p": 0,
-    "o": 0.71,
-    "waveform": "random",
-    "duty": 0.5
-   },
-   "sx": 0.6
+   "anglex": 0,
+   "angley": 0,
+   "anglez": 0
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": -0.952,
+   "saturation": 0
   }
  ],
  [
@@ -3039,6 +2949,10 @@
  [
   "rainbowblast",
   {
+   "effect": "none",
+   "comment": "show the waveforms, kaleidoscopy and colorful!"
+  },
+  {
    "effect": "osciloscope",
    "amplitude": 1
   },
@@ -3071,7 +2985,7 @@
     "x": 0,
     "y": 0
    },
-   "radius": 360,
+   "radius": 1.034,
    "strength": {
     "type": "osc",
     "f": 1.565,
@@ -3165,6 +3079,10 @@
  ],
  [
   "bioreactor",
+  {
+   "effect": "none",
+   "comment": "run the bio reactor plate with colorful flourescents and some image pixels..."
+  },
   {
    "effect": "invertColor"
   },
@@ -3286,32 +3204,11 @@
   }
  ],
  [
-  "colorclash",
-  {
-   "effect": "feedbackOut",
-   "blend": 0.178
-  },
-  {
-   "effect": "smoothlife",
-   "birth_min": 0.163,
-   "birth_max": 0.236,
-   "death_min": 0.671
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": 0.389,
-   "saturation": 0.768
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.884
-  },
-  {
-   "effect": "feedbackIn"
-  }
- ],
- [
   "the glitch",
+  {
+   "effect": "none",
+   "comment": "bad bits in your video stream..."
+  },
   {
    "effect": "glitch",
    "scale": 16,
@@ -3335,6 +3232,10 @@
  ],
  [
   "matrixglitch",
+  {
+   "effect": "none",
+   "comment": "slowly phasing pixel address glitch on a green CRT.. sometimes, we still see through the matrix!"
+  },
   {
    "effect": "address_glitch",
    "mask_x": {
@@ -3514,6 +3415,10 @@
  [
   "looper2",
   {
+   "effect": "none",
+   "comment": "colorful looper with periodly varying motion threshold"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -3530,7 +3435,7 @@
     "f": 0.2,
     "a": 0.1,
     "p": 0,
-    "o": 0.1,
+    "o": 0.12,
     "waveform": "sine",
     "duty": 0.5
    },
@@ -3590,143 +3495,11 @@
   }
  ],
  [
-  "dotjulia",
-  {
-   "effect": "brightnessContrast",
-   "brightness": 0,
-   "contrast": 0
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "spectrogram"
-  },
-  {
-   "effect": "transform",
-   "x": -0.602,
-   "y": 0,
-   "scale": 2.03,
-   "angle": 0
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": -0.217,
-   "saturation": 0
-  },
-  {
-   "effect": "stack_swap"
-  },
-  {
-   "effect": "particles",
-   "anglex": 0.221,
-   "angley": 0,
-   "anglez": 0,
-   "size": 10.466,
-   "strength": 0.466,
-   "homing": 0.086,
-   "noise": {
-    "type": "beat",
-    "pulse": -0.934,
-    "f": 0,
-    "a": 0,
-    "p": 0,
-    "o": 0
-   },
-   "displacement": 0.101
-  },
-  {
-   "effect": "julia",
-   "cx": -0.8,
-   "cy": 0.2,
-   "center": {
-    "type": "pos",
-    "x": 0.5,
-    "y": 0.5
-   },
-   "size": 3,
-   "angle": 0,
-   "iterations": {
-    "type": "beat",
-    "pulse": 302.027,
-    "f": 0,
-    "a": 0,
-    "p": 0,
-    "o": 0.193
-   }
-  }
- ],
- [
-  "slipstream2",
-  {
-   "effect": "spherical",
-   "radius": 0.329,
-   "scale": 8
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "vectorscope",
-   "size": 2,
-   "intensity": 1,
-   "linewidth": 2
-  },
-  {
-   "effect": "blend",
-   "alpha": 0.282,
-   "factor": 1
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": {
-    "type": "beat",
-    "pulse": 5.41,
-    "f": 2,
-    "a": 0.01,
-    "p": 0,
-    "o": 0.45
-   }
-  },
-  {
-   "effect": "colorHalftone",
-   "center": {
-    "type": "pos",
-    "x": 0,
-    "y": 0
-   },
-   "angle": -58.3,
-   "size": {
-    "type": "beat",
-    "pulse": 10,
-    "f": 2,
-    "a": 7.326,
-    "p": 0,
-    "o": 1.907
-   }
-  },
-  {
-   "effect": "zoomBlur",
-   "center": {
-    "type": "pos",
-    "x": 0,
-    "y": 0
-   },
-   "size": {
-    "type": "beat",
-    "pulse": 36.424,
-    "f": 0,
-    "a": 0,
-    "p": 0,
-    "o": -0.468
-   }
-  },
-  {
-   "effect": "feedbackIn"
-  }
- ],
- [
   "gigerspeaker",
+  {
+   "effect": "none",
+   "comment": "dark speaker cone looming out of the feedback - needs some partially bright input image"
+  },
   {
    "effect": "feedbackOut",
    "blend": 0.95,
@@ -3931,6 +3704,79 @@
     "a": 6.243,
     "p": 0,
     "o": 1.325
+   }
+  },
+  {
+   "effect": "zoomBlur",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "size": {
+    "type": "beat",
+    "pulse": 36.424,
+    "f": 0,
+    "a": 0,
+    "p": 0,
+    "o": -0.468
+   }
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "slipstream2",
+  {
+   "effect": "none",
+   "comment": "lasers flash the image out of the center - if the beat wants it"
+  },
+  {
+   "effect": "spherical",
+   "radius": 0.329,
+   "scale": 8
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "vectorscope",
+   "size": 2,
+   "intensity": 1,
+   "linewidth": 2
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.282,
+   "factor": 1
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": {
+    "type": "beat",
+    "pulse": 5.41,
+    "f": 2,
+    "a": 0.01,
+    "p": 0,
+    "o": 0.45
+   }
+  },
+  {
+   "effect": "colorHalftone",
+   "center": {
+    "type": "pos",
+    "x": 0,
+    "y": 0
+   },
+   "angle": -58.3,
+   "size": {
+    "type": "beat",
+    "pulse": 10,
+    "f": 2,
+    "a": 7.326,
+    "p": 0,
+    "o": 1.907
    }
   },
   {
@@ -4191,6 +4037,10 @@
  [
   "toon",
   {
+   "effect": "none",
+   "comment": "simple posterizing toon effect"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -4241,6 +4091,10 @@
  ],
  [
   "giger eyes 2",
+  {
+   "effect": "none",
+   "comment": "dark eyes loom out of the images feedback sump"
+  },
   {
    "effect": "feedbackOut",
    "blend": 0.95,
@@ -4329,6 +4183,10 @@
  [
   "giger eyes",
   {
+   "effect": "none",
+   "comment": "neon eyes loom out of the images feedback sump"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 0.95,
    "clear_on_switch": 0
@@ -4380,6 +4238,10 @@
  ],
  [
   "giger owl",
+  {
+   "effect": "none",
+   "comment": "sometimes the face of an owl seems to emerge from the images feedback sump"
+  },
   {
    "effect": "feedbackOut",
    "blend": 0.95,
@@ -4436,6 +4298,10 @@
  ],
  [
   "giger 1",
+  {
+   "effect": "none",
+   "comment": "something dark but symmetrical seems to emerge from the images feedback sump"
+  },
   {
    "effect": "feedbackOut",
    "blend": 0.95,
@@ -4524,6 +4390,10 @@
  [
   "trifungus",
   {
+   "effect": "none",
+   "comment": "a fungus growing on pixels - using mirror prisms to coordinate itself into a symmetry of three"
+  },
+  {
    "effect": "sobel",
    "secondary": 5.861,
    "coeff": 5.678,
@@ -4596,6 +4466,10 @@
  [
   "trireact",
   {
+   "effect": "none",
+   "comment": "chemical reaction plate tied to symmetry of three"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 0.98
   },
@@ -4630,7 +4504,201 @@
   }
  ],
  [
+  "feedcam",
+  {
+   "effect": "none",
+   "comment": "simulate video camera feedback"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.98,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.343,
+   "coeff": 0.404,
+   "alpha": 0.298,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "feedcam2",
+  {
+   "effect": "none",
+   "comment": "simulate camera feedback with slight rotation"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 1,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": 2.09
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.2,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.528,
+   "coeff": 0.559,
+   "alpha": 0.104,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "feedcam3",
+  {
+   "effect": "none",
+   "comment": "simulate camera feedback with slight rotation"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.99,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": 2.09
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.2,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.528,
+   "coeff": 0.559,
+   "alpha": 0.104,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "analogize",
+   "exposure": 2.11,
+   "gamma": 1.5,
+   "glow": 0.01,
+   "glow_radius": 31.122
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
+  "feedcam4",
+  {
+   "effect": "none",
+   "comment": "simulate camera feedback with slight rotation"
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.99,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": 1.765
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.2,
+   "clear_on_switch": 0
+  },
+  {
+   "effect": "sobel",
+   "secondary": 0.528,
+   "coeff": 0.559,
+   "alpha": 0.104,
+   "areas": {
+    "type": "rgba",
+    "r": 0,
+    "g": 0,
+    "b": 0,
+    "a": 1
+   },
+   "edges": {
+    "type": "rgba",
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+   }
+  },
+  {
+   "effect": "analogize",
+   "exposure": 2.11,
+   "gamma": 1.5,
+   "glow": 0.01,
+   "glow_radius": 31.122
+  },
+  {
+   "effect": "feedbackIn"
+  }
+ ],
+ [
   "feedcam6",
+  {
+   "effect": "none",
+   "comment": "simulate camera feedback with slight rotation"
+  },
   {
    "effect": "noise",
    "seed": {
@@ -4697,180 +4765,6 @@
    "angle": 0,
    "sx": 1,
    "sy": 1
-  }
- ],
- [
-  "feedcam",
-  {
-   "effect": "feedbackOut",
-   "blend": 0.99,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 1,
-   "angle": 1.765
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.2,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "sobel",
-   "secondary": 0.528,
-   "coeff": 0.559,
-   "alpha": 0.104,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "analogize",
-   "exposure": 2.11,
-   "gamma": 1.5,
-   "glow": 0.01,
-   "glow_radius": 31.122
-  },
-  {
-   "effect": "feedbackIn"
-  }
- ],
- [
-  "feedcam3",
-  {
-   "effect": "feedbackOut",
-   "blend": 0.99,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 1,
-   "angle": 2.09
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.2,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "sobel",
-   "secondary": 0.528,
-   "coeff": 0.559,
-   "alpha": 0.104,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "analogize",
-   "exposure": 2.11,
-   "gamma": 1.5,
-   "glow": 0.01,
-   "glow_radius": 31.122
-  },
-  {
-   "effect": "feedbackIn"
-  }
- ],
- [
-  "feedcam2",
-  {
-   "effect": "feedbackOut",
-   "blend": 1,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 1,
-   "angle": 2.09
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.2,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "sobel",
-   "secondary": 0.528,
-   "coeff": 0.559,
-   "alpha": 0.104,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "feedbackIn"
-  }
- ],
- [
-  "feedcam",
-  {
-   "effect": "feedbackOut",
-   "blend": 0.98,
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "sobel",
-   "secondary": 0.343,
-   "coeff": 0.404,
-   "alpha": 0.298,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "feedbackIn"
   }
  ],
  [
@@ -4998,98 +4892,6 @@
   }
  ],
  [
-  "rupture blue",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "fastBlur",
-   "size": 2.948
-  },
-  {
-   "effect": "mesh_displacement",
-   "sx": 0,
-   "sy": 0,
-   "sz": 0.313,
-   "anglex": 0,
-   "angley": 0,
-   "anglez": 0
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": -0.952,
-   "saturation": 0
-  }
- ],
- [
-  "localthresh",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "blur",
-   "radius": 10.202
-  },
-  {
-   "effect": "invert"
-  },
-  {
-   "effect": "blend",
-   "alpha": 0.5,
-   "factor": 1
-  },
-  {
-   "effect": "threshold",
-   "threshold": 0.85,
-   "feather": 0.05,
-   "r0": 0,
-   "g0": 0,
-   "b0": 0,
-   "r1": 1,
-   "g1": 1,
-   "b1": 1
-  }
- ],
- [
-  "localcontrast",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "invert"
-  },
-  {
-   "effect": "blur2",
-   "radius": 713.284,
-   "exponent": 4.014
-  },
-  {
-   "effect": "blend",
-   "alpha": 0.5,
-   "factor": 1,
-   "offset": -0.238
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "blur2",
-   "radius": 713.284,
-   "exponent": 7.326
-  },
-  {
-   "effect": "invert"
-  },
-  {
-   "effect": "multiply"
-  },
-  {
-   "effect": "brightnessContrast",
-   "brightness": 0.253,
-   "contrast": 0.622
-  }
- ],
- [
   "falsecolors",
   {
    "effect": "rainbow"
@@ -5102,6 +4904,10 @@
  ],
  [
   "feed black",
+  {
+   "effect": "none",
+   "comment": "this chain can be used temporary to clear the feedback buffer"
+  },
   {
    "effect": "matte",
    "rgb": {
@@ -5118,6 +4924,10 @@
  ],
  [
   "spectrotun",
+  {
+   "effect": "none",
+   "comment": "push moving images and a spectrogram voiceprint down the tunnel"
+  },
   {
    "effect": "stack_push"
   },
@@ -5203,6 +5013,10 @@
  ],
  [
   "chromatun",
+  {
+   "effect": "none",
+   "comment": "push colorful image movements down the tunnel"
+  },
   {
    "effect": "stack_push"
   },
@@ -5300,6 +5114,10 @@
  [
   "spectrowave",
   {
+   "effect": "none",
+   "comment": "displace picture fragments by  spectrogram"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -5348,51 +5166,11 @@
   }
  ],
  [
-  "rupture blue",
-  {
-   "effect": "timeshift",
-   "time": {
-    "type": "osc",
-    "f": 6.818,
-    "a": 60.333,
-    "p": 0,
-    "o": 0,
-    "waveform": "sine",
-    "duty": 0.5
-   },
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "fastBlur",
-   "size": 2.948
-  },
-  {
-   "effect": "mesh_displacement",
-   "sx": 0,
-   "sy": 0,
-   "sz": {
-    "type": "beat",
-    "pulse": 0.954,
-    "f": 0,
-    "a": 0.073,
-    "p": 0,
-    "o": 0.148
-   },
-   "anglex": 0,
-   "angley": 0,
-   "anglez": 0
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": -0.952,
-   "saturation": 0
-  }
- ],
- [
   "recursion",
+  {
+   "effect": "none",
+   "comment": "recursive feedback with some keying"
+  },
   {
    "effect": "motion",
    "threshold": 0.3,
@@ -5460,75 +5238,11 @@
   }
  ],
  [
-  "plazm crash",
-  {
-   "effect": "feedbackOut",
-   "blend": 0.178
-  },
-  {
-   "effect": "smoothlife",
-   "birth_min": 0.104,
-   "birth_max": 0.359,
-   "death_min": 0.735
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": 1,
-   "saturation": 0.784
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.768
-  },
-  {
-   "effect": "feedbackIn"
-  }
- ],
- [
-  "displacetime",
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "fastBlur",
-   "size": 3.184
-  },
-  {
-   "effect": "mesh_displacement",
-   "sx": 0,
-   "sy": 0,
-   "sz": {
-    "type": "beat",
-    "pulse": 0.995,
-    "f": 0,
-    "a": 0.073,
-    "p": 0,
-    "o": 0.69
-   },
-   "anglex": 0,
-   "angley": 0,
-   "anglez": 0
-  },
-  {
-   "effect": "timeshift",
-   "time": {
-    "type": "beat",
-    "pulse": 242.898,
-    "f": -0.004,
-    "a": 0,
-    "p": 0,
-    "o": 0
-   },
-   "clear_on_switch": 0
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": -0.952,
-   "saturation": 0
-  }
- ],
- [
   "time warp",
+  {
+   "effect": "none",
+   "comment": "time not always goes straight - great on TV news streams!"
+  },
   {
    "effect": "timeshift",
    "time": {
@@ -5542,6 +5256,10 @@
  ],
  [
   "displaced",
+  {
+   "effect": "none",
+   "comment": "bright things push out"
+  },
   {
    "effect": "feedbackIn"
   },
@@ -5561,6 +5279,10 @@
  ],
  [
   "zebra osc",
+  {
+   "effect": "none",
+   "comment": "pattern the zebra, slowly feeding and decaying"
+  },
   {
    "effect": "brightnessContrast",
    "brightness": {
@@ -5621,6 +5343,10 @@
  ],
  [
   "zebra",
+  {
+   "effect": "none",
+   "comment": "let nature pattern the zebra!"
+  },
   {
    "effect": "brightnessContrast",
    "brightness": -0.232,
@@ -5721,6 +5447,10 @@
  [
   "hokusai luma",
   {
+   "effect": "none",
+   "comment": "isolate bright things and let them ride hokusais wave!"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -5781,9 +5511,13 @@
  [
   "mandelbrot",
   {
+   "effect": "none",
+   "comment": "dirty contrast enhanced mandelbrot trip"
+  },
+  {
    "effect": "localContrast",
    "size": 6.73,
-   "strength": 0.21
+   "strength": 0.195
   },
   {
    "effect": "vibrance",
@@ -5815,6 +5549,10 @@
  [
   "fat man",
   {
+   "effect": "none",
+   "comment": "inflate whats bright until the rainbow kicks in"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 0.975
   },
@@ -5845,6 +5583,10 @@
  ],
  [
   "tunnel",
+  {
+   "effect": "none",
+   "comment": "moving pixels are pushed down the tunnel"
+  },
   {
    "effect": "stack_push"
   },
@@ -5925,62 +5667,9 @@
  [
   "kaleidos",
   {
-   "effect": "hueSaturation",
-   "hue": 0,
-   "saturation": 0.83
+   "effect": "none",
+   "comment": "nervous dancing kaleidoscope"
   },
-  {
-   "effect": "preview"
-  },
-  {
-   "effect": "ripple",
-   "width": 0.37,
-   "length": 0.37,
-   "angle": 1.62,
-   "strength": 2
-  },
-  {
-   "effect": "kaleidoscope",
-   "sides": 5,
-   "angle": {
-    "type": "osc",
-    "f": 0.178,
-    "a": 1,
-    "p": 0,
-    "o": 0
-   },
-   "angle2": {
-    "type": "osc",
-    "f": 0.374,
-    "a": 1,
-    "p": 0,
-    "o": 0
-   }
-  },
-  {
-   "effect": "ripple",
-   "width": 0.16,
-   "length": 0.06,
-   "angle": 4.5,
-   "strength": {
-    "type": "beat",
-    "pulse": 68.43,
-    "f": 2,
-    "a": 0.13,
-    "p": 0,
-    "o": -0.39
-   }
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 1.041,
-   "angle": 0
-  }
- ],
- [
-  "kaleidos",
   {
    "effect": "hueSaturation",
    "hue": 0.944,
@@ -6141,6 +5830,10 @@
  [
   "scopetunnel",
   {
+   "effect": "none",
+   "comment": "vectorscope tunnel"
+  },
+  {
    "effect": "vectorscope",
    "size": 4,
    "intensity": 1,
@@ -6185,7 +5878,7 @@
   },
   {
    "effect": "transform",
-   "x": 0.054,
+   "x": 0.116,
    "y": 0,
    "scale": 1.292,
    "angle": 0
@@ -6212,99 +5905,11 @@
   }
  ],
  [
-  "worm trip",
-  {
-   "effect": "motion",
-   "threshold": 0.3,
-   "interval": 1,
-   "damper": 0.99
-  },
-  {
-   "effect": "transform",
-   "x": {
-    "type": "osc",
-    "f": 1.205,
-    "a": 0.49,
-    "p": 0,
-    "o": 0
-   },
-   "y": {
-    "type": "osc",
-    "f": 0.868,
-    "a": 0.42,
-    "p": 0,
-    "o": 0
-   },
-   "scale": {
-    "type": "beat",
-    "pulse": 0.988,
-    "f": 0.04,
-    "a": 0.105,
-    "p": 0,
-    "o": -0.01
-   },
-   "angle": {
-    "type": "osc",
-    "f": 0.622,
-    "a": 0.71,
-    "p": 0,
-    "o": 0
-   }
-  },
-  {
-   "effect": "stack_push"
-  },
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgb",
-    "r": 0,
-    "g": -0.01,
-    "b": -0.06
-   }
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.988
-  },
-  {
-   "effect": "stack_swap"
-  },
-  {
-   "effect": "blend_alpha"
-  },
-  {
-   "effect": "hueSaturation",
-   "hue": 0.03,
-   "saturation": 0.074
-  },
-  {
-   "effect": "ripple",
-   "width": 0.134,
-   "length": 0,
-   "angle": {
-    "type": "beat",
-    "pulse": 0,
-    "f": 3.858,
-    "a": 0.671,
-    "p": 0,
-    "o": 0
-   },
-   "strength": 2.032
-  },
-  {
-   "effect": "feedbackIn"
-  },
-  {
-   "effect": "ripple",
-   "width": 0,
-   "length": 0.622,
-   "angle": 0,
-   "strength": 0.97
-  }
- ],
- [
   "bulgebeat",
+  {
+   "effect": "none",
+   "comment": "let the bass push out the screen!"
+  },
   {
    "effect": "bulgePinch",
    "center": {
@@ -6312,7 +5917,7 @@
     "x": -0.03,
     "y": 0
    },
-   "radius": 400,
+   "radius": 0.677,
    "strength": {
     "type": "beat",
     "pulse": 3.062,
@@ -6325,6 +5930,10 @@
  ],
  [
   "agar",
+  {
+   "effect": "none",
+   "comment": "something growing on the agar plate... fed by bright pixels"
+  },
   {
    "effect": "sobel",
    "secondary": 2.849,
@@ -6363,6 +5972,10 @@
  ],
  [
   "slipstream",
+  {
+   "effect": "none",
+   "comment": "vectorscope pushing into the screen"
+  },
   {
    "effect": "stack_push"
   },
@@ -6413,7 +6026,7 @@
    },
    "size": {
     "type": "beat",
-    "pulse": 1,
+    "pulse": 2.817,
     "f": 0,
     "a": 0,
     "p": 0,
@@ -6427,7 +6040,8 @@
  [
   "rainbow drunk",
   {
-   "effect": "preview"
+   "effect": "none",
+   "comment": "drunk hallucinations"
   },
   {
    "effect": "motion",
@@ -6451,11 +6065,11 @@
     "x": 0,
     "y": 0
    },
-   "radius": 500,
+   "radius": 0.66,
    "strength": {
     "type": "osc",
     "f": 1.481,
-    "a": 0.045,
+    "a": 0.018,
     "p": 0,
     "o": 0
    }
@@ -6466,6 +6080,10 @@
  ],
  [
   "van oorten 2",
+  {
+   "effect": "none",
+   "comment": "some memories of old color television signal disturbance..."
+  },
   {
    "effect": "sobel",
    "secondary": 1.292,
@@ -6515,6 +6133,10 @@
  [
   "voiceprint",
   {
+   "effect": "none",
+   "comment": "oldschool voiceprint"
+  },
+  {
    "effect": "filtering",
    "linear": 0
   },
@@ -6562,6 +6184,10 @@
  ],
  [
   "infinity",
+  {
+   "effect": "none",
+   "comment": "two mirrors, slightly angled in space..."
+  },
   {
    "effect": "feedbackOut",
    "blend": 1
@@ -6647,6 +6273,10 @@
  [
   "fire",
   {
+   "effect": "none",
+   "comment": "cold flames of rainbow emanate from moving contours"
+  },
+  {
    "effect": "motion",
    "threshold": 0.2,
    "interval": 1,
@@ -6692,8 +6322,8 @@
   },
   {
    "effect": "transform",
-   "x": 0,
-   "y": 0.01,
+   "x": 0.004,
+   "y": 0.006,
    "scale": 1.01,
    "angle": 0
   },
@@ -6715,60 +6345,11 @@
   }
  ],
  [
-  "fungus",
-  {
-   "effect": "sobel",
-   "secondary": 5.861,
-   "coeff": 5.678,
-   "alpha": 1,
-   "areas": {
-    "type": "rgba",
-    "r": 0,
-    "g": 0,
-    "b": 0,
-    "a": 1
-   },
-   "edges": {
-    "type": "rgba",
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
-   }
-  },
-  {
-   "effect": "feedbackOut",
-   "blend": 0.988
-  },
-  {
-   "effect": "reaction2",
-   "F": 0.0545,
-   "K": 0.062,
-   "D_a": 0.2,
-   "D_b": 0.1,
-   "speed": 19.87
-  },
-  {
-   "effect": "feedbackIn"
-  },
-  {
-   "effect": "levels",
-   "min": 0.298,
-   "gamma": 1,
-   "max": 0.223,
-   "r_min": 0.059,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": 1,
-   "g_gamma": 1,
-   "b_gamma": 1,
-   "r_max": 1.059,
-   "g_max": 1.205,
-   "b_max": 3.101
-  }
- ],
- [
   "address glitch",
+  {
+   "effect": "none",
+   "comment": "simulate pixel address memory bus glitches"
+  },
   {
    "effect": "feedbackOut",
    "blend": {
@@ -6807,6 +6388,10 @@
  ],
  [
   "slit scan",
+  {
+   "effect": "none",
+   "comment": "scan over moving image from left to right"
+  },
   {
    "effect": "stack_push"
   },
@@ -6912,6 +6497,10 @@
  [
   "scopeblast",
   {
+   "effect": "none",
+   "comment": "oscilloscope kalleidoscope"
+  },
+  {
    "effect": "vectorscope",
    "size": 6,
    "intensity": 1,
@@ -6938,6 +6527,10 @@
  ],
  [
   "hex worm",
+  {
+   "effect": "none",
+   "comment": "hex angled rainbow worm lurking around"
+  },
   {
    "effect": "stack_push"
   },
@@ -7053,6 +6646,10 @@
  [
   "sobel",
   {
+   "effect": "none",
+   "comment": "amplify contours to white"
+  },
+  {
    "effect": "stack_swap"
   },
   {
@@ -7105,6 +6702,10 @@
  [
   "punched strobe",
   {
+   "effect": "none",
+   "comment": "freeze picture by a punch hole pattern"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -7143,6 +6744,10 @@
  [
   "flowers",
   {
+   "effect": "none",
+   "comment": "nifty flowers wallpaper, riding the music"
+  },
+  {
    "effect": "superellipse",
    "size": 98.378,
    "angle": 0,
@@ -7175,6 +6780,10 @@
  [
   "waveform",
   {
+   "effect": "none",
+   "comment": "bold oscilloscope waveform display"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -7205,6 +6814,10 @@
  ],
  [
   "kaleido",
+  {
+   "effect": "none",
+   "comment": "aggressive colorful kalleidoscope"
+  },
   {
    "effect": "grid",
    "size": 1,
@@ -7266,6 +6879,10 @@
  [
   "rainbow lasers",
   {
+   "effect": "none",
+   "comment": "fire laser beams of rainbow from every pixel that moves"
+  },
+  {
    "effect": "stack_push"
   },
   {
@@ -7308,48 +6925,11 @@
   }
  ],
  [
-  "bloody",
-  {
-   "effect": "levels",
-   "min": 0,
-   "gamma": 1.58,
-   "max": 1.013,
-   "r_min": 0,
-   "g_min": 0,
-   "b_min": 0,
-   "r_gamma": {
-    "type": "beat",
-    "pulse": -22.485,
-    "f": 0,
-    "a": 0,
-    "p": 0,
-    "o": 1.013
-   },
-   "g_gamma": 0.925,
-   "b_gamma": 0.805,
-   "r_max": 0.995,
-   "g_max": 0.977,
-   "b_max": 1
-  },
-  {
-   "effect": "zoomBlur",
-   "center": {
-    "type": "pos",
-    "x": 0,
-    "y": 0
-   },
-   "size": {
-    "type": "beat",
-    "pulse": 3.033,
-    "f": 0,
-    "a": 0,
-    "p": 0,
-    "o": 0
-   }
-  }
- ],
- [
   "looper",
+  {
+   "effect": "none",
+   "comment": "loop, color and add in evertything that moves"
+  },
   {
    "effect": "stack_push"
   },
@@ -7469,6 +7049,10 @@
  [
   "painting",
   {
+   "effect": "none",
+   "comment": "soft painting our image - keep calm!"
+  },
+  {
    "effect": "feedbackOut",
    "blend": 0.96
   },
@@ -7482,6 +7066,10 @@
  ],
  [
   "slow reactor",
+  {
+   "effect": "none",
+   "comment": "chemical reaction plate fed by image contours"
+  },
   {
    "effect": "sobel",
    "secondary": 5.861,
@@ -7547,18 +7135,9 @@
     "x": 0.514,
     "y": 0.575
    },
-   "size": 3.122,
+   "size": 2.139,
    "angle": -0.517,
    "iterations": 18.398
-  },
-  {
-   "effect": "transform",
-   "x": 0,
-   "y": 0,
-   "scale": 0.492,
-   "angle": 0,
-   "sx": 1,
-   "sy": 1
   }
  ],
  [
@@ -7650,7 +7229,11 @@
   }
  ],
  [
-  "ripple",
+  "ripple beat",
+  {
+   "effect": "none",
+   "comment": "let the beat ripple the screen"
+  },
   {
    "effect": "ripple",
    "width": {
@@ -7680,6 +7263,10 @@
  ],
  [
   "rings",
+  {
+   "effect": "none",
+   "comment": "some nice kalleidoscopic rings"
+  },
   {
    "effect": "kaleidoscope",
    "sides": 1998.999,
@@ -7855,6 +7442,10 @@
  ],
  [
   "motion echo",
+  {
+   "effect": "none",
+   "comment": "echo the picture, adding in anything moved"
+  },
   {
    "effect": "feedbackOut",
    "blend": 0.72
@@ -8076,6 +7667,10 @@
  [
   "glitched vectorscope",
   {
+   "effect": "none",
+   "comment": "address glitched vectorscope with old green CRT look"
+  },
+  {
    "effect": "vectorscope",
    "size": 5,
    "intensity": 0.5,
@@ -8151,6 +7746,98 @@
    "gamma": 1.5,
    "glow": 1,
    "glow_radius": 16
+  }
+ ],
+ [
+  "worm trip",
+  {
+   "effect": "motion",
+   "threshold": 0.3,
+   "interval": 1,
+   "damper": 0.99
+  },
+  {
+   "effect": "transform",
+   "x": {
+    "type": "osc",
+    "f": 1.205,
+    "a": 0.49,
+    "p": 0,
+    "o": 0
+   },
+   "y": {
+    "type": "osc",
+    "f": 0.868,
+    "a": 0.42,
+    "p": 0,
+    "o": 0
+   },
+   "scale": {
+    "type": "beat",
+    "pulse": 0.988,
+    "f": 0.04,
+    "a": 0.105,
+    "p": 0,
+    "o": -0.01
+   },
+   "angle": {
+    "type": "osc",
+    "f": 0.622,
+    "a": 0.71,
+    "p": 0,
+    "o": 0
+   }
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "matte",
+   "rgb": {
+    "type": "rgb",
+    "r": 0,
+    "g": -0.01,
+    "b": -0.06
+   }
+  },
+  {
+   "effect": "feedbackOut",
+   "blend": 0.988
+  },
+  {
+   "effect": "stack_swap"
+  },
+  {
+   "effect": "blend_alpha"
+  },
+  {
+   "effect": "hueSaturation",
+   "hue": 0.03,
+   "saturation": 0.074
+  },
+  {
+   "effect": "ripple",
+   "width": 0.134,
+   "length": 0,
+   "angle": {
+    "type": "beat",
+    "pulse": 0,
+    "f": 3.858,
+    "a": 0.671,
+    "p": 0,
+    "o": 0
+   },
+   "strength": 2.032
+  },
+  {
+   "effect": "feedbackIn"
+  },
+  {
+   "effect": "ripple",
+   "width": 0,
+   "length": 0.622,
+   "angle": 0,
+   "strength": 0.97
   }
  ],
  [
