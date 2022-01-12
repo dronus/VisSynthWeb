@@ -340,6 +340,20 @@
       content: '▸▤';
       color: #f00;
     }
+    /* a "none" effect - make it's comment dominant */
+    .effect[ui_effect="none"] {
+      background-color: #000;
+    }
+    .chain .effect[ui_effect="none"]>:first-child {
+      display: none;
+    }
+    .chain .effect[ui_effect="none"]>:nth-child(2) .key {
+      display: none;
+    }
+    .chain .effect[ui_effect="none"]>:nth-child(2) .value {
+      font-size: 16px;
+    }
+
     /* an effect with no input (source)*/
     .effect[ui_inputs="0"]
     {
