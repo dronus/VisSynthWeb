@@ -3,11 +3,10 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <title>NF VisSynth MCP</title>
-  <script src="jquery-2.1.4.js"></script>
-  <script src="jquery-ui.js"></script>
-  <script src="jquery.ui.touch-punch.js"></script>
-  <link rel="stylesheet" type="text/css" href="ui.css">
-  <link rel="stylesheet" type="text/css" href="ui_material.css">  
+  <script src="./ui/jquery-2.1.4.js"></script>
+  <script src="./ui/jquery-ui.js"></script>
+  <script src="./ui/jquery.ui.touch-punch.js"></script>
+  <link rel="stylesheet" type="text/css" href="./ui/ui.css">
 </head>
 <body>
 
@@ -67,7 +66,7 @@
   <div id=help></div>
 
   <script type="module">
-    import {WebRTC} from './webrtc.js';
+    import {WebRTC} from './vissynth/webrtc.js';
 
     // get session url, if any
     var session_url='/';
@@ -578,7 +577,7 @@
       return  Math.round((-2/(x+1)-2/(x-1))*1000)/1000;
     }
       
-    get('/effects.json',function(data){
+    get('./ui/effects.json',function(data){
       effects=JSON.parse(data); 
       var new_effects=[];
       for(let key in effects)
