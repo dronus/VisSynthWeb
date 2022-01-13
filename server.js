@@ -27,14 +27,18 @@ var mime_types={
 	html : 'text/html',
 	js   : 'application/javascript',
 	json : 'application/json',
+	bin   : 'application/octet-stream',
 	svg  : 'image/svg+xml',
 	css  : 'text/css',
 	png  : 'image/png',
 	jpg  : 'image/jpg',
 	jpeg : 'image/jpg',
+	ico : 'image/ico',
   mov  : "video/quicktime",
   mp4  : "video/mp4",
-  webm : "video/webm"
+  webm : "video/webm",
+  woff : "font/woff",
+  ttf  : "font/ttf"
 };
 var data={};
 var pending={};
@@ -149,7 +153,7 @@ wss.on('connection', function connection(ws) {
 });
 
 
-var port=8082;
+var port=parseInt(process.argv[2]) || 8082;
 server.listen(port);
 console.log("Listening at:%s", port);
 
