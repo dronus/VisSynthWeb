@@ -1,39 +1,35 @@
 /*
- VisSynthWeb server - a long polling server for remote control
+ VisSynthWeb server -
+ A simple HTTP file and WebSocket message hub.
  
- This is a simple HTTP file server, with some special features:
- 
- -REST-like long-polling pipeline
-  GET requests to any location below the feeds/ path are delayed until information is placed there via a PUT request.
-  A requesting client can idle on a GET request, until some remote control puts commands via PUT there. The requesting
-  client is then answered immediately and the information dropped. Two web clients can send commands and data to each other
-  using two path locations.
-  
- -REST-like value store
-  PUT requests to any location below the saves/ path store the data given as the request body to disk
-  
+ - HTTP file server
+  - serving the whole directory
+  - serve directory 'indexes' as JSON arrays
+  - allows POST uploads to directory "files/"
+
+ - Websocket server with MQTT-like publish-subscribe- message hub, using a simple JSON protocol:
+  - {'method':'get','path':PATH}  subscribes for messages on path PATH (or 'topic' in MQTT terms)
+  - {'method':'put','path':PATH, 'data': data} publish DATA onto PATH,
+     this JSON message is distributed as-is to all subscribers of PATH.
 */
 
 var http = require('http');
 var ws = require('ws');
 var fs=require('fs');
-var path=require('path');
 var multiparty = require('multiparty');
-
-//debug:
-var util = require('util');
+// var util = require('util');
 
 var mime_types={
-	html : 'text/html',
-	js   : 'application/javascript',
-	json : 'application/json',
-	bin   : 'application/octet-stream',
-	svg  : 'image/svg+xml',
-	css  : 'text/css',
-	png  : 'image/png',
-	jpg  : 'image/jpg',
-	jpeg : 'image/jpg',
-	ico : 'image/ico',
+  html : 'text/html',
+  js   : 'application/javascript',
+  json : 'application/json',
+  bin   : 'application/octet-stream',
+  svg  : 'image/svg+xml',
+  css  : 'text/css',
+  png  : 'image/png',
+  jpg  : 'image/jpg',
+  jpeg : 'image/jpg',
+  ico : 'image/ico',
   mov  : "video/quicktime",
   mp4  : "video/mp4",
   webm : "video/webm",
@@ -52,7 +48,8 @@ var server=http.createServer(function (req, res) {
   parts[0]=parts[0].substring(1); // strip trailing / 
   var key=parts[0];
 
-  if(fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
+  // serve files
+  if(req.method=='GET' && fs.existsSync(key) && fs.statSync(key).isFile() && key.indexOf("..")==-1)
   {
     var n = key.lastIndexOf('.');
     var suffix = key.substring(n+1);
@@ -60,39 +57,41 @@ var server=http.createServer(function (req, res) {
     var instream=fs.createReadStream(key);
     instream.pipe(res);
   }
-  else if(key=='upload')
-	{
+  // serve directory index
+  else if(req.method=='GET' && fs.existsSync(key) && fs.statSync(key).isDirectory() && key.indexOf("..")==-1)
+  {
+    fs.readdir(key, function(err, files) {
+      res.write(JSON.stringify(files));
+      res.end();
+    })
+  }
+  // handle POST file uploads
+  else if(req.method=='POST')
+  {
     res.setHeader('Content-Type','text/plain');
     res.writeHead(200);
     res.write("uploading...\n"); 
 
-		var form = new multiparty.Form({uploadDir:'tmp/',maxFilesSize:1000000000});
-		form.on('progress',function(received,total){
+    var form = new multiparty.Form({uploadDir:'tmp/',maxFilesSize:1000000000});
+    form.on('progress',function(received,total){
       // provide some response to mitgate browser timeout
-			res.write(total+'/'+received+'\n');
-		});
-		form.on('file',function(name,file){
-			console.log('file: '+util.inspect(file));		
-			res.write('File received: '+file.path);
-			fs.rename(file.path,'files/'+file.originalFilename)
-			res.end();
-		});
-		form.parse(req, function(err, fields, files) {
-			if(err)
-			{
-				console.log("parse:" +err);
-				res.write("upload failed: "+err);
-				res.end();
-			}
-			console.log('parse: '+util.inspect({fields: fields, files: files}));
+      // and allow for progress indicatior (WIP)
+      res.write(total+'/'+received+'\n');
     });
-	}
-  else if(key=='files')
-  {
-    fs.readdir("files", function(err, files) {
-      res.write(JSON.stringify(files));
+    form.on('file',function(name,file){
+      // console.log('file: '+util.inspect(file));
+      res.write('File received: '+file.path);
+      fs.renameSync(file.path,'files/'+file.originalFilename)
       res.end();
-    })
+    });
+    form.parse(req, function(err, fields, files) {
+      if(err)
+      {
+        res.write("upload failed: "+err);
+        res.end();
+      }
+      // console.log('parse: '+util.inspect({fields: fields, files: files}));
+    });
   }
   else
     res.end();
@@ -103,9 +102,9 @@ var wss=new ws.Server({server:server});
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
     var packet=JSON.parse(message);
-    var method=packet.method, path=packet.path, data=packet.data;
-    //console.log('WebSocket: '+method+' '+path);    
-    var parts = path.split('?');
+    var method=packet.method;
+
+    var parts = packet.path.split('?');
     var key=parts[0].substring(1); // strip trailing / 
 
     // allow opt-in
@@ -115,10 +114,10 @@ wss.on('connection', function connection(ws) {
       pending[key].push(ws);
       console.log('WebSocket opted in for '+key);
     }    
-    else if(key.match(/saves\/.*/))
+    else if(method=='put' && key.match(/saves\/.*/))
     {
       // if it denotes a file in saves/, store it to disk
-      fs.writeFileSync(key,data);
+      fs.writeFileSync(key,packet.data);
       console.log(key+' stored.');
     }
     else if(method=='put')
@@ -134,11 +133,10 @@ wss.on('connection', function connection(ws) {
           else if(target_ws!=ws) // still open and not the sender itself (no echo!)
             target_ws.send(message);
         }
-        //delete pending[key];
       }
     }
     else
-      console.log('Invalid Websocket path:'+path);
+      console.log('Invalid Websocket path:'+packet.path);
   });
   ws.on('close',function(){
     // remove all opts for this socket
