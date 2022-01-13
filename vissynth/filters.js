@@ -688,6 +688,16 @@ filters.video=function({url,play_sound,speed,loop}) {
     return this;
 }
 
+// a HTML canvas source
+filters.canvas=function({selector}) {
+
+  var c = document.querySelector(selector);
+
+  var canvasTexture=this.getSpareTexture(null,c.width,c.height);
+  canvasTexture.loadContentsOf(c);
+  this.putTexture(canvasTexture);
+}
+
 
 var image_loaded=[];
 // a static image source
