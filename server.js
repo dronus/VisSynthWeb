@@ -24,14 +24,14 @@ var multiparty = require('multiparty');
 var util = require('util');
 
 var mime_types={
-	html : 'text/html',
-	js   : 'application/javascript',
-	json : 'application/json',
-	svg  : 'image/svg+xml',
-	css  : 'text/css',
-	png  : 'image/png',
-	jpg  : 'image/jpg',
-	jpeg : 'image/jpg',
+  html : 'text/html',
+  js   : 'application/javascript',
+  json : 'application/json',
+  svg  : 'image/svg+xml',
+  css  : 'text/css',
+  png  : 'image/png',
+  jpg  : 'image/jpg',
+  jpeg : 'image/jpg',
   mov  : "video/quicktime",
   mp4  : "video/mp4",
   webm : "video/webm"
@@ -57,32 +57,32 @@ var server=http.createServer(function (req, res) {
     instream.pipe(res);
   }
   else if(key=='upload')
-	{
+  {
     res.setHeader('Content-Type','text/plain');
     res.writeHead(200);
     res.write("uploading...\n"); 
 
-		var form = new multiparty.Form({uploadDir:'tmp/',maxFilesSize:1000000000});
-		form.on('progress',function(received,total){
+    var form = new multiparty.Form({uploadDir:'tmp/',maxFilesSize:1000000000});
+    form.on('progress',function(received,total){
       // provide some response to mitgate browser timeout
-			res.write(total+'/'+received+'\n');
-		});
-		form.on('file',function(name,file){
-			console.log('file: '+util.inspect(file));		
-			res.write('File received: '+file.path);
-			fs.rename(file.path,'files/'+file.originalFilename)
-			res.end();
-		});
-		form.parse(req, function(err, fields, files) {
-			if(err)
-			{
-				console.log("parse:" +err);
-				res.write("upload failed: "+err);
-				res.end();
-			}
-			console.log('parse: '+util.inspect({fields: fields, files: files}));
+      res.write(total+'/'+received+'\n');
     });
-	}
+    form.on('file',function(name,file){
+      console.log('file: '+util.inspect(file));    
+      res.write('File received: '+file.path);
+      fs.rename(file.path,'files/'+file.originalFilename)
+      res.end();
+    });
+    form.parse(req, function(err, fields, files) {
+      if(err)
+      {
+        console.log("parse:" +err);
+        res.write("upload failed: "+err);
+        res.end();
+      }
+      console.log('parse: '+util.inspect({fields: fields, files: files}));
+    });
+  }
   else if(key=='files')
   {
     fs.readdir("files", function(err, files) {
