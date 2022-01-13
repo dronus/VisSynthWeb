@@ -53,6 +53,10 @@ export let Canvas = function(selector, session_url) {
 
     // the remote control handle (for replying to remote commands)
     this.remote = null;
+
+    // if we are running (automatically update frequently).
+    // can be set to false to do manual updates by external code.
+    this.running = true;
 }
 
 // create a texture from a given HTML element
@@ -69,13 +73,15 @@ Canvas.prototype.update=function() {
     this.frame_time=this.frame_time*0.9 + (current_time-this.last_time)*0.1;
 
     // enqueue next update
-    var update_handler=this.update.bind(this);
-    if(this.proposed_fps)
-      setTimeout(function(){
+    if(this.running) {
+      var update_handler=this.update.bind(this);
+      if(this.proposed_fps)
+        setTimeout(function(){
+          requestAnimationFrame(update_handler);
+        },1000/this.proposed_fps);
+      else
         requestAnimationFrame(update_handler);
-      },1000/this.proposed_fps);
-    else
-      requestAnimationFrame(update_handler);
+    }
 
     // render effect chain !
     this.run_chain(current_time);
