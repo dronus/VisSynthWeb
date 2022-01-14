@@ -53,7 +53,7 @@ var server=http.createServer(function (req, res) {
   {
     var n = key.lastIndexOf('.');
     var suffix = key.substring(n+1);
-    res.setHeader("Content-Type", mime_types[suffix]);
+    res.setHeader("Content-Type", mime_types[suffix] || 'application/octet-stream');
     var instream=fs.createReadStream(key);
     instream.pipe(res);
   }
