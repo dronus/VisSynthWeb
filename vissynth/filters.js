@@ -1961,8 +1961,8 @@ filters.capture=function({device}) {
       var constraints = {
         video: { 
           deviceId: devices.video[device].deviceId,
-          width: this. width,
-          height: this.height
+          width:  {"ideal":this.width },
+          height: {"ideal":this.height}
         },
         audio:false
       };
