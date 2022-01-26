@@ -146,7 +146,7 @@ Canvas.prototype.sendStats=function() {
 }
 
 Canvas.prototype.sendScreenshot=function() {
-  var pixels=canvas.toDataURL('image/jpeg');
+  var pixels=canvas.toDataURL('image/jpeg',0.95);
   this.remote.put('screenshot',pixels);
 }
 
