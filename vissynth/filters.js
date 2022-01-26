@@ -2000,7 +2000,8 @@ filters.webrtc=function({websocket_url}) {
       v.muted=true;
       v.autoplay=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.webrtc_peers[websocket_url]=await  webrtc.WebRTC(websocket_url, '/webrtc', null, v, null);
+        let path=new URL(websocket_url).pathname || '/webrtc';
+        this.webrtc_peers[websocket_url]=await  webrtc.WebRTC(websocket_url, path, null, v, null);
         v.play();
       });
     }
