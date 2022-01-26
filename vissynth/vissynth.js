@@ -17,7 +17,7 @@ export let VisSynth = function(selector, session_url) {
   let command_handler=function(js) {
     return eval(js);
   };
-  let remote = new WebsocketRemote(session_url, command_handler);
+  let remote = new WebsocketRemote(session_url, {"command":command_handler});
   canvas.remote = remote;
   devices.addEventListener("update",function() {
     remote.put('devices',JSON.stringify(devices));

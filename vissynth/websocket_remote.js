@@ -1,25 +1,30 @@
 
-export let WebsocketRemote=function (session_url,command_handler) {
+export let WebsocketRemote=function (session_url,feeds) {
   // establish WebSocket connection to command server
   var websocket;
-  var open_socket=function()
+  var open_socket = () =>
   {
     websocket=new WebSocket((document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html',''));
     websocket.onopen=function(){
       // opt in for commands
-      websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+'command',data:''}));
+      for(let feed in feeds)
+        websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+feed,data:''}));
     };
     // opt-in for command feed from remote control server
-    websocket.onmessage=function(event)
+    websocket.onmessage = event =>
     {
       var packet=JSON.parse(event.data);
       var path=packet.path, message=packet.data;
 
-      if(path=='/feeds'+session_url+'command')
+      let base_path = '/feeds'+session_url;
+      if(!path.startsWith(base_path)) return;
+      let key=path.substr(base_path.length);
+      let handler=feeds[key];
+      if(handler)
       {
-        let result = command_handler(message);
+        let result = handler(message);
         if(result){
-          remote.put('result',JSON.stringify(result));
+          this.put('result',JSON.stringify(result));
         }
       }
     }
