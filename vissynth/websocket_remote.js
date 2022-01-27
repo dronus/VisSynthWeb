@@ -1,5 +1,8 @@
 
-export let WebsocketRemote=function (session_url,feeds) {
+export let WebsocketRemote=function (session_url) {
+
+  let dispatcher=new EventTarget();
+  let feeds = {};
   // establish WebSocket connection to command server
   var websocket;
   var open_socket = () =>
@@ -14,19 +17,13 @@ export let WebsocketRemote=function (session_url,feeds) {
     websocket.onmessage = event =>
     {
       var packet=JSON.parse(event.data);
-      var path=packet.path, message=packet.data;
 
       let base_path = '/feeds'+session_url;
-      if(!path.startsWith(base_path)) return;
-      let key=path.substr(base_path.length);
-      let handler=feeds[key];
-      if(handler)
-      {
-        let result = handler(message);
-        if(result){
-          this.put('result',JSON.stringify(result));
-        }
-      }
+      if(!packet.path.startsWith(base_path)) return;
+      let key=packet.path.substr(base_path.length);
+      let new_event = new Event(key);
+      new_event.data =  packet.data;
+      dispatcher.dispatchEvent(new_event);
     }
     websocket.onclose=function()
     {
@@ -34,6 +31,18 @@ export let WebsocketRemote=function (session_url,feeds) {
     }
   }
   open_socket();
+
+  this.addEventListener = function(type, listener, options) {
+    if(!feeds[type] && websocket.readyState == 1)
+      websocket.send(JSON.stringify({'method':'get', path:'/feeds'+session_url+type,data:''}));
+    feeds[type]=true;
+
+    dispatcher.addEventListener(type, (evt) => {
+      let result = listener(evt);
+      if(result)
+        this.put('result',JSON.stringify(result));
+    } , options);
+  }
 
   this.put=function(path,data){
     if(websocket.readyState)
