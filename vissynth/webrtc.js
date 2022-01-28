@@ -109,6 +109,10 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
       offerToReceiveAudio: 1,
       offerToReceiveVideo: 1
     };
+    const caps = RTCRtpSender.getCapabilities("video");
+    const tx = pc.addTransceiver("video");
+    console.log(caps.codecs);
+    tx.setCodecPreferences(caps.codecs);
     const offer = await pc.createOffer(offerOptions);
     console.log(`createOffer:\n${offer.sdp}`);
     await pc.setLocalDescription(offer);
