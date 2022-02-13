@@ -7,7 +7,7 @@
    "y": 1080,
    "filtering": "linear",
    "precision": "byte",
-   "fps_limit": 35
+   "fps_limit": 15
   },
   {
    "effect": "select_audio",
@@ -22,6 +22,27 @@
  ],
  [
   "POST"
+ ],
+ [
+  "",
+  {
+   "effect": "transform",
+   "x": 0.135,
+   "y": 0,
+   "scale": 1.162,
+   "angle": 0,
+   "sx": 0,
+   "sy": 0,
+   "wrap": 0
+  },
+  {
+   "effect": "grid",
+   "size": 1,
+   "angle": 0,
+   "x": 0,
+   "y": 0,
+   "linewidth": 0.034
+  }
  ],
  [
   "rainbow run mul",
