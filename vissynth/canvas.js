@@ -24,8 +24,6 @@ export let Canvas = function(selector, session_url) {
     this.template = new Texture(this.gl, this.canvas.width, this.canvas.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE);
     // hold a list of managed spare textures
     this.spareTextures=[];
-    // hold a list of garbage collected textures
-    this.tempTextures=[];
     // create default texture for simpleShader
     this.texture = this.getSpareTexture();
     // create shader registry
@@ -108,9 +106,6 @@ Canvas.prototype.update=function() {
     // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
     filters.mirror_x.call(this,{target:this});
 
-    // release temporary textures
-    this.gc();
-    
     // take screenshot if requested
     if(this.screenshot_flag) {
       this.sendScreenshot();
@@ -211,14 +206,6 @@ Canvas.prototype.getSpareTexture=function(candidate_texture,width,height,format,
     console.log("canvas.getSpareTexture "+k);
     return new Texture(this.gl, t.width, t.height, t.format, t.type, t.filter);
   }
-}
-
-// release all temporary textures (called after each rendering)
-Canvas.prototype.gc=function()
-{
-  var texture;
-  while(texture=this.tempTextures.pop())
-    this.releaseTexture(texture);
 }
 
 // Put a texture back to the spare pool.
