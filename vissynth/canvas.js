@@ -75,6 +75,7 @@ Canvas.prototype.update=function(current_time) {
     // render frame if it is time
     if(current_time  > this.next_time) {
       // render
+      this.sync_source=null;
       this.render(current_time);
       
       // schedule next frame
@@ -93,7 +94,6 @@ Canvas.prototype.update=function(current_time) {
       this.sync_source.requestVideoFrameCallback(update_handler);
     else if(this.running)
       requestAnimationFrame(update_handler);
-    this.sync_source=null;
 }
 
 // render a frame, 
