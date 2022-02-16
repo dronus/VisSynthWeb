@@ -57,6 +57,7 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
     if (audioTracks.length > 0) {
       console.log(`Using audio device: ${audioTracks[0].label}`);
     }
+
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
   }
   
@@ -109,6 +110,13 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
       offerToReceiveAudio: 1,
       offerToReceiveVideo: 1
     };
+
+    // prefer H.264 codecs (VP8 and VP9 consume more cpu, increasing latency)
+    let tx = pc.addTransceiver('video',{'direction':'recvonly'});
+    let codecs = RTCRtpReceiver.getCapabilities('video').codecs;
+    codecs = codecs.filter(codec => codec.mimeType == 'video/H264');
+    tx.setCodecPreferences(codecs);
+
     const offer = await pc.createOffer(offerOptions);
     console.log(`createOffer:\n${offer.sdp}`);
     await pc.setLocalDescription(offer);

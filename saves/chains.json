@@ -17,7 +17,8 @@
   {
    "effect": "capture",
    "device": 0,
-   "name": "Integrated Camera (5986:2113)"
+   "name": "Integrated Camera (5986:2113)",
+   "sync": 1
   }
  ],
  [
