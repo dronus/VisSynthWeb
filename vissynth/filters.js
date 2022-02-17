@@ -2848,13 +2848,13 @@ filters.unsharpMask=function({size, strength}) {
     ');
 
     // Store a copy of the current texture in the second texture unit
-    this.texture.copyTo(this._.extraTexture);
+    this.stack_push();
 
     // Blur the current texture, then use the stored texture to detect edges
     filters.blur.call(this,{radius:size});
     s_unsharpMask.textures({
         blurredTexture: this.texture,
-        originalTexture: this._.extraTexture
+        originalTexture: this.stack_pop()
     });
     this.simpleShader( s_unsharpMask, {
         strength: strength
