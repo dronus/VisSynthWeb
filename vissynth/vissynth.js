@@ -25,7 +25,7 @@ export let VisSynth = function(selector, session_url) {
   });
 
   // start frequent canvas updates, once capture devices are fetched.
-  devices.addEventListener("update",canvas.update.bind(canvas),{"once":true});
+  devices.addEventListener("update",() => canvas.update(1),{"once":true});
   devices.update();
   
   return canvas;

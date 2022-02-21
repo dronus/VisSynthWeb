@@ -47,6 +47,7 @@ export let Canvas = function(selector, session_url) {
     // time for stats and time-dependent effects
     this.frame_time=0;
     this.last_time=0;
+    this.next_time=0;
 
     // the proposed fps can be set to limit the rendering fps
     this.proposed_fps=0;
@@ -57,6 +58,8 @@ export let Canvas = function(selector, session_url) {
     // if we are running (automatically update frequently).
     // can be set to false to do manual updates by external code.
     this.running = true;
+    
+    this.sync_source=null;
 }
 
 // create a texture from a given HTML element
@@ -64,24 +67,39 @@ Canvas.prototype.toTexture=function(element) {
     return Texture.fromElement(this.gl, element);
 }
 
+// update the canvas at the right time and schedule next update
+Canvas.prototype.update=function(current_time) {
+
+    let dt = current_time - this.last_time;
+
+    // render frame if it is time
+    if(current_time  > this.next_time) {
+      // render
+      this.sync_source=null;
+      this.render(current_time);
+      
+      // schedule next frame
+      if(this.proposed_fps > 0) this.next_time += 1000/this.proposed_fps;
+      if(this.next_time < current_time) this.next_time = current_time;
+
+      // compute frame time for stats
+      this.frame_time=this.frame_time*0.9 + dt * 0.1;
+
+      this.last_time = current_time;
+    }
+
+    // enqueue next update
+    var update_handler=this.update.bind(this);
+    if(this.running && this.sync_source)
+      this.sync_source.requestVideoFrameCallback(update_handler);
+    else if(this.running)
+      requestAnimationFrame(update_handler);
+}
+
 // render a frame, 
 // provide streaming / preview / screenshot output and
 // update the visible canvas element.
-Canvas.prototype.update=function() {
-    // compute frame and animation time
-    var current_time=Date.now();
-    this.frame_time=this.frame_time*0.9 + (current_time-this.last_time)*0.1;
-
-    // enqueue next update
-    if(this.running) {
-      var update_handler=this.update.bind(this);
-      if(this.proposed_fps)
-        setTimeout(function(){
-          requestAnimationFrame(update_handler);
-        },1000/this.proposed_fps);
-      else
-        requestAnimationFrame(update_handler);
-    }
+Canvas.prototype.render=function(current_time) {
 
     // render effect chain !
     this.run_chain(current_time);
@@ -93,7 +111,6 @@ Canvas.prototype.update=function() {
 
     if(current_time % 500 > 250 && this.last_time % 500 <= 250)
       this.sendStats();
-
 
     // render final image to visible canvas.
     // update canvas size to texture size, if needed
@@ -120,10 +137,10 @@ Canvas.prototype.update=function() {
     // encode stream for recording if requested
     if(this.mediaRecorder)
       this.mediaRecorder.stream.getVideoTracks()[0].requestFrame();
+}
 
-    this.last_time=current_time;
-
-    return this;
+Canvas.prototype.setSyncSource=function(source) {
+  this.sync_source=source;
 }
 
 Canvas.prototype.capturePreview=function() {

@@ -1945,7 +1945,7 @@ filters.timeshift=function({time,clear_on_switch}) {
 // get the video feed from a capture device name by source index
 // opens the capture device and starts streaming on demand
 var videos={};
-filters.capture=function({device,w,h}) {
+filters.capture=function({device,w,h,sync}) {
 
     device=Math.floor(device);
 
@@ -1978,6 +1978,8 @@ filters.capture=function({device,w,h}) {
     }
     
     let v=videos[device];
+
+    if(sync) this.setSyncSource(v);
 
     // make sure the video has adapted to the capture device
     if(!v || v.currentTime==0 || !v.videoWidth) return this; 
