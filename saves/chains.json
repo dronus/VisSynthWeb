@@ -7,21 +7,36 @@
    "y": 1080,
    "filtering": "linear",
    "precision": "byte",
-   "fps_limit": 35
+   "fps_limit": 15
   },
   {
    "effect": "select_audio",
    "device": 0,
    "name": ""
-  },
-  {
-   "effect": "capture",
-   "device": 0,
-   "name": "Integrated Camera (5986:2113)"
   }
  ],
  [
   "POST"
+ ],
+ [
+  "",
+  {
+   "effect": "capture",
+   "device": 0,
+   "name": "Logitech BRIO (046d:085e)",
+   "w": 3840,
+   "h": 2160
+  },
+  {
+   "effect": "transform",
+   "x": -0.778,
+   "y": 0,
+   "scale": 1,
+   "angle": 3.14159,
+   "sx": 0,
+   "sy": 0,
+   "wrap": 0
+  }
  ],
  [
   "rainbow run mul",
