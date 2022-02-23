@@ -106,18 +106,12 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
   }
 
   webrtc.call=async function() {
-    const offerOptions = {
-      offerToReceiveAudio: 1,
-      offerToReceiveVideo: 1
-    };
-
-    // prefer H.264 codecs (VP8 and VP9 consume more cpu, increasing latency)
     let tx = pc.addTransceiver('video',{'direction':'recvonly'});
-    let codecs = RTCRtpReceiver.getCapabilities('video').codecs;
-    codecs = codecs.filter(codec => codec.mimeType == 'video/H264');
-    tx.setCodecPreferences(codecs);
-
-    const offer = await pc.createOffer(offerOptions);
+    // prefer H.264 codecs (VP8 and VP9 consume more cpu, increasing latency)
+    // let codecs = RTCRtpReceiver.getCapabilities('video').codecs;
+    // codecs = codecs.filter(codec => codec.mimeType == 'video/H264');
+    // tx.setCodecPreferences(codecs);
+    const offer = await pc.createOffer();
     console.log(`createOffer:\n${offer.sdp}`);
     await pc.setLocalDescription(offer);
     put(JSON.stringify(offer));

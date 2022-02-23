@@ -1945,7 +1945,7 @@ filters.timeshift=function({time,clear_on_switch}) {
 // get the video feed from a capture device name by source index
 // opens the capture device and starts streaming on demand
 var videos={};
-filters.capture=function({device,sync}) {
+filters.capture=function({device,w,h,sync}) {
 
     device=Math.floor(device);
 
@@ -1961,8 +1961,8 @@ filters.capture=function({device,sync}) {
       var constraints = {
         video: { 
           deviceId: devices.video[device].deviceId,
-          width:  {"ideal":this.width },
-          height: {"ideal":this.height}
+          width:  {"ideal": w ? w : this.width },
+          height: {"ideal": h ? h : this.height}
         },
         audio:false
       };
