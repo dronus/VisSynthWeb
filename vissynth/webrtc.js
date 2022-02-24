@@ -1,5 +1,5 @@
 
-export async function WebRTC(server_url, path, source_el, target_el, close_listener) {
+export async function WebRTC(server_url, path, source_el, target_el, close_listener,callImmediately) {
 
   var websocket;
   var open_socket=function()
@@ -8,7 +8,7 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
     websocket.onopen=function(){
       // opt in for webrtc 
       websocket.send(JSON.stringify({'method':'get', 'path':path, 'data':''}));
-      if(target_el) webrtc.call();
+      if(target_el || callImmediately) webrtc.call();
     };
     websocket.onerror=function()
     {
@@ -25,12 +25,17 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
   
   let pc = new RTCPeerConnection({});
   
-  let dc=pc.createDataChannel("");
-  if(close_listener)  {
-    dc.onclose=close_listener;
-    pc.ondatachannel=(e)=>{
-      e.channel.onclose=close_listener;
-    }
+  let dc=null;
+
+  if(callImmediately) {
+    dc=pc.createDataChannel("");
+    if(close_listener) dc.onclose=close_listener;
+  }
+
+  pc.ondatachannel=(e)=>{
+    if(dc) throw("WebRTC: DataChannel from remote, but we already have a DataChannel!");
+    dc=e.channel;
+    if(close_listener) dc.onclose=close_listener;
   }
   
   pc.addEventListener('icecandidate', e => {
@@ -62,7 +67,7 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
   }
   
   pc.addEventListener('track', e => {
-    if (target_el.srcObject !== e.streams[0]) {
+    if (target_el && target_el.srcObject !== e.streams[0]) {
       target_el.srcObject = e.streams[0];
       target_el.play();
       if(close_listener)
@@ -117,12 +122,9 @@ export async function WebRTC(server_url, path, source_el, target_el, close_liste
     put(JSON.stringify(offer));
   }
 
+  webrtc.send             = (msg) => dc.send(msg);
+  webrtc.addEventListener = (l, opts) => dc.addEventListener(l, opts);
+
   return webrtc;
 }
-
-
-
-
-
-
 
