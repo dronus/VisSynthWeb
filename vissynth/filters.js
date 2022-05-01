@@ -776,6 +776,22 @@ filters.spherical=function({radius,scale}) {
     return this;
 }
 
+// cushion distortion
+filters.cushion=function({strength}) {
+    let s_cushion = warpShader(this, 's_spherical', '\
+        uniform float strength;\
+    ', '\
+        float l=length(coord);\
+        coord*=(1. + l * strength)/(1. + 0.5 * strength);\
+    ');
+
+    this.simpleShader( s_cushion, {
+        strength: strength,
+    });
+
+    return this;
+}
+
 // geometric shapes for transforms
 var mesh_transforms={
   'plane':'pos.xy=pos.xy+vec2(-0.5,-0.5);',
