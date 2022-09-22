@@ -1983,13 +1983,20 @@ filters.capture=function({device,w,h,sync}) {
         audio:false
       };
 
-      window.navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+      var connect = function() {
+       window.navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
         console.log("Got camera!");
-
         // capture device was successfully acquired
         video.muted=true;
         video.srcObject = stream;
         video.play();
+       });
+      }
+      connect();
+      window.navigator.mediaDevices.addEventListener('devicechange',function(e){
+        console.log('devicechange event',e);
+        // our camera may be just plugged in (after plugged out, or for the first time), so try to connect again.
+        if(!video.srcObject || !video.srcObject.active) connect();
       });
     }
     
