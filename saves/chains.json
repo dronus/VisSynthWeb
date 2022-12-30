@@ -7,7 +7,7 @@
    "y": 1080,
    "filtering": "linear",
    "precision": "byte",
-   "fps_limit": 15
+   "fps_limit": 60
   },
   {
    "effect": "select_audio",
@@ -17,14 +17,19 @@
   {
    "effect": "capture",
    "device": 0,
-   "name": "Integrated Camera (5986:2113)",
-   "sync": 1
+   "w": 0,
+   "h": 0,
+   "sync": 0
   }
  ],
  [
   "POST"
  ],
  [
+  ""
+ ],
+ [
+  "",
   "",
   "",
   "",
@@ -5587,7 +5592,7 @@
     "f": 0.01,
     "a": 0.06,
     "p": 0,
-    "o": -0.06
+    "o": -0.092
    }
   },
   {
@@ -6923,7 +6928,7 @@
   },
   {
    "effect": "transform",
-   "x": 0.059,
+   "x": 0.009,
    "y": 0,
    "scale": 1.131,
    "angle": -0.01
