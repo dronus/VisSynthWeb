@@ -34,25 +34,25 @@ It runs well in lower resolutions even on small hardware like the Odroid XU4 or 
 * The smaller panels "PRE" and "POST" to the right allow to pre- or append affects to all chains at once. So system- and location-dependent setup, eg. devices, could be done in PRE, and mapping, masking and perspective correction to adapt a projection could be done in POST.
 * The small panel "PREVIEW" is black by default, but can be enabled to show a preview stream of the projection. Only use this if needed, as it has consumes computing power and bandwith and thus lowers the frame rate in most cases.
 * Effect types: Most effects modify the incoming image. Others are special, some examples:
- * Sources (colored green), eg. capture - Has no input (so discards the image of the chain above). Outputs the raw camera image on top of the chain.
- * preview: Has no effect on the image itself, but feeds the image to the preview if enabled. Allows to check intermediate images in long chains.
- * push_stack: Does not modify the image at all, but places a copy onto a stack. Effects with more then one input use these.
- * Two-input effects, like blend, blend_alpha, colorkey, displace: These effects require two input images, require another image to be put on the stack before, which they take off and use.
- * feedbackOut, feedbackIn: feedbackIn stores one image that is hold onto the next video frame. Use feedbackOut above of it to create a feedback loop.
- * motion, timeshift: These effects keep internal copys of images over some time. 
+    * Sources (colored green), eg. capture - Has no input (so discards the image of the chain above). Outputs the raw camera image on top of the chain.
+    * preview: Has no effect on the image itself, but feeds the image to the preview if enabled. Allows to check intermediate images in long chains.
+    * push_stack: Does not modify the image at all, but places a copy onto a stack. Effects with more then one input use these.
+    * Two-input effects, like blend, blend_alpha, colorkey, displace: These effects require two input images, require another image to be put on the stack before, which they take off and use.
+    * feedbackOut, feedbackIn: feedbackIn stores one image that is hold onto the next video frame. Use feedbackOut above of it to create a feedback loop.
+    * motion, timeshift: These effects keep internal copys of images over some time. 
 * Any parameter can be animated by adding an oscilator "OSC" or audio beat analyser "BEAT" using the buttons next to the slider. OSC and BEAT add new sliders, and can be removed again with the respective "REMOVE" buttons.
 * An OSC makes the value going up and down repeatedly. Four new parameters can be adjusted:
- * f: Set the frequency of the value change
- * a: Set the amplitude, that is how much the value will change in every swing
- * p: Sets the phase, this can be used to move the swing in respect to another OSC
- * o: Sets the offset, that is the center value of the swing. 
+    * f: Set the frequency of the value change
+    * a: Set the amplitude, that is how much the value will change in every swing
+    * p: Sets the phase, this can be used to move the swing in respect to another OSC
+    * o: Sets the offset, that is the center value of the swing. 
 Usually you may first try an low "a" and set "o" to the old static value to achive a similiar effect.
 * An BEAT makes the value react to sound. Five parameters can be adjusted:
- * pulse: Set the direct reaction to audio amplitude pulses
- * f: Set the guessed beat frequency of the audio, if any. For music, this is BPM / 60.
- * a: Set the amplitude, that is how much the value will change with the beat.
- * p: Sets the phase, this can be used to move the swing in respect to the beat.
- * o: Sets the offset, that is the lowest value of the swing.
+    * pulse: Set the direct reaction to audio amplitude pulses
+    * f: Set the guessed beat frequency of the audio, if any. For music, this is BPM / 60.
+    * a: Set the amplitude, that is how much the value will change with the beat.
+    * p: Sets the phase, this can be used to move the swing in respect to the beat.
+    * o: Sets the offset, that is the lowest value of the swing.
 * Any change to the active chain (add, order, adjust effects)  takes effect instantly.
 * Any change is saved almost immediately.
 
