@@ -86,6 +86,9 @@ For a minimal example, see minimal_example.html.
 * VisSynthWeb will run from any static web server this way, however to tweak the effects by its own UI, the VisSynthWeb nodejs server is needed.
 * You can still create effects in an UI-capable instance, and copy the effect chain code over to your own static application.
 
+See example_minimal.html and example_multiple.html for library use.
+
+
 ## Issues / TODO
 
 * Exceptions due to missing WebGL capabilities of the current machine are not caught reliable, so some effects or settings
