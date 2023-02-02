@@ -106,6 +106,11 @@
       setTimeout(updateChain,500); // TODO get rid of wait (race condition prone)
     }
 
+    window.screenshot=function()
+    {
+      send('canvas.screenshot()');
+    }
+
     var recording=false;
     window.toggle_recorder=function()
     {
