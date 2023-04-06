@@ -98,12 +98,12 @@ func main() {
 
 	j, _ := ioutil.ReadFile("config.json")
 	if err := json.Unmarshal(j, &cfg); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	j, _ = ioutil.ReadFile("mailer.json")
 	if err := json.Unmarshal(j, &m); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	http.HandleFunc("/", indexHandler)
