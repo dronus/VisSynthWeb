@@ -1976,7 +1976,7 @@ filters.capture=function({device,w,h,sync}) {
 
       var constraints = {
         video: { 
-          deviceId: devices.video[device].deviceId,
+          deviceId: devices.video[device]?.deviceId,
           width:  {"ideal": w ? w : this.width },
           height: {"ideal": h ? h : this.height}
         },

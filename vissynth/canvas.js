@@ -464,7 +464,7 @@ Canvas.prototype.switchChain=function(chain_index)
 
   // load startup chain (first three of chains.json : setup pre, current, setup after)
   var xmlHttp = new XMLHttpRequest();
-  xmlHttp.open('GET','saves'+this.session_url+'chains.json',true);
+  xmlHttp.open('GET','static/saves'+this.session_url+'chains.json',true);
   xmlHttp.send(null);
   xmlHttp.onreadystatechange=() => {
     if(xmlHttp.readyState!=4) return;

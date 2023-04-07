@@ -49,6 +49,8 @@ var clamp=function(x,a,b){
   return Math.min(b,Math.max(a,x));
 }
 
+export let parameters={};
+
 // generators provide user-selectable effect parameter value sources
 export let generators={
   // a tunable oscillator with selectable waveform, see above.
@@ -59,5 +61,6 @@ export let generators={
   midi:function(t,args){return clamp( (args.infinite?window.midi.controllers_infinite:window.midi.controllers)[args.channel|0]*args.a+args.o, args.min, args.max)},
   // provide MIDI Note input parameters
   midi_note:function(t,args){return (window.midi.notes[args.channel+" "+args.note]|0)*args.a+args.o},
+  parameter: function(t,args) {return parameters[args.parameter];},
 };
 
