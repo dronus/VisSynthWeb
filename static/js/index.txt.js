@@ -1,4 +1,4 @@
-const S = [
+export const S = [
   {selector: ".start .title .line1", lang: "de", text: "Du kannst"},
   {selector: ".start .title .line2", lang: "de", text: "etwas ändern!"},
   {selector: ".start .box .header", lang: "de", text: "Du möchstest dich engagieren? Großartig! Hier bekommst du Tipps, wo und wie du aktiv werden kannst."},

@@ -19,7 +19,7 @@ let fallback = (s) => {
   el.appendChild(fallback);
 };
 
-let updateText = (code) => {
+export let updateText = (code) => {
   if (!code) return;
 
   document.querySelectorAll(".s").forEach((s) => {
@@ -41,7 +41,7 @@ let updateText = (code) => {
   });
 };
 
-let initText = (store) => {
+export let initText = (store) => {
   let lang = sessionStorage.getItem(store);
   updateText(lang);
 
@@ -54,7 +54,7 @@ let initText = (store) => {
   }
 };
 
-let initControls = (storage) => {
+export let initControls = (storage) => {
   let target = document.querySelector("ul.lang");
 
   langs(list => {

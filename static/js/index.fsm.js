@@ -1,3 +1,8 @@
+import {fsm} from '../lib/fsm.js';
+import * as idle from '../lib/idle.js';
+import '../lib/keyboard.js';
+import {wchars} from './wchars.js';
+
 fsm.protos = new Map([
 
   [[
@@ -152,7 +157,7 @@ fsm.states = {
         this.redraw(this.kb.getInput());
       });
 
-      this.kb = new Keyboard(".message .kb", {
+      this.kb = new window.SimpleKeyboard.default(".message .kb", {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
         onChange: input => this.redraw(input),
         layout: {'default': [
@@ -218,7 +223,7 @@ fsm.states = {
     longest: function(array) {
       let n = 0;
       array.forEach(str => {
-        w = this.width(str);
+        let w = this.width(str);
         if (w > n) n = w;
       });
       return n;
@@ -268,7 +273,7 @@ fsm.states = {
       this.cmax = 32;
       this.regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-      this.kb = new Keyboard(".send .kb", {
+      this.kb = new window.SimpleKeyboard.default(".send .kb", {
         theme: "simple-keyboard hg-theme-default hg-layout-default",
         onChange: input => this.redraw(input),
         layout: {'default': [

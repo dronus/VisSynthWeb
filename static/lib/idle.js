@@ -1,20 +1,22 @@
-let idle = {
+let callback, seconds, debug, timeoutID;
 
-  callback: () => console.warn("Please set idle.callback"),
-  seconds: 60,
+export let init = o => {
+  callback = o.callback ?? (() => console.warn("Please set idle.callback"));
+  seconds = o.seconds ?? 60;
+  debug = o.debug ?? false;
+};
 
-  start: function(verbose) {
-    if (verbose) console.log("Idle start");
-    if (this.timeoutID) window.clearTimeout(this.timeoutID);
+export let start = () => {
+  if (debug) console.log("Idle start");
+  window.clearTimeout(timeoutID);
 
-    this.timeoutID = window.setTimeout(() => {
-      if (verbose) console.log("Idle callback");
-      this.callback();
-    }, this.seconds * 1000);
-  },
+  timeoutID = window.setTimeout(() => {
+    if (debug) console.log("Idle callback");
+    callback();
+  }, seconds * 1000);
+};
 
-  stop: function(verbose) {
-    if (verbose) console.log("Idle stop");
-    window.clearTimeout(this.timeoutID);
-  },
+export let stop = () => {
+  if (debug) console.log("Idle stop");
+  window.clearTimeout(timeoutID);
 };

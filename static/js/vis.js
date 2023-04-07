@@ -41,8 +41,8 @@
       // take screenshot if requested
       if(screenshot_cycle==1)
       {
-        fsm.img = canvas.toDataURL('image/png');
-        fsm.update("preview");
+        window.fsm.img = canvas.toDataURL('image/png');
+        window.fsm.update("preview");
         screenshot_cycle=0;
       }
     };

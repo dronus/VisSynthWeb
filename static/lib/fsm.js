@@ -1,4 +1,4 @@
-let fsm = {
+export let fsm = {
 
   setup: function() {
     this.protos.forEach((p, names) => names.forEach(s => {

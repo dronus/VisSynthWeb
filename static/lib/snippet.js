@@ -5,7 +5,7 @@ let createSnippet = (text, lang, target) => {
   return target.appendChild(el);
 }
 
-let loadSnippets = (list) => {
+export let loadSnippets = (list) => {
   list.forEach((s) => {
     let targets = document.querySelectorAll(s.selector);
 

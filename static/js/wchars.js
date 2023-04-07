@@ -1,4 +1,4 @@
-var wchars = new Map([
+export let wchars = new Map([
   ["1", 23],
   ["2", 34],
   ["3", 33],
