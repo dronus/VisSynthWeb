@@ -24,6 +24,7 @@
       "spectrogram":{"inputs":0},
       "midi":{"inputs":0,"args":{"device":0,"rows":16,"cols":16,"echo":1}},
       "preview":{},
+      "resize":{"args":{"w":320,"h":200}},
       "feedbackOut":{"args":{"blend":0.7,"clear_on_switch":0.0}},
       "feedbackIn":{},
       "stack_push":{"outputs":2},
@@ -96,6 +97,8 @@
       "reaction2":{"args":{"F":0.0545,"K":0.062,"D_a":0.2,"D_b":0.1,"iterations":1.0}},
       "glitch":{"args":{"scale":16.0,"detail": 25.0,"strength": 0.9,"speed": 1.0}},
       "supershape":{"args":{"angleX":-0.7,"angleY":{"type":"osc","f":0.1,"a":10.0,"p":0.0,"o":0.0},"a1":1.0,"b1":1.0,"m1":5.0,"n11":1.0,"n21":1.0,"n31":2.0,"a2":1.0,"b2":1.0,"m2":5.0,"n12":1.0,"n22":1.0,"n32":3.0}},
-      "address_glitch":{"args":{"mask_x":8.0,"mask_y":0.0}}
+      "address_glitch":{"args":{"mask_x":8.0,"mask_y":0.0}},
+      "canvas_plugin":{"args":{"fn_name":"demo_canvas"}},
+      "mixer":{"args":{"rr":1.0,"rg":0.0,"rb":0.0,"ra":0.0,"gr":0.0,"gg":1.0,"gb":0.0,"ga":0.0,"br":0.0,"bg":0.0,"bb":1.0,"ba":0.0,"ar":0.0,"ag":0.0,"ab":0.0,"aa":1.0}}
     }
 

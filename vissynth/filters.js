@@ -1199,6 +1199,51 @@ filters.preview=function() {
     return this;
 }
 
+filters.resize=function({w,h}) {
+  var texture=this.getSpareTexture(null,w, h);
+  this.texture.copyTo(texture);
+  this.putTexture(texture);
+  this.width=this.template.width=w;
+  this.height=this.template.height=h;
+}
+
+let canvas_plugin_image=null;
+let canvas_plugin_busy=false;
+filters.canvas_plugin=function({fn_name}) {
+  let fn=window[fn_name];
+  if(!fn) return;
+
+  if(!canvas_plugin_busy) {
+    if(this.canvas.width!=this.template.width || this.canvas.height!=this.template.height) {
+      this.canvas.width=this.template.width;
+      this.canvas.height=this.template.height;
+    }
+    this.texture.copyTo(this);
+    let img=new ImageData(this.texture.width,this.texture.height);
+    this.gl.readPixels(0,0,this.texture.width,this.texture.height, this.texture.format, this.texture.type,img.data);
+    let result=fn(img);
+    if(result instanceof Promise) {
+      canvas_plugin_busy=true;
+      result.then((img)=>{
+        canvas_plugin_busy=false;
+        if(img)
+          canvas_plugin_image=img;
+      },
+      () => {canvas_plugin_busy=false});
+    }else{
+      if(result)
+       canvas_plugin_image=result;
+     canvas_plugin_busy=false;
+    }
+  }
+
+  if(canvas_plugin_image){
+    var imageTexture=this.getSpareTexture(null,canvas_plugin_image.width, canvas_plugin_image.height);
+    imageTexture.loadContentsOf(canvas_plugin_image);
+    this.putTexture(imageTexture);
+  }
+}
+
 // pull image from "feedback" buffer 
 // where it needs to be copied by "feedbackIn" on rendering the frame before.
 filters.feedbackOut=function({blend,clear_on_switch}) {
@@ -2976,6 +3021,24 @@ filters.vibrance=function({strength}) {
     });
 
     return this;
+}
+
+
+// remap colors of all pixels by mapping an input range to a given output range and gamma correction.
+filters.mixer=function({rr,rg,rb,ra, gr,gg,gb,ga, br,bg,bb,ba, ar,ag,ab,aa}) {
+    let s_mixer = this.getShader('s_mixer',  null, '\
+        varying vec2 texCoord;\
+        uniform sampler2D texture;\
+        uniform mat4 channel_matrix; \
+        void main()\
+        {\
+            vec4 color = texture2D(texture, texCoord);\
+            gl_FragColor = channel_matrix * color;\
+        }\
+    ');
+    this.simpleShader( s_mixer, {
+        channel_matrix : [rr,rg,rb,ra, gr,gg,gb,ga, br,bg,bb,ba, ar,ag,ab,aa]
+    });
 }
 
 // remap colors of all pixels by mapping an input range to a given output range and gamma correction.
