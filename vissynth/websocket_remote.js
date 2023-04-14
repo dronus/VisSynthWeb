@@ -1,5 +1,5 @@
 
-export let WebsocketRemote=function (session_url) {
+export let WebsocketRemote=function (session_url, server_url) {
 
   let dispatcher=new EventTarget();
   let feeds = {};
@@ -7,7 +7,8 @@ export let WebsocketRemote=function (session_url) {
   var websocket;
   var open_socket = () =>
   {
-    websocket=new WebSocket((document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html',''));
+    server_url = server_url || (document.location.protocol=='https:'?'wss:':'ws:')+'//'+document.location.hostname+':'+document.location.port+document.location.pathname.replace('index.html','');
+    websocket=new WebSocket(server_url);
     websocket.onopen=function(){
       // opt in for commands
       for(let feed in feeds)
