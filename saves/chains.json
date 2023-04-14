@@ -57,7 +57,8 @@
   },
   {
    "effect": "canvas_plugin",
-   "fn_name": "segment_body"
+   "fn_name": "segment_body",
+   "keep": 1
   },
   {
    "effect": "mixer",
@@ -80,6 +81,30 @@
   },
   {
    "effect": "blend_mask"
+  },
+  {
+   "effect": "canvas_plugin",
+   "fn_name": "show_hands",
+   "keep": 0
+  },
+  {
+   "effect": "mixer",
+   "rr": 1,
+   "rg": 0,
+   "rb": 0,
+   "ra": 0,
+   "gr": 0,
+   "gg": 1,
+   "gb": 0,
+   "ga": 0,
+   "br": 0,
+   "bg": 0,
+   "bb": 1,
+   "ba": 0,
+   "ar": 0,
+   "ag": 0,
+   "ab": 0,
+   "aa": 1998.999
   }
  ],
  [
