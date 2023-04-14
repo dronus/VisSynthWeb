@@ -6,7 +6,7 @@ import {devices} from "./devices.js"
 
 // install a VisSynth video effect renderer to the HTML canvas element matching given selector.
 // session_url can be used to run multiple remote control sessions on the same server.
-export let VisSynth = function(selector, session_url) {
+export let VisSynth = function(selector, session_url, server_url) {
 
   session_url="/"+(session_url ? session_url+'_' : "");
   
@@ -17,7 +17,7 @@ export let VisSynth = function(selector, session_url) {
   let command_handler=function(evt) {
     return eval(evt.data);
   };
-  let remote = new WebsocketRemote(session_url);
+  let remote = new WebsocketRemote(session_url,server_url);
   remote.addEventListener("command",command_handler);
   canvas.remote = remote;
   devices.addEventListener("update",function() {
