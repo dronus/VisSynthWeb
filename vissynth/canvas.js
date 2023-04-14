@@ -314,7 +314,7 @@ var get_param_values=function(param,t)
 }
 
 // render a single effect
-Canvas.prototype.run_effect=function(effect,t)
+Canvas.prototype.run_effect=function(effect,t,filter_id)
 {
   if(typeof effect == "string") return;
   var args={};
@@ -324,6 +324,13 @@ Canvas.prototype.run_effect=function(effect,t)
     if(key=='effect') continue;
     args[key]=get_param_values(effect[key],t);
   }
+
+  // provide scratchpad memory per filter type and instance (key is effect name and individual index)
+  if(!this._[effect.effect]) this._[effect.effect]={};
+  this.filter_data =         this._[effect.effect];
+  if(!this._[filter_id]) this._[filter_id]={};
+  this.filter_instance = this._[filter_id];
+
   fn.apply(this,[args]);
 }
 
@@ -332,8 +339,13 @@ Canvas.prototype.run_chain=function(current_time)
 {
   Generators.prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
   this.stack_prepare();
-  for(var i=0; i<this.chain.length; i++)
-    this.run_effect(this.chain[i],current_time*0.001);
+  let filter_ids={};
+  for(var i=0; i<this.chain.length; i++) {
+    let effect=this.chain[i];
+    filter_ids[effect.effect] = (filter_ids[effect.effect] || 0) + 1;
+    let id = effect.effect + filter_ids[effect.effect];
+    this.run_effect(effect,current_time*0.001,id);
+  }
   // reset switched flag, it is used by some filters to clear buffers on chain switch
   this.switched=false;
 }

@@ -290,11 +290,11 @@ filters.feedbackIn=function() {
 // blank out image periodically
 filters.strobe=function({period}) {
     var t=this.texture;
-    this._.strobeTexture=this.getSpareTexture(this._.strobeTexture);
+    this.instance_data.texture=this.getSpareTexture(this.instance_data.texture);
 
-    this._.strobePhase=((this._.strobePhase|0)+1.) % period;
-    if(this._.strobePhase==0) this.texture.copyTo(this._.strobeTexture);
-    else                      this._.strobeTexture.copyTo(this.texture);
+    this.instance_data.phase=((this.instance_data.phase|0)+1.) % period;
+    if(this.instance_data.phase==0) this.texture.copyTo(this.instance_data.texture);
+    else                      this.instance_data.texture.copyTo(this.texture);
 
     return this;
 }
@@ -423,7 +423,6 @@ filters.supershape=function({angleX,angleY,a1,b1,m1,n11,n21,n31,a2,b2,m2,n12,n22
       matrix:matrix
     };
 
-    var supershapeMeshUVs=this._.supershapeMeshUVs;
     this.texture.use(0);
     var target=this.getSpareTexture();
     target.setAsTarget();
@@ -649,8 +648,8 @@ filters.rectangle=function({color:{r,g,b,a},x,y,width,height,angle}) {
 
 // video clip source.
 filters.video=function({url,play_sound,speed,loop}) {
-    if(!this._.videoFilterElement) this._.videoFilterElement={};
-    var v=this._.videoFilterElement[url];
+    if(!this.filter_data.video) this.filter_data.video={};
+    var v=this.filter_data.video[url];
     if(!v)
     {
       var v = document.createElement('video');
@@ -671,7 +670,7 @@ filters.video=function({url,play_sound,speed,loop}) {
       }
       v.onended = playNext;
       playNext();
-      this._.videoFilterElement[url]=v;
+      this.filter_data.video[url]=v;
     }  
       
     v.playbackRate=speed || 1.0;
@@ -679,10 +678,10 @@ filters.video=function({url,play_sound,speed,loop}) {
     // make sure the video has adapted to the video source
     if(v.currentTime==0 || !v.videoWidth) return this;
 
-    if(!this._.videoTexture) this._.videoTexture=this.toTexture(v);
-    this._.videoTexture.loadContentsOf(v);
+    if(!this.filter_data.texture) this.filter_data.texture=this.toTexture(v);
+    this.filter_data.texture.loadContentsOf(v);
     var target=this.getSpareTexture();
-    this._.videoTexture.copyTo(target);
+    this.filter_data.texture.copyTo(target);
     this.putTexture(target);
         
     return this;
@@ -699,36 +698,32 @@ filters.canvas=function({selector}) {
 }
 
 
-var image_loaded=[];
 // a static image source
 filters.image=function({url}) {
 
-    if(!this._.imageFilterElement) this._.imageFilterElement=[];
-    var v=this._.imageFilterElement[url];
+    if(!this.filter_data[url]) this.filter_data[url]={};
+    let url_data=this.filter_data[url];
 
+    var v=url_data.image;
     if(!v)
     {
       var v = document.createElement('img');
       v.crossOrigin = "anonymous";
       v.src=url;
-      this._.imageFilterElement[url]=v;
-      v.onload=function(){
-          image_loaded[url]=true;
-      }
-    }  
-      
+      url_data.image=v;
+    }
+
     // make sure the image has adapted to the image source
-    if(!this._.imageTexture) this._.imageTexture=[];
-    if(!this._.imageTexture[url] && image_loaded[url])
+    if(!url_data.texture && url_data.image.complete)
     {
-      this._.imageTexture[url]=this.getSpareTexture(null,v.width,v.height);
-      this._.imageTexture[url].loadContentsOf(v);
+      url_data.texture=this.getSpareTexture(null,v.width,v.height);
+      url_data.texture.loadContentsOf(v);
     }
     
-    if(this._.imageTexture[url])
+    if(url_data.texture)
     {
       var target=this.getSpareTexture();
-      this._.imageTexture[url].copyTo(target);
+      url_data.texture.copyTo(target);
       this.putTexture(target);
     }
         
@@ -1207,13 +1202,11 @@ filters.resize=function({w,h}) {
   this.height=this.template.height=h;
 }
 
-let canvas_plugin_image=null;
-let canvas_plugin_busy=false;
-filters.canvas_plugin=function({fn_name}) {
+filters.canvas_plugin=function({fn_name,keep}) {
   let fn=window[fn_name];
   if(!fn) return;
 
-  if(!canvas_plugin_busy) {
+  if(!this.filter_instance.busy) {
     if(this.canvas.width!=this.template.width || this.canvas.height!=this.template.height) {
       this.canvas.width=this.template.width;
       this.canvas.height=this.template.height;
@@ -1223,24 +1216,26 @@ filters.canvas_plugin=function({fn_name}) {
     this.gl.readPixels(0,0,this.texture.width,this.texture.height, this.texture.format, this.texture.type,img.data);
     let result=fn(img);
     if(result instanceof Promise) {
-      canvas_plugin_busy=true;
+      let filter_instance=this.filter_instance; // closure for promise, as filter_instance is switching
+      filter_instance.busy=true;
       result.then((img)=>{
-        canvas_plugin_busy=false;
+        filter_instance.busy=false;
         if(img)
-          canvas_plugin_image=img;
+          filter_instance.image=img;
       },
-      () => {canvas_plugin_busy=false});
+      () => {filter_instance.busy=false});
     }else{
       if(result)
-       canvas_plugin_image=result;
-     canvas_plugin_busy=false;
+       this.filter_instance.image=result;
+     this.filter_instance.busy=false;
     }
   }
 
-  if(canvas_plugin_image){
-    var imageTexture=this.getSpareTexture(null,canvas_plugin_image.width, canvas_plugin_image.height);
-    imageTexture.loadContentsOf(canvas_plugin_image);
+  if(this.filter_instance.image){
+    var imageTexture=this.getSpareTexture(null,this.filter_instance.image.width, this.filter_instance.image.height);
+    imageTexture.loadContentsOf(this.filter_instance.image);
     this.putTexture(imageTexture);
+    if(!keep) this.filter_instance.image=null;
   }
 }
 
@@ -1304,31 +1299,31 @@ filters.motion=function({threshold,interval,damper}) {
         }\
     ');
 
-    this._.motionTexture=this.getSpareTexture(this._.motionTexture);
+    this.filter_instance.texture=this.getSpareTexture(this.filter_instance.texture);
 
-    if(!this._.motionCycle || this._.motionCycle>interval)
+    if(!this.filter_instance.cycle || this.filter_instance.cycle>interval)
     {
       // blend current image into mean motion texture
       var target=this.getSpareTexture();
       s_motionBlend.textures({
           texture: this.texture,
-          motionTexture: this._.motionTexture
+          motionTexture: this.filter_instance.texture
       });
       this.simpleShader( s_motionBlend, {
           blend: damper
       },this.texture,target);
 
-      this.releaseTexture(this._.motionTexture);
-      this._.motionTexture=target;
+      this.releaseTexture(this.filter_instance.texture);
+      this.filter_instance.texture=target;
 
-      this._.motionCycle=0;
+      this.filter_instance.cycle=0;
     }
-    this._.motionCycle++;
+    this.filter_instance.cycle++;
 
     // rebind, motionTexture was exchanged by simpleShader
     s_motion.textures({
         texture: this.texture,
-        motionTexture: this._.motionTexture
+        motionTexture: this.filter_instance.texture
     });
     this.simpleShader( s_motion, {
         threshold: threshold
@@ -1746,12 +1741,12 @@ filters.vectorscope=function({size,intensity,linewidth}) {
     var count=values.length;
 
     // generate line segments
-    if(!this._.vectorscopeUVs)
+    if(!this.filter_data.UVs)
     {
-      this._.vectorscopeUVs=[];
+      this.filter_data.UVs=[];
       for (var t=0;t<=1.0;t+=1.0/count)
-        this._.vectorscopeUVs.push(t);
-      s_vectorscope.attributes({_texCoord:this._.vectorscopeUVs},{_texCoord:1});
+        this.filter_data.UVs.push(t);
+      s_vectorscope.attributes({_texCoord:this.filter_data.UVs},{_texCoord:1});
     }
             
     // set shader parameters
@@ -1976,27 +1971,27 @@ filters.timeshift=function({time,clear_on_switch}) {
     var max_buffer_bytes=256000000;
     var max_frames=Math.floor(max_buffer_bytes / frame_bytes);
 
-    if(!this._.pastTextures) this._.pastTextures=[];
+    if(!this.filter_instance.textures) this.filter_instance.textures=[];
   
     if(clear_on_switch && this.switched)
-      for(let key in this._.pastTextures)
-        this._.pastTextures[key].clear();
+      for(let key in this.filter_instance.textures)
+        this.filter_instance.textures[key].clear();
 
     // copy current frame to the start of the queue, pushing all frames back
 
     var nt=null;
-    if(this._.pastTextures.length>=max_frames)
-      nt=this._.pastTextures.pop();
+    if(this.filter_instance.textures.length>=max_frames)
+      nt=this.filter_instance.textures.pop();
       
     nt=this.getSpareTexture(nt);
     this.texture.copyTo(nt);
-    this._.pastTextures.unshift(nt);
+    this.filter_instance.textures.unshift(nt);
 
     // copy past frame from the queue to the current texture, if available
     var j=Math.abs(Math.floor(time) % max_frames);
-    if(this._.pastTextures[j]) 
+    if(this.filter_instance.textures[j]) 
     {
-      this._.pastTextures[j].copyTo(this.texture);
+      this.filter_instance.textures[j].copyTo(this.texture);
     }
 
     return this;
@@ -2079,9 +2074,9 @@ filters.webrtc=function({websocket_url}) {
     let v=this.webrtc_videos[websocket_url];
     // make sure the video has adapted to the capture source
     if(!v || v.currentTime==0 || !v.videoWidth) return this;
-    if(!this._.videoTexture) this._.videoTexture=this.toTexture(v);
-    this._.videoTexture.loadContentsOf(v);
-    this._.videoTexture.copyTo(this.texture);
+    if(!this.filter_instance.texture) this.filter_instance.texture=this.toTexture(v);
+    this.filter_instance.texture.loadContentsOf(v);
+    this.filter_instance.texture.copyTo(this.texture);
 
     return this;
 }
@@ -2352,20 +2347,20 @@ filters.particles=function({anglex,angley,anglez,size,strength,homing,noise,disp
 
     // generate grid mesh and particle data textures
     var w=320, h=240;
-    if(!this._.particleUvs)
+    if(!this.filter_data.particleUvs)
     {
-      this._.particleUvs=[];
+      this.filter_data.particleUvs=[];
       var dx=1./w;
       var dy=1./h;
       for (var y=0;y<=1.0;y+=dy) {
           for (var x=0;x<=1.0;x+=dx) {        
-              this._.particleUvs.push(x,y);
+              this.filter_data.particleUvs.push(x,y);
           }
       }
-      s_particles.attributes({_texCoord:this._.particleUvs},{_texCoord:2});
+      s_particles.attributes({_texCoord:this.filter_data.particleUvs},{_texCoord:2});
       
       // generate particle data double buffer
-      if(!this._.particleTextureA) {
+      if(!this.filter_data.particleTextureA) {
         var type;
         var oes=this.gl.getExtension( 'OES_texture_float' );
         if (!oes) {
@@ -2373,12 +2368,12 @@ filters.particles=function({anglex,angley,anglez,size,strength,homing,noise,disp
           type=this.gl.UNSIGNED_BYTE;
         }else
           type=oes.FLOAT;
-        this._.particleTextureA=this.getSpareTexture(null, w,h, this.gl.RGBA, type);
-        this._.particleTextureB=this.getSpareTexture(null, w,h, this.gl.RGBA, type);
+        this.filter_data.particleTextureA=this.getSpareTexture(null, w,h, this.gl.RGBA, type);
+        this.filter_data.particleTextureB=this.getSpareTexture(null, w,h, this.gl.RGBA, type);
       }
     }
    
-    [this._.particleTextureB,this._.particleTextureA]=[this._.particleTextureA,this._.particleTextureB];
+    [this.filter_data.particleTextureB,this.filter_data.particleTextureA]=[this.filter_data.particleTextureA,this.filter_data.particleTextureB];
 
     s_particle_update.uniforms({
       homing:homing,
@@ -2386,9 +2381,9 @@ filters.particles=function({anglex,angley,anglez,size,strength,homing,noise,disp
       displacement:displacement
     });             
     var texture=this.stack_pop();
-    s_particle_update.textures({displacement_texture: texture, texture: this._.particleTextureB});
+    s_particle_update.textures({displacement_texture: texture, texture: this.filter_data.particleTextureB});
         
-    this._.particleTextureA.setAsTarget();
+    this.filter_data.particleTextureA.setAsTarget();
     s_particle_update.drawRect();
 
     // perspective projection matrix
@@ -2412,7 +2407,7 @@ filters.particles=function({anglex,angley,anglez,size,strength,homing,noise,disp
     });
     
     // set shader textures    
-    s_particles.textures({particles: this._.particleTextureA, texture: this.texture});
+    s_particles.textures({particles: this.filter_data.particleTextureA, texture: this.texture});
 
     // render 3d mesh stored in vertices,uvs to spare texture
     var target=this.getSpareTexture()
@@ -2464,30 +2459,30 @@ filters.patch_displacement=function({sx,sy,sz,anglex,angley,anglez,scale,pixelat
     }');
 
     // generate grid mesh
-    if(!this._.gridPatchesVertices)
+    if(!this.filter_data.gridPatchesVertices)
     {
-      this._.gridPatchesVertices=[];
-      this._.gridPatchesUvs=[];
+      this.filter_data.gridPatchesVertices=[];
+      this.filter_data.gridPatchesUvs=[];
       var dx=1./160.;
       var dy=1./100.;
       for (var y=0;y<=1.0;y+=dy) {
           for (var x=0;x<=1.0;x+=dx) {        
-              this._.gridPatchesVertices.push(x,y,0);
-              this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
-              this._.gridPatchesVertices.push(x,y+dy,0);
-              this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
-              this._.gridPatchesVertices.push(x+dx,y+dy,0);
-              this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
+              this.filter_data.gridPatchesVertices.push(x,y,0);
+              this.filter_data.gridPatchesUvs.push(x+dx/2,y+dy/2);
+              this.filter_data.gridPatchesVertices.push(x,y+dy,0);
+              this.filter_data.gridPatchesUvs.push(x+dx/2,y+dy/2);
+              this.filter_data.gridPatchesVertices.push(x+dx,y+dy,0);
+              this.filter_data.gridPatchesUvs.push(x+dx/2,y+dy/2);
 
-              this._.gridPatchesVertices.push(x,y,0);
-              this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
-              this._.gridPatchesVertices.push(x+dx,y+dy,0);
-              this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
-              this._.gridPatchesVertices.push(x+dx,y,0);
-              this._.gridPatchesUvs.push(x+dx/2,y+dy/2);
+              this.filter_data.gridPatchesVertices.push(x,y,0);
+              this.filter_data.gridPatchesUvs.push(x+dx/2,y+dy/2);
+              this.filter_data.gridPatchesVertices.push(x+dx,y+dy,0);
+              this.filter_data.gridPatchesUvs.push(x+dx/2,y+dy/2);
+              this.filter_data.gridPatchesVertices.push(x+dx,y,0);
+              this.filter_data.gridPatchesUvs.push(x+dx/2,y+dy/2);
           }
       }
-      s_patch_displacement.attributes({vertex: this._.gridPatchesVertices,_texCoord:this._.gridPatchesUvs},{vertex: 3, _texCoord:2});
+      s_patch_displacement.attributes({vertex: this.filter_data.gridPatchesVertices,_texCoord:this.filter_data.gridPatchesUvs},{vertex: 3, _texCoord:2});
     }
 
     // perspective projection matrix
@@ -3472,7 +3467,7 @@ filters.invertColor=filters.invert=function() {
 // simulate glitches well known from faults in JPEG image compression
 // eg. block-wise displacement of image parts or strong colorful DCT-patterns
 filters.glitch=function({scale,detail,strength,speed}) {
-    this._.glitch_time=(this._.glitch_time || 0.0)+0.0001*speed;
+    this.filter_instance.glitch_time=(this.filter_instance.glitch_time || 0.0)+0.0001*speed;
     let s_glitch = this.getShader('s_glitch',  null, '\
         uniform sampler2D texture;\
         uniform float time;\
@@ -3511,7 +3506,7 @@ filters.glitch=function({scale,detail,strength,speed}) {
         detail:detail,
         strength: strength,
         texSize: [this.width/scale, this.height/scale],
-        time: this._.glitch_time
+        time: this.filter_instance.glitch_time
     });
 
     return this;
@@ -3547,7 +3542,6 @@ filters.mirror_x = function({target}) {
     return this;
 }
 
-//canvas._.midi_init=false;
 // MIDI note input source
 // render a rows by cols grid showing the state of each MIDI note (eg. keyboard keys)
 filters.midi=function({device, rows, cols, echo}) {
@@ -3556,22 +3550,22 @@ filters.midi=function({device, rows, cols, echo}) {
   cols=Math.floor(cols);
   midi.echo_toggles=!!echo;
 
-  if(!this._.midiState)
+  if(!this.filter_data.midiState)
   {
-    this._.midiState  =new Uint8Array(rows*cols);
-    this._.midiTexture=new Texture(this.gl, rows,cols,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
+    this.filter_data.midiState  =new Uint8Array(rows*cols);
+    this.filter_data.midiTexture=new Texture(this.gl, rows,cols,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
   }
 
-  this._.midiState.fill(0);
+  this.filter_data.midiState.fill(0);
 
   for(var i=0; i<127; i++)
     if(midi.toggles['0 '+i] && i<rows*cols)
     {
-      this._.midiState[i]=255;
+      this.filter_data.midiState[i]=255;
     }
 
-  this._.midiTexture.load(this._.midiState);
-  this._.midiTexture.copyTo(this.texture);
+  this.filter_data.midiTexture.load(this.filter_data.midiState);
+  this.filter_data.midiTexture.copyTo(this.texture);
 }
 
 
