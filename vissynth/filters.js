@@ -14,7 +14,7 @@
 import {Shader} from "./shader.js";
 import {Texture} from "./texture.js"
 import {devices} from "./devices.js"
-import {audio_engine} from "./audio.js"
+import * as audio from "./audio.js"
 import {midi} from "./midi.js"
 import {vec3, mat3, mat4, quat4} from "./glmatrix.js"
 
@@ -1662,12 +1662,12 @@ filters.gauze=function({width,length,angle,strength,center:{x,y}}) {
 // choose which audio device to use for audio-dependent effects and parameter generators.
 // "select_audio":{"device":0.0}
 filters.select_audio=function({device}) {
-  audio_engine.set_device(device);
+  audio.set_device(device);
 }
 
 // create 1D image from audio waveform data.
 filters.waveform=function() {
-    var values=audio_engine.getWaveform();
+    var values=audio.getWaveform();
     if(!values) return;
     
     // TODO using this effect seems to create TWO textures of this format. Why? Do other filters suffer this as well?
@@ -1693,7 +1693,7 @@ filters.osciloscope=function({amplitude}) {
       }\
     ');
 
-    var values=audio_engine.getWaveform();
+    var values=audio.getWaveform();
     if(!values) return;
 
     var waveformTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
@@ -1724,7 +1724,7 @@ filters.vectorscope=function({size,intensity,linewidth}) {
       gl_FragColor = vec4(intensity);\
     }\
     ');
-    var values=audio_engine.getWaveform();
+    var values=audio.getWaveform();
     if(!values) return;
     var count=values.length;
 
@@ -2176,7 +2176,7 @@ filters.denoisefast=function({strength}) {
 
 // audio spectrogram video source
 filters.spectrogram=function() {
-    var values=audio_engine.getSpectrogram();
+    var values=audio.getSpectrogram();
     if(!values) return;
     
     var spectrogramTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
