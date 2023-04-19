@@ -1667,7 +1667,7 @@ filters.select_audio=function({device}) {
 
 // create 1D image from audio waveform data.
 filters.waveform=function() {
-    var values=audio_engine.waveform;
+    var values=audio_engine.getWaveform();
     if(!values) return;
     
     // TODO using this effect seems to create TWO textures of this format. Why? Do other filters suffer this as well?
@@ -1693,7 +1693,7 @@ filters.osciloscope=function({amplitude}) {
       }\
     ');
 
-    var values=audio_engine.waveform;
+    var values=audio_engine.getWaveform();
     if(!values) return;
 
     var waveformTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
@@ -1724,7 +1724,7 @@ filters.vectorscope=function({size,intensity,linewidth}) {
       gl_FragColor = vec4(intensity);\
     }\
     ');
-    var values=audio_engine.waveform;
+    var values=audio_engine.getWaveform();
     if(!values) return;
     var count=values.length;
 
@@ -2176,7 +2176,7 @@ filters.denoisefast=function({strength}) {
 
 // audio spectrogram video source
 filters.spectrogram=function() {
-    var values=audio_engine.spectrogram;
+    var values=audio_engine.getSpectrogram();
     if(!values) return;
     
     var spectrogramTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);

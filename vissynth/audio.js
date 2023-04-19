@@ -56,7 +56,9 @@ audio_engine.beatValue=function()
   // so for now, only ONE analyser!
   if(!beatAnalysers.length)
     beatAnalysers.push(new BeatAnalyser());
-  
+
+  update();
+
   return beatAnalysers[0].analyse.apply(beatAnalysers[0],arguments);
 }
 
@@ -64,12 +66,17 @@ let context=null;
 let analyser=null;
 let source_node=null;
 let current_device=-1;
+let target_device=-1;
 let streams={};
-audio_engine.spectrogram=false;
-audio_engine.waveform=false;
+let spectrogram=false;
+let waveform=false;
+audio_engine.getSpectrogram = () => {update(); return spectrogram}
+audio_engine.getWaveform    = () => {update(); return waveform};
 audio_engine.set_device=function(device_index) {
-  let i=parseInt(device_index);
+  target_device=parseInt(device_index);
+}
 
+let change_device=function(i) {
   if(i==current_device) return;
   current_device=i;
 
@@ -97,18 +104,35 @@ let setStream=function(stream) {
     source_node = context.createMediaStreamSource(stream);
     source_node.connect(analyser);
     context.resume();
+    suspended=false;
 }
 
-var initAudioAnalysers=function()
-{
-    // show audio histogram for debug purpose, if canvas exists
-    var canvas,audio_canvas_ctx;
-    if(canvas=document.getElementById('audiocanvas'))
-    {
-      audio_canvas_ctx = canvas.getContext("2d");
-      audio_canvas_ctx.fillStyle='#fff';
-    }
+let timeout=null;
+let suspended = false; // we use our own state as the context.state is updated by promises and thus lags the suspend / resume calls.
+let update=() => {
+  if(!context) init();
 
+  if(target_device != current_device)
+    change_device(target_device);
+
+  if(suspended) {
+    console.log("resuming audio engine.");
+    context.resume();
+    suspended=false;
+  }
+
+  // if no audio sources are used for 1 second, suspend the audio engine.
+  // all getters to audio sources need to call update() to keep the engine ready.
+  if(timeout) clearTimeout(timeout);
+  timeout = setTimeout(()=>{
+    console.log("suspending audio engine.");
+    context.suspend();
+    suspended=true;
+  }, 1000);
+}
+
+var init=function()
+{
     // create the audio context
     if (!window.AudioContext) 
       window.AudioContext = window.webkitAudioContext;
@@ -131,9 +155,9 @@ var initAudioAnalysers=function()
     window.audioReferencesFix=[scriptNode,analyser,context];
 
     // store time domain waveform
-    var waveform    =  new Uint8Array  (analyser.fftSize);
+    waveform    =  new Uint8Array  (analyser.fftSize);
     // store spectrogram and it's gliding means
-    var spectrogram =  new Uint8Array  (analyser.frequencyBinCount);
+    spectrogram =  new Uint8Array  (analyser.frequencyBinCount);
     var means       =  new Float32Array(analyser.frequencyBinCount);
 
     scriptNode.onaudioprocess = function()
@@ -141,10 +165,6 @@ var initAudioAnalysers=function()
         analyser.getByteTimeDomainData(waveform);
         analyser.getByteFrequencyData(spectrogram);
 
-        // clear the current state
-        if(audio_canvas_ctx) 
-          audio_canvas_ctx.clearRect(0, 0, 640, 256);
-  
         var pulse=0;
         
         // add up current pulse energy 
@@ -157,14 +177,6 @@ var initAudioAnalysers=function()
 
           var value = spectrogram[i]-means[i];
 
-          // debug draw
-          if(audio_canvas_ctx)
-          {
-            audio_canvas_ctx.fillStyle='#0f0';
-            audio_canvas_ctx.fillRect(i*5,255-means[i],3,255);
-            audio_canvas_ctx.fillStyle='#fff';
-            audio_canvas_ctx.fillRect(i*5,255-spectrogram[i],3,2);
-          }
           var attenuation=(spectrogram.length-i)/spectrogram.length;
           attenuation*=attenuation;
           pulse+=Math.max(0,value*attenuation);
@@ -177,7 +189,6 @@ var initAudioAnalysers=function()
         for(var i=0; i<beatAnalysers.length; i++)
           beatAnalysers[i].update(pulse,dt);
     }
-    audio_engine.waveform   =waveform;
-    audio_engine.spectrogram=spectrogram;
 }
-initAudioAnalysers();
+
+
