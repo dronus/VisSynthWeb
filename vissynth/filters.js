@@ -113,8 +113,7 @@ filters.blend_alpha=function({alpha}) {
     ');
 
     var texture1=this.stack_pop();
-    s_blend_alpha.textures({texture2: this.texture, texture1: texture1});
-    this.simpleShader( s_blend_alpha, {alpha:clamp(0.,alpha,1.)});
+    this.simpleShader( s_blend_alpha, {alpha:clamp(0.,alpha,1.)}, {texture2: this.texture, texture1: texture1});
 
     return this;
 }
@@ -133,8 +132,7 @@ filters.multiply=function() {
     ');
 
     var texture1=this.stack_pop();
-    s_multiply.textures({texture2: this.texture, texture1: texture1});
-    this.simpleShader( s_multiply, {});
+    this.simpleShader( s_multiply, {}, {texture2: this.texture, texture1: texture1});
 
     return this;
 }
@@ -156,8 +154,7 @@ filters.blend_mask=function() {
 
     var texture2=this.stack_pop();
     var texture1=this.stack_pop();
-    s_blend_mask.textures({mask: this.texture, texture1: texture1, texture2: texture2});
-    this.simpleShader( s_blend_mask, {});
+    this.simpleShader( s_blend_mask, {},{mask: this.texture, texture1: texture1, texture2: texture2});
 
     return this;
 }
@@ -290,11 +287,11 @@ filters.feedbackIn=function() {
 // blank out image periodically
 filters.strobe=function({period}) {
     var t=this.texture;
-    this.instance_data.texture=this.getSpareTexture(this.instance_data.texture);
+    this.filter_instance.texture=this.getSpareTexture(this.filter_instance.texture);
 
-    this.instance_data.phase=((this.instance_data.phase|0)+1.) % period;
-    if(this.instance_data.phase==0) this.texture.copyTo(this.instance_data.texture);
-    else                      this.instance_data.texture.copyTo(this.texture);
+    this.filter_instance.phase=((this.filter_instance.phase|0)+1.) % period;
+    if(this.filter_instance.phase==0) this.texture.copyTo(this.filter_instance.texture);
+    else                      this.filter_instance.texture.copyTo(this.texture);
 
     return this;
 }
@@ -907,8 +904,7 @@ filters.blend=function({alpha,factor,offset}) {
         }\
     ');
 
-    s_blend.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( s_blend, { alpha: alpha, factor: factor ? factor : 1.0 , offset: offset ? offset : 0.0});
+    this.simpleShader( s_blend, {alpha,factor: factor || 1.,offset: offset || 0.}, {texture: this.texture, texture1: this.stack_pop()});
 
     return this;
 }
@@ -1083,15 +1079,13 @@ filters.relief=function({scale2,scale4}) {
     for(var s=0; s<=2; s++)
       this.stack_pop();
       
-    s_relief.textures({
+    this.simpleShader( s_relief, {
+        texSize: [1./this.width,1./this.height],
+    },{
         texture: texture,
         texture_blur2: textures[0],
         texture_blur4: textures[1]
-    });    
-    
-    this.simpleShader( s_relief, {
-        texSize: [1./this.width,1./this.height],
-    },texture);
+    });
 
     return this;
 }
@@ -1155,14 +1149,13 @@ filters.analogize=function({exposure,gamma,glow,glow_radius}) {
 
     filters.blur.call(this,{radius:glow_radius});
 
-    s_analogize.textures({
-        glow_texture: this.texture,
-        texture: this.stack_pop()
-    });
     this.simpleShader( s_analogize, {
         Glow: glow,
         Exposure: exposure,
         Gamma: gamma
+    },{
+        glow_texture: this.texture,
+        texture: this.stack_pop()
     });
 
     return this;
@@ -1259,12 +1252,11 @@ filters.feedbackOut=function({blend,clear_on_switch}) {
     if(clear_on_switch && this.switched && this._.feedbackTexture)
       this._.feedbackTexture.clear();
 
-    s_feedbackOut.textures({
-        texture: this.texture,
-        feedbackTexture: this._.feedbackTexture
-    });
     this.simpleShader( s_feedbackOut, {
         blend: blend
+    },{
+        texture: this.texture,
+        feedbackTexture: this._.feedbackTexture
     });
 
     return this;
@@ -1305,13 +1297,13 @@ filters.motion=function({threshold,interval,damper}) {
     {
       // blend current image into mean motion texture
       var target=this.getSpareTexture();
-      s_motionBlend.textures({
-          texture: this.texture,
-          motionTexture: this.filter_instance.texture
-      });
+
       this.simpleShader( s_motionBlend, {
           blend: damper
-      },this.texture,target);
+      },{
+          texture: this.texture,
+          motionTexture: this.filter_instance.texture
+      },target);
 
       this.releaseTexture(this.filter_instance.texture);
       this.filter_instance.texture=target;
@@ -1321,12 +1313,11 @@ filters.motion=function({threshold,interval,damper}) {
     this.filter_instance.cycle++;
 
     // rebind, motionTexture was exchanged by simpleShader
-    s_motion.textures({
-        texture: this.texture,
-        motionTexture: this.filter_instance.texture
-    });
     this.simpleShader( s_motion, {
         threshold: threshold
+    },{
+        texture: this.texture,
+        motionTexture: this.filter_instance.texture
     });
 
     return this;
@@ -1517,21 +1508,19 @@ filters.reaction=function({noise_factor,zoom_speed,scale1,scale2,scale3,scale4})
     }
     for(var s=0; s<=4; s++)
       this.stack_pop();
-      
-    s_reaction.textures({
-        texture: texture,
-        texture_blur: textures[0],
-        texture_blur2: textures[1],
-        texture_blur3: textures[2],
-        texture_blur4: textures[3]
-    });    
     
     this.simpleShader( s_reaction, {
         texSize: [1./this.width,1./this.height],
         rnd: [Math.random(),Math.random(),Math.random(),Math.random()],
         noise_factor: noise_factor,
         zoom_speed: zoom_speed
-    },texture);
+    },{
+        texture: texture,
+        texture_blur: textures[0],
+        texture_blur2: textures[1],
+        texture_blur3: textures[2],
+        texture_blur4: textures[3]
+    });
 
     return this;
 }
@@ -1595,8 +1584,7 @@ filters.displacement=function({strength}) {
         }\
     ');
 
-    s_displacement.textures({displacement_map: this.texture, texture: this.stack_pop()});
-    this.simpleShader( s_displacement, { strength: strength });
+    this.simpleShader( s_displacement, { strength: strength },{displacement_map: this.texture, texture: this.stack_pop()});
 
     return this;
 }
@@ -1794,8 +1782,7 @@ filters.lumakey=filters.luma_key=function({threshold,feather}) {
       }\
     ');
 
-    s_lumakey.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( s_lumakey, { threshold: threshold, feather: feather });
+    this.simpleShader( s_lumakey, { threshold: threshold, feather: feather },{texture: this.texture, texture1: this.stack_pop()});
 
     return this;
 }
@@ -1824,8 +1811,10 @@ filters.chroma_key_rgb=function({color:{r,g,b},threshold,feather}) {
       }\
     ');
 
-    s_chroma_key_rgb.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( s_chroma_key_rgb, { key_color:[r,g,b], threshold: threshold, feather: feather });
+    this.simpleShader( s_chroma_key_rgb, 
+      { key_color:[r,g,b], threshold: threshold, feather: feather },
+      {texture: this.texture, texture1: this.stack_pop()}
+    );
 
     return this;
 }
@@ -1865,8 +1854,10 @@ filters.chroma_key=function({h,s,l,h_width,s_width,l_width,h_feather,s_feather,l
     ');
 
     h=Math.max(0.0,Math.min(1.0,h));
-    s_chroma_key.textures({texture: this.texture, texture1: this.stack_pop()});
-    this.simpleShader( s_chroma_key, { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]});
+    this.simpleShader( s_chroma_key, 
+      { hsv_key:[h,s,l], hsv_key_width:[h_width,s_width,l_width],hsv_key_feather:[h_feather,s_feather,l_feather]},
+      {texture: this.texture, texture1: this.stack_pop()}
+    );
 
     return this;
 }
@@ -2278,13 +2269,14 @@ filters.soft_life=function({birth_min,birth_max,death_min}) {
 
     this.stack_pop();
         
-    s_soft_life.textures({inner_texture: inner_texture, outer_texture: this.texture});
-    
-    this.simpleShader( s_soft_life, {
-      birth_min:birth_min,
-      birth_max:birth_max,
-      death_min:death_min,
-    });
+    this.simpleShader( s_soft_life, 
+      {
+        birth_min:birth_min,
+        birth_max:birth_max,
+        death_min:death_min,
+      },
+      {inner_texture: inner_texture, outer_texture: this.texture}
+    );
 
     return this;
 }
@@ -2768,8 +2760,7 @@ filters.localContrast=function({size,strength}) {
       this.simpleShader( s_localContrastMax, { delta: [delta/this.width, delta/this.height]},max_image, max_image);
 
   
-    s_localContrast.textures({min_texture:min_image, max_texture:max_image});
-    this.simpleShader( s_localContrast, {strength:strength},original_image);
+    this.simpleShader( s_localContrast, {strength:strength},original_image,{min_texture:min_image, max_texture:max_image});
     
     this.stack_pop();
     this.stack_pop();
@@ -2915,13 +2906,7 @@ filters.unsharpMask=function({size, strength}) {
 
     // Blur the current texture, then use the stored texture to detect edges
     filters.blur.call(this,{radius:size});
-    s_unsharpMask.textures({
-        blurredTexture: this.texture,
-        originalTexture: this.stack_pop()
-    });
-    this.simpleShader( s_unsharpMask, {
-        strength: strength
-    });
+    this.simpleShader( s_unsharpMask, {strength: strength},{blurredTexture: this.texture, originalTexture: this.stack_pop()});
 
     return this;
 }
