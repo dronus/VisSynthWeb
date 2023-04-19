@@ -174,7 +174,13 @@ Canvas.prototype.simpleShader=function(shader, uniforms, textureIn, textureOut) 
     var texture=(textureIn  || this.texture        );
     var target =(textureOut || this.getSpareTexture());
 
-    texture.use();
+    if(texture instanceof Texture)
+      // a single texture is used
+      shader.textures({'texture':texture});
+    else
+      // a complete texture collection is used
+      shader.textures(texture);
+
     target .setAsTarget();
     shader.uniforms(uniforms).drawRect();
 
@@ -330,7 +336,6 @@ Canvas.prototype.run_effect=function(effect,t,filter_id)
   this.filter_data =         this._[effect.effect];
   if(!this._[filter_id]) this._[filter_id]={};
   this.filter_instance = this._[filter_id];
-
   fn.apply(this,[args]);
 }
 

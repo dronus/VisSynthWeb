@@ -22,6 +22,7 @@ var multiparty = require('multiparty');
 var mime_types={
   html : 'text/html',
   js   : 'application/javascript',
+  wasm : 'application/wasm',
   json : 'application/json',
   bin   : 'application/octet-stream',
   svg  : 'image/svg+xml',

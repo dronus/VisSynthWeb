@@ -3,7 +3,7 @@
 // ui.html provide special UIs for some of these.
 //
 
-import {audio_engine} from "./audio.js"
+import {getBeat} from "./audio.js"
 
 // flatten tree-like objects values into single array, dropping keys
 var flatten=function(t,args)
@@ -56,7 +56,7 @@ export let generators={
   // a tunable oscillator with selectable waveform, see above.
   osc:function(t,args){return args.a*oscillators[args.waveform ? args.waveform : 'sine'](t*args.f+args.p,args.duty?args.duty:0.5)+args.o;},
   // provide a sound-dependend parameter (beat detection or instantaneous amplitude)
-  beat:function(t,args) { return audio_engine.beatValue.apply(null,flatten(t,args));},
+  beat:function(t,args) { return getBeat.apply(null,flatten(t,args));},
   // provide MIDI CC input parameters
   midi:function(t,args){return clamp( (args.infinite?window.midi.controllers_infinite:window.midi.controllers)[args.channel|0]*args.a+args.o, args.min, args.max)},
   // provide MIDI Note input parameters
