@@ -66,7 +66,7 @@ Canvas.prototype.toTexture=function(element) {
 }
 
 // update the canvas at the right time and schedule next update
-Canvas.prototype.update=function(current_time) {
+Canvas.prototype.update=async function(current_time) {
 
     let dt = current_time - this.last_time;
 
@@ -74,7 +74,7 @@ Canvas.prototype.update=function(current_time) {
     if(current_time  > this.next_time) {
       // render
       this.sync_source=null;
-      this.render(current_time);
+      await this.render(current_time);
       
       // schedule next frame
       if(this.proposed_fps > 0) this.next_time += 1000/this.proposed_fps;
@@ -97,10 +97,10 @@ Canvas.prototype.update=function(current_time) {
 // render a frame, 
 // provide streaming / preview / screenshot output and
 // update the visible canvas element.
-Canvas.prototype.render=function(current_time) {
+Canvas.prototype.render=async function(current_time) {
 
     // render effect chain !
-    this.run_chain(current_time);
+    await this.run_chain(current_time);
 
     // provide preview if requested
     if(this.preview_enabled && this.preview_cycle==1)
@@ -320,7 +320,7 @@ var get_param_values=function(param,t)
 }
 
 // render a single effect
-Canvas.prototype.run_effect=function(effect,t,filter_id)
+Canvas.prototype.run_effect=async function(effect,t,filter_id)
 {
   if(typeof effect == "string") return;
   var args={};
@@ -336,11 +336,11 @@ Canvas.prototype.run_effect=function(effect,t,filter_id)
   this.filter_data =         this._[effect.effect];
   if(!this._[filter_id]) this._[filter_id]={};
   this.filter_instance = this._[filter_id];
-  fn.apply(this,[args]);
+  await fn.apply(this,[args]);
 }
 
 // render the whole effect chain
-Canvas.prototype.run_chain=function(current_time)
+Canvas.prototype.run_chain=async function(current_time)
 {
   Generators.prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
   this.stack_prepare();
@@ -349,7 +349,7 @@ Canvas.prototype.run_chain=function(current_time)
     let effect=this.chain[i];
     filter_ids[effect.effect] = (filter_ids[effect.effect] || 0) + 1;
     let id = effect.effect + filter_ids[effect.effect];
-    this.run_effect(effect,current_time*0.001,id);
+    await this.run_effect(effect,current_time*0.001,id);
   }
   // reset switched flag, it is used by some filters to clear buffers on chain switch
   this.switched=false;

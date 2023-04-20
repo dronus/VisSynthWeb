@@ -1195,7 +1195,7 @@ filters.resize=function({w,h}) {
   this.height=this.template.height=h;
 }
 
-filters.canvas_plugin=function({fn_name,keep}) {
+filters.canvas_plugin=async function({fn_name,keep}) {
   let fn=window[fn_name];
   if(!fn) return;
 
@@ -1207,7 +1207,7 @@ filters.canvas_plugin=function({fn_name,keep}) {
     this.texture.copyTo(this);
     let img=new ImageData(this.texture.width,this.texture.height);
     this.gl.readPixels(0,0,this.texture.width,this.texture.height, this.texture.format, this.texture.type,img.data);
-    let result=fn(img);
+    let result=await fn(img);
     if(result instanceof Promise) {
       let filter_instance=this.filter_instance; // closure for promise, as filter_instance is switching
       filter_instance.busy=true;
