@@ -11,9 +11,11 @@ Texture.formatKey=function(template)
       return template.width+"_"+template.height+"_"+template.format+"_"+template.type;
 }
 
+let next_name=0;
 export function Texture(gl, width, height, format, type, filter) {
     this.gl = gl;
     this.id = gl.createTexture();
+    this.name = next_name++;
 
     gl.bindTexture(gl.TEXTURE_2D, this.id);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -127,3 +129,4 @@ Texture.prototype.copyToArray=function(dest) {
   this.gl.readPixels(0,0,this.width,this.height, this.format,this.type, dest);
   this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 }
+
