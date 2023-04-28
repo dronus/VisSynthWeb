@@ -3,11 +3,12 @@ import {Shader} from "./shader.js";
 import {filters} from "./filters.js";
 import * as Generators from "./generators.js"
 
-// create a VisSynthWeb Canvas from given HTML canvas element, session_url (for remote control)
-export let Canvas = function(selector, session_url) {
+// create a VisSynthWeb Canvas from given HTML canvas element, session_url (for remote control), webrtc_url (for streaming and preview)
+export let Canvas = function(selector, session_url, webrtc_url) {
     this.canvas=document.querySelector(selector);
     
     this.session_url=session_url;
+    this.webrtc_url=webrtc_url;
     
     // preserveDrawingBuffer is needed on Chrome to make canvas.captureStream work with requestAnimationFrame:
     // - when using requestAnimationFrame to schedule canvas updates, captureStream delivers a black image
@@ -39,6 +40,7 @@ export let Canvas = function(selector, session_url) {
     this.preview_cycle=0;
     this.preview_enabled=false;
     this.screenshot_flag=false;
+    this.previewTexture=null;
     this.preview_canvas=null;
     this.mediaRecorder;
     
@@ -146,9 +148,13 @@ Canvas.prototype.capturePreview=function() {
   //
   // TODO skip preview filter, if it would be the last image
   //
+
   var ctx=this.preview_canvas.getContext('2d');
   // draw downsaled version
-  ctx.drawImage(this.canvas,0,0,this.width,this.height, 0, 0, this.preview_width,this.preview_height);
+  //ctx.drawImage(this.canvas,0,0,this.width,this.height, 0, 0, this.preview_width,this.preview_height);
+  let previewImage=new ImageData(this.previewTexture.width,this.previewTexture.height);
+  this.previewTexture.copyToArray(previewImage.data);
+  ctx.putImageData(previewImage,0,0);
 }
 
 Canvas.prototype.sendStats=function() {
@@ -384,14 +390,19 @@ Canvas.prototype.preview=function(enabled) {
     if(!this.preview_canvas)
     {
       this.preview_canvas=document.createElement('canvas');
+      
+      this.preview_width=320; 
+      this.preview_height=200;
+      
       this.preview_canvas.width=this.preview_width; 
       this.preview_canvas.height=this.preview_height;
+      this.previewTexture=this.getSpareTexture(null,this.preview_width,this.preview_height);
     }
   
     if(!this.previewOut) {
       this.previewOut=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.previewOut=await webrtc.WebRTC("","/webrtc_preview"+this.session_url,this.preview_canvas);
+        this.previewOut=await webrtc.WebRTC(this.webrtc_url,"/webrtc_preview"+this.session_url,this.preview_canvas);
       });
     }
   }else{
@@ -464,7 +475,7 @@ Canvas.prototype.webrtc=function(enabled) {
     if(!this.webrtcOut) {
       this.webrtcOut=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.webrtcOut=await webrtc.WebRTC("","/webrtc_out"+this.session_url,this.canvas);
+        this.webrtcOut=await webrtc.WebRTC(this.webrtc_url,"/webrtc_out"+this.session_url,this.canvas);
       });
     }
   }else{

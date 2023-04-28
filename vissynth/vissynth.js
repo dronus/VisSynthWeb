@@ -10,7 +10,7 @@ export let VisSynth = function(selector, session_url, server_url) {
   session_url="/"+(session_url ? session_url+'_' : "");
   
   // initialize canvas
-  let canvas=new Canvas(selector,session_url);
+  let canvas=new Canvas(selector,session_url,server_url);
   
   // initialize remote
   let command_handler=function(evt) {
