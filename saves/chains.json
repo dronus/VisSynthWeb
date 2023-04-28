@@ -7,21 +7,48 @@
    "y": 1080,
    "filtering": "linear",
    "precision": "byte",
-   "fps_limit": 25
-  },
-  {
-   "effect": "matte",
-   "rgb": {
-    "type": "rgba",
-    " r": 0.389,
-    "g": 0.389,
-    "b": 0.42,
-    "a": 1
-   }
+   "fps_limit": 10
   }
  ],
  [
   "POST"
+ ],
+ [
+  "selfiebox_ml",
+  {
+   "effect": "capture",
+   "device": 0,
+   "w": 0,
+   "h": 0,
+   "sync": 0
+  },
+  {
+   "effect": "stack_push"
+  },
+  {
+   "effect": "transform",
+   "x": 0,
+   "y": 0,
+   "scale": 1,
+   "angle": 0,
+   "sx": 1,
+   "sy": 1,
+   "wrap": 0
+  },
+  {
+   "effect": "canvas_plugin",
+   "fn_name": "segment_body",
+   "keep": 0
+  },
+  {
+   "effect": "invert"
+  },
+  {
+   "effect": "blend",
+   "alpha": 0.5,
+   "factor": 1,
+   "offset": 0
+  }
  ],
  [
   "selfiebox_ml",
