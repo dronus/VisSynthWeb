@@ -1,8 +1,6 @@
 import {devices} from "./devices.js"
 
-export let audio_engine={};
-
-var BeatAnalyser=function()
+let BeatAnalyser=function()
 {
   // guessed beat to lock upon
   this.lock_beat=2.2;
@@ -44,10 +42,10 @@ var BeatAnalyser=function()
   }    
 }
 
-var beatAnalysers=[];
+let beatAnalysers=[];
 
 // helper function for retrieving beat values. creates analysers on demand.
-audio_engine.beatValue=function()
+export let getBeat=function()
 {
   // TODO prevent leaking, how to remove dumped analysers? 
   // We only may know they aren't used to analyse for some time..
@@ -70,9 +68,9 @@ let target_device=-1;
 let streams={};
 let spectrogram=false;
 let waveform=false;
-audio_engine.getSpectrogram = () => {update(); return spectrogram}
-audio_engine.getWaveform    = () => {update(); return waveform};
-audio_engine.set_device=function(device_index) {
+export let getSpectrogram = () => {update(); return spectrogram}
+export let getWaveform    = () => {update(); return waveform};
+export let set_device=function(device_index) {
   target_device=parseInt(device_index);
 }
 
@@ -131,7 +129,7 @@ let update=() => {
   }, 1000);
 }
 
-var init=function()
+let init=function()
 {
     // create the audio context
     if (!window.AudioContext) 

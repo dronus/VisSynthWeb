@@ -14,7 +14,7 @@
 import {Shader} from "./shader.js";
 import {Texture} from "./texture.js"
 import {devices} from "./devices.js"
-import {audio_engine} from "./audio.js"
+import * as audio from "./audio.js"
 import {midi} from "./midi.js"
 import {vec3, mat3, mat4, quat4} from "./glmatrix.js"
 
@@ -1179,9 +1179,10 @@ filters.noalpha=function() {
 // but stores a copy of the current image "under construction" 
 // to send as preview. 
 filters.preview=function() {
-    this.preview_width=320; this.preview_height=200;
+    if(!this.previewTexture) return;
+    //this.preview_width=320; this.preview_height=200;
     // this.gl.viewport(0,0,this.preview_width,this.preview_height);
-    filters.mirror_x.call(this,{target:this}); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
+    filters.mirror_x.call(this,{target:this.previewTexture}); // for some reason, picture is horizontally mirrored. Store it into the canvas the right way.
     //this.gl.viewport(0,0,this.width,this.height);
 
     return this;
@@ -1195,19 +1196,16 @@ filters.resize=function({w,h}) {
   this.height=this.template.height=h;
 }
 
-filters.canvas_plugin=function({fn_name,keep}) {
+filters.canvas_plugin=async function({fn_name,keep}) {
   let fn=window[fn_name];
   if(!fn) return;
-
   if(!this.filter_instance.busy) {
-    if(this.canvas.width!=this.template.width || this.canvas.height!=this.template.height) {
-      this.canvas.width=this.template.width;
-      this.canvas.height=this.template.height;
-    }
-    this.texture.copyTo(this);
+  
     let img=new ImageData(this.texture.width,this.texture.height);
-    this.gl.readPixels(0,0,this.texture.width,this.texture.height, this.texture.format, this.texture.type,img.data);
-    let result=fn(img);
+    this.texture.copyToArray(img.data);
+
+    let result=await fn(img);
+
     if(result instanceof Promise) {
       let filter_instance=this.filter_instance; // closure for promise, as filter_instance is switching
       filter_instance.busy=true;
@@ -1662,12 +1660,12 @@ filters.gauze=function({width,length,angle,strength,center:{x,y}}) {
 // choose which audio device to use for audio-dependent effects and parameter generators.
 // "select_audio":{"device":0.0}
 filters.select_audio=function({device}) {
-  audio_engine.set_device(device);
+  audio.set_device(device);
 }
 
 // create 1D image from audio waveform data.
 filters.waveform=function() {
-    var values=audio_engine.getWaveform();
+    var values=audio.getWaveform();
     if(!values) return;
     
     // TODO using this effect seems to create TWO textures of this format. Why? Do other filters suffer this as well?
@@ -1693,7 +1691,7 @@ filters.osciloscope=function({amplitude}) {
       }\
     ');
 
-    var values=audio_engine.getWaveform();
+    var values=audio.getWaveform();
     if(!values) return;
 
     var waveformTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);
@@ -1724,7 +1722,7 @@ filters.vectorscope=function({size,intensity,linewidth}) {
       gl_FragColor = vec4(intensity);\
     }\
     ');
-    var values=audio_engine.getWaveform();
+    var values=audio.getWaveform();
     if(!values) return;
     var count=values.length;
 
@@ -2176,7 +2174,7 @@ filters.denoisefast=function({strength}) {
 
 // audio spectrogram video source
 filters.spectrogram=function() {
-    var values=audio_engine.getSpectrogram();
+    var values=audio.getSpectrogram();
     if(!values) return;
     
     var spectrogramTexture=this.getSpareTexture(null,values.length,1,this.gl.LUMINANCE,this.gl.UNSIGNED_BYTE);

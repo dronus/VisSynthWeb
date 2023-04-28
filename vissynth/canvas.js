@@ -3,11 +3,12 @@ import {Shader} from "./shader.js";
 import {filters} from "./filters.js";
 import * as Generators from "./generators.js"
 
-// create a VisSynthWeb Canvas from given HTML canvas element, session_url (for remote control)
-export let Canvas = function(selector, session_url) {
+// create a VisSynthWeb Canvas from given HTML canvas element, session_url (for remote control), webrtc_url (for streaming and preview)
+export let Canvas = function(selector, session_url, webrtc_url) {
     this.canvas=document.querySelector(selector);
     
     this.session_url=session_url;
+    this.webrtc_url=webrtc_url;
     
     // preserveDrawingBuffer is needed on Chrome to make canvas.captureStream work with requestAnimationFrame:
     // - when using requestAnimationFrame to schedule canvas updates, captureStream delivers a black image
@@ -39,6 +40,7 @@ export let Canvas = function(selector, session_url) {
     this.preview_cycle=0;
     this.preview_enabled=false;
     this.screenshot_flag=false;
+    this.previewTexture=null;
     this.preview_canvas=null;
     this.mediaRecorder;
     
@@ -66,7 +68,7 @@ Canvas.prototype.toTexture=function(element) {
 }
 
 // update the canvas at the right time and schedule next update
-Canvas.prototype.update=function(current_time) {
+Canvas.prototype.update=async function(current_time) {
 
     let dt = current_time - this.last_time;
 
@@ -74,7 +76,7 @@ Canvas.prototype.update=function(current_time) {
     if(current_time  > this.next_time) {
       // render
       this.sync_source=null;
-      this.render(current_time);
+      await this.render(current_time);
       
       // schedule next frame
       if(this.proposed_fps > 0) this.next_time += 1000/this.proposed_fps;
@@ -97,10 +99,10 @@ Canvas.prototype.update=function(current_time) {
 // render a frame, 
 // provide streaming / preview / screenshot output and
 // update the visible canvas element.
-Canvas.prototype.render=function(current_time) {
+Canvas.prototype.render=async function(current_time) {
 
     // render effect chain !
-    this.run_chain(current_time);
+    await this.run_chain(current_time);
 
     // provide preview if requested
     if(this.preview_enabled && this.preview_cycle==1)
@@ -146,9 +148,13 @@ Canvas.prototype.capturePreview=function() {
   //
   // TODO skip preview filter, if it would be the last image
   //
+
   var ctx=this.preview_canvas.getContext('2d');
   // draw downsaled version
-  ctx.drawImage(this.canvas,0,0,this.width,this.height, 0, 0, this.preview_width,this.preview_height);
+  //ctx.drawImage(this.canvas,0,0,this.width,this.height, 0, 0, this.preview_width,this.preview_height);
+  let previewImage=new ImageData(this.previewTexture.width,this.previewTexture.height);
+  this.previewTexture.copyToArray(previewImage.data);
+  ctx.putImageData(previewImage,0,0);
 }
 
 Canvas.prototype.sendStats=function() {
@@ -320,7 +326,7 @@ var get_param_values=function(param,t)
 }
 
 // render a single effect
-Canvas.prototype.run_effect=function(effect,t,filter_id)
+Canvas.prototype.run_effect=async function(effect,t,filter_id)
 {
   if(typeof effect == "string") return;
   var args={};
@@ -336,11 +342,11 @@ Canvas.prototype.run_effect=function(effect,t,filter_id)
   this.filter_data =         this._[effect.effect];
   if(!this._[filter_id]) this._[filter_id]={};
   this.filter_instance = this._[filter_id];
-  fn.apply(this,[args]);
+  await fn.apply(this,[args]);
 }
 
 // render the whole effect chain
-Canvas.prototype.run_chain=function(current_time)
+Canvas.prototype.run_chain=async function(current_time)
 {
   Generators.prepare(); // reset effect chain generators to distinguish all random invocations in a single frame
   this.stack_prepare();
@@ -349,7 +355,7 @@ Canvas.prototype.run_chain=function(current_time)
     let effect=this.chain[i];
     filter_ids[effect.effect] = (filter_ids[effect.effect] || 0) + 1;
     let id = effect.effect + filter_ids[effect.effect];
-    this.run_effect(effect,current_time*0.001,id);
+    await this.run_effect(effect,current_time*0.001,id);
   }
   // reset switched flag, it is used by some filters to clear buffers on chain switch
   this.switched=false;
@@ -384,14 +390,19 @@ Canvas.prototype.preview=function(enabled) {
     if(!this.preview_canvas)
     {
       this.preview_canvas=document.createElement('canvas');
+      
+      this.preview_width=320; 
+      this.preview_height=200;
+      
       this.preview_canvas.width=this.preview_width; 
       this.preview_canvas.height=this.preview_height;
+      this.previewTexture=this.getSpareTexture(null,this.preview_width,this.preview_height);
     }
   
     if(!this.previewOut) {
       this.previewOut=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.previewOut=await webrtc.WebRTC("","/webrtc_preview"+this.session_url,this.preview_canvas);
+        this.previewOut=await webrtc.WebRTC(this.webrtc_url,"/webrtc_preview"+this.session_url,this.preview_canvas);
       });
     }
   }else{
@@ -464,7 +475,7 @@ Canvas.prototype.webrtc=function(enabled) {
     if(!this.webrtcOut) {
       this.webrtcOut=true;
       import("./webrtc.js").then(async(webrtc) => {
-        this.webrtcOut=await webrtc.WebRTC("","/webrtc_out"+this.session_url,this.canvas);
+        this.webrtcOut=await webrtc.WebRTC(this.webrtc_url,"/webrtc_out"+this.session_url,this.canvas);
       });
     }
   }else{

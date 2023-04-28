@@ -110,3 +110,20 @@ Texture.prototype.copyTo = function(target) {
     gl.copyShader = gl.copyShader || new Shader(gl);
     gl.copyShader.drawRect();
 };
+
+Texture.prototype.copyToArray=function(dest) {
+  if(!this.read_fb) {
+    this.read_fb = this.gl.createFramebuffer();
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.read_fb);
+    this.gl.framebufferTexture2D(
+        this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0,
+        this.gl.TEXTURE_2D, this.id, 0);
+    let canRead = (this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER) == this.gl.FRAMEBUFFER_COMPLETE);
+    if(!canRead)
+      console.log('Texture.copyToArray(): cant complete framebuffer.');
+  }
+
+  this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.read_fb);
+  this.gl.readPixels(0,0,this.width,this.height, this.format,this.type, dest);
+  this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+}
