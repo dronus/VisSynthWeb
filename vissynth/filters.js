@@ -1198,16 +1198,13 @@ filters.resize=function({w,h}) {
 filters.canvas_plugin=async function({fn_name,keep}) {
   let fn=window[fn_name];
   if(!fn) return;
-
   if(!this.filter_instance.busy) {
-    if(this.canvas.width!=this.template.width || this.canvas.height!=this.template.height) {
-      this.canvas.width=this.template.width;
-      this.canvas.height=this.template.height;
-    }
-    this.texture.copyTo(this);
+  
     let img=new ImageData(this.texture.width,this.texture.height);
-    this.gl.readPixels(0,0,this.texture.width,this.texture.height, this.texture.format, this.texture.type,img.data);
+    this.texture.copyToArray(img.data);
+
     let result=await fn(img);
+
     if(result instanceof Promise) {
       let filter_instance=this.filter_instance; // closure for promise, as filter_instance is switching
       filter_instance.busy=true;
