@@ -1204,7 +1204,7 @@ filters.canvas_plugin=async function({fn_name,keep}) {
     let img=new ImageData(this.texture.width,this.texture.height);
     this.texture.copyToArray(img.data);
 
-    let result=await fn(img);
+    let result=await fn.call(this,img);
 
     if(result instanceof Promise) {
       let filter_instance=this.filter_instance; // closure for promise, as filter_instance is switching
