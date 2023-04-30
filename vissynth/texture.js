@@ -130,3 +130,9 @@ Texture.prototype.copyToArray=function(dest) {
   this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 }
 
+Texture.prototype.asImage=function() {
+  let img=new ImageData(this.width,this.height);
+  this.copyToArray(img.data);
+  return img;
+}
+
